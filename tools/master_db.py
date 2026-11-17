@@ -208,14 +208,18 @@ KNOWN_DUP = {('dB200', 'h39')}
 
 # ④ 항공 — 32개 노선(기존 24 + 중국 신규 8) · 2026년 12월 ~ 2027년 11월 (12개월) · 당일치기(0박) 패턴
 EXPECT_FLIGHTS = 32
-# 중국 신규 8노선(2026-11-17 조사분) — 노선 코드 → (도시 이름, 딜 건수)
+# 중국 신규 8노선 — 노선 코드 → (도시 이름, 딜 건수). 4노선(연길·장가계·구이린·황산)은 2026-11-18 완본(9주 × 5패턴 180칸) 반영
 EXPECT_NEW_ROUTES = {'SHE': ('선양', 22), 'DLC': ('다롄', 22), 'CAN': ('광저우', 22), 'XMN': ('샤먼', 22),
-                     'YNJ': ('연길', 46), 'DYG': ('장가계', 33), 'KWL': ('구이린', 8), 'TXN': ('황산', 2)}
+                     'YNJ': ('연길', 46), 'DYG': ('장가계', 46), 'KWL': ('구이린', 45), 'TXN': ('황산', 18)}
+# 완본이 도착한 4노선 — 9주(목요일 기준) × 5패턴 45칸씩, 값 153 + 판매편 0건 27 = 180칸
+EXPECT_FULL_ROUTES = ('YNJ', 'DYG', 'KWL', 'TXN')
+EXPECT_FULL_WEEKS = ('2026-12-03', '2026-12-10', '2026-12-17', '2026-12-24', '2026-12-31',
+                     '2027-01-07', '2027-01-14', '2027-01-21', '2027-01-28')
 EXPECT_MONTHS = ('2026-12', '2027-01', '2027-02', '2027-03', '2027-04', '2027-05',
                  '2027-06', '2027-07', '2027-08', '2027-09', '2027-10', '2027-11')
 EXPECT_FIRST_WEEK, EXPECT_LAST_WEEK = '2026-12-03', '2027-11-25'
-# 2026.12~2027.02 고정 기준(1,638건 + 중국 신규 8노선 177건) — 새 배치가 기존 건을 건드리면 여기서 걸린다
-EXPECT_OLD_BY_MONTH = {'2026-12': 714, '2027-01': 704, '2027-02': 397}
+# 2026.12~2027.02 고정 기준(1,638건 + 중국 신규 8노선 177건 + 중국 4노선 완본 66칸) — 새 배치가 기존 건을 건드리면 여기서 걸린다
+EXPECT_OLD_BY_MONTH = {'2026-12': 739, '2027-01': 745, '2027-02': 397}
 # 2027.06~11 반영분(3개 원본: 260 + 73 + 53 = 386건)
 EXPECT_H2_BY_MONTH = {'2027-06': 131, '2027-07': 129, '2027-08': 47,
                       '2027-09': 35, '2027-10': 43, '2027-11': 1}
@@ -223,6 +227,14 @@ EXPECT_H2 = {'weekend': 373, 'day': 13, 'total': 386}
 EXPECT_NOSALE = {('FUK', '2027-11-12'), ('TYO', '2027-11-12'),
                  ('TYO', '2027-11-16'), ('FUK', '2027-11-20'),
                  ('KWL', '2026-12-05'), ('TXN', '2026-12-05')}   # 중국 2건: 같은 날 복편 0편
+# 2026-11-18 황산 완본 — 토~월·금~월·목~월 9주 27칸은 조회 결과 판매편 0건(가격 아님)
+EXPECT_NOSALE_TXN = {('TXN', d) for d in (
+    '2026-12-05', '2026-12-04', '2026-12-03', '2026-12-12', '2026-12-11', '2026-12-10',
+    '2026-12-19', '2026-12-18', '2026-12-17', '2026-12-26', '2026-12-25', '2026-12-24',
+    '2027-01-02', '2027-01-01', '2026-12-31', '2027-01-09', '2027-01-08', '2027-01-07',
+    '2027-01-16', '2027-01-15', '2027-01-14', '2027-01-23', '2027-01-22', '2027-01-21',
+    '2027-01-30', '2027-01-29', '2027-01-28')}
+EXPECT_NOSALE |= EXPECT_NOSALE_TXN
 EXPECT_BOOKING_END = '2027-11-14'
 EXPECT_JAN_WEEKS = ('2027-01-07', '2027-01-14', '2027-01-21', '2027-01-28')
 # 1월 4주 × 5패턴 전수 노선 — 기존 24개 노선(중국 신규 8노선은 연길만 전수, 나머지는 부분 조사)
@@ -339,6 +351,28 @@ def check_flights(flights):
             problems.append('노선 %s 도시 이름 %r (기대 %s)' % (code, r.get('city'), city))
         if len(r['deals']) != n:
             problems.append('노선 %s 딜 %d건 (기대 %d건)' % (code, len(r['deals']), n))
+
+    # 중국 4노선 완본 — 9주 × 5패턴 45칸이 모두 '값' 또는 '판매편 0건'으로 채워졌는지(180/180)
+    no_sale_keys = {(n.get('code'), n.get('date'), n.get('pattern')) for n in (flights.get('noSale') or [])}
+    for code in EXPECT_FULL_ROUTES:
+        r = by_code.get(code)
+        if not r:
+            continue
+        keys = {(d['date'], d['pattern']) for d in r['deals']}
+        for thu in EXPECT_FULL_WEEKS:
+            for label in EXPECT_WEEKEND:
+                dt = (datetime.date.fromisoformat(thu) +
+                      datetime.timedelta(days=(FL_WD[label[0]] - FL_WD['목']) % 7)).isoformat()
+                if (dt, label) not in keys and (code, dt, label) not in no_sale_keys:
+                    problems.append('중국 완본 미채움 %s %s %s' % (code, dt, label))
+        cells = sum(1 for thu in EXPECT_FULL_WEEKS for label in EXPECT_WEEKEND
+                    if (code, (datetime.date.fromisoformat(thu) + datetime.timedelta(
+                        days=(FL_WD[label[0]] - FL_WD['목']) % 7)).isoformat(), label)
+                    in no_sale_keys)
+        if code == 'TXN' and cells != 27:
+            problems.append('황산 판매편 0건 %d칸 (기대 27칸)' % cells)
+        if code != 'TXN' and cells:
+            problems.append('%s 판매편 0건 %d칸 (기대 0칸)' % (code, cells))
     for m, n in EXPECT_OLD_BY_MONTH.items():
         if by_month.get(m) != n:
             problems.append('%s 기존 건 %s (기대 %d — 손실/변형)' % (m, by_month.get(m), n))

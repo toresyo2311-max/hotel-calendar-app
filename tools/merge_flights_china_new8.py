@@ -55,9 +55,19 @@ AIRLINE_KO = {
     'Korean Air+Asiana': '대한항공+아시아나항공',
     'Korean Air+China Eastern': '대한항공+중국동방항공',
     'Korean Air+China Southern': '대한항공+중국남방항공',
+    # 2026-11-18 연길·장가계·구이린·황산 완본(180칸)에서 새로 나온 표기
+    'China Eastern Airlines': '중국동방항공',
+    'Air Busan+Air China': '에어부산+중국국제항공',
+    'Korean Air+Air China': '대한항공+중국국제항공',
+    'Jin Air+China Eastern': '진에어+중국동방항공',
+    'Jin Air+Juneyao Airlines': '진에어+주니야오항공',
+    'HK Express+Air China': '홍콩익스프레스+중국국제항공',
+    'HK Express+Greater Bay Airlines': '홍콩익스프레스+그레이터베이항공',
+    'Trinity Airways+Air China': '트리니티항공+중국국제항공',
 }
 AIRPORT_KO = {'Seoul': '서울', 'Beijing': '베이징', 'Shanghai': '상하이',
-              'Jeju': '제주', 'Nanjing': '난징', 'Guangzhou': '광저우'}
+              'Jeju': '제주', 'Nanjing': '난징', 'Guangzhou': '광저우',
+              'Hong Kong': '홍콩'}
 
 # 노선별 당일치기 메타 — 원문(첫 파일 5절 · 둘째 파일 4절)의 판정과 근거만 옮긴다
 DAYTRIP_META = {
@@ -77,6 +87,9 @@ LINE_F2 = re.compile(r'^- (\d{4}-\d{2}-\d{2})\([월화수목금토일]\) · ([�
                      r'(?:\(\d박\))? · PUS–([A-Z]{3}) · ([\d,]+)원(?: · (.+))?$')
 LINE_F2_GAP = re.compile(r'^- (\d{4}-\d{2}-\d{2})\([월화수목금토일]\) · ([월화수목금토일]~[월화수목금토일])'
                          r'(?:\(\d박\))? · PUS–([A-Z]{3}) · (미측정|가격 미표시).*$')
+# 조회했으나 판매편이 없던 칸 — 가격이 아니라 noSale 로 보낸다(추정 금지)
+LINE_F2_NOSALE = re.compile(r'^- (\d{4}-\d{2}-\d{2})\([월화수목금토일]\) · ([월화수목금토일]~[월화수목금토일])'
+                            r'(?:\(\d박\))? · PUS–([A-Z]{3}) · 판매편 없음\(0건\)$')
 TABLE_F1_DAY = re.compile(r'^\| (\S+) \(([A-Z]{3})\) \| ([\d,]+)원 \| (.+?) \| (.+?) \|$')
 TABLE_F2_DAY = re.compile(r'^\| ([A-Z]{3}) \| ([월화수목금토일]~[월화수목금토일]) \| (\d{4}-\d{2}-\d{2}) \| '
                           r'(.+?) \| (.+?) \|$')
@@ -271,6 +284,12 @@ def parse_second(text):
         m = LINE_F2_GAP.match(s)
         if m:
             gaps.append(m.group(3, 1, 2))
+            continue
+        m = LINE_F2_NOSALE.match(s)
+        if m:
+            date, pattern, code = m.groups()
+            nosale[(code, date, pattern)] = {'code': code, 'date': date, 'back': back_date(date, pattern),
+                                             'pattern': pattern, 'note': '검색 결과 0건(판매편 없음)'}
             continue
         m = LINE_F2.match(s)
         if not m:

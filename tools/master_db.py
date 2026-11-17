@@ -271,7 +271,8 @@ EXPECT_MONTHS = ('2026-12', '2027-01', '2027-02', '2027-03', '2027-04', '2027-05
 EXPECT_FIRST_WEEK, EXPECT_LAST_WEEK = '2026-12-03', '2027-11-25'
 # 2026.12~2027.02 고정 기준(1,638건 + 중국 신규 8노선 177건 + 중국 4노선 완본 162칸 + 2027년 2~6월 2박 287칸)
 # 2027-02~05는 2026-11-18 선양·다롄·광저우·샤먼 2박 131칸 + 연길·장가계·구이린·황산 토~월 28칸을 더한 값
-EXPECT_OLD_BY_MONTH = {'2026-12': 783, '2027-01': 797, '2027-02': 457,
+# 2027-02는 2026-11-18 2월 1주차(설 연휴 2/4~8) 5패턴 86칸을 더한 값(457 + 86 = 543)
+EXPECT_OLD_BY_MONTH = {'2026-12': 783, '2027-01': 797, '2027-02': 543,
                        '2027-03': 58, '2027-04': 55, '2027-05': 50}
 # 2027.06~11 반영분(3개 원본: 260 + 73 + 53 = 386건)
 EXPECT_H2_BY_MONTH = {'2027-06': 176, '2027-07': 129, '2027-08': 47,
@@ -303,6 +304,9 @@ EXPECT_JAN_WEEKS = ('2027-01-07', '2027-01-14', '2027-01-21', '2027-01-28')
 # 1월 4주 × 5패턴 전수 노선 — 기존 24개 노선(중국 신규 8노선은 연길만 전수, 나머지는 부분 조사)
 EXPECT_JAN_ALL = ('FUK', 'KIX', 'TYO', 'TPE', 'HKG', 'MFM', 'PVG', 'BKK', 'DAD', 'CXR', 'NKG', 'SGN',
                   'SIN', 'GUM', 'NGO', 'OKA', 'HGH', 'TAO', 'HAN', 'CNX', 'DPS', 'KHH', 'RMQ', 'BJS')
+# 2026-11-18 2월 1주차(설 연휴 2/4~8) — 기존 24개 노선 × 5패턴 120칸 완결(목 2/4 · 금 2/5 · 토 2/6 출발)
+EXPECT_FEB_W1_START = '2027-02-04'
+EXPECT_FEB_W1_ROUTES = EXPECT_JAN_ALL
 EXPECT_WEEKEND = ('목~일', '금~일', '토~월', '목~월', '금~월')
 EXPECT_DAY = ('목~목', '금~금', '토~토', '일~일', '월~월')
 EXPECT_DAYTRIP_MIN = 170
@@ -374,6 +378,12 @@ def check_flights(flights):
                       datetime.timedelta(days=(FL_WD[label[0]] - 4) % 7)).isoformat()
                 if (dt, label) not in keys:
                     problems.append('1월 미실측 %s %s %s' % (r['code'], dt, label))
+        if r['code'] in EXPECT_FEB_W1_ROUTES:
+            for label in EXPECT_WEEKEND:
+                dt = (datetime.date.fromisoformat(EXPECT_FEB_W1_START) +
+                      datetime.timedelta(days=(FL_WD[label[0]] - 4) % 7)).isoformat()
+                if (dt, label) not in keys:
+                    problems.append('2월 1주차 미실측 %s %s %s' % (r['code'], dt, label))
         for d in r['deals']:
             tag = '%s %s %s' % (r['code'], d.get('date'), d.get('pattern'))
             if not (WINDOW_START <= d['date'] <= WINDOW_END):

@@ -132,8 +132,10 @@ def parse_info(airline, desc):
         d = m.group(2).strip()                    # '항공사 미확인(가격표) ※직항 …' 의 뒷부분
     elif is_unknown(d):
         out['src'], out['via'], d = '가격표', None, ''
-    elif airline is None and d:
+    elif airline is None and d and not d.startswith(('직항', '경유')):
         airline, _, d = d.partition(' ')          # 보완2차형: 항공사가 설명 앞에 붙어 있다
+    elif d.startswith(('직항', '경유')):
+        d = d                                     # '경유(부산 직항 없음)' 는 항공사가 아니라 직항/경유 설명
         d = d.strip()
     if airline:
         out['airline'] = airline

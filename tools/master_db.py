@@ -29,15 +29,24 @@ MASTER = os.path.join(ROOT, 'data', 'master_db.json')
 WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 
-# 탭별 기대 호텔 수 — ② 중올플 284곳(참여 282 + 기존 미참여·자격없음 2) · 총 512곳
-EXPECT_TABS = {'lux': 162, 'china': 284, 'domestic': 4, 'marriott': 62}
+# 탭별 기대 호텔 수 — ② 중올플 289곳(참여 287 + 기존 미참여·자격없음 2) · ③ 아코르 25곳 · 총 538곳
+EXPECT_TABS = {'lux': 162, 'china': 289, 'domestic': 25, 'marriott': 62}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 중올플 APC — 참여 282 + 기존 2 = 284곳 · 12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715
-EXPECT_APC = {'hotels': 284, 'participating': 282, 'dec_available': 210,
-              'cells': 4715, 'tiers': {1: 114, 2: 134, 3: 36},
-              'legacy_cash': 10, 'new_fresh_none': 274}
+EXPECT_APC = {'hotels': 289, 'participating': 287, 'dec_available': 210,
+              'cells': 4715, 'tiers': {1: 116, 2: 137, 3: 36},
+              'cash_filled': 40, 'cash_empty': 249}
+
+# ③ 아코르 · Stay Plus & SNU — 국내 4곳 + 한·중·일 페어몬트·소피텔 21곳(365일)
+EXPECT_ACCOR3 = {
+    'hotels': 25, 'new': 21,
+    'priced': {'C1B5': 0, 'A7Z9': 124, 'A5G7': 263, '8167': 357, 'B6R8': 362},
+    'snu_rows': 43, 'snu_cities': 8,
+}
+EXPECT_DOMESTIC_PROGRAM = {'dB220': (True, True), 'dB200': (True, False),
+                           'dA3N6': (True, False), 'dC2G2': (True, False)}
 # 출처 문구에 사이트 이름을 쓰지 않는다
-FORBIDDEN = ('accorcards', 'ittaeda', 'roame')
+FORBIDDEN = ('accorcards', 'ittaeda', 'roame', '트립닷컴')
 
 
 def check_apc(db):
@@ -85,10 +94,19 @@ def check_apc(db):
         priced = sum(1 for v in (h.get('rates') or {}).values() if v is not None)
         if priced:
             legacy_cash += 1
-        elif h['id'].startswith('ap'):
+            if priced < 100:
+                # 우한(2027-04 이후 요금 이상 241일 제외)만 124일이다 — 더 줄면 요금이 유실된 것
+                if h['name'] != '페어몬트 우한':
+                    problems.append('② %s 현금 요금 %d일 (100일 미만)' % (h['id'], priced))
+        else:
             fresh_none += 1
-            if any(v is not None for v in (h.get('rates') or {}).values()):
-                problems.append('② %s 신규인데 현금 요금이 있음(추정 금지)' % h['id'])
+        for v in (h.get('rates') or {}).values():
+            if v is not None and (not isinstance(v, int) or v <= 0):
+                problems.append('② %s 요금이 양의 정수가 아님: %r' % (h['id'], v))
+                break
+            if isinstance(v, int) and v > 3_000_000:
+                problems.append('② %s 에 비정상 고가(%s) — 이상값은 null 이어야 함' % (h['id'], v))
+                break
         if len(h.get('rates') or {}) != 365:
             problems.append('② %s 날짜 칸 %d개' % (h['id'], len(h.get('rates') or {})))
     if tiers != EXPECT_APC['tiers']:
@@ -100,10 +118,74 @@ def check_apc(db):
                              for d, v in (h.get('accor_apc') or {}).items())})
     if dec_hotels != EXPECT_APC['dec_available']:
         problems.append('② 12월 APC 가능 호텔 %d곳 (기대 %d곳)' % (dec_hotels, EXPECT_APC['dec_available']))
-    if legacy_cash != EXPECT_APC['legacy_cash']:
-        problems.append('② 현금 요금 보유 호텔 %d곳 (기대 %d곳)' % (legacy_cash, EXPECT_APC['legacy_cash']))
-    if fresh_none != EXPECT_APC['new_fresh_none']:
-        problems.append('② 현금 미수집 신규 호텔 %d곳 (기대 %d곳)' % (fresh_none, EXPECT_APC['new_fresh_none']))
+    if legacy_cash != EXPECT_APC['cash_filled']:
+        problems.append('② 현금 요금 보유 호텔 %d곳 (기대 %d곳)' % (legacy_cash, EXPECT_APC['cash_filled']))
+    if fresh_none != EXPECT_APC['cash_empty']:
+        problems.append('② 현금 미수집 호텔 %d곳 (기대 %d곳)' % (fresh_none, EXPECT_APC['cash_empty']))
+    return problems
+
+
+def check_accor3(db):
+    """③ 아코르 · Stay Plus & SNU — 21곳 365일 · 우한 이상값 제외 · alsoIn 양방향 · SNU 표."""
+    problems = []
+    dom = [h for h in db['hotels'] if h.get('group') == 'domestic']
+    if len(dom) != EXPECT_ACCOR3['hotels']:
+        problems.append('③ 아코르 %d곳 (기대 %d곳)' % (len(dom), EXPECT_ACCOR3['hotels']))
+    ids = {h['id']: h for h in db['hotels']}
+    new = [h for h in dom if h['id'].startswith('a')]
+    if len(new) != EXPECT_ACCOR3['new']:
+        problems.append('③ 신규 %d곳 (기대 %d곳)' % (len(new), EXPECT_ACCOR3['new']))
+    for h in dom:
+        rates = h.get('rates') or {}
+        if len(rates) != 365:
+            problems.append('③ %s 날짜 칸 %d개' % (h['id'], len(rates)))
+        for v in rates.values():
+            if v is not None and (not isinstance(v, int) or v <= 0):
+                problems.append('③ %s 요금이 양의 정수가 아님: %r' % (h['id'], v))
+                break
+            if isinstance(v, int) and v > 3_000_000:
+                problems.append('③ %s 에 비정상 고가(%s) — 이상값은 null 이어야 함' % (h['id'], v))
+                break
+        if h.get('alsoIn'):
+            other = ids.get(h['alsoIn'])
+            if other is None:
+                problems.append('③ %s alsoIn %s 대상 없음' % (h['id'], h['alsoIn']))
+            elif other.get('alsoIn') != h['id']:
+                problems.append('③ %s ↔ %s alsoIn 이 한쪽만 있음' % (h['id'], h['alsoIn']))
+    for code, n in EXPECT_ACCOR3['priced'].items():
+        h = ids.get('a' + code)
+        if not h:
+            problems.append('③ %s 없음' % code)
+            continue
+        got = sum(1 for v in (h.get('rates') or {}).values() if v is not None)
+        if got != n:
+            problems.append('③ %s 요금 표시 %d일 (기대 %d일)' % (h['name'], got, n))
+    for hid, (sp, snu) in EXPECT_DOMESTIC_PROGRAM.items():
+        p = (ids.get(hid) or {}).get('program') or {}
+        if p.get('stayplus') is not sp or p.get('snu') is not snu:
+            problems.append('③ %s program %s (기대 stayplus=%s snu=%s)' % (hid, p, sp, snu))
+    accor = db.get('accor') or {}
+    program = accor.get('program') or {}
+    if program.get('stayplusExpiry') != '2027-09-30' or program.get('snuExpiry') != '2027-12-31':
+        problems.append('③ SNU/Stay Plus 만료일 %s' % program)
+    rows = accor.get('rows') or []
+    if len(rows) != EXPECT_ACCOR3['snu_rows']:
+        problems.append('③ SNU 후보 %d줄 (기대 %d줄)' % (len(rows), EXPECT_ACCOR3['snu_rows']))
+    cities = {r.get('city') for r in rows}
+    if len(cities) != EXPECT_ACCOR3['snu_cities']:
+        problems.append('③ SNU 도시 %d개 (기대 %d개: %s)' % (len(cities), EXPECT_ACCOR3['snu_cities'],
+                                                        sorted(cities)))
+    for r in rows:
+        if not r.get('hotel') or not r.get('checkin'):
+            problems.append('③ SNU 줄에 호텔/체크인 없음: %s' % r)
+            continue
+        if not (WINDOW_START <= r['checkin'] <= WINDOW_END):
+            problems.append('③ SNU 체크인 창 밖: %s' % r)
+        for k in ('snu', 'list', 'save'):
+            if not isinstance(r.get(k), int) or r[k] <= 0:
+                problems.append('③ SNU %s 값 이상: %s' % (k, r))
+        if isinstance(r.get('snu'), int) and isinstance(r.get('list'), int) and r['list'] < r['snu']:
+            problems.append('③ SNU 정가가 SNU 요금보다 쌈: %s' % r)
     return problems
 
 
@@ -370,6 +452,7 @@ def stats_of(db, flights):
     return {
         'hotels': len(hotels),
         'tabs': tabs,
+        'snu': len(((db.get('accor') or {}).get('rows')) or []),
         'cells': cells,
         'priced': priced,
         'na': cells - priced,
@@ -407,10 +490,12 @@ def cmd_extract(args):
         'built': db.get('built'),
         'voucherExpiry': db.get('voucherExpiry'),
         'extended': db.get('extended'),
-        'counts': {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus', 'routes', 'deals')},
+        'counts': {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus',
+                                      'routes', 'deals', 'snu')},
         'sources': db.get('sources') or [],
         'hotels': db['hotels'],
         'flights': flights,
+        'accor': db.get('accor'),
     }
     os.makedirs(os.path.dirname(MASTER), exist_ok=True)
     tmp = MASTER + '.tmp'
@@ -435,6 +520,7 @@ def project(master):
         'built': master['built'],
         'voucherExpiry': master['voucherExpiry'],
         'extended': master['extended'],
+        'accor': master.get('accor'),
     }
     return db, master['flights']
 
@@ -490,6 +576,7 @@ def check_tabs(db):
             problems.append('호텔 중복: %s ↔ %s (%s)' % (prev, h['id'], key))
         seen.setdefault(key, h['id'])
     problems.extend(check_apc(db))
+    problems.extend(check_accor3(db))
     return problems
 
 
@@ -510,15 +597,15 @@ def cmd_verify(args, quiet=False):
                     break
             else:
                 problems.append('hotel 개수 다름: %d vs %d' % (len(mdb['hotels']), len(db['hotels'])))
-        for k in ('sources', 'built', 'voucherExpiry', 'extended'):
-            if mdb[k] != db[k]:
+        for k in ('sources', 'built', 'voucherExpiry', 'extended', 'accor'):
+            if mdb.get(k) != db.get(k):
                 problems.append('DB.%s 다름' % k)
     if compact(mfl) != compact(flights):
         problems.append('FLIGHTS 내용 다름')
 
     st = stats_of(db, flights)
     expect = master.get('counts') or {}
-    for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus', 'routes', 'deals'):
+    for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus', 'routes', 'deals', 'snu'):
         if k in expect and expect[k] != st[k]:
             problems.append('counts.%s 불일치: master=%s index=%s' % (k, expect[k], st[k]))
     if st['date_min'] != WINDOW_START or st['date_max'] != WINDOW_END or st['dates'] != 365:
@@ -585,9 +672,9 @@ def cmd_inject(args):
 def cmd_refresh(args):
     """호텔·항공을 병합한 뒤 master_db.json 의 counts 만 다시 센다(데이터는 건드리지 않음)."""
     master = json.loads(_read(MASTER))
-    st = stats_of({'hotels': master['hotels']}, master['flights'])
+    st = stats_of(master, master['flights'])
     master['counts'] = {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na',
-                                           'stayplus', 'routes', 'deals')}
+                                           'stayplus', 'routes', 'deals', 'snu')}
     tmp = MASTER + '.tmp'
     with open(tmp, 'w', encoding='utf-8') as fp:
         json.dump(master, fp, ensure_ascii=False, indent=1)
@@ -603,7 +690,7 @@ def cmd_stats(args):
     print('index.html 기준')
     print('  hotels  %d  %s' % (st['hotels'], st['tabs']))
     print('  cells   %d  (priced %d / NA %d)' % (st['cells'], st['priced'], st['na']))
-    print('  stayplus %d건' % st['stayplus'])
+    print('  stayplus %d건 · SNU 후보 %d줄' % (st['stayplus'], st['snu']))
     print('  flights %d노선 %d건' % (st['routes'], st['deals']))
     print('  window  %s ~ %s (%d일)' % (st['date_min'], st['date_max'], st['dates']))
     print()

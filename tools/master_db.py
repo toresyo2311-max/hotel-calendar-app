@@ -29,6 +29,11 @@ MASTER = os.path.join(ROOT, 'data', 'master_db.json')
 WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 
+# 탭별 기대 호텔 수 — ⑤ 메리어트(중국·홍콩·마카오 40곳) 추가 후 총 216곳
+EXPECT_TABS = {'lux': 162, 'china': 10, 'domestic': 4, 'marriott': 40}
+EXPECT_HOTELS = sum(EXPECT_TABS.values())
+EXPECT_BRANDS = {'리츠칼튼': 18, '세인트레지스': 13, 'W': 9}
+
 
 # ---------------------------------------------------------------- 추출 / 주입
 
@@ -170,6 +175,36 @@ def project(master):
     return db, master['flights']
 
 
+def check_tabs(db):
+    """탭별 호텔 수와 ⑤ 메리어트 40곳의 브랜드 구성을 검사한다."""
+    problems = []
+    tabs = {}
+    for h in db['hotels']:
+        tabs[h.get('group')] = tabs.get(h.get('group'), 0) + 1
+    for tab, n in EXPECT_TABS.items():
+        if tabs.get(tab) != n:
+            problems.append('tabs.%s %s곳 (기대 %d곳)' % (tab, tabs.get(tab), n))
+    extra = {k: v for k, v in tabs.items() if k not in EXPECT_TABS}
+    if extra:
+        problems.append('알 수 없는 탭: %s' % extra)
+    if len(db['hotels']) != EXPECT_HOTELS:
+        problems.append('호텔 합계 %d곳 (기대 %d곳 = 176 + 40)' % (len(db['hotels']), EXPECT_HOTELS))
+    brands = {}
+    ids = set()
+    for h in db['hotels']:
+        if h['id'] in ids:
+            problems.append('호텔 id 중복: %s' % h['id'])
+        ids.add(h['id'])
+        if h.get('group') == 'marriott':
+            brands[h.get('brand')] = brands.get(h.get('brand'), 0) + 1
+            for k in ('brand', 'city', 'name', 'source'):
+                if not h.get(k):
+                    problems.append('메리어트 호텔 %s 에 %s 없음' % (h['id'], k))
+    if brands != EXPECT_BRANDS:
+        problems.append('메리어트 브랜드 구성 %s (기대 %s)' % (brands, EXPECT_BRANDS))
+    return problems
+
+
 def cmd_verify(args, quiet=False):
     master = json.loads(_read(MASTER))
     _, db, flights, _, _ = read_index()
@@ -203,6 +238,9 @@ def cmd_verify(args, quiet=False):
     for hid, n in st['cells_per_hotel'].items():
         if n != 365:
             problems.append('%s 날짜 칸 %d개 (365 이어야 함)' % (hid, n))
+
+    # 탭 구성 검사 (①~④ 기존 데이터가 손상되지 않았는지 포함)
+    problems.extend(check_tabs(db))
 
     if problems:
         print('VERIFY FAIL')

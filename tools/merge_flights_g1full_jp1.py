@@ -135,7 +135,7 @@ def norm_desc_g1(desc):
     """G1 부록 편구성 → {via, note}."""
     d = (desc or '').strip()
     if d.startswith('경유(') and d.endswith(')'):
-        return {'via': True, 'note': '경유(%s)' % times(d[5:-1])}
+        return {'via': True, 'note': '경유(%s)' % times(d[3:-1])}
     if d.startswith('경유'):
         return {'via': True, 'note': times(d)}
     if d.startswith('직항'):

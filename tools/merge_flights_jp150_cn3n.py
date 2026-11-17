@@ -387,6 +387,8 @@ def notes_update(fl):
     fl['notes']['2027-04'] = month_note(fl, '2027-04', '')
     fl['notes']['2027-05'] = month_note(fl, '2027-05', '')
     fl['notes']['2027-06'] = month_note(fl, '2027-06', '')
+    fl['notes']['2027-06'] = (fl['notes']['2027-06'].rstrip() +
+        ' 기존 24개 노선은 6~11월 조사분 가운데 6월 131칸(주말형 124 · 당일치기 7)이 함께 들어 있습니다.')
 
 
 def main(argv):

@@ -347,7 +347,8 @@ $('sources').innerHTML='<ol style="padding-left:20px">'+DB.sources.map(s=>'<li>'
 /* ── ④ 부산 출발 항공 특가 탭 ───────────────────────────── */
 const flMoney=n=>'₩'+KR(n);
 const flPat=label=>FLIGHTS.patterns.find(p=>p.label===label);
-const flAir=a=>String(a).replace('항공','').replace('(경유)',' · 경유');
+const flAirNames={'중국동방항공(경유)':'중국동방 · 경유','홍콩 익스프레스항공':'홍콩익스프레스','트리니티항공':'트리니티','이스타항공':'이스타','비엣젯항공':'비엣젯'};
+const flAir=a=>flAirNames[a]||String(a);
 const flAll=()=>FLIGHTS.routes.flatMap(r=>r.deals.map(d=>({...d,city:r.city,code:r.code,via:r.extra})));
 const flFiltered=()=>flAll().filter(d=>(fl.route==='all'||d.code===fl.route)&&(fl.pattern==='all'||d.pattern===fl.pattern));
 const flLink=d=>{const p=flPat(d.pattern);return 'https://kr.trip.com/flights/showfarefirst?dcity=pus&acity='+d.code.toLowerCase()+'&ddate='+p.out+'&rdate='+p.back+'&triptype=rt&class=y&quantity=1&locale=ko-KR&curr=KRW'};

@@ -64,6 +64,15 @@ AIRLINE_KO = {
     'HK Express+Air China': '홍콩익스프레스+중국국제항공',
     'HK Express+Greater Bay Airlines': '홍콩익스프레스+그레이터베이항공',
     'Trinity Airways+Air China': '트리니티항공+중국국제항공',
+    # 2026-11-18 선양·다롄·광저우·샤먼 완본(180칸)에서 새로 나온 표기
+    'Air Busan+Spring Airlines': '에어부산+춘추항공',
+    'Air China(Shandong Airlines)': '중국국제항공(산둥항공 운항)',
+    'Cathay Pacific(HK Express)': '캐세이퍼시픽(홍콩익스프레스 운항)',
+    'Eastar Jet+China Southern': '이스타항공+중국남방항공',
+    'Eastar Jet+Shandong Airlines': '이스타항공+산둥항공',
+    'China Southern': '중국남방항공',
+    'Jeju Air+China Southern': '제주항공+중국남방항공',
+    'Korean Air+Asiana Airlines': '대한항공+아시아나항공',
 }
 AIRPORT_KO = {'Seoul': '서울', 'Beijing': '베이징', 'Shanghai': '상하이',
               'Jeju': '제주', 'Nanjing': '난징', 'Guangzhou': '광저우',

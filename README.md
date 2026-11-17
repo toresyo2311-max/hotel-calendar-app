@@ -1,5 +1,8 @@
 # 🏨 호텔 요금 달력 웹앱 (hotel-calendar-app)
 
+> **바로 열기: https://hotel-calendar-app.netlify.app**
+> Netlify가 이 저장소 `main` 브랜치를 보고 있어서, push하면 몇 초 안에 사이트가 자동으로 갱신됩니다.
+
 38개 호텔의 **2026-12-01 ~ 2027-11-30 (365일)** 최저가를 한 화면에서 보는 달력 웹앱입니다.
 서버·로그인·DB가 필요 없는 **정적 HTML 한 장**이라 GitHub에 올린 뒤 Netlify로 자동 배포하면
 링크 하나로 계속 열어볼 수 있습니다.
@@ -47,8 +50,13 @@ netlify.toml            Netlify 배포 설정 (빌드 없음, 루트를 그대�
 
 ## 배포
 
-Netlify에서 이 저장소를 연결하면 `netlify.toml` 설정대로 **빌드 없이 루트 디렉터리**를 게시합니다.
-`index.html`이 루트에 있으므로 사이트 최상위 주소에서 바로 앱이 열립니다.
+Netlify 프로젝트 `hotel-calendar-app` (Team-Jin)이 이 저장소의 `main` 브랜치와 연결돼 있습니다.
+`netlify.toml` 설정대로 **빌드 없이 루트 디렉터리**를 게시하며, `index.html`이 루트에 있어
+사이트 최상위 주소(https://hotel-calendar-app.netlify.app)에서 바로 앱이 열립니다.
+
+```
+변경 → commit → git push origin main → Netlify 자동 빌드·배포 (약 10초)
+```
 
 비공개(private) 저장소로 운영할 경우 Netlify 쪽에서 이 저장소에 대한 GitHub 접근 권한을
 한 번 허용해야 합니다.

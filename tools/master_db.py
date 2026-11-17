@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """hotel-calendar-app 통합 마스터 DB 도구.
 
-`index.html` 안의 `const DB`(호텔 38곳 × 365일)와 `const FLIGHTS`(부산 출발 항공 특가)를
+`index.html` 안의 `const DB`(호텔 176곳 × 365일)와 `const FLIGHTS`(부산 출발 항공 특가)를
 읽어 `data/master_db.json` 한 파일로 모으고, 그 파일이 라이브 앱과 정확히 같은지 검사한다.
 
 사용법 (저장소 루트에서):

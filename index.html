@@ -502,7 +502,7 @@ function flShiftMonth(n){
 function renderFlight(){setFlightMode(true);renderFlightTop5();renderFlightFilters();renderFlightCalendar();renderFlightMatrix();renderFlightDetail();}
 $('flRoute').addEventListener('change',e=>{fl.route=e.target.value;renderFlight()});
 $('flPattern').addEventListener('change',e=>{fl.pattern=e.target.value;renderFlight()});
-$('flWeek').addEventListener('change',e=>{fl.week=e.target.value;if(fl.day&&flWeekOf(fl.day)!==fl.week)fl.day='';renderFlightCalendar();renderFlightMatrix();renderFlightDetail()});
+$('flWeek').addEventListener('change',e=>{const w=FLIGHTS.weeks.find(x=>x.thu===e.target.value);if(!w)return;fl.week=w.thu;if(w.month!==fl.month)fl.month=w.month;if(fl.day&&(!fl.day.startsWith(fl.month)||flWeekOf(fl.day)!==fl.week))fl.day='';renderFlightCalendar();renderFlightMatrix();renderFlightDetail()});
 $('flPrevMonth').addEventListener('click',()=>flShiftMonth(-1));
 $('flNextMonth').addEventListener('click',()=>flShiftMonth(1));
 $('flDays').addEventListener('click',e=>{const b=e.target.closest('[data-fl-date]');if(b)flPick(b.dataset.flDate,false)});

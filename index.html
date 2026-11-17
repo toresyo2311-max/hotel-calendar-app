@@ -781,6 +781,7 @@ function renderFlightMatrix(){
   const outs=flOuts(wk);
   const byKey={};all.forEach(d=>{byKey[d.code+'|'+d.pattern+'|'+d.date]=d});
   const weekDeals=all.filter(d=>pats.some(p=>p.label===d.pattern)&&Object.values(outs).includes(d.date));
+  let weekNoSale=0;for(const r of FLIGHTS.routes){for(const p of pats){if(flNoSaleOf(r.code,outs[p.label],p.label))weekNoSale++;}}
   const globalMin=weekDeals.length?Math.min(...weekDeals.map(d=>d.price)):null;
   let h='<thead><tr><th class="fl-corner">노선</th>'+pats.map(p=>'<th'+(fl.pattern!=='all'&&fl.pattern!==p.label?' class="dim"':'')+'>'+p.label+'<small>'+dateLabel(outs[p.label])+'</small></th>').join('')+'</tr></thead><tbody>';
   for(const r of FLIGHTS.routes){
@@ -807,7 +808,7 @@ function renderFlightMatrix(){
   $('flMatrix').className='fl-matrix'+(day?' fl-daytrip':'');
   $('flMatrixTitle').textContent=FLIGHTS.routes.length+'개 노선 × '+pats.length+'패턴 '+(day?'당일치기(0박)':'한눈에 비교');
   const wnote=(FLIGHTS.notes||{})[wk.month];
-  $('flMatrixSub').textContent=wk.label+' ('+wk.span+') · '+(day?'당일치기 0박 1일':'주말형 1~4박')+' · 실측 '+weekDeals.length+'칸/'+(FLIGHTS.routes.length*pats.length)+'칸 · 주차 창은 목~수'+(weekDeals.length?'':' · 이 주는 실측값이 없습니다(—)')+(wnote?' · '+wnote:'');
+  $('flMatrixSub').textContent=wk.label+' ('+wk.span+') · '+(day?'당일치기 0박 1일':'주말형 1~4박')+' · 실측 '+weekDeals.length+'칸'+(weekNoSale?' + 판매편 0건 '+weekNoSale+'칸':'')+'/'+(FLIGHTS.routes.length*pats.length)+'칸 · 주차 창은 목~수'+((weekDeals.length||weekNoSale)?'':' · 이 주는 실측값이 없습니다(—)')+(wnote?' · '+wnote:'');
 }
 function flPick(date,scroll){
   if(fl.day===date&&!scroll){fl.day='';}

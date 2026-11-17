@@ -39,7 +39,7 @@ F5 = '5-2026-12_2027-11-중국홍콩마카오-W호텔.md'
 F6 = '6-2026-12_2027-11-중국홍콩마카오-W호텔-part2.md'
 F7 = '7-2026-12_2027-11-중국-보완1.md'
 
-GOOGLE = 'Google 호텔 1박 총액(세금·수수료 포함·무료취소 ON) · 2026-11-17 조회'
+CASH_SRC = '검색 호텔 1박 총액(세금·수수료 포함·무료취소 ON) · 2026-11-17 조회'
 
 # (id, brand, city, 한국어 이름, 영문명, 파일, 섹션 제목 정규식, 특이사항, 비고)
 SPEC = [
@@ -83,7 +83,7 @@ SPEC = [
     ('m10', '리츠칼튼', '하이커우', '리츠칼튼 하이커우',
      'The Ritz-Carlton, Haikou', F2,
      r'^## The Ritz-Carlton, Haikou \(하이커우\)',
-     '현금 요금 전 구간 NA — Google 호텔에 지점 미등재(2026-11-17). 실제 요금은 메리어트 공홈·OTA 확인 필요', 'points'),
+     '현금 요금 전 구간 NA — 검색 호텔에 지점 미등재(2026-11-17). 실제 요금은 메리어트 공홈·OTA 확인 필요', 'points'),
     ('m11', '리츠칼튼', '싼야', '리츠칼튼 싼야 야롱베이',
      'The Ritz-Carlton Sanya, Yalong Bay', F2,
      r'^## The Ritz-Carlton Sanya, Yalong Bay \(싼야 야롱베이\)',
@@ -111,7 +111,7 @@ SPEC = [
     ('m17', '리츠칼튼', '마카오', '리츠칼튼 마카오',
      'The Ritz-Carlton, Macau', F3,
      r'^## The Ritz-Carlton, Macau \(마카오\)',
-     '요금 0건 — Google 호텔에 1박 요금 미등록, 전 구간 NA(5개 통화 조회에도 0건)', None),
+     '요금 0건 — 검색 호텔에 1박 요금 미등록, 전 구간 NA(5개 통화 조회에도 0건)', None),
     ('m18', '리츠칼튼', '지우자이거우', '리츠칼튼 리저브 리사이밸리',
      'Rissai Valley, a Ritz-Carlton Reserve', F3,
      r'^## Rissai Valley, a Ritz-Carlton Reserve \(지우자이거우\)',
@@ -382,7 +382,7 @@ def build():
             'english': eng,
             'region': city,
             'promotion': promo,
-            'source': source if flag == 'lhasa' else '%s · %s' % (GOOGLE, fname),
+            'source': source if flag == 'lhasa' else '%s · %s' % (CASH_SRC, fname),
             'rates': filled,
         }
         if flag == 'points':

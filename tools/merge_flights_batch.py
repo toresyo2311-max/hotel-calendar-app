@@ -33,17 +33,21 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MASTER = os.path.join(ROOT, 'data', 'master_db.json')
 
 PAT_ORDER = ['목~일', '금~일', '토~월', '목~월', '금~월',
-             '일~수', '일~목', '월~수']  # 앱의 5패턴 뒤에 보조 창구를 붙인다
+             '목~목', '금~금', '토~토', '일~일', '월~월', '화~화', '수~수',
+             '일~수', '일~목', '월~수']  # 주말형 5패턴 → 당일치기 → 보조 창구
 WD = {'월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6, '일': 0}
 HOLIDAY_DATES = ('2026-12-25', '2027-02-04')
 CIRCLED = '①②③④⑤'
 
-ROUTE = re.compile(r'^## 부산–(.+?) \(([A-Z]{3})')
+ROUTE = re.compile(r'^#{2,3} 부산\s*–\s*(.+?)\s*\(([A-Z]{3})')
 LINE_FULL = re.compile(r'^- (\d{4}-\d{2}-\d{2})(?:\([월화수목금토일]\))? · '
                        r'([①②③④⑤]?[월화수목금토일]~[월화수목금토일])(?:\(\d박\))? · '
                        r'PUS–([A-Z]{3}) · (.+)$')
 LINE_SHORT = re.compile(r'^- (\d{2})/(\d{2}) · '
                         r'([①②③④⑤]?[월화수목금토일]~[월화수목금토일]) · (.+)$')
+LINE_SHORT_CODE = re.compile(r'^- (\d{2})/(\d{2}) · '
+                             r'([①②③④⑤]?[월화수목금토일]~[월화수목금토일]) · '
+                             r'PUS–([A-Z]{3}) · (.+)$')
 LINE_CITY = re.compile(r'^- (\d{2})/(\d{2}) · '
                        r'([①②③④⑤]?[월화수목금토일]~[월화수목금토일]) · '
                        r'[^·]+\(([A-Z]{3})\) · (.+)$')
@@ -73,12 +77,17 @@ def parse_md(path):
                 mm, dd, pattern, rcode, rest = m.groups()
                 date = '%s-%s-%s' % ('2026' if mm == '12' else '2027', mm, dd)
             else:
-                m = LINE_SHORT.match(line)
-                if not m or not code:
-                    continue
-                mm, dd, pattern, rest = m.groups()
+                m = LINE_SHORT_CODE.match(line)
+                if m:
+                    mm, dd, pattern, rcode, rest = m.groups()
+                else:
+                    m = LINE_SHORT.match(line)
+                    if not m or not code:
+                        continue
+                    mm, dd, pattern, rest = m.groups()
+                    rcode = code
                 year = '2026' if mm == '12' else '2027'   # 12월 = 2026, 01월 = 2027
-                date, rcode = '%s-%s-%s' % (year, mm, dd), code
+                date = '%s-%s-%s' % (year, mm, dd)
         pattern = pattern.lstrip(CIRCLED)
         if '미측정' in rest or '가격 미표시' in rest:
             gaps.append((rcode, date, pattern, rest))
@@ -185,9 +194,10 @@ def rank(pattern):
 
 # ---------------------------------------------------------------- 병합
 
-def merge(master, deals, gaps):
+def merge(master, deals, gaps, replace_price=False):
+    """deals → 마스터. replace_price=True 면 같은 (날짜·패턴)의 **더 새로운 실측 가격**으로 바꾼다."""
     routes = {r['code']: r for r in master['flights']['routes']}
-    added, filled, skipped = [], [], []
+    added, filled, skipped, updated = [], [], [], []
     for code, deal in deals:
         if code not in routes:
             raise SystemExit('마스터 DB 에 없는 노선입니다: %s' % code)
@@ -196,6 +206,10 @@ def merge(master, deals, gaps):
         if same:
             old = same[0]
             changed = False
+            if replace_price and old['price'] != deal['price']:
+                updated.append((code, deal['date'], deal['pattern'], old['price'], deal['price']))
+                old['price'] = deal['price']
+                changed = True
             if not old.get('airline') and deal.get('airline'):
                 old['airline'] = deal['airline']
                 changed = True
@@ -208,9 +222,10 @@ def merge(master, deals, gaps):
             if deal.get('alt') and not old.get('alt'):
                 old['alt'] = deal['alt']
                 changed = True
-            if changed:
+            if changed and not (replace_price and (code, deal['date'], deal['pattern']) in
+                                [u[:3] for u in updated]):
                 filled.append((code, deal['date'], deal['pattern']))
-            else:
+            elif not changed:
                 skipped.append((code, deal['date'], deal['pattern'], old['price'], deal['price']))
             continue
         r['deals'].append(deal)
@@ -230,29 +245,34 @@ def merge(master, deals, gaps):
         'total': len(all_deals),
         'byMonth': {k: by_month[k] for k in sorted(by_month)},
         'holiday': sum(1 for d in all_deals if d['date'] in HOLIDAY_DATES),
+        'daytrip': sum(1 for d in all_deals if d['pattern'].split('~')[0] == d['pattern'].split('~')[1]),
     }
-    return added, filled, skipped, gaps
+    return added, filled, skipped, updated, gaps
 
 
 def main(argv):
     ap = argparse.ArgumentParser(description='항공 특가 md → master_db.json flights 병합')
     ap.add_argument('md', nargs='+')
     ap.add_argument('--dry-run', action='store_true')
+    ap.add_argument('--replace-price', action='store_true',
+                    help='같은 (날짜·패턴)이 이미 있으면 더 새로운 실측 가격으로 바꾼다')
     ap.add_argument('--note', default='', help='DB.extended 에 덧붙일 한 줄')
     args = ap.parse_args(argv)
 
     with open(MASTER, encoding='utf-8') as fp:
         master = json.load(fp)
     before = master['flights']['counts']['total']
-    all_added, all_filled, all_skipped, all_gaps = [], [], [], []
+    all_added, all_filled, all_skipped, all_updated, all_gaps = [], [], [], [], []
     for path in args.md:
         deals, gaps = parse_md(path)
-        added, filled, skipped, gaps = merge(master, deals, gaps)
+        added, filled, skipped, updated, gaps = merge(master, deals, gaps, args.replace_price)
         print('%s → 파싱 %d건 (미측정/미표시 %d건)' % (os.path.basename(path), len(deals), len(gaps)))
-        print('  신규 %d · 기존 유지 %d · 항목 보강 %d' % (len(added), len(skipped), len(filled)))
+        print('  신규 %d · 가격 갱신 %d · 기존 유지 %d · 항목 보강 %d'
+              % (len(added), len(updated), len(skipped), len(filled)))
         all_added += added
         all_filled += filled
         all_skipped += skipped
+        all_updated += updated
         all_gaps += gaps
 
     print('총 건수 %d → %d' % (before, master['flights']['counts']['total']))
@@ -261,6 +281,8 @@ def main(argv):
             print('  + %s %s %s %s원' % a)
     for f in all_filled:
         print('  ~ %s %s %s (항공사/직항 보강)' % f)
+    for u in all_updated:
+        print('  ↑ %s %s %s %s원 → %s원 (최신 실측)' % u)
     for s in all_skipped:
         print('  = %s %s %s 기존 %s원 / 보고서 %s원' % s)
     for g in all_gaps:

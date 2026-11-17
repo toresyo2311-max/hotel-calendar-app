@@ -13,9 +13,9 @@
     python3 tools/import_marriott_kj.py --json out.json
 
 필드 규칙
-  rates  : {date: 현금 KRW}            — Google 호텔 세금 포함 1박 최저
-  points : {date: 아워드 포인트}        — roame.travel 아워드 캘린더(원 단위 정확값)
-  code   : roame 지점 코드
+  rates  : {date: 현금 KRW}            — 검색 호텔 세금 포함 1박 최저
+  points : {date: 아워드 포인트}        — 아워드 포인트 캘린더(원 단위 정확값)
+  code   : 지점 코드
   alsoIn : ① HoteLux 탭에 같은 호텔이 이미 있는 경우 그 id (중복 표시 방지용 교차 참조)
 """
 import argparse
@@ -28,10 +28,10 @@ MASTER = os.path.join(ROOT, 'data', 'master_db.json')
 SRC_KR = '/workspace/data-sources/marriott-korea/korea_marriott_2026_12_2027_11.csv'
 SRC_JP = '/workspace/data-sources/marriott-japan/japan_marriott_2026_12_2027_11.csv'
 
-CASH_SRC = 'Google 호텔(세금 포함 1박 최저) · 2026-11-17 조회'
-POINT_SRC = 'roame.travel 아워드 캘린더(2026-11-17 기준)'
+CASH_SRC = '검색 호텔(세금 포함 1박 최저) · 2026-11-17 조회'
+POINT_SRC = '아워드 포인트 캘린더(2026-11-17 기준)'
 
-# (id, 브랜드, 도시, region, 한국어 이름, 영문명, csv hotel_id, roame 코드, 원본 파일, ①탭 같은 호텔 id)
+# (id, 브랜드, 도시, region, 한국어 이름, 영문명, csv hotel_id, 지점 코드, 원본 파일, ①탭 같은 호텔 id)
 SPEC = [
     # ── 한국 10곳 ─────────────────────────────────────────────────
     ('k01', 'JW 메리어트', '서울', '한국', 'JW 메리어트 호텔 서울', 'JW Marriott Hotel Seoul',
@@ -127,16 +127,16 @@ def build():
             from datetime import date, timedelta
             d0, d1 = date(2026, 12, 1), date.fromisoformat(pts_last)
             gap = (d1 - d0).days + 1 - sum(1 for v in pts.values() if v is not None)
-        notes = ['roame %s · 아워드 포인트 %d일/365' % (code, sum(1 for v in pts.values() if v is not None))]
+        notes = ['아워드 %s · 아워드 포인트 %d일/365' % (code, sum(1 for v in pts.values() if v is not None))]
         if pts_last:
             notes.append('포인트 캘린더 마지막 %s 이후 미공개' % pts_last)
             if gap:
                 notes.append('범위 내 아워드 재고 없음 %d일' % gap)
         else:
-            notes.append('roame 아워드 데이터 0건(포인트 미공개)')
+            notes.append('아워드 포인트 데이터 0건(포인트 미공개)')
         notes.append('현금 %d일/365' % sum(1 for v in cash.values() if v is not None))
         if cash_last and cash_last < '2027-10-20':
-            notes.append('Google 예약창 밖(%s 이후 미공개)' % cash_last)
+            notes.append('예약창 밖(%s 이후 미공개)' % cash_last)
         hotel = {
             'id': hid,
             'group': 'marriott',
@@ -203,7 +203,7 @@ def main(argv):
     master['counts'] = {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na',
                                            'stayplus', 'routes', 'deals')}
     master['built'] = '2026-11-17'
-    tag = '2026-11-17 15:10 KST ⑤ 메리어트 한국 10 + 일본 12곳(현금·roame 포인트) 수집 반영'
+    tag = '2026-11-17 15:10 KST ⑤ 메리어트 한국 10 + 일본 12곳(현금·아워드 포인트) 수집 반영'
     ext = master.get('extended') or ''
     if '한국 10 + 일본 12' not in ext:
         master['extended'] = (ext + ' / ' + tag).strip(' /')

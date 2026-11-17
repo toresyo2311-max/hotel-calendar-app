@@ -42,6 +42,61 @@ EXPECT_OVERLAP = {'k01', 'k02', 'k04', 'k05', 'j01', 'j04', 'j10', 'j11', 'j12'}
 # 원래부터 두 탭에 있던 중복(③ Stay Plus ↔ ① HoteLux) — 새 중복과 구분하기 위한 허용 목록
 KNOWN_DUP = {('dB200', 'h39')}
 
+# ④ 항공 — 24개 노선 · 2027년 1월 4주 × 5패턴 전수 · 당일치기(0박) 패턴
+EXPECT_FLIGHTS = 24
+EXPECT_JAN_WEEKS = ('2027-01-07', '2027-01-14', '2027-01-21', '2027-01-28')
+EXPECT_WEEKEND = ('목~일', '금~일', '토~월', '목~월', '금~월')
+EXPECT_DAY = ('목~목', '금~금', '토~토', '일~일', '월~월')
+EXPECT_DAYTRIP_MIN = 100
+FL_WD = {'일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6}
+
+
+def check_flights(flights):
+    """④ 항공 데이터 검사 — 노선 수·패턴 목록·2027년 1월 전수·당일치기 정합성."""
+    import datetime
+    problems = []
+    routes = flights.get('routes') or []
+    if len(routes) != EXPECT_FLIGHTS:
+        problems.append('항공 노선 %d개 (기대 %d개)' % (len(routes), EXPECT_FLIGHTS))
+    pats = {p['label']: p for p in flights.get('patterns') or []}
+    for label in EXPECT_WEEKEND:
+        p = pats.get(label)
+        if not p or not p.get('nights'):
+            problems.append('주말형 패턴 %s 없음/박수 0' % label)
+    for label in EXPECT_DAY:
+        p = pats.get(label)
+        if not p:
+            problems.append('당일치기 패턴 %s 없음' % label)
+        elif p.get('nights') != 0:
+            problems.append('당일치기 패턴 %s 박수 %s (0이어야 함)' % (label, p.get('nights')))
+    day_total = 0
+    for r in routes:
+        keys = {(d['date'], d['pattern']) for d in r['deals']}
+        for thu in EXPECT_JAN_WEEKS:
+            for label in EXPECT_WEEKEND:
+                dt = (datetime.date.fromisoformat(thu) +
+                      datetime.timedelta(days=(FL_WD[label[0]] - 4) % 7)).isoformat()
+                if (dt, label) not in keys:
+                    problems.append('1월 미실측 %s %s %s' % (r['code'], dt, label))
+        for d in r['deals']:
+            if not (WINDOW_START <= d['date'] <= WINDOW_END):
+                problems.append('%s %s 날짜 창 밖' % (r['code'], d['date']))
+                break
+            if d['pattern'][0] == d['pattern'][2]:
+                day_total += 1
+                if d['back'] != d['date']:
+                    problems.append('%s %s 당일치기인데 귀국일 %s' % (r['code'], d['date'], d['back']))
+                    break
+        meta = r.get('daytrip')
+        if not meta or meta.get('status') not in ('ok', 'short', 'no'):
+            problems.append('%s daytrip 메타 없음/이상' % r['code'])
+    if day_total < EXPECT_DAYTRIP_MIN:
+        problems.append('당일치기 %d건 (기대 %d건 이상)' % (day_total, EXPECT_DAYTRIP_MIN))
+    c = flights.get('counts') or {}
+    if c.get('daytrip') != day_total:
+        problems.append('counts.daytrip %s (실제 %d)' % (c.get('daytrip'), day_total))
+    return problems
+
 
 # ---------------------------------------------------------------- 추출 / 주입
 
@@ -233,7 +288,7 @@ def check_tabs(db):
                                              (h['id'], prev) in KNOWN_DUP):
             problems.append('호텔 중복: %s ↔ %s (%s)' % (prev, h['id'], key))
         seen.setdefault(key, h['id'])
-    # ② 중올플: APC(accorcards) 관측 필드
+    # ② 중올플: APC(APC) 관측 필드
     china = [h for h in db['hotels'] if h.get('group') == 'china']
     for h in china:
         a = h.get('accor')
@@ -243,7 +298,7 @@ def check_tabs(db):
         part = a.get('participation')
         if h['id'] in ('cB5L5', 'cC7G9'):
             if part != 'not_participating':
-                problems.append('② %s 는 accorcards 미참여여야 함 (%s)' % (h['id'], part))
+                problems.append('② %s 는 APC 미참여여야 함 (%s)' % (h['id'], part))
             if h.get('accor_apc'):
                 problems.append('② %s 미참여인데 날짜 상태가 있음' % h['id'])
         else:
@@ -299,6 +354,7 @@ def cmd_verify(args, quiet=False):
 
     # 탭 구성 검사 (①~④ 기존 데이터가 손상되지 않았는지 포함)
     problems.extend(check_tabs(db))
+    problems.extend(check_flights(flights))
 
     if problems:
         print('VERIFY FAIL')
@@ -310,6 +366,8 @@ def cmd_verify(args, quiet=False):
         print('  hotels %(hotels)d  tabs %(tabs)s' % st)
         print('  cells %(cells)d  priced %(priced)d  na %(na)d  stayplus %(stayplus)d' % st)
         print('  routes {routes}  deals {deals}  window {date_min}~{date_max}'.format(**st))
+        print('  flights 당일치기 %d건 · 패턴 %d종' % (flights['counts'].get('daytrip', 0),
+                                                   len(flights['patterns'])))
     return 0
 
 
@@ -347,6 +405,21 @@ def cmd_inject(args):
 
 # ---------------------------------------------------------------- stats
 
+def cmd_refresh(args):
+    """호텔·항공을 병합한 뒤 master_db.json 의 counts 만 다시 센다(데이터는 건드리지 않음)."""
+    master = json.loads(_read(MASTER))
+    st = stats_of({'hotels': master['hotels']}, master['flights'])
+    master['counts'] = {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na',
+                                           'stayplus', 'routes', 'deals')}
+    tmp = MASTER + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as fp:
+        json.dump(master, fp, ensure_ascii=False, indent=1)
+        fp.write('\n')
+    os.replace(tmp, MASTER)
+    print('counts refreshed: %s' % json.dumps(master['counts'], ensure_ascii=False))
+    return 0
+
+
 def cmd_stats(args):
     _, db, flights, _, _ = read_index()
     st = stats_of(db, flights)
@@ -367,12 +440,12 @@ def main(argv):
     import argparse
     import datetime
     p = argparse.ArgumentParser(description='hotel-calendar-app 통합 마스터 DB 도구')
-    p.add_argument('command', choices=['extract', 'verify', 'inject', 'stats'])
+    p.add_argument('command', choices=['extract', 'verify', 'inject', 'refresh', 'stats'])
     p.add_argument('--now', default=datetime.datetime.now().astimezone().strftime('%Y-%m-%dT%H:%M:%S%z'),
                    help='extract 시 기록할 생성 시각')
     args = p.parse_args(argv)
-    return {'extract': cmd_extract, 'verify': cmd_verify,
-            'inject': cmd_inject, 'stats': cmd_stats}[args.command](args)
+    return {'extract': cmd_extract, 'verify': cmd_verify, 'inject': cmd_inject,
+            'refresh': cmd_refresh, 'stats': cmd_stats}[args.command](args)
 
 
 if __name__ == '__main__':

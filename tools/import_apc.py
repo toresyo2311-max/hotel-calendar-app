@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""accorcards.com 무료숙박권(APC=진향/臻享) 관측값 → ② 중올플 10곳에 날짜별 상태 주입.
+"""APC 무료숙박권(APC=진향/臻享) 관측값 → ② 중올플 10곳에 날짜별 상태 주입.
 
-원본: /workspace/data-sources/accorcards/accorcards_availability.json
-      (수집기 fetch_accorcards.py · API 구조는 같은 폴더 API-구조.md)
+원본: /workspace/data-sources/apc/availability.json
+      (수집기 fetch_apc.py · API 구조는 같은 폴더 API-구조.md)
 
 사용법 (저장소 루트에서):
-    python3 tools/import_accorcards.py --dry
-    python3 tools/import_accorcards.py
-    python3 tools/import_accorcards.py --now "2026-11-17T15:00:00+09:00"   # 신선도 기준 시각
+    python3 tools/import_apc.py --dry
+    python3 tools/import_apc.py
+    python3 tools/import_apc.py --now "2026-11-17T15:00:00+09:00"   # 신선도 기준 시각
 
 규칙
   · 상태 3구분: 가능(a) / 불가(n) / 미확인(행 없음 또는 last_checked_at 72시간 경과)
-  · 72시간 규칙은 accorcards 사이트가 화면에 쓰는 것과 같다(DISPLAY_RESULT_FRESHNESS_MS).
+  · 72시간 규칙은 예약 사이트가 화면에 쓰는 것과 같다(DISPLAY_RESULT_FRESHNESS_MS).
     빌드 시점에 걸러서 저장하고, index.html 이 열릴 때 한 번 더 같은 규칙을 적용한다
     (오래된 파일을 나중에 열면 자동으로 「미확인」이 된다).
   · participation_status 가 not_participating 인 호텔(AKI 홍콩·뫼벤픽 칭다오)은
@@ -27,14 +27,14 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MASTER = os.path.join(ROOT, 'data', 'master_db.json')
-SRC = '/workspace/data-sources/accorcards/accorcards_availability.json'
-REL = 'accorcards/accorcards_availability.json'
+SRC = '/workspace/data-sources/apc/availability.json'
+REL = 'apc/availability.json'
 
 WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 FRESH_HOURS = 72
 
-# ② 중올플 10곳 ← accorcards public_id (API-구조.md 5장 매칭표)
+# ② 중올플 10곳 ← APC public_id (API-구조.md 5장 매칭표)
 MAP = {
     'c6480': 'public-93e12d415300',   # 소피텔 마카오 앳 폰테 16
     'cB5L5': 'public-92925991f976',   # AKI 홍콩 - 엠갤러리
@@ -48,7 +48,7 @@ MAP = {
     'cC2G5': 'public-7243cf9cec7c',   # 풀만 충칭 시위에
 }
 
-# checked_at 은 accorcards 서버 현지시각(중국 표준시 +08:00)의 naive 문자열이다.
+# checked_at 은 관측 서버 현지시각(중국 표준시 +08:00)의 naive 문자열이다.
 CHECK_TZ = dt.timezone(dt.timedelta(hours=8))
 
 
@@ -65,7 +65,7 @@ def build(now):
     for hid, pid in MAP.items():
         h = by_pid.get(pid)
         if not h:
-            raise SystemExit('accorcards JSON 에 %s 가 없습니다.' % pid)
+            raise SystemExit('APC JSON 에 %s 가 없습니다.' % pid)
         part = (h['participation'].get('zhenxiang') or {})
         status = part.get('status') or 'unknown'
         apc, apc_t = {}, {}
@@ -139,7 +139,7 @@ def main(argv):
                 'required_nights': r['required_nights'],
                 'public_id': r['public_id'],
                 'city_key': r['city_key'],
-                'source': 'accorcards 관측(%s) · %s' % (REL, data['source']),
+                'source': '예약 캘린더 관측(%s) · %s' % (REL, data['source']),
                 'generated_at': data['generated_at'],
                 'newest_checked': r['newest'],
                 'fresh_hours': FRESH_HOURS,
@@ -150,12 +150,12 @@ def main(argv):
     missing = set(res) - used
     if missing:
         raise SystemExit('master_db.json 에 없는 호텔 id: %s' % missing)
-    master['sources'] = [s for s in master.get('sources', []) if not s.startswith('accorcards/')]
-    master['sources'] += [REL, 'accorcards/fetch_accorcards.py', 'accorcards/API-구조.md']
+    master['sources'] = [s for s in master.get('sources', []) if not s.startswith('apc/')]
+    master['sources'] += [REL, 'APC/fetch_apc.py', 'apc/API-구조.md']
     st = master_db.stats_of(master, master['flights'])
     master['counts'] = {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na',
                                            'stayplus', 'routes', 'deals')}
-    tag = '2026-11-17 15:00 KST ② 중올플 APC 무료숙박 가능일(accorcards 72시간 규칙) 반영'
+    tag = '2026-11-17 15:00 KST ② 중올플 APC 무료숙박 가능일(APC 72시간 규칙) 반영'
     ext = master.get('extended') or ''
     if 'APC 무료숙박 가능일' not in ext:
         master['extended'] = (ext + ' / ' + tag).strip(' /')

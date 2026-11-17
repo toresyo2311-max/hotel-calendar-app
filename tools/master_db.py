@@ -124,8 +124,20 @@ EXPECT_OVERLAP = {'k01', 'k02', 'k04', 'k05', 'j01', 'j04', 'j10', 'j11', 'j12'}
 # 원래부터 두 탭에 있던 중복(③ Stay Plus ↔ ① HoteLux) — 새 중복과 구분하기 위한 허용 목록
 KNOWN_DUP = {('dB200', 'h39')}
 
-# ④ 항공 — 24개 노선 · 2027년 1월 4주 × 5패턴 전수 · 당일치기(0박) 패턴
+# ④ 항공 — 24개 노선 · 2026년 12월 ~ 2027년 11월 (12개월) · 당일치기(0박) 패턴
 EXPECT_FLIGHTS = 24
+EXPECT_MONTHS = ('2026-12', '2027-01', '2027-02', '2027-03', '2027-04', '2027-05',
+                 '2027-06', '2027-07', '2027-08', '2027-09', '2027-10', '2027-11')
+EXPECT_FIRST_WEEK, EXPECT_LAST_WEEK = '2026-12-03', '2027-11-25'
+# 2026.12~2027.02 고정 기준(1,638건) — 새 배치가 기존 건을 건드리면 여기서 걸린다
+EXPECT_OLD_BY_MONTH = {'2026-12': 614, '2027-01': 627, '2027-02': 397}
+# 2027.06~11 반영분(3개 원본: 260 + 73 + 53 = 386건)
+EXPECT_H2_BY_MONTH = {'2027-06': 131, '2027-07': 129, '2027-08': 47,
+                      '2027-09': 35, '2027-10': 43, '2027-11': 1}
+EXPECT_H2 = {'weekend': 373, 'day': 13, 'total': 386}
+EXPECT_NOSALE = {('FUK', '2027-11-12'), ('TYO', '2027-11-12'),
+                 ('TYO', '2027-11-16'), ('FUK', '2027-11-20')}
+EXPECT_BOOKING_END = '2027-11-14'
 EXPECT_JAN_WEEKS = ('2027-01-07', '2027-01-14', '2027-01-21', '2027-01-28')
 EXPECT_WEEKEND = ('목~일', '금~일', '토~월', '목~월', '금~월')
 EXPECT_DAY = ('목~목', '금~금', '토~토', '일~일', '월~월')
@@ -133,8 +145,15 @@ EXPECT_DAYTRIP_MIN = 100
 FL_WD = {'일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6}
 
 
+def _fl_nights(label):
+    m = re.match(r'^([월화수목금토일])~([월화수목금토일])$', str(label))
+    if not m:
+        return None
+    return (FL_WD[m.group(2)] - FL_WD[m.group(1)]) % 7
+
+
 def check_flights(flights):
-    """④ 항공 데이터 검사 — 노선 수·패턴 목록·2027년 1월 전수·당일치기 정합성."""
+    """④ 항공 데이터 검사 — 노선 수·패턴·12개월 창·주차 연속성·1월 전수·당일치기·가격 유효성."""
     import datetime
     problems = []
     routes = flights.get('routes') or []
@@ -151,9 +170,38 @@ def check_flights(flights):
             problems.append('당일치기 패턴 %s 없음' % label)
         elif p.get('nights') != 0:
             problems.append('당일치기 패턴 %s 박수 %s (0이어야 함)' % (label, p.get('nights')))
+
+    # 월·월 이동이 2026-12 ~ 2027-11 1년을 덮는지
+    months = flights.get('months') or []
+    if tuple(months) != EXPECT_MONTHS:
+        problems.append('months %s (기대 2026-12~2027-11 12개)' % (months,))
+    weeks = flights.get('weeks') or []
+    if not weeks:
+        problems.append('weeks 없음')
+    else:
+        if weeks[0].get('thu') != EXPECT_FIRST_WEEK or weeks[-1].get('thu') != EXPECT_LAST_WEEK:
+            problems.append('weeks 범위 %s ~ %s (기대 %s ~ %s)' % (
+                weeks[0].get('thu'), weeks[-1].get('thu'), EXPECT_FIRST_WEEK, EXPECT_LAST_WEEK))
+        prev = None
+        for w in weeks:
+            if w.get('month') not in EXPECT_MONTHS:
+                problems.append('week %s 의 month %s 이상' % (w.get('thu'), w.get('month')))
+            if w.get('end') != (datetime.date.fromisoformat(w['thu']) +
+                                datetime.timedelta(days=6)).isoformat():
+                problems.append('week %s span 끝 %s 이상' % (w.get('thu'), w.get('end')))
+            if prev is not None and (datetime.date.fromisoformat(w['thu']) -
+                                     datetime.date.fromisoformat(prev)).days != 7:
+                problems.append('week %s 가 이전 주 %s 와 7일 간격이 아님' % (w['thu'], prev))
+            prev = w['thu']
+
+    by_month = {}
     day_total = 0
+    h2 = {'weekend': 0, 'day': 0}
+    deal_keys = set()
     for r in routes:
         keys = {(d['date'], d['pattern']) for d in r['deals']}
+        if len(keys) != len(r['deals']):
+            problems.append('%s (노선·출발일·패턴) 중복' % r['code'])
         for thu in EXPECT_JAN_WEEKS:
             for label in EXPECT_WEEKEND:
                 dt = (datetime.date.fromisoformat(thu) +
@@ -161,22 +209,71 @@ def check_flights(flights):
                 if (dt, label) not in keys:
                     problems.append('1월 미실측 %s %s %s' % (r['code'], dt, label))
         for d in r['deals']:
+            tag = '%s %s %s' % (r['code'], d.get('date'), d.get('pattern'))
             if not (WINDOW_START <= d['date'] <= WINDOW_END):
-                problems.append('%s %s 날짜 창 밖' % (r['code'], d['date']))
+                problems.append('%s 날짜 창 밖' % tag)
                 break
-            if d['pattern'][0] == d['pattern'][2]:
+            n = _fl_nights(d['pattern'])
+            if n is None:
+                problems.append('%s 패턴 형식 이상' % tag)
+                break
+            if not isinstance(d.get('price'), int) or d['price'] <= 0:
+                problems.append('%s 가격이 양의 정수가 아님(추정·0원 금지): %r' % (tag, d.get('price')))
+                break
+            if d.get('back') != (datetime.date.fromisoformat(d['date']) +
+                                 datetime.timedelta(days=n)).isoformat():
+                problems.append('%s 귀국일 %s 가 %d박과 맞지 않음' % (tag, d.get('back'), n))
+                break
+            by_month[d['date'][:7]] = by_month.get(d['date'][:7], 0) + 1
+            deal_keys.add((r['code'], d['date'], d['pattern']))
+            if d['date'] >= '2027-06-01':
+                h2['day' if n == 0 else 'weekend'] += 1
+            if n == 0:
                 day_total += 1
-                if d['back'] != d['date']:
-                    problems.append('%s %s 당일치기인데 귀국일 %s' % (r['code'], d['date'], d['back']))
-                    break
         meta = r.get('daytrip')
         if not meta or meta.get('status') not in ('ok', 'short', 'no'):
             problems.append('%s daytrip 메타 없음/이상' % r['code'])
     if day_total < EXPECT_DAYTRIP_MIN:
         problems.append('당일치기 %d건 (기대 %d건 이상)' % (day_total, EXPECT_DAYTRIP_MIN))
+    for m, n in EXPECT_OLD_BY_MONTH.items():
+        if by_month.get(m) != n:
+            problems.append('%s 기존 건 %s (기대 %d — 손실/변형)' % (m, by_month.get(m), n))
+    for m, n in EXPECT_H2_BY_MONTH.items():
+        if by_month.get(m) != n:
+            problems.append('%s 6~11월 건 %s (기대 %d)' % (m, by_month.get(m), n))
+    if h2 != {'weekend': EXPECT_H2['weekend'], 'day': EXPECT_H2['day']}:
+        problems.append('6~11월 주말/당일 %s (기대 %s)' % (h2, EXPECT_H2))
+
     c = flights.get('counts') or {}
     if c.get('daytrip') != day_total:
         problems.append('counts.daytrip %s (실제 %d)' % (c.get('daytrip'), day_total))
+    if c.get('total') != sum(len(r['deals']) for r in routes):
+        problems.append('counts.total %s (실제 %d)' % (c.get('total'), sum(len(r['deals']) for r in routes)))
+    if c.get('byMonth') != {k: by_month[k] for k in sorted(by_month)}:
+        problems.append('counts.byMonth 불일치: %s vs %s' % (c.get('byMonth'), by_month))
+
+    # 조회했으나 판매편이 없던 칸(가격 아님) — deals 와 분리 보관
+    codes = {r['code'] for r in routes}
+    nosale = flights.get('noSale') or []
+    got_ns = {(n.get('code'), n.get('date')) for n in nosale}
+    if got_ns != EXPECT_NOSALE:
+        problems.append('noSale %s (기대 %s)' % (sorted(got_ns), sorted(EXPECT_NOSALE)))
+    for n in nosale:
+        if n.get('code') not in codes or not (WINDOW_START <= n.get('date', '') <= WINDOW_END):
+            problems.append('noSale 이상: %s' % (n,))
+        if 'price' in n:
+            problems.append('noSale 에 가격이 들어 있음(추정 금지): %s' % (n,))
+        key = (n.get('code'), n.get('date'), n.get('pattern'))
+        if key in deal_keys:
+            problems.append('noSale 가 실측 딜과 겹침: %s' % (key,))
+
+    notes = flights.get('notes') or {}
+    for m in notes:
+        if m not in EXPECT_MONTHS:
+            problems.append('notes 의 월 %s 이상' % m)
+    bw = flights.get('bookingWindow') or {}
+    if bw.get('end') != EXPECT_BOOKING_END:
+        problems.append('bookingWindow.end %r (기대 %s)' % (bw.get('end'), EXPECT_BOOKING_END))
     return problems
 
 

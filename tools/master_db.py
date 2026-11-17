@@ -226,7 +226,7 @@ EXPECT_FLIGHTS = 47
 # + 2026-11-18 일본 7노선 2027년 1월 완결본 140칸(값 138 · 항공편 없음 2) + 당일치기 21칸
 #   KMJ +26 · TAK +23 · MYJ +20 · FSZ +28 · MMY +20 · CTS +22 · KOJ +20
 EXPECT_NEW_ROUTES = {'SHE': ('선양', 226), 'DLC': ('다롄', 256), 'CAN': ('광저우', 241), 'XMN': ('샤먼', 226),
-                     'YNJ': ('연길', 235), 'DYG': ('장가계', 145), 'KWL': ('구이린', 129), 'TXN': ('황산', 73)}
+                     'YNJ': ('연길', 256), 'DYG': ('장가계', 166), 'KWL': ('구이린', 150), 'TXN': ('황산', 87)}
 # 2026-11-18 신규 15노선 — 노선 코드 → (도시 이름, 딜 건수).
 # 필리핀 4노선(4번)은 2026.12~2027.01 9주 × 5패턴 45칸씩 180칸 완본(판매편 0건 없음),
 # 동남아 4노선(4번)은 같은 기간 178칸(비엔티안 12/3 목~일·목~월 2칸은 가격 미제공),
@@ -253,6 +253,10 @@ EXPECT_JP_JAN_DAYTRIP = {'CTS': 2, 'FSZ': 9, 'KMJ': 6, 'TAK': 4}
 # 중국 G1(선양·다롄·광저우·샤먼) 2027년 2~6월 21주 × 5패턴 420칸(100%) — 노선별 최저·최고(원)
 EXPECT_PUS4_FULL = {'SHE': (417700, 759800), 'DLC': (317400, 663000),
                     'CAN': (500700, 821600), 'XMN': (462400, 884000)}
+# 중국 G2(연길·장가계·구이린·황산) 2027년 2~6월 21주 × 5패턴 420칸 완결 —
+# 노선 → (값 칸, 최저, 최고). 황산은 판매편 0건 36칸을 떼고 값 69칸이다.
+EXPECT_G2_FULL = {'YNJ': (105, 455700, 932000), 'DYG': (105, 686700, 904100),
+                  'KWL': (105, 525900, 879900), 'TXN': (69, 783500, 2588000)}
 EXPECT_PH4 = ('CEB', 'MNL', 'TAG', 'CRK')
 EXPECT_SEA4 = ('PQC', 'BKI', 'KUL', 'VTE')
 # 비엔티안 12/3 목~일·목~월은 항공편은 표시되나 이코노미 판매 가격이 없어 빈칸(0건 아님)
@@ -261,6 +265,15 @@ EXPECT_SEA4_MISSING = {('VTE', '2026-12-03', '목~일'), ('VTE', '2026-12-03', '
 EXPECT_MAR_W1_START = '2027-03-04'
 # 2027년 3월 2주차(3/11~15) 기존 24개 노선 × 5패턴 120칸 완본(2026-11-18 5번 보고서)
 EXPECT_MAR_W2_START = '2027-03-11'
+# 3·4주차(3/18~22 · 3/25~29) 120칸씩 — 2026-11-18 추가 도착분. 1~4주차로 3월 480칸 완결.
+EXPECT_MAR_W3_START = '2027-03-18'
+EXPECT_MAR_W4_START = '2027-03-25'
+EXPECT_MAR_W3_OVERALL = (245600, 553000)   # 최저 후쿠오카 3/20 토~월 · 최고 도쿄 3/18 목~일
+EXPECT_MAR_W4_OVERALL = (278400, 701200)   # 최저 상하이 3/26 금~월 · 최고 치앙마이 3/26 금~월
+EXPECT_MAR_W3_AVG = {'금~일': 396646, '토~월': 372962, '목~일': 394392,
+                     '금~월': 380479, '목~월': 372646}
+EXPECT_MAR_W4_AVG = {'금~일': 462850, '토~월': 474225, '목~일': 456408,
+                     '금~월': 473550, '목~월': 468962}
 EXPECT_MAR_W2_OVERALL = (238100, 519900)   # 최저 후쿠오카 3/11~15 목~월 · 최고 싱가포르 3/13~15 토~월
 # (원문 '가장 비싼 노선'은 노선별 최저 기준으로 발리 496,600원이고, 칸 하나의 최고가는 싱가포르 519,900원)
 # 2027년 3월 2주차 패턴 평균(원문 '한눈에') — 값이 통째로 밀리면 여기서 걸린다
@@ -349,16 +362,18 @@ EXPECT_FIRST_WEEK, EXPECT_LAST_WEEK = '2026-12-03', '2027-11-25'
 # 동남아 2~6월 420칸(2월 80·3월 80·4월 96·5월 84·6월 80), 중국 G1 목~월 48칸(2~4월 16씩)
 # 2026-11-18 마지막 3건 — 필리핀 4노선 2~6월 420칸(2월 80·3월 80·4월 96·5월 84·6월 80)과
 # 중국 G2 금~월 84칸(2월 16·3월 16·4월 20·5월 16·6월 16)을 더한 값
-EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 779,
-                       '2027-03': 538, '2027-04': 357, '2027-05': 316}
+# 2026-11-18 마지막 2건 — 중국 G2 목~월 84칸(값 77: 2월 12·3월 13·4월 20·5월 16·6월 16)과
+# 3월 3·4주차 240칸을 더한 값(2월 779→791 · 3월 538→791 · 4월 357→377 · 5월 316→332)
+EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 791,
+                       '2027-03': 791, '2027-04': 377, '2027-05': 332}
 # 2026-12·2027-01은 2026-11-18 일본 보완본(12월 +51칸·당일치기 4칸 · 1월 +9칸)과 중국 3박 완주본을 더한 값
 # 2027.06~11 반영분(3개 원본: 260 + 73 + 53 = 386건)
 # 2027-06은 2026-11-18 동남아 4노선 2~6월 420칸 가운데 6월 80칸을 더한 값(239+80)
 # 2027-06은 필리핀 6월 80칸 + G2 금~월 6월 16칸을 더한 값(319 + 96)
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
-EXPECT_H2_BY_MONTH = {'2027-06': 431, '2027-07': 381, '2027-08': 254,
+EXPECT_H2_BY_MONTH = {'2027-06': 447, '2027-07': 381, '2027-08': 254,
                       '2027-09': 210, '2027-10': 94, '2027-11': 1}
-EXPECT_H2 = {'weekend': 1283, 'day': 88, 'total': 1371}
+EXPECT_H2 = {'weekend': 1299, 'day': 88, 'total': 1387}
 EXPECT_NOSALE = {('FUK', '2027-11-12'), ('TYO', '2027-11-12'),
                  ('TYO', '2027-11-16'), ('FUK', '2027-11-20'),
                  ('KWL', '2026-12-05'), ('TXN', '2026-12-05'),   # 중국 2건: 같은 날 복편 0편
@@ -388,6 +403,11 @@ EXPECT_NOSALE_TXN_26M_FRIMON = {('TXN', d) for d in (
     '2027-02-05', '2027-02-12', '2027-02-19', '2027-02-26',
     '2027-03-05', '2027-03-12', '2027-03-19', '2027-04-02', '2027-04-30')}
 EXPECT_NOSALE |= EXPECT_NOSALE_TXN_26M_FRIMON
+# 2026-11-18 G2 완결본 — 황산 목~월(4박) 2/4~3/18 7주가 판매편 0건(3/25부터 값).
+EXPECT_NOSALE_TXN_26M_THUMON = {('TXN', d) for d in (
+    '2027-02-04', '2027-02-11', '2027-02-18', '2027-02-25',
+    '2027-03-04', '2027-03-11', '2027-03-18')}
+EXPECT_NOSALE |= EXPECT_NOSALE_TXN_26M_THUMON
 EXPECT_BOOKING_END = '2027-11-14'
 EXPECT_BOOKING_SEA4 = '2027-09-14'      # 동남아 4노선(푸꾸옥·코타키나발루·쿠알라룸푸르·비엔티안) 판매창
 EXPECT_JAN_WEEKS = ('2027-01-07', '2027-01-14', '2027-01-21', '2027-01-28')
@@ -535,6 +555,14 @@ def check_flights(flights):
                        datetime.timedelta(days=(FL_WD[label[0]] - 4) % 7)).isoformat()
                 if (dt2, label) not in keys:
                     problems.append('3월 2주차 미실측 %s %s %s' % (r['code'], dt2, label))
+                dt3 = (datetime.date.fromisoformat(EXPECT_MAR_W3_START) +
+                       datetime.timedelta(days=(FL_WD[label[0]] - 4) % 7)).isoformat()
+                if (dt3, label) not in keys:
+                    problems.append('3월 3주차 미실측 %s %s %s' % (r['code'], dt3, label))
+                dt4 = (datetime.date.fromisoformat(EXPECT_MAR_W4_START) +
+                       datetime.timedelta(days=(FL_WD[label[0]] - 4) % 7)).isoformat()
+                if (dt4, label) not in keys:
+                    problems.append('3월 4주차 미실측 %s %s %s' % (r['code'], dt4, label))
         for d in r['deals']:
             tag = '%s %s %s' % (r['code'], d.get('date'), d.get('pattern'))
             if not (WINDOW_START <= d['date'] <= WINDOW_END):
@@ -654,6 +682,24 @@ def check_flights(flights):
             if round(sum(ps) / len(ps)) != want:
                 problems.append('3월 2주차 %s 평균 %d (기대 %d)'
                                 % (label, round(sum(ps) / len(ps)), want))
+    # 2027년 3월 3·4주차 — 120칸씩, 최저·최고와 패턴 평균
+    for label_w, start, end, overall, avg in (
+            ('3주차', EXPECT_MAR_W3_START, '2027-03-22', EXPECT_MAR_W3_OVERALL, EXPECT_MAR_W3_AVG),
+            ('4주차', EXPECT_MAR_W4_START, '2027-03-29', EXPECT_MAR_W4_OVERALL, EXPECT_MAR_W4_AVG)):
+        rows = [d for r in routes if r['code'] in EXPECT_MAR_W1_ROUTES for d in r['deals']
+                if start <= d['date'] <= end]
+        if len(rows) != 120:
+            problems.append('3월 %s %d칸 (기대 120칸)' % (label_w, len(rows)))
+            continue
+        prices = [d['price'] for d in rows]
+        if (min(prices), max(prices)) != overall:
+            problems.append('3월 %s 최저·최고 %s (기대 %s)'
+                            % (label_w, (min(prices), max(prices)), overall))
+        for pat, want in avg.items():
+            ps = [d['price'] for d in rows if d['pattern'] == pat]
+            if round(sum(ps) / len(ps)) != want:
+                problems.append('3월 %s %s 평균 %d (기대 %d)'
+                                % (label_w, pat, round(sum(ps) / len(ps)), want))
     # 동남아 4노선 2027년 2~6월 420칸 — 월별 칸 수
     for m, want in EXPECT_SEA_26M_BY_MONTH.items():
         got = sum(1 for r in routes if r['code'] in EXPECT_SEA4 for d in r['deals']
@@ -684,10 +730,36 @@ def check_flights(flights):
     got_sat = {(r['code'], d['date'], d['pattern']) for r in routes
                if r['code'] in ROUTE_ORDER_26M for d in r['deals']
                if '2027-02-01' <= d['date'] <= '2027-06-30'
-               and d['pattern'] not in ('금~일', '토~월', '목~일', '금~월')}
+               and d['pattern'] not in EXPECT_WEEKEND}
     if got_sat:
-        problems.append('4노선 2027년 2~6월에 금~일·토~월·목~일·금~월 밖 패턴이 있습니다: %s'
+        problems.append('4노선 2027년 2~6월에 주말형 5패턴 밖 패턴이 있습니다: %s'
                         % sorted(got_sat)[:6])
+    # 2026-11-18 G2 완결본 — 4노선 × 21주 × 5패턴 420칸(값 384 + 판매편 0건 36)이 다 찼는지.
+    # 목~월(4박)은 이번에 채운 축으로, 황산 7주만 0건이다.
+    for code in ROUTE_ORDER_26M:
+        r = by_code.get(code)
+        if not r:
+            continue
+        filled = {(d['date'], d['pattern']) for d in r['deals']}
+        filled |= {(n.get('date'), n.get('pattern')) for n in (flights.get('noSale') or [])
+                   if n.get('code') == code and '2027-02-01' <= n.get('date', '') <= '2027-06-30'}
+        missing = []
+        for thu in _PUS4_THU:
+            for pat in EXPECT_WEEKEND:
+                dt = (datetime.date.fromisoformat(thu) +
+                      datetime.timedelta(days=(FL_WD[pat[0]] - FL_WD['목']) % 7)).isoformat()
+                if (dt, pat) not in filled:
+                    missing.append('%s %s' % (dt, pat))
+        if missing:
+            problems.append('G2 %s 2027년 2~6월 빈칸 %d개: %s'
+                            % (code, len(missing), missing[:4]))
+        ps = [d['price'] for d in r['deals'] if '2027-02-01' <= d['date'] <= '2027-06-30']
+        want = EXPECT_G2_FULL[code]
+        if len(ps) != want[0]:
+            problems.append('G2 %s 2027년 2~6월 값 %d칸 (기대 %d칸)' % (code, len(ps), want[0]))
+        elif (min(ps), max(ps)) != want[1:]:
+            problems.append('G2 %s 2027년 2~6월 최저·최고 %s (기대 %s)'
+                            % (code, (min(ps), max(ps)), want[1:]))
     # 2026-11-18 G2 — 2027년 2~6월 금~월(3박) 21주. 연길·장가계·구이린은 21칸 값,
     # 황산은 9칸이 판매편 0건이고 나머지 12칸이 값이다.
     for code in ROUTE_ORDER_26M:

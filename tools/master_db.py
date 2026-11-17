@@ -124,24 +124,31 @@ EXPECT_OVERLAP = {'k01', 'k02', 'k04', 'k05', 'j01', 'j04', 'j10', 'j11', 'j12'}
 # 원래부터 두 탭에 있던 중복(③ Stay Plus ↔ ① HoteLux) — 새 중복과 구분하기 위한 허용 목록
 KNOWN_DUP = {('dB200', 'h39')}
 
-# ④ 항공 — 24개 노선 · 2026년 12월 ~ 2027년 11월 (12개월) · 당일치기(0박) 패턴
-EXPECT_FLIGHTS = 24
+# ④ 항공 — 32개 노선(기존 24 + 중국 신규 8) · 2026년 12월 ~ 2027년 11월 (12개월) · 당일치기(0박) 패턴
+EXPECT_FLIGHTS = 32
+# 중국 신규 8노선(2026-11-17 조사분) — 노선 코드 → (도시 이름, 딜 건수)
+EXPECT_NEW_ROUTES = {'SHE': ('선양', 22), 'DLC': ('다롄', 22), 'CAN': ('광저우', 22), 'XMN': ('샤먼', 22),
+                     'YNJ': ('연길', 46), 'DYG': ('장가계', 33), 'KWL': ('구이린', 8), 'TXN': ('황산', 2)}
 EXPECT_MONTHS = ('2026-12', '2027-01', '2027-02', '2027-03', '2027-04', '2027-05',
                  '2027-06', '2027-07', '2027-08', '2027-09', '2027-10', '2027-11')
 EXPECT_FIRST_WEEK, EXPECT_LAST_WEEK = '2026-12-03', '2027-11-25'
-# 2026.12~2027.02 고정 기준(1,638건) — 새 배치가 기존 건을 건드리면 여기서 걸린다
-EXPECT_OLD_BY_MONTH = {'2026-12': 614, '2027-01': 627, '2027-02': 397}
+# 2026.12~2027.02 고정 기준(1,638건 + 중국 신규 8노선 177건) — 새 배치가 기존 건을 건드리면 여기서 걸린다
+EXPECT_OLD_BY_MONTH = {'2026-12': 714, '2027-01': 704, '2027-02': 397}
 # 2027.06~11 반영분(3개 원본: 260 + 73 + 53 = 386건)
 EXPECT_H2_BY_MONTH = {'2027-06': 131, '2027-07': 129, '2027-08': 47,
                       '2027-09': 35, '2027-10': 43, '2027-11': 1}
 EXPECT_H2 = {'weekend': 373, 'day': 13, 'total': 386}
 EXPECT_NOSALE = {('FUK', '2027-11-12'), ('TYO', '2027-11-12'),
-                 ('TYO', '2027-11-16'), ('FUK', '2027-11-20')}
+                 ('TYO', '2027-11-16'), ('FUK', '2027-11-20'),
+                 ('KWL', '2026-12-05'), ('TXN', '2026-12-05')}   # 중국 2건: 같은 날 복편 0편
 EXPECT_BOOKING_END = '2027-11-14'
 EXPECT_JAN_WEEKS = ('2027-01-07', '2027-01-14', '2027-01-21', '2027-01-28')
+# 1월 4주 × 5패턴 전수 노선 — 기존 24개 노선(중국 신규 8노선은 연길만 전수, 나머지는 부분 조사)
+EXPECT_JAN_ALL = ('FUK', 'KIX', 'TYO', 'TPE', 'HKG', 'MFM', 'PVG', 'BKK', 'DAD', 'CXR', 'NKG', 'SGN',
+                  'SIN', 'GUM', 'NGO', 'OKA', 'HGH', 'TAO', 'HAN', 'CNX', 'DPS', 'KHH', 'RMQ', 'BJS')
 EXPECT_WEEKEND = ('목~일', '금~일', '토~월', '목~월', '금~월')
 EXPECT_DAY = ('목~목', '금~금', '토~토', '일~일', '월~월')
-EXPECT_DAYTRIP_MIN = 100
+EXPECT_DAYTRIP_MIN = 170
 FL_WD = {'일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6}
 
 
@@ -203,6 +210,8 @@ def check_flights(flights):
         if len(keys) != len(r['deals']):
             problems.append('%s (노선·출발일·패턴) 중복' % r['code'])
         for thu in EXPECT_JAN_WEEKS:
+            if r['code'] not in EXPECT_JAN_ALL:
+                continue
             for label in EXPECT_WEEKEND:
                 dt = (datetime.date.fromisoformat(thu) +
                       datetime.timedelta(days=(FL_WD[label[0]] - 4) % 7)).isoformat()
@@ -235,6 +244,19 @@ def check_flights(flights):
             problems.append('%s daytrip 메타 없음/이상' % r['code'])
     if day_total < EXPECT_DAYTRIP_MIN:
         problems.append('당일치기 %d건 (기대 %d건 이상)' % (day_total, EXPECT_DAYTRIP_MIN))
+
+    # 중국 신규 8노선: 노선 이름·건수가 원본 보고서와 같은지(조용한 누락·중복 방지)
+    new_routes = {c: (city, n) for c, (city, n) in EXPECT_NEW_ROUTES.items()}
+    by_code = {r['code']: r for r in routes}
+    for code, (city, n) in new_routes.items():
+        r = by_code.get(code)
+        if not r:
+            problems.append('중국 신규 노선 %s 없음' % code)
+            continue
+        if r.get('city') != city:
+            problems.append('노선 %s 도시 이름 %r (기대 %s)' % (code, r.get('city'), city))
+        if len(r['deals']) != n:
+            problems.append('노선 %s 딜 %d건 (기대 %d건)' % (code, len(r['deals']), n))
     for m, n in EXPECT_OLD_BY_MONTH.items():
         if by_month.get(m) != n:
             problems.append('%s 기존 건 %s (기대 %d — 손실/변형)' % (m, by_month.get(m), n))

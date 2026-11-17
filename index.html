@@ -383,14 +383,15 @@ const flFiltered=()=>flAll().filter(d=>(fl.route==='all'||d.code===fl.route)&&(f
 const flTotal=FLIGHTS.counts.total;
 const flLink=d=>'https://kr.trip.com/flights/showfarefirst?dcity=pus&acity='+d.code.toLowerCase()+'&ddate='+d.date+'&rdate='+d.back+'&triptype=rt&class=y&quantity=1&locale=ko-KR&curr=KRW';
 const flViaWord=d=>d.via===false?'직항':d.via===true?'경유':'미확인';
+const flMeta=d=>d.airline?flViaWord(d)+' · '+flAir(d):(d.via==null?'항공사·직항 미확인':flViaWord(d)+' · 항공사 미확인');
 const flViaTag=d=>d.via===false?'<span class="fl-via direct">직항</span>':d.via===true?'<span class="fl-via via">경유</span>':'<span class="fl-via unk">미확인</span>';
 function flMemo(d){if(!d.note)return '';const t=String(d.note).split('※')[0].trim();return t==='경유'||t==='직항'?'':t}
 function setFlightMode(on){$('flightPanel').hidden=!on;const r=document.querySelector('.ranking'),w=document.querySelector('.workspace'),n=$('hotelNotes');if(r)r.style.display=on?'none':'';if(w)w.style.display=on?'none':'';if(n)n.style.display=on?'none':''}
 function renderFlightTop5(){
   const rows=FLIGHTS.routes.map(r=>{const d=[...r.deals].sort((a,b)=>a.price-b.price)[0];return {...d,city:r.city,code:r.code}}).sort((a,b)=>a.price-b.price).slice(0,5);
-  $('flTop5').innerHTML=rows.map((d,i)=>'<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+esc(d.city)+' <span class="fl-code">'+d.code+'</span></div><div class="rank-meta">'+esc(d.pattern)+' · '+dateLabel(d.date)+' 출발 · '+esc(flAir(d))+' · '+flViaWord(d)+'</div></div><div class="rank-num '+(i===0?'red':'')+'">'+shortWon(d.price)+'</div></div>').join('');
+  $('flTop5').innerHTML=rows.map((d,i)=>'<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+esc(d.city)+' <span class="fl-code">'+d.code+'</span></div><div class="rank-meta">'+esc(d.pattern)+' · '+dateLabel(d.date)+' 출발 · '+esc(flMeta(d))+'</div></div><div class="rank-num '+(i===0?'red':'')+'">'+shortWon(d.price)+'</div></div>').join('');
   const b=flAll().sort((a,b)=>a.price-b.price)[0];
-  $('flHint').innerHTML='전체 '+KR(flTotal)+'건 중 가장 싼 조합은 <strong>'+esc(b.city)+' '+esc(b.pattern)+' '+dateLabel(b.date)+' '+KR(b.price)+'원</strong>('+esc(flAir(b))+' · '+flViaWord(b)+'). 아래 도표에서 24개 노선 × 5패턴을 주차별로 비교할 수 있습니다.';
+  $('flHint').innerHTML='전체 '+KR(flTotal)+'건 중 가장 싼 조합은 <strong>'+esc(b.city)+' '+esc(b.pattern)+' '+dateLabel(b.date)+' '+KR(b.price)+'원</strong>('+esc(flMeta(b))+'). 아래 도표에서 24개 노선 × 5패턴을 주차별로 비교할 수 있습니다.';
 }
 function renderFlightFilters(){
   const routeSel=$('flRoute'),patSel=$('flPattern');
@@ -419,7 +420,7 @@ function renderFlightCalendar(){
     if(low){
       inner+='<span class="dayprice">'+shortWon(low.price)+'</span>';
       inner+='<span class="fl-day-pat">'+(pats.length>1?pats.length+'패턴':pats[0])+'</span>';
-      inner+='<span class="fl-day-air"><span class="fl-badge">'+flViaWord(low)+'</span> · '+esc(flAir(low))+'</span>';
+      inner+='<span class="fl-day-air">'+esc(flMeta(low))+'</span>';
       if(list.length>1)inner+='<span class="fl-day-cnt">'+list.length+'</span>';
     }else inner+='<span class="daymiss">—</span>';
     html+='<button type="button" class="'+cls+'" data-fl-date="'+date+'" aria-label="'+fullDate(date)+' 출발 최저 '+(low?flMoney(low.price):'자료 없음')+'">'+inner+'</button>';
@@ -460,7 +461,7 @@ function renderFlightMatrix(){
   }
   fl.week=wk.thu;wSel.value=wk.thu;
   const outs=flOuts(wk);
-  const byKey={};all.forEach(d=>{byKey[d.code+'|'+d.date]=d});
+  const byKey={};all.forEach(d=>{byKey[d.code+'|'+d.pattern+'|'+d.date]=d});
   const weekDeals=all.filter(d=>Object.values(outs).includes(d.date));
   const globalMin=weekDeals.length?Math.min(...weekDeals.map(d=>d.price)):null;
   let h='<thead><tr><th class="fl-corner">노선</th>'+FLIGHTS.patterns.map(p=>'<th'+(fl.pattern!=='all'&&fl.pattern!==p.label?' class="dim"':'')+'>'+p.label+'<small>'+dateLabel(outs[p.label])+'</small></th>').join('')+'</tr></thead><tbody>';
@@ -469,11 +470,11 @@ function renderFlightMatrix(){
     const rowMin=rowDeals.length?Math.min(...rowDeals.map(d=>d.price)):null;
     h+='<tr'+(fl.route!=='all'&&fl.route!==r.code?' class="dim"':'')+'><th class="fl-route"><b>'+esc(r.city)+'</b><span>'+r.code+' · '+r.deals.length+'건</span></th>';
     for(const p of FLIGHTS.patterns){
-      const d=byKey[r.code+'|'+outs[p.label]];const cls=[];
+      const d=byKey[r.code+'|'+p.label+'|'+outs[p.label]];const cls=[];
       if(d){if(d.price===globalMin)cls.push('fl-best');else if(rowMin!=null&&d.price===rowMin)cls.push('fl-rowmin');}
       if(fl.pattern!=='all'&&fl.pattern!==p.label)cls.push('col-dim');
       if(!d){h+='<td><span class="fl-cell fl-none">—</span></td>';continue;}
-      h+='<td><button type="button" class="fl-cell '+cls.join(' ')+'" data-fl-date="'+d.date+'" aria-label="'+esc(r.city+' '+p.label+' '+flMoney(d.price))+'"><b>'+shortWon(d.price)+'</b><span>'+flViaWord(d)+' · '+esc(flAir(d))+'</span></button></td>';
+      h+='<td><button type="button" class="fl-cell '+cls.join(' ')+'" data-fl-date="'+d.date+'" aria-label="'+esc(r.city+' '+p.label+' '+flMoney(d.price))+'"><b>'+shortWon(d.price)+'</b><span>'+esc(flMeta(d))+'</span></button></td>';
     }
     h+='</tr>';
   }

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """hotel-calendar-app 통합 마스터 DB 도구.
 
-`index.html` 안의 `const DB`(호텔 176곳 × 365일)와 `const FLIGHTS`(부산 출발 항공 특가)를
+`index.html` 안의 `const DB`(호텔 238곳 × 365일)와 `const FLIGHTS`(부산 출발 항공 특가)를
 읽어 `data/master_db.json` 한 파일로 모으고, 그 파일이 라이브 앱과 정확히 같은지 검사한다.
 
 사용법 (저장소 루트에서):
@@ -29,10 +29,18 @@ MASTER = os.path.join(ROOT, 'data', 'master_db.json')
 WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 
-# 탭별 기대 호텔 수 — ⑤ 메리어트(중국·홍콩·마카오 40곳) 추가 후 총 216곳
-EXPECT_TABS = {'lux': 162, 'china': 10, 'domestic': 4, 'marriott': 40}
+# 탭별 기대 호텔 수 — ⑤ 메리어트(중국 40 + 한국 10 + 일본 12 = 62곳) 후 총 238곳
+EXPECT_TABS = {'lux': 162, 'china': 10, 'domestic': 4, 'marriott': 62}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
-EXPECT_BRANDS = {'리츠칼튼': 18, '세인트레지스': 13, 'W': 9}
+EXPECT_BRANDS = {'리츠칼튼': 24, '세인트레지스': 14, 'W': 10, 'JW 메리어트': 4,
+                 '럭셔리 컬렉션': 2, '에디션': 2, '웨스틴': 2, '메리어트': 1,
+                 '오토그래프 컬렉션': 1, '메리어트 이그제큐티브 아파트먼트': 1, '르메르디앙': 1}
+# 한·일 원본 CSV 기대치(2026-11-17 수집) — 유실·중복 방지용 고정값
+EXPECT_KJ = {'hotels': 22, 'cash': 6800, 'points': 6629}
+# ① HoteLux 탭과 호텔이 겹치는 ⑤ 항목(요금 출처가 달라 둘 다 수록) — alsoIn 으로 교차 표시
+EXPECT_OVERLAP = {'k01', 'k02', 'k04', 'k05', 'j01', 'j04', 'j10', 'j11', 'j12'}
+# 원래부터 두 탭에 있던 중복(③ Stay Plus ↔ ① HoteLux) — 새 중복과 구분하기 위한 허용 목록
+KNOWN_DUP = {('dB200', 'h39')}
 
 
 # ---------------------------------------------------------------- 추출 / 주입
@@ -188,7 +196,7 @@ def check_tabs(db):
     if extra:
         problems.append('알 수 없는 탭: %s' % extra)
     if len(db['hotels']) != EXPECT_HOTELS:
-        problems.append('호텔 합계 %d곳 (기대 %d곳 = 176 + 40)' % (len(db['hotels']), EXPECT_HOTELS))
+        problems.append('호텔 합계 %d곳 (기대 %d곳 = 162 + 10 + 4 + 62)' % (len(db['hotels']), EXPECT_HOTELS))
     brands = {}
     ids = set()
     for h in db['hotels']:
@@ -202,6 +210,56 @@ def check_tabs(db):
                     problems.append('메리어트 호텔 %s 에 %s 없음' % (h['id'], k))
     if brands != EXPECT_BRANDS:
         problems.append('메리어트 브랜드 구성 %s (기대 %s)' % (brands, EXPECT_BRANDS))
+
+    # ⑤ 한·일 22곳: 현금·포인트 칸 수와 교차 참조
+    kj = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'][0] in 'kj']
+    cash = sum(1 for h in kj for v in (h.get('rates') or {}).values() if v is not None)
+    pts = sum(1 for h in kj for v in (h.get('points') or {}).values() if isinstance(v, int))
+    if len(kj) != EXPECT_KJ['hotels'] or cash != EXPECT_KJ['cash'] or pts != EXPECT_KJ['points']:
+        problems.append('한·일 22곳 수치 %s (기대 %s)' % (
+            {'hotels': len(kj), 'cash': cash, 'points': pts}, EXPECT_KJ))
+    for h in kj:
+        if not h.get('points') and h['id'] != 'k09':
+            problems.append('%s 포인트 칸 없음' % h['id'])
+        if h['id'] in EXPECT_OVERLAP and not h.get('alsoIn'):
+            problems.append('%s 는 ① 탭과 겹치므로 alsoIn 필요' % h['id'])
+    # 같은 호텔이 두 탭에 조용히 중복되지 않았는지(교차 참조 없는 이름 중복 금지)
+    seen = {}
+    for h in db['hotels']:
+        key = (h.get('english') or h['name']).strip().lower()
+        prev = seen.get(key)
+        if prev and prev != h['id'] and not (h.get('alsoIn') or
+                                             ('%s' % prev, h['id']) in KNOWN_DUP or
+                                             (h['id'], prev) in KNOWN_DUP):
+            problems.append('호텔 중복: %s ↔ %s (%s)' % (prev, h['id'], key))
+        seen.setdefault(key, h['id'])
+    # ② 중올플: APC(accorcards) 관측 필드
+    china = [h for h in db['hotels'] if h.get('group') == 'china']
+    for h in china:
+        a = h.get('accor')
+        if not a:
+            problems.append('② %s accor 메타 없음' % h['id'])
+            continue
+        part = a.get('participation')
+        if h['id'] in ('cB5L5', 'cC7G9'):
+            if part != 'not_participating':
+                problems.append('② %s 는 accorcards 미참여여야 함 (%s)' % (h['id'], part))
+            if h.get('accor_apc'):
+                problems.append('② %s 미참여인데 날짜 상태가 있음' % h['id'])
+        else:
+            if part != 'participating':
+                problems.append('② %s 참여 상태 이상 (%s)' % (h['id'], part))
+            if not h.get('accor_apc'):
+                problems.append('② %s APC 날짜 상태 없음' % h['id'])
+            else:
+                for d, v in h['accor_apc'].items():
+                    if v not in ('a', 'n') or not (WINDOW_START <= d <= WINDOW_END):
+                        problems.append('② %s APC 값 이상 %s=%s' % (h['id'], d, v))
+                        break
+                for d in h['accor_apc']:
+                    if d not in (h.get('accor_apc_t') or {}):
+                        problems.append('② %s APC 관측시각 누락 %s' % (h['id'], d))
+                        break
     return problems
 
 

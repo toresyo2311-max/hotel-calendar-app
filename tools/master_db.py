@@ -29,9 +29,91 @@ MASTER = os.path.join(ROOT, 'data', 'master_db.json')
 WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 
-# 탭별 기대 호텔 수 — ⑤ 메리어트(중국 40 + 한국 10 + 일본 12 = 62곳) 후 총 238곳
-EXPECT_TABS = {'lux': 162, 'china': 10, 'domestic': 4, 'marriott': 62}
+# 탭별 기대 호텔 수 — ② 중올플 284곳(참여 282 + 기존 미참여·자격없음 2) · 총 512곳
+EXPECT_TABS = {'lux': 162, 'china': 284, 'domestic': 4, 'marriott': 62}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
+# ② 중올플 APC — 참여 282 + 기존 2 = 284곳 · 12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715
+EXPECT_APC = {'hotels': 284, 'participating': 282, 'dec_available': 210,
+              'cells': 4715, 'tiers': {1: 114, 2: 134, 3: 36},
+              'legacy_cash': 10, 'new_fresh_none': 274}
+# 출처 문구에 사이트 이름을 쓰지 않는다
+FORBIDDEN = ('accorcards', 'ittaeda', 'roame')
+
+
+def check_apc(db):
+    """② 중올플 284곳 · 권역(tier) · APC 상태 검사."""
+    problems = []
+    china = [h for h in db['hotels'] if h.get('group') == 'china']
+    if len(china) != EXPECT_APC['hotels']:
+        problems.append('② 중올플 %d곳 (기대 %d곳)' % (len(china), EXPECT_APC['hotels']))
+    part = [h for h in china if (h.get('accor') or {}).get('participation') == 'participating']
+    if len(part) != EXPECT_APC['participating']:
+        problems.append('② 참여 %d곳 (기대 %d곳)' % (len(part), EXPECT_APC['participating']))
+    pids = [(h.get('accor') or {}).get('public_id') for h in china]
+    if len(set(pids)) != len(pids) or None in pids:
+        problems.append('② public_id 중복/누락')
+    tiers = {}
+    cells = dec_av = 0
+    legacy_cash = 0
+    fresh_none = 0
+    for h in china:
+        a = h.get('accor') or {}
+        t = a.get('tier')
+        tiers[t] = tiers.get(t, 0) + 1
+        if t not in (1, 2, 3):
+            problems.append('② %s 권역(tier) 없음/이상: %s' % (h['id'], t))
+        if not a.get('tier_label') or not a.get('city_key'):
+            problems.append('② %s 권역명/도시키 없음' % h['id'])
+        if a.get('participation') == 'participating':
+            obs = (a.get('dec') or {}).get('observed', 0)
+            if not h.get('accor_apc') and obs:
+                problems.append('② %s APC 날짜 상태 없음 (관측 %d일)' % (h['id'], obs))
+            for d, v in (h.get('accor_apc') or {}).items():
+                if v not in ('a', 'n') or not (WINDOW_START <= d <= WINDOW_END):
+                    problems.append('② %s APC 값 이상 %s=%s' % (h['id'], d, v))
+                    break
+                if d not in (h.get('accor_apc_t') or {}):
+                    problems.append('② %s APC 관측시각 누락 %s' % (h['id'], d))
+                    break
+                cells += 1
+                if v == 'a' and d <= '2026-12-18':
+                    dec_av += 1
+            for k in ('dec', 'nov'):
+                v = a.get(k)
+                if not isinstance(v, dict) or 'available' not in v or 'observed' not in v:
+                    problems.append('② %s %s 관측 요약 없음' % (h['id'], k))
+        priced = sum(1 for v in (h.get('rates') or {}).values() if v is not None)
+        if priced:
+            legacy_cash += 1
+        elif h['id'].startswith('ap'):
+            fresh_none += 1
+            if any(v is not None for v in (h.get('rates') or {}).values()):
+                problems.append('② %s 신규인데 현금 요금이 있음(추정 금지)' % h['id'])
+        if len(h.get('rates') or {}) != 365:
+            problems.append('② %s 날짜 칸 %d개' % (h['id'], len(h.get('rates') or {})))
+    if tiers != EXPECT_APC['tiers']:
+        problems.append('② 권역 분포 %s (기대 %s)' % (tiers, EXPECT_APC['tiers']))
+    if cells != EXPECT_APC['cells']:
+        problems.append('② APC 칸 %d (기대 %d)' % (cells, EXPECT_APC['cells']))
+    dec_hotels = len({h['id'] for h in china
+                      if any(v == 'a' and d <= '2026-12-18'
+                             for d, v in (h.get('accor_apc') or {}).items())})
+    if dec_hotels != EXPECT_APC['dec_available']:
+        problems.append('② 12월 APC 가능 호텔 %d곳 (기대 %d곳)' % (dec_hotels, EXPECT_APC['dec_available']))
+    if legacy_cash != EXPECT_APC['legacy_cash']:
+        problems.append('② 현금 요금 보유 호텔 %d곳 (기대 %d곳)' % (legacy_cash, EXPECT_APC['legacy_cash']))
+    if fresh_none != EXPECT_APC['new_fresh_none']:
+        problems.append('② 현금 미수집 신규 호텔 %d곳 (기대 %d곳)' % (fresh_none, EXPECT_APC['new_fresh_none']))
+    return problems
+
+
+def check_sources(text_blob):
+    """출처 문구에 제3자 사이트 이름이 남아 있지 않은지 검사."""
+    low = text_blob.lower()
+    hits = [w for w in FORBIDDEN if w in low]
+    return ['출처 문구에 금지된 사이트 이름: %s' % ', '.join(hits)] if hits else []
+
+
 EXPECT_BRANDS = {'리츠칼튼': 24, '세인트레지스': 14, 'W': 10, 'JW 메리어트': 4,
                  '럭셔리 컬렉션': 2, '에디션': 2, '웨스틴': 2, '메리어트': 1,
                  '오토그래프 컬렉션': 1, '메리어트 이그제큐티브 아파트먼트': 1, '르메르디앙': 1}
@@ -251,7 +333,7 @@ def check_tabs(db):
     if extra:
         problems.append('알 수 없는 탭: %s' % extra)
     if len(db['hotels']) != EXPECT_HOTELS:
-        problems.append('호텔 합계 %d곳 (기대 %d곳 = 162 + 10 + 4 + 62)' % (len(db['hotels']), EXPECT_HOTELS))
+        problems.append('호텔 합계 %d곳 (기대 %d곳 = 162 + 284 + 4 + 62)' % (len(db['hotels']), EXPECT_HOTELS))
     brands = {}
     ids = set()
     for h in db['hotels']:
@@ -288,39 +370,13 @@ def check_tabs(db):
                                              (h['id'], prev) in KNOWN_DUP):
             problems.append('호텔 중복: %s ↔ %s (%s)' % (prev, h['id'], key))
         seen.setdefault(key, h['id'])
-    # ② 중올플: APC(APC) 관측 필드
-    china = [h for h in db['hotels'] if h.get('group') == 'china']
-    for h in china:
-        a = h.get('accor')
-        if not a:
-            problems.append('② %s accor 메타 없음' % h['id'])
-            continue
-        part = a.get('participation')
-        if h['id'] in ('cB5L5', 'cC7G9'):
-            if part != 'not_participating':
-                problems.append('② %s 는 APC 미참여여야 함 (%s)' % (h['id'], part))
-            if h.get('accor_apc'):
-                problems.append('② %s 미참여인데 날짜 상태가 있음' % h['id'])
-        else:
-            if part != 'participating':
-                problems.append('② %s 참여 상태 이상 (%s)' % (h['id'], part))
-            if not h.get('accor_apc'):
-                problems.append('② %s APC 날짜 상태 없음' % h['id'])
-            else:
-                for d, v in h['accor_apc'].items():
-                    if v not in ('a', 'n') or not (WINDOW_START <= d <= WINDOW_END):
-                        problems.append('② %s APC 값 이상 %s=%s' % (h['id'], d, v))
-                        break
-                for d in h['accor_apc']:
-                    if d not in (h.get('accor_apc_t') or {}):
-                        problems.append('② %s APC 관측시각 누락 %s' % (h['id'], d))
-                        break
+    problems.extend(check_apc(db))
     return problems
 
 
 def cmd_verify(args, quiet=False):
     master = json.loads(_read(MASTER))
-    _, db, flights, _, _ = read_index()
+    src, db, flights, _, _ = read_index()
     problems = []
 
     mdb, mfl = project(master)
@@ -354,6 +410,8 @@ def cmd_verify(args, quiet=False):
 
     # 탭 구성 검사 (①~④ 기존 데이터가 손상되지 않았는지 포함)
     problems.extend(check_tabs(db))
+    problems.extend(check_sources(src))
+    problems.extend(check_sources(_read(MASTER)))
     problems.extend(check_flights(flights))
 
     if problems:

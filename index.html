@@ -45,7 +45,9 @@
 .fl-day-pat{font-size:9.5px;font-weight:800;color:#52709a;background:#eef3fb;border-radius:5px;padding:1px 4px;align-self:flex-start}
 .fl-day-air{font-size:9px;color:#8b97a6;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 .fl-day-cnt{position:absolute;top:6px;right:8px;font-size:8.5px;font-weight:800;color:#98a3b0}
-.fl-day.empty-day{background:#fafbfd}
+.fl-day.empty-day{background:#fafbfd;min-height:58px}
+.fl-days .cal-day.empty{min-height:58px}
+.fl-day.empty-day .daymiss{margin-top:0}
 .fl-detail{margin-top:12px;border-top:1px dashed #e2e8f0;padding-top:12px}
 .fl-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px}
 .fl-detail-head h3{margin:0;font-size:14px;letter-spacing:-.03em}
@@ -96,6 +98,7 @@
   .fl-block-head{flex-direction:column;gap:5px}
   .fl-days{gap:3px}
   .fl-day{min-height:76px;padding:5px 3px;border-radius:8px}
+  .fl-day.empty-day,.fl-days .cal-day.empty{min-height:54px}
   .fl-day .dayprice{font-size:11px;letter-spacing:-.07em}
   .fl-day-pat{font-size:8px;padding:1px 3px}
   .fl-day-air{font-size:8px}

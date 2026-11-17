@@ -391,7 +391,7 @@ function renderFlightDetail(){
   const box=$('flDetail');
   if(!fl.day){box.innerHTML='<p class="fl-empty">달력의 날짜나 아래 도표의 칸을 누르면, 그 출발일의 패턴별·노선별 금액과 항공사가 여기에 표시됩니다.</p>';return;}
   const deals=flFiltered().filter(d=>d.date===fl.day).sort((a,b)=>a.price-b.price);
-  const pool=flFiltered();const min=pool.length?Math.min(...pool.map(d=>d.price)):null;
+  const min=deals.length?Math.min(...deals.map(d=>d.price)):null;
   let html='<div class="fl-detail-head"><div><h3>'+fullDate(fl.day)+' ('+weekday(fl.day)+') 출발</h3><div class="meta">'+(deals.length?deals.length+'건 · '+(fl.pattern==='all'?'패턴별':'')+' 최저가순':((fl.route!=='all'||fl.pattern!=='all')?'선택한 노선·패턴 조합에는 이 날짜 자료가 없습니다':'이 날짜의 자료가 없습니다(12/17·18·19만 조회)'))+'</div></div><button type="button" class="fl-close" id="flClose" aria-label="상세 닫기">✕</button></div>';
   if(deals.length){
     html+='<div class="fl-detail-grid">';

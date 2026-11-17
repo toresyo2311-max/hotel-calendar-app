@@ -44,6 +44,9 @@ LINE_FULL = re.compile(r'^- (\d{4}-\d{2}-\d{2})(?:\([월화수목금토일]\))? 
                        r'PUS–([A-Z]{3}) · (.+)$')
 LINE_SHORT = re.compile(r'^- (\d{2})/(\d{2}) · '
                         r'([①②③④⑤]?[월화수목금토일]~[월화수목금토일]) · (.+)$')
+LINE_CITY = re.compile(r'^- (\d{2})/(\d{2}) · '
+                       r'([①②③④⑤]?[월화수목금토일]~[월화수목금토일]) · '
+                       r'[^·]+\(([A-Z]{3})\) · (.+)$')
 UNKNOWN = re.compile(r'^항공사 미확인\(([^)]*)\)\s*(.*)$')
 DIRECT = re.compile(r'직항\s*(?:최저\s*)?(?:(\S+)\s+)?([\d,]{4,})\s*원?')
 
@@ -65,12 +68,17 @@ def parse_md(path):
         if m:
             date, pattern, rcode, rest = m.groups()
         else:
-            m = LINE_SHORT.match(line)
-            if not m or not code:
-                continue
-            mm, dd, pattern, rest = m.groups()
-            year = '2026' if mm == '12' else '2027'   # 12월 = 2026, 01월 = 2027
-            date, rcode = '%s-%s-%s' % (year, mm, dd), code
+            m = LINE_CITY.match(line)
+            if m:
+                mm, dd, pattern, rcode, rest = m.groups()
+                date = '%s-%s-%s' % ('2026' if mm == '12' else '2027', mm, dd)
+            else:
+                m = LINE_SHORT.match(line)
+                if not m or not code:
+                    continue
+                mm, dd, pattern, rest = m.groups()
+                year = '2026' if mm == '12' else '2027'   # 12월 = 2026, 01월 = 2027
+                date, rcode = '%s-%s-%s' % (year, mm, dd), code
         pattern = pattern.lstrip(CIRCLED)
         if '미측정' in rest or '가격 미표시' in rest:
             gaps.append((rcode, date, pattern, rest))
@@ -210,6 +218,9 @@ def merge(master, deals, gaps):
 
     for r in master['flights']['routes']:
         r['deals'].sort(key=lambda d: (d['date'], rank(d['pattern'])))
+        for d in r['deals']:                      # 보고서의 '← 1주차 최저' 같은 표시는 메모에서 뺀다
+            if d.get('note'):
+                d['note'] = re.sub(r'\s*←.*$', '', d['note']).strip()
 
     all_deals = [d for r in master['flights']['routes'] for d in r['deals']]
     by_month = {}

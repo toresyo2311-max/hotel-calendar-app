@@ -13,6 +13,14 @@
     - 12/03 · 목~일 · 385,600원 · 가격표 실측                                                  (보완1차, 노선은 ## 헤딩)
     - 12/04 · 금~월 · 미측정                                                                   (미측정 → gaps)
 
+주차별 완본(2027년 2월 2~4주차) 형식 — 도시 이름/코드가 줄에 있거나 ## 헤딩에 있다:
+    - 2027-02-11 · 목~월 · 부산–후쿠오카(FUK) · 263,900원 · 에어부산 · 직항 1시간 (4박)          (2주차)
+    - 2/19 · ① · 부산–상하이 · 379,600원 · 춘추항공 · 직항 1시간55분(22:10-23:05)              (3주차, 노선은 ### 헤딩)
+    - 2027-02-26 · 금~일·2박 · PUS–PVG · 417,500원 · 중국남방항공 · 경유(선양, 총7시간25분) (직항 최저 420,400원)
+
+  · ①~⑤ 만 적힌 줄은 ①금~일 ②토~월 ③목~일 ④금~월 ⑤목~월 로 읽고, 출발일의 요일과 맞는지 검사한다.
+  · '(직항 최저 …원)' 은 alt 로 살리고, '(N박)'·'←이 노선 최저' 같은 표시는 메모에서 뺀다.
+
 규칙:
   · 보고서의 줄만 읽는다. 추정값은 만들지 않는다. '미측정'·'가격 미표시' 줄은 gaps 로만 보고한다.
   · 같은 (노선, 출발일, 패턴) 이 이미 있으면 **기존 건을 그대로 둔다**(완본의 항공사·직항 정보 보존).
@@ -32,6 +40,7 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MASTER = os.path.join(ROOT, 'data', 'master_db.json')
 
+CIRCLED_PAT = {'①': '금~일', '②': '토~월', '③': '목~일', '④': '금~월', '⑤': '목~월'}
 PAT_ORDER = ['목~일', '금~일', '토~월', '목~월', '금~월',
              '목~목', '금~금', '토~토', '일~일', '월~월', '화~화', '수~수',
              '일~수', '일~목', '월~수']  # 주말형 5패턴 → 당일치기 → 보조 창구
@@ -57,16 +66,25 @@ DIRECT = re.compile(r'직항\s*(?:최저\s*)?(?:(\S+)\s+)?([\d,]{4,})\s*원?')
 
 # ---------------------------------------------------------------- 파싱
 
-def parse_md(path):
+def parse_md(path, codes_by_city=None):
     """보고서 md → (deals, gaps). deals 는 (code, deal dict) 목록."""
     with open(path, encoding='utf-8') as fp:
         text = fp.read()
-    deals, gaps, code = [], [], None
+    codes_by_city = codes_by_city or {}
+    deals, gaps, code, city = [], [], None, None
     for raw in text.splitlines():
         line = raw.strip()
         m = ROUTE.match(line)
         if m:
-            code = m.group(2)
+            city = m.group(1).strip()
+            code = codes_by_city.get(city) or m.group(2)
+            continue
+        v2 = parse_week_line(line, code, city, codes_by_city)
+        if v2 is not None:
+            if v2[0] == 'gap':
+                gaps.append(v2[1])
+            else:
+                deals.append((v2[0], v2[1]))
             continue
         m = LINE_FULL.match(line)
         if m:
@@ -111,6 +129,106 @@ def parse_md(path):
         deal.update(parse_info(airline, desc))
         deals.append((rcode, deal))
     return deals, gaps
+
+
+def parse_week_line(line, heading_code, heading_city, codes_by_city):
+    """주차별 완본(2주차·3주차·4주차) 줄 → (code, deal) | ('gap', (...)) | None.
+
+    세 보고서의 줄 모양을 필드 순서로 읽는다: 출발일 · 패턴 · 노선 · 금액 · 항공사 · 직항/경유.
+    모양이 맞지 않으면 None 을 돌려주고, 기존 파서가 이어서 읽는다.
+    """
+    if not line.startswith('- ') or line.startswith('- 참고'):
+        return None
+    body = line[2:].strip()
+    body = re.sub(r'\s*←.*$', '', body)          # '←이 노선 최저' 표시는 메모가 아니다
+    parts = [p.strip() for p in body.split(' · ')]
+    if len(parts) < 4:
+        return None
+    # 이 세 보고서의 모양만 받는다(다른 보고서의 줄은 기존 파서가 읽는다)
+    if not (parts[2].startswith('부산–')                    # 도시 이름으로 적은 노선 (2주차)
+            or parts[1] in CIRCLED_PAT                       # ①~⑤ 만 적은 패턴 (3주차)
+            or re.search(r'·\d박', parts[1])):               # '금~일·2박' 패턴 (4주차)
+        return None
+
+    m = re.fullmatch(r'(\d{4})-(\d{2})-(\d{2})', parts[0])
+    if m:
+        date = '%s-%s-%s' % m.groups()
+    else:
+        m = re.fullmatch(r'(\d{1,2})/(\d{1,2})', parts[0])
+        if not m:
+            return None
+        mm, dd = int(m.group(1)), int(m.group(2))
+        date = '%s-%02d-%02d' % ('2026' if mm == 12 else '2027', mm, dd)
+
+    token = parts[1]
+    if token in CIRCLED_PAT:
+        pattern = CIRCLED_PAT[token]
+    else:
+        m = re.match(r'([월화수목금토일]~[월화수목금토일])', re.sub(r'[·(]\d박\)?', '', token))
+        if not m:
+            return None
+        pattern = m.group(1)
+
+    rp = parts[2]
+    m = re.search(r'\(([A-Z]{3})\)', rp)
+    if m:
+        code = m.group(1)
+    elif rp.startswith('PUS–'):
+        code = rp[4:].strip()
+    else:
+        name = re.sub(r'^부산\s*–\s*', '', rp).strip()
+        code = codes_by_city.get(name) or heading_code
+    if not code:
+        return None
+
+    pm = re.fullmatch(r'([\d,]+)원', parts[3])
+    if not pm:
+        return ('gap', (code, date, pattern, parts[3]))
+    price = int(pm.group(1).replace(',', ''))
+
+    airline = parts[4] if len(parts) >= 5 else None
+    desc = ' · '.join(parts[5:]) if len(parts) > 5 else ''
+    back = back_date(date, pattern)
+    deal = {'date': date, 'back': back, 'pattern': pattern, 'price': price}
+    deal.update(parse_info_v2(airline, desc))
+    return (code, deal)
+
+
+def parse_info_v2(airline, desc):
+    """주차별 완본의 항공사 + 설명 → {airline, via, note, alt, src}."""
+    out = {}
+    d = (desc or '').strip()
+    m = re.search(r'\s*\(직항\s*최저\s*([\d,]+)\s*원?([^)]*)\)', d)
+    if m:
+        out['alt'] = int(m.group(1).replace(',', ''))
+        extra = m.group(2).strip()
+        d = (d[:m.start()] + (' ※직항 최저 %s %s' % (m.group(1), extra) if extra else '')).strip()
+    d = re.sub(r'\s*\(\d박\)\s*$', '', d)       # '(4박)' 은 패턴이 이미 말한다
+    m = re.fullmatch(r'직항\s*\((.+)\)', d)
+    if m:                                        # '직항 (1시간)' → '직항 1시간'
+        d = '직항 %s' % m.group(1).strip()
+    if '(부산 직항 없음)' in d:
+        d = d.replace('(부산 직항 없음)', '').strip() + ' · 부산 직항 없음'
+
+    if airline and airline not in ('미확인', '항공사 미확인'):
+        out['airline'] = airline
+    elif airline:
+        out['src'] = '가격표'
+        if '캘린더' in d or '가격표' in d:
+            d = '항공사·직항여부 미확인(운임 캘린더 값)'
+
+    if d.startswith('경유'):
+        out['via'] = True
+    elif d.startswith('직항'):
+        out['via'] = False
+    else:
+        out['via'] = None
+    if d:
+        out['note'] = d
+    elif 'src' not in out:
+        out['src'] = '가격표'
+        out['note'] = '직항/경유 미확인'
+    return out
 
 
 def is_unknown(text):
@@ -194,10 +312,18 @@ def rank(pattern):
     return PAT_ORDER.index(pattern) if pattern in PAT_ORDER else len(PAT_ORDER)
 
 
+def insert_by_date(deals):
+    """출발일 순서만 맞춘다(파이썬 정렬은 안정 정렬이라 같은 날짜의 기존 순서는 그대로 남는다)."""
+    deals.sort(key=lambda d: d['date'])
+
+
 # ---------------------------------------------------------------- 병합
 
 def merge(master, deals, gaps, replace_price=False):
-    """deals → 마스터. replace_price=True 면 같은 (날짜·패턴)의 **더 새로운 실측 가격**으로 바꾼다."""
+    """deals → 마스터. replace_price=True 면 같은 (날짜·패턴)의 **더 새로운 실측 가격**으로 바꾼다.
+
+    replace_price 로 실측(항공사 확인) 건이 기존 가격표 캐시값을 대신하면, 그 캐시 표시(src)는 지운다.
+    """
     routes = {r['code']: r for r in master['flights']['routes']}
     added, filled, skipped, updated = [], [], [], []
     for code, deal in deals:
@@ -208,10 +334,18 @@ def merge(master, deals, gaps, replace_price=False):
         if same:
             old = same[0]
             changed = False
+            measured = bool(deal.get('airline'))
             if replace_price and old['price'] != deal['price']:
                 updated.append((code, deal['date'], deal['pattern'], old['price'], deal['price']))
                 old['price'] = deal['price']
                 changed = True
+            if replace_price and measured and old.get('src') in ('가격표', '캘린더') and not old.get('airline'):
+                old.pop('src', None)          # 실측가로 바뀌었으니 '가격표/캘린더 값' 표시는 더 이상 사실이 아니다
+                changed = True
+            if replace_price and measured and deal.get('note'):
+                if old.get('note') != deal['note']:
+                    old['note'] = deal['note']
+                    changed = True
             if not old.get('airline') and deal.get('airline'):
                 old['airline'] = deal['airline']
                 changed = True
@@ -234,7 +368,7 @@ def merge(master, deals, gaps, replace_price=False):
         added.append((code, deal['date'], deal['pattern'], deal['price']))
 
     for r in master['flights']['routes']:
-        r['deals'].sort(key=lambda d: (d['date'], rank(d['pattern'])))
+        insert_by_date(r['deals'])
         for d in r['deals']:                      # 보고서의 '← 1주차 최저' 같은 표시는 메모에서 뺀다
             if d.get('note'):
                 d['note'] = re.sub(r'\s*←.*$', '', d['note']).strip()
@@ -265,8 +399,9 @@ def main(argv):
         master = json.load(fp)
     before = master['flights']['counts']['total']
     all_added, all_filled, all_skipped, all_updated, all_gaps = [], [], [], [], []
+    codes_by_city = {r['city']: r['code'] for r in master['flights']['routes']}
     for path in args.md:
-        deals, gaps = parse_md(path)
+        deals, gaps = parse_md(path, codes_by_city)
         added, filled, skipped, updated, gaps = merge(master, deals, gaps, args.replace_price)
         print('%s → 파싱 %d건 (미측정/미표시 %d건)' % (os.path.basename(path), len(deals), len(gaps)))
         print('  신규 %d · 가격 갱신 %d · 기존 유지 %d · 항목 보강 %d'

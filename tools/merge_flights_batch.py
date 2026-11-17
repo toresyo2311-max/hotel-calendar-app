@@ -3,14 +3,21 @@
 """부산 출발 항공 특가 md(5패턴 실측 보고서)를 `data/master_db.json` 의 `flights` 에 병합한다.
 
 사용법 (저장소 루트에서):
-    python3 tools/merge_flights_batch.py ../부산출발-항공특가-12월잔여-보완2차.md --dry-run
-    python3 tools/merge_flights_batch.py ../부산출발-항공특가-12월잔여-보완2차.md
+    python3 tools/merge_flights_batch.py ../보고서1.md ../보고서2.md --dry-run
+    python3 tools/merge_flights_batch.py ../보고서1.md ../보고서2.md --note "…KST ④ 항공 보완 반영"
+
+읽는 줄 형식(보고서마다 조금씩 다르다):
+    - 2026-12-03 · 목~일 · PUS–MFM · 308,200원 · 중국동방항공 경유(난징 13h, 총18h) 직항없음   (보완2차)
+    - 2026-12-04 · ①금~일 · PUS–OKA · 465,500원 · 항공사 미확인(가격표)                        (보완3차)
+    - 2026-12-03(목) · 목~일(3박) · PUS–RMQ · 435,300원 · 항공사 미확인(가격표 실측) · 직항/경유 미확인
+    - 12/03 · 목~일 · 385,600원 · 가격표 실측                                                  (보완1차, 노선은 ## 헤딩)
+    - 12/04 · 금~월 · 미측정                                                                   (미측정 → gaps)
 
 규칙:
-  · 보고서의 `- 날짜 · 패턴 · PUS–코드 · 금액원 · 항공사 …` 줄만 읽는다. 추정값은 만들지 않는다.
+  · 보고서의 줄만 읽는다. 추정값은 만들지 않는다. '미측정'·'가격 미표시' 줄은 gaps 로만 보고한다.
   · 같은 (노선, 출발일, 패턴) 이 이미 있으면 **기존 건을 그대로 둔다**(완본의 항공사·직항 정보 보존).
     기존 건에 항공사가 비어 있고 새 보고서에 있으면 그 항목만 채운다.
-  · '가격 미표시' 줄은 넣지 않고 gaps 로 보고한다.
+  · 병기된 '(가격표 …원)' 캐시값은 넣지 않고, '직항 최저 …원' 은 alt 로 살린다.
   · 노선·주차·패턴 목록(`routes`/`weeks`/`patterns`)은 그대로 두고 `counts` 만 다시 센다.
     counts.holiday 는 기존 정의(2026-12-25 · 2027-02-04 출발 건수)를 그대로 따른다.
   · 호텔 데이터(`hotels`)는 읽기만 하고 절대 건드리지 않는다.
@@ -29,10 +36,19 @@ PAT_ORDER = ['목~일', '금~일', '토~월', '목~월', '금~월',
              '일~수', '일~목', '월~수']  # 앱의 5패턴 뒤에 보조 창구를 붙인다
 WD = {'월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6, '일': 0}
 HOLIDAY_DATES = ('2026-12-25', '2027-02-04')
+CIRCLED = '①②③④⑤'
 
-LINE = re.compile(r'^- (\d{4}-\d{2}-\d{2}) · (\S+~\S+) · PUS–([A-Z]{3}) · (.+)$')
-ROUTE = re.compile(r'^## 부산–(.+?) \(([A-Z]{3})\)')
+ROUTE = re.compile(r'^## 부산–(.+?) \(([A-Z]{3})')
+LINE_FULL = re.compile(r'^- (\d{4}-\d{2}-\d{2})(?:\([월화수목금토일]\))? · '
+                       r'([①②③④⑤]?[월화수목금토일]~[월화수목금토일])(?:\(\d박\))? · '
+                       r'PUS–([A-Z]{3}) · (.+)$')
+LINE_SHORT = re.compile(r'^- (\d{2})/(\d{2}) · '
+                        r'([①②③④⑤]?[월화수목금토일]~[월화수목금토일]) · (.+)$')
+UNKNOWN = re.compile(r'^항공사 미확인\(([^)]*)\)\s*(.*)$')
+DIRECT = re.compile(r'직항\s*(?:최저\s*)?(?:(\S+)\s+)?([\d,]{4,})\s*원?')
 
+
+# ---------------------------------------------------------------- 파싱
 
 def parse_md(path):
     """보고서 md → (deals, gaps). deals 는 (code, deal dict) 목록."""
@@ -40,15 +56,23 @@ def parse_md(path):
         text = fp.read()
     deals, gaps, code = [], [], None
     for raw in text.splitlines():
-        m = ROUTE.match(raw.strip())
+        line = raw.strip()
+        m = ROUTE.match(line)
         if m:
             code = m.group(2)
             continue
-        m = LINE.match(raw.strip())
-        if not m:
-            continue
-        date, pattern, rcode, rest = m.groups()
-        if '가격 미표시' in rest:
+        m = LINE_FULL.match(line)
+        if m:
+            date, pattern, rcode, rest = m.groups()
+        else:
+            m = LINE_SHORT.match(line)
+            if not m or not code:
+                continue
+            mm, dd, pattern, rest = m.groups()
+            year = '2026' if mm == '12' else '2027'   # 12월 = 2026, 01월 = 2027
+            date, rcode = '%s-%s-%s' % (year, mm, dd), code
+        pattern = pattern.lstrip(CIRCLED)
+        if '미측정' in rest or '가격 미표시' in rest:
             gaps.append((rcode, date, pattern, rest))
             continue
         fields = [f.strip() for f in rest.split(' · ')]
@@ -57,40 +81,85 @@ def parse_md(path):
             gaps.append((rcode, date, pattern, rest))
             continue
         price = int(pm.group(1).replace(',', ''))
-        info = fields[1] if len(fields) > 1 else ''
+
+        airline, desc = None, ''
+        if len(fields) >= 3:
+            if not is_unknown(fields[1]):
+                airline = fields[1]
+            desc = ' · '.join(fields[2:])
+        elif len(fields) == 2:
+            desc = fields[1]
 
         deal = {'date': date, 'back': back_date(date, pattern), 'pattern': pattern, 'price': price}
-        if info == '항공사 미확인(가격표 실측)':
-            deal['src'] = '가격표'
-            deal['via'] = None
-            deal['note'] = '직항/경유 미확인'
-        elif info:
-            airline, _, tail = info.partition(' ')
-            deal['airline'] = airline
-            alt = re.search(r'/ 직항 (\S+) ([\d,]+)$', tail)
-            if alt:
-                deal['alt'] = int(alt.group(2).replace(',', ''))
-                deal['note'] = '%s ※직항 %s원(%s)' % (
-                    clean(tail[:alt.start()]), alt.group(2), alt.group(1))
-            else:
-                deal['note'] = clean(tail)
-            deal['via'] = '경유' in info
-            if not deal['note']:
-                deal.pop('note')
-        else:
-            deal['src'] = '가격표'
-            deal['via'] = None
-            deal['note'] = '직항/경유 미확인'
+        deal.update(parse_info(airline, desc))
         deals.append((rcode, deal))
     return deals, gaps
 
 
-def clean(tail):
-    """'경유(난징 13h, 총18h) 직항없음' → '경유(난징 13h, 총18h)' (직항 여부는 via 필드가 갖는다)."""
-    t = tail.strip()
-    t = re.sub(r'\s*직항\s*없음$', '', t)
-    t = re.sub(r'\s*부산\s*직항\s*없음$', '', t)
-    return t.strip()
+def is_unknown(text):
+    return text.startswith('항공사 미확인') or text.startswith('가격표')
+
+
+def parse_info(airline, desc):
+    """항공사 + 설명 → {airline, via, note, alt, src}."""
+    out = {}
+    d = (desc or '').strip()
+
+    if d.startswith('직항/경유'):                 # '… · 직항/경유 미확인' 줄
+        out['src'], out['via'], out['note'] = '가격표', None, d
+        return out
+
+    m = UNKNOWN.match(d)
+    if m:
+        out['src'], out['via'] = '가격표', None
+        d = m.group(2).strip()                    # '항공사 미확인(가격표) ※직항 …' 의 뒷부분
+    elif is_unknown(d):
+        out['src'], out['via'], d = '가격표', None, ''
+    elif airline is None and d:
+        airline, _, d = d.partition(' ')          # 보완2차형: 항공사가 설명 앞에 붙어 있다
+        d = d.strip()
+    if airline:
+        out['airline'] = airline
+
+    if not d:
+        out.setdefault('src', '가격표')
+        out.setdefault('via', None)
+        out.setdefault('note', '직항/경유 미확인')
+        return out
+
+    d = re.sub(r'\((?:직항\s*최저)[^)]*?([\d,]{4,})원\)', r' ※직항 최저 \1원', d)
+    d = re.sub(r'\s*\(가격표[^)]*\)', '', d)      # 병기된 가격표 캐시값은 넣지 않는다
+    d = re.sub(r'\s*—\s*', ' ※', d)               # 부연은 ※ 뒤로 (카드 메모는 앞부분만 보인다)
+    d = d.replace(' · ', ' ※')
+    d = re.sub(r'\s*직항\s*없음$', '', d).strip()
+
+    if d.startswith('※'):                         # 항공사 미확인 + 부연만 있는 줄
+        note = d.lstrip('※').strip()
+        alt = DIRECT.search(note)
+        if alt:
+            out['alt'] = int(alt.group(2).replace(',', ''))
+        out['note'] = note
+        return out
+
+    head, _, tail = d.partition('※')
+    head, tail = head.strip(), tail.strip()
+    m = re.search(r'\s+/\s+(직항.*)$', head)      # '경유 … / 직항 제주항공 462,500'
+    if m:
+        head = head[:m.start()].strip()
+        tail = (m.group(1).strip() + (' ' + tail if tail else '')).strip()
+
+    if head.startswith('경유'):
+        out['via'] = True
+    elif head.startswith('직항'):
+        out['via'] = False
+    else:
+        out.setdefault('via', None)
+    out['note'] = (head + (' ※' + tail if tail else '')).strip()
+
+    alt = DIRECT.search(tail) if tail else None
+    if alt:
+        out['alt'] = int(alt.group(2).replace(',', ''))
+    return out
 
 
 def back_date(date, pattern):
@@ -105,6 +174,8 @@ def back_date(date, pattern):
 def rank(pattern):
     return PAT_ORDER.index(pattern) if pattern in PAT_ORDER else len(PAT_ORDER)
 
+
+# ---------------------------------------------------------------- 병합
 
 def merge(master, deals, gaps):
     routes = {r['code']: r for r in master['flights']['routes']}
@@ -125,6 +196,9 @@ def merge(master, deals, gaps):
                 changed = True
             if old.get('note') in (None, '', '직항/경유 미확인') and deal.get('note') and deal['note'] != '직항/경유 미확인':
                 old['note'] = deal['note']
+                changed = True
+            if deal.get('alt') and not old.get('alt'):
+                old['alt'] = deal['alt']
                 changed = True
             if changed:
                 filled.append((code, deal['date'], deal['pattern']))
@@ -151,28 +225,35 @@ def merge(master, deals, gaps):
 
 def main(argv):
     ap = argparse.ArgumentParser(description='항공 특가 md → master_db.json flights 병합')
-    ap.add_argument('md')
+    ap.add_argument('md', nargs='+')
     ap.add_argument('--dry-run', action='store_true')
     ap.add_argument('--note', default='', help='DB.extended 에 덧붙일 한 줄')
     args = ap.parse_args(argv)
 
-    deals, gaps = parse_md(args.md)
     with open(MASTER, encoding='utf-8') as fp:
         master = json.load(fp)
-    before = len(master['flights']['routes']), master['flights']['counts']['total']
-    added, filled, skipped, gaps = merge(master, deals, gaps)
+    before = master['flights']['counts']['total']
+    all_added, all_filled, all_skipped, all_gaps = [], [], [], []
+    for path in args.md:
+        deals, gaps = parse_md(path)
+        added, filled, skipped, gaps = merge(master, deals, gaps)
+        print('%s → 파싱 %d건 (미측정/미표시 %d건)' % (os.path.basename(path), len(deals), len(gaps)))
+        print('  신규 %d · 기존 유지 %d · 항목 보강 %d' % (len(added), len(skipped), len(filled)))
+        all_added += added
+        all_filled += filled
+        all_skipped += skipped
+        all_gaps += gaps
 
-    print('파싱 %d건 (가격 미표시 %d건)' % (len(deals), len(gaps)))
-    print('신규 %d건 · 기존 유지 %d건 · 항목 보강 %d건' % (len(added), len(skipped), len(filled)))
-    print('총 건수 %d → %d' % (before[1], master['flights']['counts']['total']))
-    for a in added:
-        print('  + %s %s %s %s원' % a)
-    for f in filled:
+    print('총 건수 %d → %d' % (before, master['flights']['counts']['total']))
+    if os.environ.get('MERGE_VERBOSE'):
+        for a in all_added:
+            print('  + %s %s %s %s원' % a)
+    for f in all_filled:
         print('  ~ %s %s %s (항공사/직항 보강)' % f)
-    for s in skipped:
+    for s in all_skipped:
         print('  = %s %s %s 기존 %s원 / 보고서 %s원' % s)
-    for g in gaps:
-        print('  - %s %s %s 가격 미표시: %s' % g)
+    for g in all_gaps:
+        print('  - %s %s %s 미측정/미표시: %s' % g)
 
     if args.dry_run:
         print('(dry-run — 파일을 쓰지 않았습니다)')

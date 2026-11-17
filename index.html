@@ -385,7 +385,7 @@ const flLink=d=>'https://kr.trip.com/flights/showfarefirst?dcity=pus&acity='+d.c
 const flViaWord=d=>d.via===false?'직항':d.via===true?'경유':'미확인';
 const flMeta=d=>d.airline?flViaWord(d)+' · '+flAir(d):(d.via==null?'항공사·직항 미확인':flViaWord(d)+' · 항공사 미확인');
 const flViaTag=d=>d.via===false?'<span class="fl-via direct">직항</span>':d.via===true?'<span class="fl-via via">경유</span>':'<span class="fl-via unk">미확인</span>';
-function flMemo(d){if(!d.note)return '';const t=String(d.note).split('※')[0].trim();return t==='경유'||t==='직항'?'':t}
+function flMemo(d){if(!d.note)return '';const t=String(d.note).split('※')[0].split('—')[0].trim();return t==='경유'||t==='직항'?'':t}
 function setFlightMode(on){$('flightPanel').hidden=!on;const r=document.querySelector('.ranking'),w=document.querySelector('.workspace'),n=$('hotelNotes');if(r)r.style.display=on?'none':'';if(w)w.style.display=on?'none':'';if(n)n.style.display=on?'none':''}
 function renderFlightTop5(){
   const rows=FLIGHTS.routes.map(r=>{const d=[...r.deals].sort((a,b)=>a.price-b.price)[0];return {...d,city:r.city,code:r.code}}).sort((a,b)=>a.price-b.price).slice(0,5);

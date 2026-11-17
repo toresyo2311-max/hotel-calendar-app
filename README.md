@@ -241,8 +241,8 @@ VERIFY OK — master_db.json == index.html
 기존 건(완본의 항공사·직항 정보)을 그대로 두고, 새 건만 더합니다.
 
 ```bash
-python3 tools/merge_flights_batch.py ../부산출발-항공특가-12월잔여-보완2차.md --dry-run   # 미리보기
-python3 tools/merge_flights_batch.py ../보고서1.md ../보고서2.md --note "…KST ④ 항공 보완 반영"
+python3 tools/merge_flights_batch.py ../data-sources/flights-2026-12/부산출발-항공특가-12월잔여-보완2차.md --dry-run   # 미리보기
+python3 tools/merge_flights_batch.py ../data-sources/flights-2026-12/보고서1.md ../data-sources/flights-2026-12/보고서2.md --note "…KST ④ 항공 보완 반영"
 python3 tools/master_db.py inject && python3 tools/master_db.py verify
 ```
 

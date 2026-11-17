@@ -1,7 +1,7 @@
 # 🏨 호텔 요금 달력 웹앱 (hotel-calendar-app)
 
-> **바로 열기: https://hotel-calendar-app.netlify.app**
-> Netlify가 이 저장소 `main` 브랜치를 보고 있어서, push하면 몇 초 안에 사이트가 자동으로 갱신됩니다.
+> **바로 열기: https://toresyo2311-max.github.io/hotel-calendar-app/**
+> GitHub Pages가 이 저장소 `main` 브랜치 루트(`/`)를 그대로 게시합니다. push하면 1~2분 안에 사이트가 자동으로 갱신됩니다.
 
 **238개 호텔**의 **2026-12-01 ~ 2027-11-30 (365일)** 최저가와 부산 출발 항공 특가 698건을
 한 화면에서 보는 달력 웹앱입니다. ① HoteLux VIP 탭은 **이때다 ITTAEDA(ittaeda.com)** 가
@@ -9,8 +9,8 @@
 중국 본토·홍콩·마카오 **40곳 + 한국 10곳 + 일본 12곳 = 62곳**을
 **현금(Google 호텔) + 아워드 포인트(roame.travel)** 로 함께 담았습니다. ② 중올플 탭에는
 **accorcards.com 관측 기반 APC 무료숙박 가능일**(가능/불가/미확인, 72시간 신선도 규칙)이 붙었습니다.
-서버·로그인·DB가 필요 없는 **정적 HTML 한 장**이라 GitHub에 올린 뒤 Netlify로 자동 배포하면
-링크 하나로 계속 열어볼 수 있습니다.
+서버·로그인·DB가 필요 없는 **정적 HTML 한 장**이라 GitHub 저장소에 올리고 GitHub Pages를 켜 두면
+링크 하나로 계속 열어볼 수 있습니다(빌드·호스팅 무료, 대역폭 제한 사실상 없음).
 
 ## 탭 구성 (5개)
 
@@ -146,7 +146,7 @@ tools/import_marriott.py  중국 메리어트 8개 md → ⑤ 탭 40곳 파서.
 tools/import_marriott_kj.py  한국·일본 메리어트 CSV(현금·포인트) → ⑤ 탭 22곳 파서.
 tools/import_accorcards.py   accorcards 관측 JSON → ② 탭 APC 날짜별 상태 주입.
 tools/merge_flights_batch.py  항공 특가 md(5패턴 실측 보고서) → flights 병합 파서.
-netlify.toml            Netlify 배포 설정 (빌드 없음, 루트를 그대로 게시).
+netlify.toml            (구) Netlify 배포 설정 — GitHub Pages로 이전해 지금은 쓰지 않습니다.
 ```
 
 ### data/master_db.json 구조
@@ -280,15 +280,18 @@ python3 tools/master_db.py inject && python3 tools/master_db.py verify
 - 요금은 조사 시점의 1박 최저가이며, 세금·봉사료 포함 여부는 각 조사 원문 기준입니다.
   실제 예약 전에는 해당 호텔 공식 채널에서 다시 확인하세요.
 
-## 배포
+## 배포 (GitHub Pages)
 
-Netlify 프로젝트 `hotel-calendar-app` (Team-Jin)이 이 저장소의 `main` 브랜치와 연결돼 있습니다.
-`netlify.toml` 설정대로 **빌드 없이 루트 디렉터리**를 게시하며, `index.html`이 루트에 있어
-사이트 최상위 주소(https://hotel-calendar-app.netlify.app)에서 바로 앱이 열립니다.
+**https://toresyo2311-max.github.io/hotel-calendar-app/**
+
+저장소 `toresyo2311-max/hotel-calendar-app`(public)의 Settings → Pages 설정은
+**Source: Deploy from a branch / Branch: `main` / Folder: `/ (root)`** 입니다. 빌드 단계가 없어
+루트의 `index.html`이 그대로 게시되고, push하면 GitHub가 자동으로 다시 게시합니다(보통 1~2분).
 
 ```
-변경 → commit → git push origin main → Netlify 자동 빌드·배포 (약 10초)
+변경 → git add · commit → git push origin main → Pages 자동 재게시 (1~2분)
 ```
 
-비공개(private) 저장소로 운영할 경우 Netlify 쪽에서 이 저장소에 대한 GitHub 접근 권한을
-한 번 허용해야 합니다.
+무료 계정의 GitHub Pages는 공개(public) 저장소에서만 쓸 수 있어, 이전에 쓰던 Netlify(무료 빌드
+크레딧 소진)에서 옮기면서 저장소를 public으로 전환했습니다. `netlify.toml`은 남겨 두었지만
+지금 배포에는 쓰이지 않습니다. HTTPS는 기본 도메인(`toresyo2311-max.github.io`)에 자동 적용됩니다.

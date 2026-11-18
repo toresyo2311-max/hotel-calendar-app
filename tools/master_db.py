@@ -423,8 +423,10 @@ EXPECT_FIRST_WEEK, EXPECT_LAST_WEEK = '2026-12-03', '2027-11-25'
 # 3월 3·4주차 240칸을 더한 값(2월 779→791 · 3월 538→791 · 4월 357→377 · 5월 316→332)
 # 2026-11-18 일본 7노선 2027년 2월 보완본 — 빈칸 7 + 판매편 0건 7 = 14칸을 값으로 채워 2월 921→935
 EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
-                       '2027-03': 926, '2027-04': 941, '2027-05': 663}
+                       '2027-03': 926, '2027-04': 1037, '2027-05': 687}
 # 2027-05는 2026-11-19 기존 24개 노선 5월 3~4주차(5/13~17 · 5/20~24) 5패턴 240칸을 더한 값(423→663)
+# 2027-04·05는 같은 날 기존 24개 노선 5월 1주차(4/29~5/3) 120칸을 더한 값(4월 941→1037 · 5월 663→687 —
+#   출발일 4/29 48칸 · 4/30 48칸이 4월, 5/1 24칸이 5월)
 # 2026-12·2027-01은 2026-11-18 일본 보완본(12월 +51칸·당일치기 4칸 · 1월 +9칸)과 중국 3박 완주본을 더한 값
 # 2027.06~11 반영분(3개 원본: 260 + 73 + 53 = 386건)
 # 2027-06은 2026-11-18 동남아 4노선 2~6월 420칸 가운데 6월 80칸을 더한 값(239+80)
@@ -524,6 +526,38 @@ EXPECT_MAY34_ALT = {('SIN', '2027-05-20', '목~일'): 642000,
                     ('BJS', '2027-05-13', '목~일'): 617688}
 # 상하이 5/13~17 1칸은 최저가만 표시되고 편성(직항/경유)이 확인되지 않아 via=null
 EXPECT_MAY34_UNKNOWN = 1
+
+# 2027년 5월 1주차(4/29~5/3) 기존 24개 노선 × 5패턴 120칸 — 2026-11-19 5번 보고서(부산출발-항공특가-2027년5월-1주차)
+# 앱의 주차 선택은 목요일 기준이라 이 주는 '4월 5주(4/29~5/5)' 로 표시된다. 120칸 모두 값이고
+# (미오픈·판매편 0건·요금 미공개 0칸), 원문이 패턴 평균·최저/최고·직항 칸 수·직항 최저 병기 수를 적었다.
+MAY1_START, MAY1_END = '2027-04-29', '2027-05-03'
+EXPECT_MAY1_TOTAL = 120
+EXPECT_MAY1_OVERALL = (325800, 1067400)   # 최저 호찌민 4/29~5/2 · 최고 오키나와 4/30~5/3
+EXPECT_MAY1_DIRECT = 44                   # 직항이 최저가인 칸
+EXPECT_MAY1_ALT = 21                      # 최저가가 경유일 때 직항 최저가를 함께 적은 칸
+EXPECT_MAY1_AVG = {'목~일': 556558, '목~월': 582871, '금~일': 627483,
+                   '금~월': 661925, '토~월': 676333}
+EXPECT_MAY1_ROUTE = {
+    'FUK': (412100, 655200), 'KIX': (611500, 813200), 'TYO': (637900, 809800),
+    'NGO': (745700, 982300), 'OKA': (534500, 1067400), 'GUM': (682600, 867400),
+    'PVG': (403400, 610200), 'BJS': (450600, 527600), 'NKG': (600900, 685700),
+    'HGH': (670400, 771200), 'TAO': (501900, 543500),
+    'TPE': (401200, 446800), 'HKG': (520600, 597900), 'KHH': (709700, 841500),
+    'RMQ': (745100, 978700), 'MFM': (685700, 797200),
+    'BKK': (514600, 619300), 'CNX': (699000, 957500), 'DAD': (327300, 529200),
+    'CXR': (375500, 566100), 'HAN': (385900, 561500), 'SGN': (325800, 385100),
+    'SIN': (548800, 655200), 'DPS': (505300, 799300),
+}
+EXPECT_MAY1_LOW = {('SGN', '2027-04-29', '목~일'): 325800,
+                   ('DAD', '2027-04-30', '금~일'): 327300,
+                   ('OKA', '2027-04-30', '금~월'): 1067400,
+                   ('PVG', '2027-05-01', '토~월'): 403400,
+                   ('TAO', '2027-04-29', '목~월'): 501900}
+EXPECT_MAY1_ALT_CELLS = {('PVG', '2027-04-30', '금~일'): 637000,
+                         ('SIN', '2027-04-29', '목~일'): 744600,
+                         ('TAO', '2027-04-29', '목~월'): 853600,
+                         ('BJS', '2027-04-29', '목~일'): 511100,
+                         ('CXR', '2027-04-29', '목~일'): None}
 
 # ── 2026-11-18 중국 8개 노선 2027년 7~11월 (15주말 × 7패턴) ────────────────────────
 # `noSale` 은 세 가지를 `status` 로 구분한다 — nosale(조회 결과 판매편 없음) ·
@@ -1006,6 +1040,51 @@ def check_flights(flights):
                         if d['date'] == date and d['pattern'] == pat), None)
             if got != alt:
                 problems.append('5월 직항 최저 %s %s %s %s (기대 %s)'
+                                % (code, date, pat, got, alt))
+    # 2027년 5월 1주차(4/29~5/3 · 앱 주차 선택은 4월 5주 4/29~5/5) — 기존 24개 노선 × 5패턴 120칸
+    may1 = [dict(d, code=r['code']) for r in routes if r['code'] in EXPECT_MAR_W1_ROUTES
+            for d in r['deals'] if MAY1_START <= d['date'] <= MAY1_END
+            and d['pattern'] in EXPECT_WEEKEND]
+    if len(may1) != EXPECT_MAY1_TOTAL:
+        problems.append('5월 1주차 %d칸 (기대 %d칸)' % (len(may1), EXPECT_MAY1_TOTAL))
+    else:
+        ps = [d['price'] for d in may1]
+        if (min(ps), max(ps)) != EXPECT_MAY1_OVERALL:
+            problems.append('5월 1주차 최저·최고 %s (기대 %s)'
+                            % ((min(ps), max(ps)), EXPECT_MAY1_OVERALL))
+        got_direct = sum(1 for d in may1 if d.get('via') is False)
+        if got_direct != EXPECT_MAY1_DIRECT:
+            problems.append('5월 1주차 직항이 최저가인 칸 %d (기대 %d)'
+                            % (got_direct, EXPECT_MAY1_DIRECT))
+        got_alt = sum(1 for d in may1 if d.get('alt'))
+        if got_alt != EXPECT_MAY1_ALT:
+            problems.append('5월 1주차 직항 최저 병기 %d칸 (기대 %d칸)'
+                            % (got_alt, EXPECT_MAY1_ALT))
+        for code, (lo, hi) in EXPECT_MAY1_ROUTE.items():
+            v = [d['price'] for d in may1 if d['code'] == code]
+            if len(v) != 5:
+                problems.append('5월 1주차 %s %d칸 (기대 5칸)' % (code, len(v)))
+            elif (min(v), max(v)) != (lo, hi):
+                problems.append('5월 1주차 %s 최저·최고 %s (기대 %s)'
+                                % (code, (min(v), max(v)), (lo, hi)))
+        for pat, want in EXPECT_MAY1_AVG.items():
+            v = [d['price'] for d in may1 if d['pattern'] == pat]
+            if len(v) != 24:
+                problems.append('5월 1주차 %s %d칸 (기대 24칸)' % (pat, len(v)))
+            elif round(sum(v) / len(v)) != want:
+                problems.append('5월 1주차 %s 평균 %d (기대 %d)'
+                                % (pat, round(sum(v) / len(v)), want))
+        for (code, date, pat), price in EXPECT_MAY1_LOW.items():
+            got = next((d['price'] for d in may1 if d['code'] == code
+                        and d['date'] == date and d['pattern'] == pat), None)
+            if got != price:
+                problems.append('5월 1주차 최저 칸 %s %s %s %s (기대 %d)'
+                                % (code, date, pat, got, price))
+        for (code, date, pat), alt in EXPECT_MAY1_ALT_CELLS.items():
+            got = next((d.get('alt') for d in may1 if d['code'] == code
+                        and d['date'] == date and d['pattern'] == pat), None)
+            if got != alt:
+                problems.append('5월 1주차 직항 최저 %s %s %s %s (기대 %s)'
                                 % (code, date, pat, got, alt))
     for m, n in EXPECT_OLD_BY_MONTH.items():
         if by_month.get(m) != n:

@@ -239,13 +239,15 @@ EXPECT_NEW_ROUTES = {'SHE': ('선양', 226), 'DLC': ('다롄', 256), 'CAN': ('�
 # 일본 7노선은 2026-11-19 2027년 7월 완결본(6개 노선 25칸 값 + 시즈오카 25칸 미오픈)을 더한 값이다.
 # 2026-11-19 2027년 9~10월 병합분을 더했다 — KMJ +23 · KOJ +30 · MYJ +30 · TAK +30 · MMY +45 · CTS +32
 # (시즈오카는 9~10월이 전부 판매편 0건·미오픈이라 값 0칸으로 85칸 그대로).
+# 같은 날 2027년 8월 병합분을 더했다 — CTS +20 · KOJ +20 · KMJ +20 · MYJ +20 · TAK +20 · MMY +20
+# (시즈오카 8월은 20칸이 전부 항공편 0건(미오픈)이라 값 0칸, 85칸 그대로).
 # 필리핀 4노선은 2026-11-19 2027년 7~10월 미조회 174칸을 모두 채운 값을 더했다(네 노선 모두 75칸).
 EXPECT_NEW_ROUTES2 = {'CEB': ('세부', 225), 'MNL': ('마닐라', 225), 'TAG': ('보홀(팡라오)', 225),
                       'CRK': ('클락', 225), 'PQC': ('푸꾸옥', 205), 'BKI': ('코타키나발루', 205),
                       'KUL': ('쿠알라룸푸르', 205), 'VTE': ('비엔티안', 203),
-                      'KMJ': ('구마모토', 143), 'KOJ': ('가고시마', 207),
-                      'FSZ': ('시즈오카', 85), 'MYJ': ('마쓰야마', 173), 'TAK': ('다카마쓰', 209),
-                      'MMY': ('미야코지마', 146), 'CTS': ('삿포로', 248)}
+                      'KMJ': ('구마모토', 163), 'KOJ': ('가고시마', 227),
+                      'FSZ': ('시즈오카', 85), 'MYJ': ('마쓰야마', 193), 'TAK': ('다카마쓰', 229),
+                      'MMY': ('미야코지마', 166), 'CTS': ('삿포로', 268)}
 # 일본 7노선 당일치기 실측 4칸(0박) — 노선 → (출발일, 금액). 나머지 노선은 당일치기 칸이 없다.
 EXPECT_JP_DAYTRIP = {'CTS': ('2026-12-12', 574900), 'KMJ': ('2026-12-16', 370300),
                      'FSZ': ('2026-12-09', 305800), 'TAK': ('2026-12-24', 795000)}
@@ -428,12 +430,13 @@ EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
 # 2027-06은 필리핀 6월 80칸 + G2 금~월 6월 16칸을 더한 값(319 + 96)
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
 # 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
-EXPECT_H2_BY_MONTH = {'2027-06': 530, '2027-07': 631, '2027-08': 334,
+EXPECT_H2_BY_MONTH = {'2027-06': 530, '2027-07': 631, '2027-08': 454,
                       '2027-09': 425, '2027-10': 189, '2027-11': 1}
 # 2027-07 은 2026-11-19 일본 7노선 7월 완결본(값 150칸)을 더한 595 에,
 # 같은 날 필리핀 4노선 미조회 36칸을 더한 631 이다. 8·9·10월에도 필리핀 40·66·32칸을 더했다.
-# 2027-09·10 은 2026-11-19 일본 7노선 2027년 9~10월 병합분(출발일 기준 9월 127칸 · 10월 63칸)을 더했다.
-EXPECT_H2 = {'weekend': 2015, 'day': 95, 'total': 2110}   # 주말형 1,825+190 · 당일치기 88+7
+# 2027-09·10 은 2026-11-19 일본 7노선 2027년 9~10월 병합분(출발일 기준 9월 127칸 · 10월 63칸)을 더했고,
+# 2027-08 은 같은 날 일본 7노선 2027년 8월 병합분(120칸 — 시즈오카 20칸은 항공편 0건)을 더했다.
+EXPECT_H2 = {'weekend': 2135, 'day': 95, 'total': 2230}   # 주말형 1,825+190+120 · 당일치기 88+7
 EXPECT_NOSALE = {('FUK', '2027-11-12'), ('TYO', '2027-11-12'),
                  ('TYO', '2027-11-16'), ('FUK', '2027-11-20'),
                  ('KWL', '2026-12-05'), ('TXN', '2026-12-05'),   # 중국 2건: 같은 날 복편 0편
@@ -573,6 +576,31 @@ EXPECT_JP910_LOW = {
     ('MMY', '2027-10-23', '토~월'): 795900, ('MMY', '2027-09-16', '목~일'): 5743900,
     ('CTS', '2027-09-23', '목~월'): 374540, ('CTS', '2027-10-16', '토~월'): 433900,
 }
+# ── 2026-11-19 일본 7개 노선 2027년 8월 (4주 × 5패턴 = 140칸) ──────────────────────
+# 6개 노선 20칸 전부 값이고 시즈오카 20칸은 조회 결과 항공편 0건(2027년 하계 시즌 스케줄 미게시)이라
+# `unopened` 로 적었다. 노선 → (값, 판매편 0건, 예약창 밖, 최저, 최고, 직항이 최저가인 칸)
+JP8 = ('KMJ', 'KOJ', 'FSZ', 'MYJ', 'TAK', 'MMY', 'CTS')
+JP8_WEEKS = tuple((datetime.date(2027, 8, 5) + datetime.timedelta(days=7 * i)).isoformat()
+                  for i in range(4))
+EXPECT_JP8 = {'CTS': (20, 0, 0, 573300, 928700, 16),
+              'KOJ': (20, 0, 0, 589100, 2358600, 0),
+              'FSZ': (0, 0, 20, None, None, 0),
+              'MYJ': (20, 0, 0, 627800, 868100, 0),
+              'TAK': (20, 0, 0, 712900, 1304000, 0),
+              'MMY': (20, 0, 0, 603800, 2605000, 0),
+              'KMJ': (20, 0, 0, 738100, 2110300, 11)}
+EXPECT_JP8_CELLS = len(JP8) * len(JP8_WEEKS) * len(EXPECT_WEEKEND)        # 140칸
+EXPECT_JP8_PRICED = sum(v[0] for v in EXPECT_JP8.values())                # 120
+EXPECT_JP8_UNOPENED = sum(v[2] for v in EXPECT_JP8.values())              # 20
+# 원본이 콕 집어 적은 칸(오봉 봉우리·노선별 최저)
+EXPECT_JP8_LOW = {
+    ('CTS', '2027-08-26', '목~월'): 573300, ('CTS', '2027-08-21', '토~월'): 573900,
+    ('KOJ', '2027-08-21', '토~월'): 589100, ('KOJ', '2027-08-14', '토~월'): 2358600,
+    ('KMJ', '2027-08-27', '금~월'): 738100, ('KMJ', '2027-08-13', '금~월'): 2110300,
+    ('MYJ', '2027-08-19', '목~월'): 627800, ('TAK', '2027-08-20', '금~월'): 712900,
+    ('MMY', '2027-08-21', '토~월'): 603800, ('MMY', '2027-08-13', '금~일'): 2605000,
+}
+
 # 삿포로 2027-09-09 목~일은 최저가가 경유(자가환승) 578,222원이고 직항은 734,463원이다(alt)
 EXPECT_JP910_ALT = {('CTS', '2027-09-09', '목~일'): 734463,
                     ('CTS', '2027-10-01', '금~일'): 924306}
@@ -1042,8 +1070,13 @@ def check_flights(flights):
         return (n.get('code') in JP910 and n.get('pattern') in EXPECT_WEEKEND
                 and '2027-09-01' <= n.get('date', '') <= '2027-10-31')
 
+    def _jp8_mark(n):
+        """일본 7개 노선 2027년 8월 칸인가 — 아래 140칸 전수 검사에서 따로 본다."""
+        return (n.get('code') in JP8 and n.get('pattern') in EXPECT_WEEKEND
+                and n.get('date', '')[:7] == '2027-08')
+
     def _plain(n):
-        return not _jp26_mark(n) and not _jp910_mark(n)
+        return not _jp26_mark(n) and not _jp910_mark(n) and not _jp8_mark(n)
     got_ns = {(n.get('code'), n.get('date')) for n in nosale if _plain(n)}
     if got_ns != EXPECT_NOSALE_ALL:
         problems.append('noSale %d칸 (기대 %d칸) 차이: %s'
@@ -1151,6 +1184,49 @@ def check_flights(flights):
                     if d['date'] == key[1] and d['pattern'] == key[2]), None)
         if not hit or hit['price'] != price:
             problems.append('일본 9~10월 칸 %s (%s원)이 없습니다' % (key, price))
+    # 일본 7개 노선 2027년 8월 — 4주 × 5패턴 140칸 전수(값 120 + 미오픈 20)
+    jp8_grid = {(c, (datetime.date.fromisoformat(thu) + datetime.timedelta(
+                    days=(FL_WD[p[0]] - FL_WD['목']) % 7)).isoformat(), p)
+                for c in JP8 for thu in JP8_WEEKS for p in EXPECT_WEEKEND}
+    jp8_deals = {(r['code'], d['date'], d['pattern']) for r in routes if r['code'] in JP8
+                 for d in r['deals'] if d['date'][:7] == '2027-08'}
+    jp8_up = {(n.get('code'), n.get('date'), n.get('pattern')) for n in unopened if _jp8_mark(n)}
+    jp8_ns = {(n.get('code'), n.get('date'), n.get('pattern')) for n in nosale if _jp8_mark(n)}
+    if len(jp8_grid) != EXPECT_JP8_CELLS:
+        problems.append('일본 7노선 2027년 8월 격자 %d칸 (기대 %d칸)'
+                        % (len(jp8_grid), EXPECT_JP8_CELLS))
+    if len(jp8_deals) != EXPECT_JP8_PRICED:
+        problems.append('일본 7노선 2027년 8월 실측 %d칸 (기대 %d칸)'
+                        % (len(jp8_deals), EXPECT_JP8_PRICED))
+    if len(jp8_up) != EXPECT_JP8_UNOPENED or jp8_ns:
+        problems.append('일본 7노선 2027년 8월 미오픈 %d칸 · 판매편 0건 %d칸 (기대 %d · 0칸)'
+                        % (len(jp8_up), len(jp8_ns), EXPECT_JP8_UNOPENED))
+    if (jp8_deals | jp8_up) != jp8_grid:
+        problems.append('일본 7노선 2027년 8월 140칸이 값·미오픈으로 다 차지 않았습니다: %s'
+                        % sorted(jp8_grid - (jp8_deals | jp8_up))[:6])
+    for code in JP8:
+        r = by_code.get(code)
+        got = [d for d in (r['deals'] if r else []) if d['date'][:7] == '2027-08']
+        n, _ns, _up, low, high, direct = EXPECT_JP8[code]
+        if len(got) != n:
+            problems.append('일본 %s 2027년 8월 값 %d칸 (기대 %d칸)' % (code, len(got), n))
+            continue
+        if not got:
+            continue
+        vals = [d['price'] for d in got]
+        if (min(vals), max(vals)) != (low, high):
+            problems.append('일본 %s 2027년 8월 최저·최고 %s (기대 %s)'
+                            % (code, (min(vals), max(vals)), (low, high)))
+        if sum(1 for d in got if d.get('via') is False) != direct:
+            problems.append('일본 %s 2027년 8월 직항이 최저가인 칸 %d (기대 %d)'
+                            % (code, sum(1 for d in got if d.get('via') is False), direct))
+    for key, price in EXPECT_JP8_LOW.items():
+        r = by_code.get(key[0])
+        hit = next((d for d in (r['deals'] if r else [])
+                    if d['date'] == key[1] and d['pattern'] == key[2]), None)
+        if not hit or hit['price'] != price:
+            problems.append('일본 8월 칸 %s (%s원)이 없습니다' % (key, price))
+
     for key, alt in EXPECT_JP910_ALT.items():
         r = by_code.get(key[0])
         hit = next((d for d in (r['deals'] if r else [])

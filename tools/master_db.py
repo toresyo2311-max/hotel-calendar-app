@@ -423,10 +423,11 @@ EXPECT_FIRST_WEEK, EXPECT_LAST_WEEK = '2026-12-03', '2027-11-25'
 # 3월 3·4주차 240칸을 더한 값(2월 779→791 · 3월 538→791 · 4월 357→377 · 5월 316→332)
 # 2026-11-18 일본 7노선 2027년 2월 보완본 — 빈칸 7 + 판매편 0건 7 = 14칸을 값으로 채워 2월 921→935
 EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
-                       '2027-03': 926, '2027-04': 1037, '2027-05': 687}
+                       '2027-03': 926, '2027-04': 1037, '2027-05': 807}
 # 2027-05는 2026-11-19 기존 24개 노선 5월 3~4주차(5/13~17 · 5/20~24) 5패턴 240칸을 더한 값(423→663)
 # 2027-04·05는 같은 날 기존 24개 노선 5월 1주차(4/29~5/3) 120칸을 더한 값(4월 941→1037 · 5월 663→687 —
 #   출발일 4/29 48칸 · 4/30 48칸이 4월, 5/1 24칸이 5월)
+# 2027-05는 이어 기존 24개 노선 5월 5주차(5/27~31) 120칸을 더한 값(687→807 — 출발일이 모두 5월)
 # 2026-12·2027-01은 2026-11-18 일본 보완본(12월 +51칸·당일치기 4칸 · 1월 +9칸)과 중국 3박 완주본을 더한 값
 # 2027.06~11 반영분(3개 원본: 260 + 73 + 53 = 386건)
 # 2027-06은 2026-11-18 동남아 4노선 2~6월 420칸 가운데 6월 80칸을 더한 값(239+80)
@@ -558,6 +559,33 @@ EXPECT_MAY1_ALT_CELLS = {('PVG', '2027-04-30', '금~일'): 637000,
                          ('TAO', '2027-04-29', '목~월'): 853600,
                          ('BJS', '2027-04-29', '목~일'): 511100,
                          ('CXR', '2027-04-29', '목~일'): None}
+
+# 2027년 5월 5주차(5/27~5/31) 기존 24개 노선 × 5패턴 120칸 — 2026-11-19 6번 보고서 4장
+# (일본·괌 30 · 중국 25 · 대만·홍콩·마카오 25 · 동남아 40). 120칸 모두 값이고(미오픈·판매편 0건·
+# 요금 미공개 0칸), 앱의 주차 선택은 목요일 기준이라 '5월 4주(5/27~6/2)' 로 표시된다.
+MAY5_START, MAY5_END = '2027-05-27', '2027-05-31'
+EXPECT_MAY5_OVERALL = (282171, 849300)    # 최저 하노이 5/27~5/30 · 최고 마카오 5/27~5/30
+EXPECT_MAY5_DIRECT = 45                   # 직항이 최저가인 칸
+EXPECT_MAY5_AVG = {'금~월': 457678, '금~일': 465632, '토~월': 466150,
+                   '목~일': 481303, '목~월': 491480}
+EXPECT_MAY5_ROUTE = {
+    'FUK': (333438, 429700), 'KIX': (411844, 453400), 'TYO': (542800, 587800),
+    'NGO': (657700, 702700), 'OKA': (482400, 713000), 'GUM': (683100, 733100),
+    'PVG': (286047, 404447), 'BJS': (412300, 499900), 'NKG': (481502, 569500),
+    'HGH': (473637, 513100), 'TAO': (473400, 518700),
+    'TPE': (288183, 302983), 'HKG': (315415, 383495), 'KHH': (399700, 633400),
+    'RMQ': (399700, 460000), 'MFM': (749300, 849300),
+    'BKK': (354361, 364871), 'CNX': (328401, 553300), 'DAD': (331573, 469900),
+    'CXR': (352374, 378375), 'HAN': (282171, 323772), 'SGN': (295172, 295172),
+    'SIN': (507209, 605230), 'DPS': (570134, 586523),
+}
+EXPECT_MAY5_LOW = {('HAN', '2027-05-27', '목~일'): 282171,
+                   ('PVG', '2027-05-29', '토~월'): 286047,
+                   ('TPE', '2027-05-27', '목~일'): 288183,
+                   ('MFM', '2027-05-27', '목~일'): 849300,
+                   ('FUK', '2027-05-27', '목~월'): 333438}
+# 항저우 3칸 · 칭다오 4칸은 '최저가 탭 값(편성 미확인)' 이라 via=null
+EXPECT_MAY5_UNKNOWN = 7
 
 # ── 2026-11-18 중국 8개 노선 2027년 7~11월 (15주말 × 7패턴) ────────────────────────
 # `noSale` 은 세 가지를 `status` 로 구분한다 — nosale(조회 결과 판매편 없음) ·
@@ -1086,6 +1114,45 @@ def check_flights(flights):
             if got != alt:
                 problems.append('5월 1주차 직항 최저 %s %s %s %s (기대 %s)'
                                 % (code, date, pat, got, alt))
+    # 2027년 5월 5주차(5/27~31 · 앱 주차 선택은 5월 4주 5/27~6/2) — 기존 24개 노선 × 5패턴 120칸
+    may5 = [dict(d, code=r['code']) for r in routes if r['code'] in EXPECT_MAR_W1_ROUTES
+            for d in r['deals'] if MAY5_START <= d['date'] <= MAY5_END
+            and d['pattern'] in EXPECT_WEEKEND]
+    if len(may5) != 120:
+        problems.append('5월 5주차 %d칸 (기대 120칸)' % len(may5))
+    else:
+        ps = [d['price'] for d in may5]
+        if (min(ps), max(ps)) != EXPECT_MAY5_OVERALL:
+            problems.append('5월 5주차 최저·최고 %s (기대 %s)'
+                            % ((min(ps), max(ps)), EXPECT_MAY5_OVERALL))
+        got_direct = sum(1 for d in may5 if d.get('via') is False)
+        if got_direct != EXPECT_MAY5_DIRECT:
+            problems.append('5월 5주차 직항이 최저가인 칸 %d (기대 %d)'
+                            % (got_direct, EXPECT_MAY5_DIRECT))
+        got_unknown = sum(1 for d in may5 if d.get('via') is None)
+        if got_unknown != EXPECT_MAY5_UNKNOWN:
+            problems.append('5월 5주차 편성 미확인 %d칸 (기대 %d칸)'
+                            % (got_unknown, EXPECT_MAY5_UNKNOWN))
+        for code, (lo, hi) in EXPECT_MAY5_ROUTE.items():
+            v = [d['price'] for d in may5 if d['code'] == code]
+            if len(v) != 5:
+                problems.append('5월 5주차 %s %d칸 (기대 5칸)' % (code, len(v)))
+            elif (min(v), max(v)) != (lo, hi):
+                problems.append('5월 5주차 %s 최저·최고 %s (기대 %s)'
+                                % (code, (min(v), max(v)), (lo, hi)))
+        for pat, want in EXPECT_MAY5_AVG.items():
+            v = [d['price'] for d in may5 if d['pattern'] == pat]
+            if len(v) != 24:
+                problems.append('5월 5주차 %s %d칸 (기대 24칸)' % (pat, len(v)))
+            elif round(sum(v) / len(v)) != want:
+                problems.append('5월 5주차 %s 평균 %d (기대 %d)'
+                                % (pat, round(sum(v) / len(v)), want))
+        for (code, date, pat), price in EXPECT_MAY5_LOW.items():
+            got = next((d['price'] for d in may5 if d['code'] == code
+                        and d['date'] == date and d['pattern'] == pat), None)
+            if got != price:
+                problems.append('5월 5주차 최저 칸 %s %s %s %s (기대 %d)'
+                                % (code, date, pat, got, price))
     for m, n in EXPECT_OLD_BY_MONTH.items():
         if by_month.get(m) != n:
             problems.append('%s 기존 건 %s (기대 %d — 손실/변형)' % (m, by_month.get(m), n))

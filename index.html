@@ -992,7 +992,8 @@ function renderCalendar(S){
       }
       const lvl=heatLevel(bands,p);
       const isLow=p!=null&&mMin!=null&&p===mMin;
-      const faded=(!isWeekend(date)&&st.weekend);
+      const blackout=Boolean(st.tab==='china'&&e&&e.blk);
+      const faded=(!isWeekend(date)&&st.weekend)||(blackout&&st.hideBlackouts);
       let sub='',tail='';
       if(st.tab==='marriott'){
         if(st.pmode==='points'&&e&&e.p!=null){const c=e.h?cashOf(e.h,date):null;if(c!=null)sub='<span class="daycash">'+shortWon(c)+'</span>'}
@@ -1001,6 +1002,8 @@ function renderCalendar(S){
       }else if(st.tab==='china'&&st.cmode==='both'){
         if(only){tail=apcBadgeFor(apcStateOf(filteredHotels()[0],date))}
         else{const s=apcDaySummary(date);if(s.total){tail=s.a>0?'<span class="apc yes">APC '+s.a+'곳</span>':(s.u+s.x>=s.total?(s.x>=s.total?'<span class="apc none">미참여</span>':'<span class="apc unk">미확인</span>'):'<span class="apc no">APC 0</span>')}}
+      }else if(st.tab==='china'&&blackout){
+        tail='<span class="daytail excluded">약관 제외일</span>';
       }else if(st.tab==='domestic'&&st.mode!=='cash'&&e&&e.p!=null&&!only){
         tail='<span class="daytail">'+(st.mode==='sp2'?'2박 세전':'3박 세전')+'</span>';
       }
@@ -1012,7 +1015,7 @@ function renderCalendar(S){
         else if(st.tab==='domestic'&&st.mode==='sp2'&&st.hotel==='dB200')vlabel='<span class="daymiss">쿼터 없음</span>';
         else vlabel='<span class="daymiss">—</span>';
       }
-      const cls='cal-day '+(lvl?'hm'+lvl+' ':'hm5 ')+(isLow?'low ':'')+(faded?'faded ':'')+(dow===0?'sunday ':dow===6?'saturday ':'')+(st.selectedDay===date?'selected-day':'');
+      const cls='cal-day '+(lvl?'hm'+lvl+' ':'hm5 ')+(isLow?'low ':'')+(blackout?'blackout ':'')+(faded?'faded ':'')+(dow===0?'sunday ':dow===6?'saturday ':'')+(st.selectedDay===date?'selected-day':'');
       cells+='<button type="button" class="'+cls+'" data-date="'+date+'" aria-label="'+fullDate(date)+' '+(p!=null?shortVal(p):'요금 미표시')+'" title="'+date+' 자세히"><span class="daynum">'+Number(date.slice(-2))+'</span>'+vlabel+sub+tail+'</button>';
     }
     const sub=apcMode?(okDays+'일 가능')
@@ -1339,9 +1342,11 @@ function dayLowSeries(){
     for(const d of daysOf(m)){
       if(st.weekend&&!isWeekend(d)){out.push({d:d,p:null,h:null});continue}
       if(apc){const s=apcDaySummary(d);out.push({d:d,p:(s.total&&s.u+s.x<s.total)?s.a:null,h:null,n:s.a});continue}
-      let best=null,bh=null;
-      for(const h of hs){const v=valueOf(h,d);if(v!=null&&(best==null||v<best)){best=v;bh=h}}
-      out.push({d:d,p:best,h:bh});
+      let best=null,bh=null,priced=false,allBlk=(st.tab==='china');
+      for(const h of hs){const v=valueOf(h,d);
+        if(v!=null){priced=true;if(best==null||v<best){best=v;bh=h}
+          if(allBlk&&!(h.blackouts&&h.blackouts.indexOf(d)>=0))allBlk=false}}
+      out.push({d:d,p:best,h:bh,blk:Boolean(allBlk&&priced)});
     }
   }
   return out;

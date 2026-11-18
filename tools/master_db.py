@@ -312,6 +312,21 @@ EXPECT_MAR_W2_AVG = {'금~일': 388200, '토~월': 376275, '목~일': 392467, '�
 EXPECT_MAR_W1_ROUTES = ('FUK', 'KIX', 'TYO', 'TPE', 'HKG', 'MFM', 'PVG', 'BKK', 'DAD', 'CXR',
                         'NKG', 'SGN', 'SIN', 'GUM', 'NGO', 'OKA', 'HGH', 'TAO', 'HAN', 'CNX',
                         'DPS', 'KHH', 'RMQ', 'BJS')      # = EXPECT_JAN_ALL 과 같은 24개 노선
+# 2027년 4월 1~3주차(4/1~5 · 4/8~12 · 4/15~19) 기존 24개 노선 × 5패턴 120칸씩(2026-11-18 5번 보고서 3건).
+# 4월 4주차(4/22~26)는 아직 미수신이라 이 세 주만 검사하고, 24개 노선에는 4주차 값이 없어야 한다.
+APR_WEEKS = (
+    ('1주차', '2027-04-01', '2027-04-05', (299100, 2133000), 47,
+     {'금~월': 524404, '목~일': 531117, '금~일': 534188, '토~월': 538488, '목~월': 578008}),
+    ('2주차', '2027-04-08', '2027-04-12', (299100, 864500), 49,
+     {'금~월': 486233, '토~월': 490192, '금~일': 491042, '목~월': 499771, '목~일': 500958}),
+    ('3주차', '2027-04-15', '2027-04-19', (299000, 923000), 45,
+     {'토~월': 490858, '금~월': 492833, '목~월': 493988, '목~일': 497004, '금~일': 506588}),
+)
+EXPECT_APR_TOTAL = 360
+EXPECT_APR_LOW = {('PVG', '2027-04-03', '토~월'): 299100,
+                  ('PVG', '2027-04-10', '토~월'): 299100,
+                  ('PVG', '2027-04-17', '토~월'): 299000}
+EXPECT_APR_4W = ('2027-04-22', '2027-04-26')   # 미수신 — 24개 노선에 값이 있으면 실패
 # 완본이 도착한 8노선 — 9주(목요일 기준) × 5패턴 45칸씩, 값 333 + 판매편 0건 27 = 360칸
 EXPECT_FULL_ROUTES = ('SHE', 'DLC', 'CAN', 'XMN', 'YNJ', 'DYG', 'KWL', 'TXN')
 EXPECT_FULL_WEEKS = ('2026-12-03', '2026-12-10', '2026-12-17', '2026-12-24', '2026-12-31',
@@ -396,7 +411,7 @@ EXPECT_FIRST_WEEK, EXPECT_LAST_WEEK = '2026-12-03', '2027-11-25'
 # 2026-11-18 마지막 2건 — 중국 G2 목~월 84칸(값 77: 2월 12·3월 13·4월 20·5월 16·6월 16)과
 # 3월 3·4주차 240칸을 더한 값(2월 779→791 · 3월 538→791 · 4월 357→377 · 5월 316→332)
 EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 921,
-                       '2027-03': 926, '2027-04': 461, '2027-05': 423}
+                       '2027-03': 926, '2027-04': 821, '2027-05': 423}
 # 2026-12·2027-01은 2026-11-18 일본 보완본(12월 +51칸·당일치기 4칸 · 1월 +9칸)과 중국 3박 완주본을 더한 값
 # 2027.06~11 반영분(3개 원본: 260 + 73 + 53 = 386건)
 # 2027-06은 2026-11-18 동남아 4노선 2~6월 420칸 가운데 6월 80칸을 더한 값(239+80)
@@ -756,6 +771,43 @@ def check_flights(flights):
                   if d['date'][:7] == m and '2027-02-01' <= d['date'] <= '2027-06-30')
         if got != want:
             problems.append('동남아 %s 2027년 2~6월 %d칸 (기대 %d칸)' % (m, got, want))
+    # 2027년 4월 1~3주차 — 120칸씩(노선 24 × 5패턴). 최저·최고·직항 칸 수·패턴 평균이 원문과 같은지
+    apr_cells = 0
+    for label_w, start, end, overall, direct_want, avg in APR_WEEKS:
+        rows = [dict(d, code=r['code']) for r in routes if r['code'] in EXPECT_MAR_W1_ROUTES
+                for d in r['deals'] if start <= d['date'] <= end and d['pattern'] in EXPECT_WEEKEND]
+        if len(rows) != 120:
+            problems.append('4월 %s %d칸 (기대 120칸)' % (label_w, len(rows)))
+            continue
+        apr_cells += len(rows)
+        prices = [d['price'] for d in rows]
+        if (min(prices), max(prices)) != overall:
+            problems.append('4월 %s 최저·최고 %s (기대 %s)'
+                            % (label_w, (min(prices), max(prices)), overall))
+        direct = sum(1 for d in rows if d.get('via') is False)
+        if direct != direct_want:
+            problems.append('4월 %s 직항 %d칸 (기대 %d칸)' % (label_w, direct, direct_want))
+        for pat, want in avg.items():
+            ps = [d['price'] for d in rows if d['pattern'] == pat]
+            if len(ps) != 24:
+                problems.append('4월 %s %s %d칸 (기대 24칸)' % (label_w, pat, len(ps)))
+            elif round(sum(ps) / len(ps)) != want:
+                problems.append('4월 %s %s 평균 %d (기대 %d)'
+                                % (label_w, pat, round(sum(ps) / len(ps)), want))
+    if apr_cells != EXPECT_APR_TOTAL:
+        problems.append('4월 1~3주차 %d칸 (기대 %d칸)' % (apr_cells, EXPECT_APR_TOTAL))
+    for (code, date, pat), price in EXPECT_APR_LOW.items():
+        r = by_code.get(code)
+        got = next((d['price'] for d in (r['deals'] if r else [])
+                    if d['date'] == date and d['pattern'] == pat), None)
+        if got != price:
+            problems.append('4월 주차 최저 %s %s %s %s (기대 %d)'
+                            % (code, date, pat, got, price))
+    stray = [d for r in routes if r['code'] in EXPECT_MAR_W1_ROUTES for d in r['deals']
+             if EXPECT_APR_4W[0] <= d['date'] <= EXPECT_APR_4W[1]]
+    if stray:
+        problems.append('4월 4주차(미수신)인데 24개 노선에 값이 있습니다: %s'
+                        % [(d['date'], d['pattern']) for d in stray[:4]])
     for m, n in EXPECT_OLD_BY_MONTH.items():
         if by_month.get(m) != n:
             problems.append('%s 기존 건 %s (기대 %d — 손실/변형)' % (m, by_month.get(m), n))

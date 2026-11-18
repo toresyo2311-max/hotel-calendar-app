@@ -234,9 +234,10 @@ EXPECT_NEW_ROUTES = {'SHE': ('선양', 226), 'DLC': ('다롄', 256), 'CAN': ('�
 #   + 당일치기 실측 4칸(삿포로·구마모토·시즈오카·다카마쓰) = 175칸. 미실측은 시즈오카 4칸(표시 운임 없음).
 # 동남아 4노선(4번)은 2026.12~2027.01 178칸 + 2027년 2~6월 21주 × 5패턴 420칸(푸꾸옥·코타키나발루·
 #   쿠알라룸푸르 150칸씩 · 비엔티안 148칸 — 12/3 목~일·목~월 2칸 가격 미제공).
-# 필리핀 4노선은 2026-11-18 2027년 2~6월 21주 × 5패턴 105칸을 더해 150칸이 됐다.
-EXPECT_NEW_ROUTES2 = {'CEB': ('세부', 150), 'MNL': ('마닐라', 150), 'TAG': ('보홀(팡라오)', 150),
-                      'CRK': ('클락', 150), 'PQC': ('푸꾸옥', 205), 'BKI': ('코타키나발루', 205),
+# 필리핀 4노선은 2026-11-18 2027년 2~6월 21주 × 5패턴 105칸을 더해 150칸이 됐고,
+# 같은 날 저녁 2027년 7~11월 1차 실측(실측 126칸)을 더해 세부 162 · 마닐라 207 · 보홀 152 · 클락 205칸이다.
+EXPECT_NEW_ROUTES2 = {'CEB': ('세부', 162), 'MNL': ('마닐라', 207), 'TAG': ('보홀(팡라오)', 152),
+                      'CRK': ('클락', 205), 'PQC': ('푸꾸옥', 205), 'BKI': ('코타키나발루', 205),
                       'KUL': ('쿠알라룸푸르', 205), 'VTE': ('비엔티안', 203),
                       'KMJ': ('구마모토', 52), 'KOJ': ('가고시마', 45),
                       'FSZ': ('시즈오카', 50), 'MYJ': ('마쓰야마', 45), 'TAK': ('다카마쓰', 49),
@@ -371,9 +372,10 @@ EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 791,
 # 2027-06은 2026-11-18 동남아 4노선 2~6월 420칸 가운데 6월 80칸을 더한 값(239+80)
 # 2027-06은 필리핀 6월 80칸 + G2 금~월 6월 16칸을 더한 값(319 + 96)
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
-EXPECT_H2_BY_MONTH = {'2027-06': 447, '2027-07': 381, '2027-08': 254,
-                      '2027-09': 210, '2027-10': 94, '2027-11': 1}
-EXPECT_H2 = {'weekend': 1299, 'day': 88, 'total': 1387}
+# 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
+EXPECT_H2_BY_MONTH = {'2027-06': 447, '2027-07': 445, '2027-08': 294,
+                      '2027-09': 232, '2027-10': 94, '2027-11': 1}
+EXPECT_H2 = {'weekend': 1425, 'day': 88, 'total': 1513}   # 주말형 1,299 + 필리핀 4노선 126
 EXPECT_NOSALE = {('FUK', '2027-11-12'), ('TYO', '2027-11-12'),
                  ('TYO', '2027-11-16'), ('FUK', '2027-11-20'),
                  ('KWL', '2026-12-05'), ('TXN', '2026-12-05'),   # 중국 2건: 같은 날 복편 0편
@@ -410,6 +412,7 @@ EXPECT_NOSALE_TXN_26M_THUMON = {('TXN', d) for d in (
 EXPECT_NOSALE |= EXPECT_NOSALE_TXN_26M_THUMON
 EXPECT_BOOKING_END = '2027-11-14'
 EXPECT_BOOKING_SEA4 = '2027-09-14'      # 동남아 4노선(푸꾸옥·코타키나발루·쿠알라룸푸르·비엔티안) 판매창
+EXPECT_BOOKING_PH4 = '2027-10-14'       # 필리핀 4노선(세부·마닐라·보홀·클락) 판매창
 EXPECT_JAN_WEEKS = ('2027-01-07', '2027-01-14', '2027-01-21', '2027-01-28')
 # 1월 4주 × 5패턴 전수 노선 — 기존 24개 노선(중국 신규 8노선은 연길만 전수, 나머지는 부분 조사)
 EXPECT_JAN_ALL = ('FUK', 'KIX', 'TYO', 'TPE', 'HKG', 'MFM', 'PVG', 'BKK', 'DAD', 'CXR', 'NKG', 'SGN',
@@ -452,7 +455,24 @@ SEA_H2_UNOPENED = SEA_H2_WEEKS[11:]
 EXPECT_SEA_H2 = {'PQC': (55, 423616, 780500, 624246), 'BKI': (55, 425000, 851200, 712273),
                  'KUL': (55, 411136, 436617, 421792), 'VTE': (55, 417896, 1365374, 608394)}
 EXPECT_UNOPENED_SEA = len(SEA4) * len(SEA_H2_UNOPENED) * len(EXPECT_WEEKEND)
-EXPECT_UNOPENED_TOTAL = EXPECT_UNOPENED_CHINA + EXPECT_UNOPENED_SEA
+
+# ── 2026-11-18 필리핀 4개 노선 2027년 7~11월 (22주 × 5패턴 = 440칸) ──────────────
+# 예약창 상한이 2027-10-14라 16주차(10/14 목 시작)~22주차 7주 140칸은 미오픈이고,
+# 실측은 126칸(마닐라 57 · 클락 55 · 세부 12 · 보홀 2), 나머지 174칸은 미조회(—)다.
+PH4_LAST_SALE = '2027-10-14'
+PH4_H2_WEEKS = tuple((datetime.date(2027, 7, 1) + datetime.timedelta(days=7 * i)).isoformat()
+                     for i in range(22))
+# 노선 → (실측 칸, 최저, 최고, 최저가가 직항인 칸 수)
+EXPECT_PH4_H2 = {'CEB': (12, 453652, 803600, 0), 'MNL': (57, 406456, 766600, 2),
+                 'TAG': (2, 553300, 565669, 0), 'CRK': (55, 409800, 765300, 0)}
+EXPECT_PH4_H2_MISSING = {'CEB': 63, 'MNL': 18, 'TAG': 73, 'CRK': 20}   # 미조회 174칸
+EXPECT_PH4_H2_LOW = {('MNL', '2027-08-06', '금~일'): 406456,
+                     ('CEB', '2027-07-01', '목~월'): 453652,
+                     ('TAG', '2027-07-02', '금~일'): 553300,
+                     ('CRK', '2027-09-03', '금~월'): 409800}
+EXPECT_UNOPENED_PH4 = len(EXPECT_PH4) * len([w for w in PH4_H2_WEEKS if w >= PH4_LAST_SALE]) \
+    * len(EXPECT_WEEKEND)
+EXPECT_UNOPENED_TOTAL = EXPECT_UNOPENED_CHINA + EXPECT_UNOPENED_SEA + EXPECT_UNOPENED_PH4
 
 
 def _h2_keys(pats_by_route):
@@ -917,8 +937,53 @@ def check_flights(flights):
     want_up |= {(c, (datetime.date.fromisoformat(thu) + datetime.timedelta(
                     days=(FL_WD[p[0]] - FL_WD['목']) % 7)).isoformat(), p)
                 for c in SEA4 for thu in SEA_H2_UNOPENED for p in EXPECT_WEEKEND}
+    want_up |= {(c, (datetime.date.fromisoformat(thu) + datetime.timedelta(
+                    days=(FL_WD[p[0]] - FL_WD['목']) % 7)).isoformat(), p)
+                for c in EXPECT_PH4 for thu in PH4_H2_WEEKS if thu >= PH4_LAST_SALE
+                for p in EXPECT_WEEKEND}
     if {(n.get('code'), n.get('date'), n.get('pattern')) for n in unopened} != want_up:
-        problems.append('미오픈 칸이 원문(중국 16칸 + 동남아 4노선 09-16 주 이후 220칸)과 다릅니다.')
+        problems.append('미오픈 칸이 원문(중국 16칸 + 동남아 220칸 + 필리핀 140칸)과 다릅니다.')
+
+    # 필리핀 4노선 2027년 7~11월 — 실측 126칸 + 미오픈 140칸 + 미조회 174칸(빈칸)
+    ph4_grid = {(c, (datetime.date.fromisoformat(thu) + datetime.timedelta(
+                    days=(FL_WD[p[0]] - FL_WD['목']) % 7)).isoformat(), p)
+                for c in EXPECT_PH4 for thu in PH4_H2_WEEKS for p in EXPECT_WEEKEND}
+    ph4_deals = {(r['code'], d['date'], d['pattern']) for r in routes
+                 if r['code'] in EXPECT_PH4 for d in r['deals']
+                 if '2027-07-01' <= d['date'] <= '2027-11-29'}
+    ph4_up = {(c, d, p) for (c, d, p) in want_up if c in EXPECT_PH4}
+    if len(ph4_grid) != len(EXPECT_PH4) * len(PH4_H2_WEEKS) * len(EXPECT_WEEKEND):
+        problems.append('필리핀 7~11월 격자 %d칸 (440칸이어야 함)' % len(ph4_grid))
+    if ph4_deals & ph4_up:
+        problems.append('필리핀 7~11월 실측 칸이 미오픈 칸과 겹칩니다: %s'
+                        % sorted(ph4_deals & ph4_up)[:4])
+    for code, (n, low, high, direct) in EXPECT_PH4_H2.items():
+        r = by_code.get(code)
+        if not r:
+            problems.append('필리핀 노선 %s 없음' % code)
+            continue
+        got = [d for d in r['deals'] if '2027-07-01' <= d['date'] <= '2027-11-29']
+        if len(got) != n:
+            problems.append('필리핀 %s 2027년 7~11월 실측 %d칸 (기대 %d칸)'
+                            % (code, len(got), n))
+            continue
+        vals = [d['price'] for d in got]
+        if (min(vals), max(vals)) != (low, high):
+            problems.append('필리핀 %s 2027년 7~11월 최저·최고 %s (기대 %s)'
+                            % (code, (min(vals), max(vals)), (low, high)))
+        if sum(1 for d in got if d.get('via') is False) != direct:
+            problems.append('필리핀 %s 2027년 7~11월 직항이 최저가인 칸 %d (기대 %d)'
+                            % (code, sum(1 for d in got if d.get('via') is False), direct))
+        missing = {k for k in ph4_grid if k[0] == code} - ph4_deals - ph4_up
+        if len(missing) != EXPECT_PH4_H2_MISSING[code]:
+            problems.append('필리핀 %s 2027년 7~11월 미조회 %d칸 (기대 %d칸)'
+                            % (code, len(missing), EXPECT_PH4_H2_MISSING[code]))
+    for key, price in EXPECT_PH4_H2_LOW.items():
+        r = by_code.get(key[0])
+        hit = next((d for d in (r['deals'] if r else [])
+                    if d['date'] == key[1] and d['pattern'] == key[2]), None)
+        if not hit or hit['price'] != price:
+            problems.append('필리핀 7~11월 최저 칸 %s (%s원)이 없습니다' % (key, price))
 
     # 동남아 4노선 2027년 7~11월 — 11주 × 5패턴 220칸 실측(최저/최고/평균), 09-16 주 이후는 미오픈
     for code, (n, low, high, avg) in EXPECT_SEA_H2.items():
@@ -956,6 +1021,9 @@ def check_flights(flights):
     if bw.get('sea4End') != EXPECT_BOOKING_SEA4:
         problems.append('bookingWindow.sea4End %r (기대 %s)' % (bw.get('sea4End'),
                                                               EXPECT_BOOKING_SEA4))
+    if bw.get('ph4End') != EXPECT_BOOKING_PH4:
+        problems.append('bookingWindow.ph4End %r (기대 %s)' % (bw.get('ph4End'),
+                                                              EXPECT_BOOKING_PH4))
     return problems
 
 

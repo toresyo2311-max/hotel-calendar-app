@@ -239,9 +239,9 @@ EXPECT_NEW_ROUTES = {'SHE': ('선양', 226), 'DLC': ('다롄', 256), 'CAN': ('�
 EXPECT_NEW_ROUTES2 = {'CEB': ('세부', 162), 'MNL': ('마닐라', 207), 'TAG': ('보홀(팡라오)', 152),
                       'CRK': ('클락', 205), 'PQC': ('푸꾸옥', 205), 'BKI': ('코타키나발루', 205),
                       'KUL': ('쿠알라룸푸르', 205), 'VTE': ('비엔티안', 203),
-                      'KMJ': ('구마모토', 52), 'KOJ': ('가고시마', 45),
-                      'FSZ': ('시즈오카', 50), 'MYJ': ('마쓰야마', 45), 'TAK': ('다카마쓰', 49),
-                      'MMY': ('미야코지마', 45), 'CTS': ('삿포로', 48)}
+                      'KMJ': ('구마모토', 95), 'KOJ': ('가고시마', 149),
+                      'FSZ': ('시즈오카', 83), 'MYJ': ('마쓰야마', 118), 'TAK': ('다카마쓰', 152),
+                      'MMY': ('미야코지마', 69), 'CTS': ('삿포로', 191)}
 # 일본 7노선 당일치기 실측 4칸(0박) — 노선 → (출발일, 금액). 나머지 노선은 당일치기 칸이 없다.
 EXPECT_JP_DAYTRIP = {'CTS': ('2026-12-12', 574900), 'KMJ': ('2026-12-16', 370300),
                      'FSZ': ('2026-12-09', 305800), 'TAK': ('2026-12-24', 795000)}
@@ -251,6 +251,36 @@ EXPECT_JP_JAN = {'CTS': 25, 'FSZ': 31, 'KOJ': 23, 'KMJ': 29, 'MYJ': 23, 'TAK': 2
 # 일본 7노선 1월 주말형 5패턴 — 값 138칸 + 항공편 없음 2칸(다카마쓰 1/30 토~월 · 시즈오카 1/15 금~월)
 EXPECT_JP_JAN_NOFLIGHT = {('TAK', '2027-01-30', '토~월'), ('FSZ', '2027-01-15', '금~월')}
 EXPECT_JP_JAN_DAYTRIP = {'CTS': 2, 'FSZ': 9, 'KMJ': 6, 'TAK': 4}
+# 2026-11-18 — 일본 7개 노선 2027년 2~6월 21주 × 7패턴 1,029칸 (실측 523 · 0건 303 · 요금 미공개 98 · 미조회 105)
+# 노선 → (실측 칸, 최저, 최고, 직항이 최저가인 칸). 2027-02-01~06-30 구간만 센다.
+JP26 = ('KMJ', 'KOJ', 'FSZ', 'MYJ', 'TAK', 'MMY', 'CTS')
+JP26_WEEKS = tuple((datetime.date(2027, 2, 4) + datetime.timedelta(days=7 * i)).isoformat()
+                   for i in range(21))
+JP26_WK = ('금~일', '토~월', '목~일', '금~월', '목~월')
+JP26_DAY = ('토~토', '일~일')
+JP26_PATS = JP26_WK + JP26_DAY
+EXPECT_JP26 = {'KMJ': (43, 476800, 1028300, 0), 'KOJ': (104, 508800, 1600600, 7),
+               'FSZ': (33, 274400, 1746600, 13), 'MYJ': (73, 271700, 3074400, 35),
+               'TAK': (103, 226400, 2322200, 14), 'MMY': (24, 878800, 1093600, 0),
+               'CTS': (143, 374303, 1144600, 47)}
+# 노선 → {'주말형': (실측, 0건, 요금 미공개, 미조회), '당일치기': (...)} — 원문 노선별 특징·당일치기 표
+EXPECT_JP26_STATUS = {
+    'KMJ': {'주말형': (40, 0, 61, 4), '당일치기': (3, 0, 0, 39)},
+    'KOJ': {'주말형': (102, 0, 0, 3), '당일치기': (2, 31, 0, 9)},
+    'FSZ': {'주말형': (33, 68, 0, 4), '당일치기': (0, 24, 0, 18)},
+    'MYJ': {'주말형': (73, 7, 25, 0), '당일치기': (0, 20, 11, 11)},
+    'TAK': {'주말형': (103, 0, 0, 2), '당일치기': (0, 33, 0, 9)},
+    'MMY': {'주말형': (24, 81, 0, 0), '당일치기': (0, 39, 0, 3)},
+    'CTS': {'주말형': (105, 0, 0, 0), '당일치기': (38, 0, 1, 3)},
+}
+EXPECT_JP26_CELLS = len(JP26) * len(JP26_WEEKS) * len(JP26_PATS)      # 1,029칸
+EXPECT_JP26_DEALS = 523
+EXPECT_JP26_NOSALE = 303
+EXPECT_JP26_NOFARE = 98
+EXPECT_JP26_BLANK = 105
+# 이 달 실측 칸 수(출발일 기준) — 요약 md 와 같은 값
+EXPECT_JP26_BY_MONTH = {'2027-02': 130, '2027-03': 135, '2027-04': 84,
+                        '2027-05': 91, '2027-06': 83}
 # 중국 G1(선양·다롄·광저우·샤먼) 2027년 2~6월 21주 × 5패턴 420칸(100%) — 노선별 최저·최고(원)
 EXPECT_PUS4_FULL = {'SHE': (417700, 759800), 'DLC': (317400, 663000),
                     'CAN': (500700, 821600), 'XMN': (462400, 884000)}
@@ -365,17 +395,17 @@ EXPECT_FIRST_WEEK, EXPECT_LAST_WEEK = '2026-12-03', '2027-11-25'
 # 중국 G2 금~월 84칸(2월 16·3월 16·4월 20·5월 16·6월 16)을 더한 값
 # 2026-11-18 마지막 2건 — 중국 G2 목~월 84칸(값 77: 2월 12·3월 13·4월 20·5월 16·6월 16)과
 # 3월 3·4주차 240칸을 더한 값(2월 779→791 · 3월 538→791 · 4월 357→377 · 5월 316→332)
-EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 791,
-                       '2027-03': 791, '2027-04': 377, '2027-05': 332}
+EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 921,
+                       '2027-03': 926, '2027-04': 461, '2027-05': 423}
 # 2026-12·2027-01은 2026-11-18 일본 보완본(12월 +51칸·당일치기 4칸 · 1월 +9칸)과 중국 3박 완주본을 더한 값
 # 2027.06~11 반영분(3개 원본: 260 + 73 + 53 = 386건)
 # 2027-06은 2026-11-18 동남아 4노선 2~6월 420칸 가운데 6월 80칸을 더한 값(239+80)
 # 2027-06은 필리핀 6월 80칸 + G2 금~월 6월 16칸을 더한 값(319 + 96)
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
 # 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
-EXPECT_H2_BY_MONTH = {'2027-06': 447, '2027-07': 445, '2027-08': 294,
+EXPECT_H2_BY_MONTH = {'2027-06': 530, '2027-07': 445, '2027-08': 294,
                       '2027-09': 232, '2027-10': 94, '2027-11': 1}
-EXPECT_H2 = {'weekend': 1425, 'day': 88, 'total': 1513}   # 주말형 1,299 + 필리핀 4노선 126
+EXPECT_H2 = {'weekend': 1501, 'day': 95, 'total': 1596}   # 주말형 1,425+76 · 당일치기 88+7(일본 7노선 2027년 6월)
 EXPECT_NOSALE = {('FUK', '2027-11-12'), ('TYO', '2027-11-12'),
                  ('TYO', '2027-11-16'), ('FUK', '2027-11-20'),
                  ('KWL', '2026-12-05'), ('TXN', '2026-12-05'),   # 중국 2건: 같은 날 복편 0편
@@ -422,7 +452,7 @@ EXPECT_FEB_W1_START = '2027-02-04'
 EXPECT_FEB_W1_ROUTES = EXPECT_JAN_ALL
 EXPECT_WEEKEND = ('목~일', '금~일', '토~월', '목~월', '금~월')
 EXPECT_DAY = ('목~목', '금~금', '토~토', '일~일', '월~월')
-EXPECT_DAYTRIP_MIN = 170
+EXPECT_DAYTRIP_MIN = 310
 FL_WD = {'일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6}
 
 # ── 2026-11-18 중국 8개 노선 2027년 7~11월 (15주말 × 7패턴) ────────────────────────
@@ -897,7 +927,11 @@ def check_flights(flights):
     other = [n for n in marks if n.get('status') not in (None, 'nosale', 'nofare', 'unopened')]
     if other:
         problems.append('noSale 의 status 가 이상합니다: %s' % (other[:3],))
-    got_ns = {(n.get('code'), n.get('date')) for n in nosale}
+    def _jp26_mark(n):
+        """일본 7개 노선 2027년 2~6월 칸인가 — 이 구간은 아래 일본 전수 검사에서 따로 본다."""
+        return (n.get('code') in JP26 and n.get('pattern') in JP26_PATS
+                and '2027-02-01' <= n.get('date', '') <= '2027-06-30')
+    got_ns = {(n.get('code'), n.get('date')) for n in nosale if not _jp26_mark(n)}
     if got_ns != EXPECT_NOSALE_ALL:
         problems.append('noSale %d칸 (기대 %d칸) 차이: %s'
                         % (len(got_ns), len(EXPECT_NOSALE_ALL),
@@ -921,14 +955,15 @@ def check_flights(flights):
         key = (n.get('code'), n.get('date'), n.get('pattern'))
         if key in deal_keys:
             problems.append('noSale 가 실측 딜과 겹침: %s' % (key,))
-    # 요금 미공개(운항편은 표시되나 요금 미게시) — 2027년 7~11월 255칸
-    if len(nofare) != EXPECT_NOFARE_TOTAL:
-        problems.append('요금 미공개 %d칸 (기대 %d칸)' % (len(nofare), EXPECT_NOFARE_TOTAL))
-    got_nf = {(n.get('code'), n.get('pattern')) for n in nofare}
+    # 요금 미공개(운항편은 표시되나 요금 미게시) — 2027년 7~11월 255칸 (일본 7노선 2~6월은 아래에서 따로)
+    nofare_h2 = [n for n in nofare if not _jp26_mark(n)]
+    if len(nofare_h2) != EXPECT_NOFARE_TOTAL:
+        problems.append('요금 미공개 %d칸 (기대 %d칸)' % (len(nofare_h2), EXPECT_NOFARE_TOTAL))
+    got_nf = {(n.get('code'), n.get('pattern')) for n in nofare_h2}
     want_nf = {(c, p) for c, pats in H2_NOFARE_PATS.items() for p in pats}
     if got_nf != want_nf:
         problems.append('요금 미공개 (노선·패턴) 이상: %s' % sorted(got_nf ^ want_nf))
-    if {(n.get('code'), n.get('date'), n.get('pattern')) for n in nofare} != _h2_keys(H2_NOFARE_PATS):
+    if {(n.get('code'), n.get('date'), n.get('pattern')) for n in nofare_h2} != _h2_keys(H2_NOFARE_PATS):
         problems.append('요금 미공개 칸(출발일)이 원문과 다릅니다.')
     # 미오픈(예약창 밖) — 중국 8노선 × 10/15·11/12 금~일 16칸 + 동남아 4노선 09-16 주 이후 11주 220칸
     if len(unopened) != EXPECT_UNOPENED_TOTAL:
@@ -943,6 +978,65 @@ def check_flights(flights):
                 for p in EXPECT_WEEKEND}
     if {(n.get('code'), n.get('date'), n.get('pattern')) for n in unopened} != want_up:
         problems.append('미오픈 칸이 원문(중국 16칸 + 동남아 220칸 + 필리핀 140칸)과 다릅니다.')
+
+    # 일본 7개 노선 2027년 2~6월 — 21주 × 7패턴 1,029칸 전수(값 523 + 0건 303 + 미공개 98 + 빈칸 105)
+    jp_grid = {(c, (datetime.date.fromisoformat(thu) + datetime.timedelta(
+                    days=(FL_WD[p[0]] - FL_WD['목']) % 7)).isoformat(), p)
+               for c in JP26 for thu in JP26_WEEKS for p in JP26_PATS}
+    jp_deals = {(r['code'], d['date'], d['pattern'])
+                for r in routes if r['code'] in JP26 for d in r['deals']
+                if '2027-02-01' <= d['date'] <= '2027-06-30'}
+    jp_ns = {(n.get('code'), n.get('date'), n.get('pattern')) for n in nosale if _jp26_mark(n)}
+    jp_nf = {(n.get('code'), n.get('date'), n.get('pattern')) for n in nofare if _jp26_mark(n)}
+    jp_blank = jp_grid - jp_deals - jp_ns - jp_nf
+    if len(jp_grid) != EXPECT_JP26_CELLS:
+        problems.append('일본 7노선 2027년 2~6월 격자 %d칸 (기대 %d칸)'
+                        % (len(jp_grid), EXPECT_JP26_CELLS))
+    if len(jp_deals) != EXPECT_JP26_DEALS:
+        problems.append('일본 7노선 2027년 2~6월 실측 %d칸 (기대 %d칸)'
+                        % (len(jp_deals), EXPECT_JP26_DEALS))
+    if len(jp_ns) != EXPECT_JP26_NOSALE:
+        problems.append('일본 7노선 2027년 2~6월 판매편 0건 %d칸 (기대 %d칸)'
+                        % (len(jp_ns), EXPECT_JP26_NOSALE))
+    if len(jp_nf) != EXPECT_JP26_NOFARE:
+        problems.append('일본 7노선 2027년 2~6월 요금 미공개 %d칸 (기대 %d칸)'
+                        % (len(jp_nf), EXPECT_JP26_NOFARE))
+    if len(jp_blank) != EXPECT_JP26_BLANK:
+        problems.append('일본 7노선 2027년 2~6월 미조회 %d칸 (기대 %d칸)'
+                        % (len(jp_blank), EXPECT_JP26_BLANK))
+    if jp_deals & (jp_ns | jp_nf) or jp_ns & jp_nf:
+        problems.append('일본 7노선 2027년 2~6월 상태가 겹칩니다: %s'
+                        % sorted((jp_deals & (jp_ns | jp_nf)) | (jp_ns & jp_nf))[:4])
+    for code in JP26:
+        for part, pats in (('주말형', JP26_WK), ('당일치기', JP26_DAY)):
+            mine = [k for k in jp_grid if k[0] == code and k[2] in pats]
+            got = (len([k for k in mine if k in jp_deals]),
+                   len([k for k in mine if k in jp_ns]),
+                   len([k for k in mine if k in jp_nf]),
+                   len([k for k in mine if k in jp_blank]))
+            want = EXPECT_JP26_STATUS[code][part]
+            if got != want:
+                problems.append('일본 %s %s (실측·0건·미공개·미조회) %s (기대 %s)'
+                                % (code, part, got, want))
+        r = by_code.get(code)
+        got_p = [d for d in r['deals'] if '2027-02-01' <= d['date'] <= '2027-06-30']
+        n, low, high, direct = EXPECT_JP26[code]
+        if len(got_p) != n:
+            problems.append('일본 %s 2027년 2~6월 값 %d칸 (기대 %d칸)' % (code, len(got_p), n))
+            continue
+        vals = [d['price'] for d in got_p]
+        if (min(vals), max(vals)) != (low, high):
+            problems.append('일본 %s 2027년 2~6월 최저·최고 %s (기대 %s)'
+                            % (code, (min(vals), max(vals)), (low, high)))
+        if sum(1 for d in got_p if d.get('via') is False) != direct:
+            problems.append('일본 %s 2027년 2~6월 직항이 최저가인 칸 %d (기대 %d)'
+                            % (code, sum(1 for d in got_p if d.get('via') is False), direct))
+    for m, want in EXPECT_JP26_BY_MONTH.items():
+        got = sum(1 for c, d, p in jp_deals if d[:7] == m)
+        if got != want:
+            problems.append('일본 7노선 %s 실측 %d칸 (기대 %d칸)' % (m, got, want))
+    if '일본 7개 노선' not in (flights.get('notes', {}).get('2027-02') or ''):
+        problems.append('2027-02 notes 에 일본 7개 노선 커버리지가 없습니다.')
 
     # 필리핀 4노선 2027년 7~11월 — 실측 126칸 + 미오픈 140칸 + 미조회 174칸(빈칸)
     ph4_grid = {(c, (datetime.date.fromisoformat(thu) + datetime.timedelta(

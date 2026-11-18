@@ -447,7 +447,7 @@ def main(argv):
                          % fl['notes'][MONTH_MAY][:40])
     may1 = sorted((d for d in rows if d['date'] == '2027-05-01'), key=lambda d: d['price'])
     fl['notes'][MONTH_MAY] = (
-        '2027년 5월 1주차(4/29~5/3) 24개 노선 5패턴 120칸도 전부 실측했습니다 — 이 주는 앱에서 '
+        '5월 1주차(4/29~5/3) 24개 노선 5패턴 120칸도 전부 실측했습니다 — 이 주는 앱에서 '
         '4월 5주(4/29~5/5)로 표시되고, 그중 5/1 토~월 24칸이 이 달 달력에 들어옵니다(최저 '
         + ' · '.join('%s %s원' % (CITY[d['code']], format(d['price'], ','))
                     for d in may1[:3]) + '). '

@@ -236,12 +236,13 @@ EXPECT_NEW_ROUTES = {'SHE': ('선양', 226), 'DLC': ('다롄', 256), 'CAN': ('�
 #   쿠알라룸푸르 150칸씩 · 비엔티안 148칸 — 12/3 목~일·목~월 2칸 가격 미제공).
 # 필리핀 4노선은 2026-11-18 2027년 2~6월 21주 × 5패턴 105칸을 더해 150칸이 됐고,
 # 같은 날 저녁 2027년 7~11월 1차 실측(실측 126칸)을 더해 세부 162 · 마닐라 207 · 보홀 152 · 클락 205칸이다.
+# 일본 7노선은 2026-11-19 2027년 7월 완결본(6개 노선 25칸 값 + 시즈오카 25칸 미오픈)을 더한 값이다.
 EXPECT_NEW_ROUTES2 = {'CEB': ('세부', 162), 'MNL': ('마닐라', 207), 'TAG': ('보홀(팡라오)', 152),
                       'CRK': ('클락', 205), 'PQC': ('푸꾸옥', 205), 'BKI': ('코타키나발루', 205),
                       'KUL': ('쿠알라룸푸르', 205), 'VTE': ('비엔티안', 203),
-                      'KMJ': ('구마모토', 95), 'KOJ': ('가고시마', 152),
-                      'FSZ': ('시즈오카', 85), 'MYJ': ('마쓰야마', 118), 'TAK': ('다카마쓰', 154),
-                      'MMY': ('미야코지마', 76), 'CTS': ('삿포로', 191)}
+                      'KMJ': ('구마모토', 120), 'KOJ': ('가고시마', 177),
+                      'FSZ': ('시즈오카', 85), 'MYJ': ('마쓰야마', 143), 'TAK': ('다카마쓰', 179),
+                      'MMY': ('미야코지마', 101), 'CTS': ('삿포로', 216)}
 # 일본 7노선 당일치기 실측 4칸(0박) — 노선 → (출발일, 금액). 나머지 노선은 당일치기 칸이 없다.
 EXPECT_JP_DAYTRIP = {'CTS': ('2026-12-12', 574900), 'KMJ': ('2026-12-16', 370300),
                      'FSZ': ('2026-12-09', 305800), 'TAK': ('2026-12-24', 795000)}
@@ -424,9 +425,10 @@ EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
 # 2027-06은 필리핀 6월 80칸 + G2 금~월 6월 16칸을 더한 값(319 + 96)
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
 # 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
-EXPECT_H2_BY_MONTH = {'2027-06': 530, '2027-07': 445, '2027-08': 294,
+EXPECT_H2_BY_MONTH = {'2027-06': 530, '2027-07': 595, '2027-08': 294,
                       '2027-09': 232, '2027-10': 94, '2027-11': 1}
-EXPECT_H2 = {'weekend': 1501, 'day': 95, 'total': 1596}   # 주말형 1,425+76 · 당일치기 88+7(일본 7노선 2027년 6월)
+# 2027-07 은 2026-11-19 일본 7노선 2027년 7월 완결본(값 150칸)을 더한 값(445 → 595).
+EXPECT_H2 = {'weekend': 1651, 'day': 95, 'total': 1746}   # 주말형 1,425+76+150 · 당일치기 88+7(일본 7노선 2027년 6월)
 EXPECT_NOSALE = {('FUK', '2027-11-12'), ('TYO', '2027-11-12'),
                  ('TYO', '2027-11-16'), ('FUK', '2027-11-20'),
                  ('KWL', '2026-12-05'), ('TXN', '2026-12-05'),   # 중국 2건: 같은 날 복편 0편
@@ -523,7 +525,13 @@ EXPECT_PH4_H2_LOW = {('MNL', '2027-08-06', '금~일'): 406456,
                      ('CRK', '2027-09-03', '금~월'): 409800}
 EXPECT_UNOPENED_PH4 = len(EXPECT_PH4) * len([w for w in PH4_H2_WEEKS if w >= PH4_LAST_SALE]) \
     * len(EXPECT_WEEKEND)
-EXPECT_UNOPENED_TOTAL = EXPECT_UNOPENED_CHINA + EXPECT_UNOPENED_SEA + EXPECT_UNOPENED_PH4
+# 2026-11-19 일본 7노선 2027년 7월 — 시즈오카 25칸은 네 구간 조회 모두 "이용 가능한 항공편 없음"
+# (원문이 예약창 미오픈으로 판단). 값 대신 `unopened` 로 적었고, 이 25칸을 미오픈 합계에 더한다.
+JP_JUL_WEEKS = tuple((datetime.date(2027, 7, 1) + datetime.timedelta(days=7 * i)).isoformat()
+                     for i in range(5))
+EXPECT_UNOPENED_FSZ_JUL = len(JP_JUL_WEEKS) * len(EXPECT_WEEKEND)      # 25칸
+EXPECT_UNOPENED_TOTAL = (EXPECT_UNOPENED_CHINA + EXPECT_UNOPENED_SEA + EXPECT_UNOPENED_PH4
+                         + EXPECT_UNOPENED_FSZ_JUL)
 
 
 def _h2_keys(pats_by_route):
@@ -1029,8 +1037,11 @@ def check_flights(flights):
                     days=(FL_WD[p[0]] - FL_WD['목']) % 7)).isoformat(), p)
                 for c in EXPECT_PH4 for thu in PH4_H2_WEEKS if thu >= PH4_LAST_SALE
                 for p in EXPECT_WEEKEND}
+    want_up |= {('FSZ', (datetime.date.fromisoformat(thu) + datetime.timedelta(
+                    days=(FL_WD[p[0]] - FL_WD['목']) % 7)).isoformat(), p)
+                for thu in JP_JUL_WEEKS for p in EXPECT_WEEKEND}
     if {(n.get('code'), n.get('date'), n.get('pattern')) for n in unopened} != want_up:
-        problems.append('미오픈 칸이 원문(중국 16칸 + 동남아 220칸 + 필리핀 140칸)과 다릅니다.')
+        problems.append('미오픈 칸이 원문(중국 16칸 + 동남아 220칸 + 필리핀 140칸 + 일본 시즈오카 7월 25칸)과 다릅니다.')
 
     # 일본 7개 노선 2027년 2~6월 — 21주 × 7패턴 1,029칸 전수(값 523 + 0건 303 + 미공개 98 + 빈칸 105)
     jp_grid = {(c, (datetime.date.fromisoformat(thu) + datetime.timedelta(

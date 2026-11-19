@@ -977,6 +977,10 @@ body.cmp-on{padding-bottom:66px}
 .vt-mfields label{display:block;font-size:8.5px;font-weight:800;color:var(--muted2)}
 .vt-mfields input{width:100%;max-width:360px;border:1px solid var(--line2);border-radius:6px;padding:4px 6px;font-size:10px;background:#fcfbff;color:var(--ink)}
 .vt-mnote{font-size:9px;color:#8a5a2b;background:#fbf6ec;border-radius:6px;padding:2px 5px;margin-top:4px;display:inline-block}
+.vt-ownhead{font-size:9.5px;font-weight:800;color:var(--violet-d);padding:5px 0 1px;letter-spacing:-.01em}
+.vt-noown{font-size:10px;color:#8a5a2b;background:#fbf6ec;border-radius:8px;padding:7px 9px;line-height:1.55;margin:7px 0 3px}
+.vt-more{border:1px dashed var(--line);background:#fff;color:var(--violet-d);border-radius:8px;padding:4px 9px;font-size:9.5px;font-weight:800;margin-top:7px;letter-spacing:-.01em}
+.vt-more.on{border-style:solid;border-color:var(--lav2);background:var(--lav)}
 .vt-empty{border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center;font-size:11px;color:var(--muted2);background:#fff}
 @media (max-width:620px){
  .vt-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1420,7 +1424,7 @@ body.cmp-on{padding-bottom:66px}
       <div class="vt-wallet-head">
         <h4>내 카드 지갑 <span id="vtWalletSub"></span></h4>
         <div class="vt-wallet-tools">
-          <label class="toggle"><input type="checkbox" id="vtMineOnly" checked> 내 카드만 보기</label>
+          <label class="toggle" title="내 카드로 무료 발렛되는 호텔만 남깁니다. 검색한 호텔은 이 설정과 관계없이 찾아 줍니다."><input type="checkbox" id="vtMineOnly" checked> 내 카드 되는 호텔만</label>
           <button type="button" id="vtUsageReset">이번 달 사용 초기화</button>
         </div>
       </div>
@@ -4652,7 +4656,7 @@ const VT_OWN='teambusan.valet.cards.v1';
 const VT_USE='teambusan.valet.usage.';
 const VT_NOTES='teambusan.valet.cardnotes.v1';
 const VT_PREF='teambusan.valet.prefs.v1';
-const vt={q:'',region:'all',issuer:'all',sort:'mine',noReceipt:false,freePark:false,mine:true,open:'',manage:false,mf:'all'};
+const vt={q:'',qLast:'',region:'all',issuer:'all',sort:'mine',noReceipt:false,freePark:false,mine:true,open:'',manage:false,mf:'all',all:{}};
 let vtOwned=null,vtUse={},vtNotes={},vtLSok=true;
 function vtMonthKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
 function vtRead(k){try{return window.localStorage.getItem(k)}catch(e){vtLSok=false;return null}}
@@ -4666,7 +4670,7 @@ function vtOwnSet(){return new Set(vtOwned||[])}
 function vtUsed(id){return Number(vtUse[id]||0)}
 function vtRemain(id){const c=vtCard(id);return c?Math.max(0,c.limit_n-vtUsed(id)):null}
 function vtOwnOffers(h){const s=vtOwnSet();return h.offers.filter(function(o){return s.has(o.card)})}
-function vtBest(h){const own=vtOwnOffers(h),arr=own.length?own:h.offers;if(!arr.length)return null;
+function vtBest(h){const arr=vtOwnSet().size?vtOwnOffers(h):h.offers;if(!arr.length)return null;
   return arr.slice().sort(function(a,b){return (vtRecvRank(a)-vtRecvRank(b))||(a.receipt_min-b.receipt_min)||(b.hours_n-a.hours_n)||(a.limit_n-b.limit_n)})[0]}
 function vtRecvRank(o){return o.receipt_type==='none'?0:(o.receipt_type==='same_day'?1:2)}
 function vtHoursTxt(o){const m=String(o.parking_hours).match(/(\d+)\s*시간/);return m?m[1]+'h':o.parking_hours}
@@ -4731,7 +4735,8 @@ function renderVtSelects(){
 
 function vtFiltered(){
   const s=vtOwnSet(),q=vt.q.trim().toLowerCase();
-  const list=VALET.hotels.filter(function(h){
+  const mineOk=function(h){return !vt.mine||h.offers.some(function(o){return s.has(o.card)})};
+  const base=VALET.hotels.filter(function(h){
     if(vt.region!=='all'){
       if(vt.region==='지방'){if(h.region==='서울')return false}
       else if(h.region!==vt.region)return false;
@@ -4740,14 +4745,17 @@ function vtFiltered(){
     if(vt.issuer!=='all'&&!offs.some(function(o){const c=vtCard(o.card);return c&&c.issuer===vt.issuer}))return false;
     if(vt.noReceipt&&!offs.some(function(o){return o.receipt_type==='none'}))return false;
     if(vt.freePark&&!offs.some(function(o){return o.hours_n>0}))return false;
-    if(vt.mine&&!offs.some(function(o){return s.has(o.card)}))return false;
-    if(q){
-      const hit=h.name.toLowerCase().indexOf(q)>=0||String(h.district||'').indexOf(q)>=0||String(h.region||'').indexOf(q)>=0
-        ||offs.some(function(o){const c=vtCard(o.card);return c&&(c.name.toLowerCase().indexOf(q)>=0||c.issuer.indexOf(q)>=0||String(c.network).toLowerCase().indexOf(q)>=0)});
-      if(!hit)return false;
-    }
     return true;
   });
+  let list=base;
+  if(q){
+    /* 호텔명·지역으로 찾은 곳이 있으면 그곳만 — 카드 이름으로만 걸린 호텔은 뒤로 미룬다 */
+    const nameHit=function(h){return h.name.toLowerCase().indexOf(q)>=0||String(h.district||'').toLowerCase().indexOf(q)>=0||String(h.region||'').toLowerCase().indexOf(q)>=0};
+    const nm=base.filter(nameHit),nmMine=nm.filter(mineOk);
+    if(nmMine.length)list=nmMine;
+    else if(nm.length)list=nm;   /* 내 카드가 없는 호텔도 검색으로는 찾아 준다 */
+    else list=base.filter(function(h){return mineOk(h)&&h.offers.some(function(o){const c=vtCard(o.card);return c&&(c.name.toLowerCase().indexOf(q)>=0||c.issuer.indexOf(q)>=0||String(c.network).toLowerCase().indexOf(q)>=0)})});
+  }else if(vt.mine)list=base.filter(mineOk);
   if(vt.sort==='name')list.sort(function(a,b){return a.name.localeCompare(b.name,'ko')});
   else if(vt.sort==='cards')list.sort(function(a,b){return (b.card_count-a.card_count)||a.name.localeCompare(b.name,'ko')});
   else list.sort(function(a,b){return (vtOwnOffers(b).length-vtOwnOffers(a).length)||(b.card_count-a.card_count)||a.name.localeCompare(b.name,'ko')});
@@ -4761,7 +4769,24 @@ function vtOffersHtml(h){
     return (oa-ob)||(vtRecvRank(a)-vtRecvRank(b))||(a.receipt_min-b.receipt_min)||(b.hours_n-a.hours_n)||(a.prev_n-b.prev_n);
   });
   if(!offs.length)return '<div class="vt-note" style="padding:6px 0">확인한 '+(VALET.cards||[]).length+'개 카드사·브랜드사 안내에 이 호텔이 무료 발렛 대상으로 나오지 않습니다 — 유료 발렛 여부·요금은 호텔에 문의하세요.</div>';
-  return offs.map(function(o){
+  /* 기본은 내 카드만 — 지갑이 비어 있을 때만 전체 카드를 그대로 보여 준다 */
+  const own=offs.filter(function(o){return s.has(o.card)});
+  const all=Boolean(vt.all&&vt.all[h.id]);
+  let rows=offs,head='',foot='';
+  if(s.size&&own.length&&!all){
+    rows=own;
+    head='<div class="vt-ownhead">내 카드 '+own.length+'장으로 무료 발렛됩니다</div>';
+    foot='<button type="button" class="vt-more" data-vt-all="'+h.id+'">다른 카드 '+(offs.length-own.length)+'종 더 보기</button>';
+  }else if(s.size&&own.length&&all){
+    foot='<button type="button" class="vt-more on" data-vt-all="'+h.id+'">내 카드만 보기</button>';
+  }else if(s.size&&!own.length&&!all){
+    rows=[];
+    head='<div class="vt-noown">내 보유 카드(발렛 확인 '+s.size+'종) 중 이 호텔 무료 발렛 대상 카드가 없습니다.</div>';
+    foot='<button type="button" class="vt-more" data-vt-all="'+h.id+'">이 호텔 전체 카드 '+offs.length+'종 보기</button>';
+  }else if(s.size&&!own.length&&all){
+    foot='<button type="button" class="vt-more on" data-vt-all="'+h.id+'">카드 목록 접기</button>';
+  }
+  return head+rows.map(function(o){
     const c=vtCard(o.card);if(!c)return '';
     const mine=s.has(o.card);
     return '<div class="vt-off'+(mine?' own':'')+'"><div><b>'+esc(c.name)+'</b>'
@@ -4772,7 +4797,7 @@ function vtOffersHtml(h){
       +(c.note?'<small class="vt-note">'+esc(c.note)+'</small>':'')
       +'</div><div class="r">'+(mine?'<span class="own-tag">내 카드 · '+vtMonthKey()+' '+vtUsed(o.card)+'/'+o.limit_n+'회</span><br>':'')
       +'<a href="'+esc(c.official_url)+'" target="_blank" rel="noopener">공식 안내 ↗</a></div></div>';
-  }).join('');
+  }).join('')+foot;
 }
 
 function vtFoot(h){
@@ -4791,9 +4816,14 @@ function vtRow(h){
     if(b.hours_n>0)bs.push('<span class="vt-b hours">'+esc(vtHoursTxt(b))+' 무료</span>');
     bs.push('<span class="vt-b">'+esc(b.monthly_limit)+'</span>');
     if(b.prev_n)bs.push('<span class="vt-b">'+esc(b.prev_spend)+'</span>');
-  }else bs.push('<span class="vt-b warn">무료 발렛 안내 없음</span>');
+  }else if(h.offers.length){
+    bs.push('<span class="vt-b warn">내 카드 대상 아님</span>');
+    bs.push('<span class="vt-b">카드 '+h.offers.length+'종 안내</span>');
+  }else bs.push('<span class="vt-b none">무료 발렛 안내 없음</span>');
   const open=vt.open===h.id;
-  return '<article class="vt-hotel'+(open?' open':'')+(own.length?' mine':'')+'" data-vt-hotel="'+h.id+'">'
+  const q=vt.q.trim().toLowerCase();
+  const hit=Boolean(q)&&h.name.toLowerCase().indexOf(q)>=0;
+  return '<article class="vt-hotel'+(open?' open':'')+(own.length?' mine':'')+(hit?' hit':'')+'" data-vt-hotel="'+h.id+'">'
    +'<button type="button" class="vt-sum" aria-expanded="'+open+'">'
    +'<div class="vt-sum-top"><div><div class="vt-name">'+esc(h.name)+'</div><div class="vt-meta">'+esc(place.trim())
    +(h.fee?' · 발렛 '+esc(h.fee):'')+' · 카드 '+h.card_count+'종</div></div>'
@@ -4805,6 +4835,9 @@ function vtRow(h){
 function renderVtList(){
   const list=vtFiltered();
   const s=vtOwnSet();
+  const q=vt.q.trim();
+  if(q&&list.length===1&&vt.qLast!==q)vt.open=list[0].id;   /* 검색이 한 곳으로 좁혀지면 그 호텔을 펼쳐 내 카드를 바로 보여 준다 */
+  vt.qLast=q;
   const mineN=list.filter(function(h){return h.offers.some(function(o){return s.has(o.card)})}).length;
   $('vtCount').textContent=list.length+'곳 표시 · 내 카드 '+mineN+'곳';
   $('vtList').innerHTML=list.length?list.map(vtRow).join(''):'<div class="vt-empty">조건에 맞는 호텔이 없습니다 — 필터를 풀거나 지갑에서 카드를 선택해 보세요.</div>';
@@ -4856,7 +4889,8 @@ function renderValet(){
     $('vtNotice1').innerHTML='<ul style="margin:0;padding-left:16px">'
       +'<li><b>배지</b>는 그 호텔에서 가장 유리한 조건(내 카드 우선)을 보여 줍니다 — 영수증 조건 · 무료 주차 시간 · 월 횟수 · 전월 실적.</li>'
       +'<li><b>영수증 조건</b>은 카드사 안내장에 적힌 그대로입니다 — <b>금액 조건 없음</b>(최소 결제 금액 없음) · <b>당일 영수증</b> · <b>2만~5만원↑ 영수증</b>. 영수증 자체는 현장에서 요청될 수 있습니다.</li>'
-      +'<li>호텔 이름을 누르면 <b>카드별 조건</b>이 펼쳐집니다. 지갑에서 카드를 켜고 끄면 목록과 배지가 바로 바뀝니다.</li>'
+      +'<li>호텔 이름을 누르면 <b>카드별 조건</b>이 펼쳐지고 <b>기본으로 내 카드만</b> 표시됩니다 — 검색해 한 곳으로 좁혀지면 그 호텔이 저절로 펼쳐집니다.</li>'
+      +'<li>내 카드가 없는 호텔은 <b>[이 호텔 전체 카드 보기]</b>로 그 호텔의 전체 안내를 볼 수 있고, 내 카드가 있는 호텔도 <b>[다른 카드 더 보기]</b>를 누르면 전체 카드가 펼쳐집니다. 지갑에서 카드를 켜고 끄면 목록과 배지가 바로 바뀝니다.</li>'
       +'<li>위쪽 <b>내 카드 지갑</b>의 − · + 로 이번 달 발렛 사용 횟수를 기록하면 남은 횟수를 함께 보여 줍니다.</li>'
       +'<li><b>내 보유 카드 58장</b>은 순번·발급사·유형 그대로 보관하고, 중복 가능·상품명 미확정은 배지로만 표시합니다.</li>'
       +'<li>카드사 안내장에서 <b>대상 호텔 목록을 확인하지 못한 카드</b>(하나 JADE First Centum·BC Diamond·NH 위 테라)는 호텔을 붙이지 않고 조건만 표시합니다.</li></ul>';
@@ -4907,6 +4941,7 @@ function vtOnClick(e){
   const minus=t.closest('[data-vt-minus]');if(minus){vtBump(minus.dataset.vtMinus,-1);return}
   const go=t.closest('[data-vt-go]');if(go){const p=go.dataset.vtGo.split('|');valetGo(p[0],p[1]);return}
   const mf=t.closest('[data-vt-mf]');if(mf){vt.mf=mf.dataset.vtMf;renderVtManage();return}
+  const allBtn=t.closest('[data-vt-all]');if(allBtn){vt.all=vt.all||{};const id=allBtn.dataset.vtAll;if(vt.all[id])delete vt.all[id];else vt.all[id]=true;renderVtList();return}
   const srt=t.closest('[data-vt-sort]');if(srt){vt.sort=srt.dataset.vtSort;vtSavePref();renderVtSelects();renderVtList();return}
   const sum=t.closest('.vt-sum');if(sum){const art=sum.closest('[data-vt-hotel]');if(art){vt.open=(vt.open===art.dataset.vtHotel?'':art.dataset.vtHotel);renderVtList()}return}
   if(t.closest('#vtMyCardsBtn')){vt.manage=!vt.manage;renderVtManage();if(vt.manage)$('vtManage').scrollIntoView({block:'start'});return}

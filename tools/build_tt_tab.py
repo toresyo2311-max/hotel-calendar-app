@@ -70,8 +70,38 @@ def add_tab_entry(src):
     if "tt:{title:'부산 출발 땡처리 항공권'" in src:
         return src, 'already'
     a = src.index('const tabs={')
-    b = src.index('}};', a) + 2          # tabs 객체의 닫는 '}'
+    b = src.index('};', a)              # 탭 객체를 닫는 `}` 바로 앞에 넣는다
+    if src[b - 1] != '}':
+        raise SystemExit('const tabs 의 끝을 찾지 못했습니다: %r' % src[b - 6:b + 2])
     return src[:b] + ',' + TABS_ENTRY + src[b:], 'inserted'
+
+
+def js_syntax_problem(src):
+    """<script> 안 JS 문법 검사(esprima). 실패하면 사유 문자열, 통과하면 None.
+
+    원본 코드가 ES2020 옵셔널 체이닝을 쓰기 때문에 검사 전에 `?.` / `??` 만 단순형으로 바꿔 파싱한다.
+    esprima 가 없으면 검사하지 않는다(문법 사고를 막는 보조 장치일 뿐이다).
+    """
+    try:
+        import esprima
+    except ImportError:
+        return None
+    a = src.index('<script>') + len('<script>')
+    b = src.rindex('</script>')
+    js = src[a:b]
+    js = js.replace('?.[', '[')
+    js = re.sub(r'\?\.', '.', js)
+    js = js.replace('??', '||')
+    try:
+        esprima.parseScript(js)
+    except Exception as exc:                      # noqa: BLE001 - 파서 예외를 그대로 보여준다
+        line = getattr(exc, 'lineNumber', None)
+        ctx = ''
+        if line:
+            rows = js.split('\n')[max(0, line - 2):line + 1]
+            ctx = ' || '.join(r.strip()[:100] for r in rows)
+        return '%s (line %s) %s' % (exc, line, ctx)
+    return None
 
 
 def main(argv):
@@ -93,6 +123,10 @@ def main(argv):
     print('tabs    %s' % s_tabs)
     print('js      %s' % s_js)
     print('index.html %d → %d bytes' % (before_len, len(src)))
+    bad = js_syntax_problem(src)
+    if bad:
+        print('!! JS 문법 검사 실패 — 쓰지 않았습니다: %s' % bad)
+        return 1
     if check:
         print('(--check: 쓰지 않았습니다)')
         return 0

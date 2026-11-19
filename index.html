@@ -4767,7 +4767,7 @@ function vtOffersHtml(h){
       +(c.airport?'<small>'+esc(c.airport)+'</small>':'')
       +(c.coverage_complete?'':'<small class="warn">대상 호텔 전체 목록이 확인되지 않은 카드입니다 — 방문 전 카드사 안내를 확인하세요</small>')
       +(c.note?'<small class="vt-note">'+esc(c.note)+'</small>':'')
-      +'</div><div class="r">'+(mine?'<span class="own-tag">내 카드 · '+vtMonthKey()+' '+vtUsed(o.card)+'/'+c.limit_n+'회</span><br>':'')
+      +'</div><div class="r">'+(mine?'<span class="own-tag">내 카드 · '+vtMonthKey()+' '+vtUsed(o.card)+'/'+o.limit_n+'회</span><br>':'')
       +'<a href="'+esc(c.official_url)+'" target="_blank" rel="noopener">공식 안내 ↗</a></div></div>';
   }).join('');
 }

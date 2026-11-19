@@ -667,7 +667,7 @@ CARDS = [
          airport='the Red·Red Stripe Ed2 = 통합 월 10회',
          url=HY_PREMIUM, basis='official', complete=True, hotels=HY_RED_HOTELS),
     dict(id='hy-green', issuer='현대카드',
-         name='현대카드 the Green·the Pink 계열 (G·P)',
+         name='현대카드 the Green 계열 (the Green·Ed2·Ed3·Ed4)',
          network='Visa·Mastercard', tier='the Green', limit_label='월 5회(공항·호텔 각각)', limit_n=5,
          prev_label='전월 50만원', prev_n=500000, hours_label='1일 3시간', hours_n=3,
          note='the Green·the Green Edition2·3·4 공통(G). 호텔 월 5회·공항 월 5회를 각각 씁니다. '
@@ -773,7 +773,7 @@ CARDS = [
     dict(id='kb-visa-plat', issuer='KB국민카드',
          name='KB국민 플래티늄 (Visa)',
          network='Visa Platinum', tier='플래티넘', limit_label='월 3회(호텔별)', limit_n=3,
-         prev_label='가온 30만원 / 쿠폰형 조건 없음', prev_n=300000,
+         prev_label='가온 30만원·쿠폰형 없음', prev_n=300000,
          hours_label='1일 3시간', hours_n=3,
          note='대상카드: 플래티늄(쿠폰형)·가온플래티늄·플래티늄 S. 쿠폰형·S는 별도 이용 조건이 없고 '
               '가온플래티늄만 전월 30만원. 호텔별 금액 기준이 붙은 곳이 있습니다.',

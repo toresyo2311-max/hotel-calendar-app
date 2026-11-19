@@ -177,7 +177,7 @@ def add(bucket, deal, stats):
         cur['note'] = clean((cur.get('note') or '') + ' · ' + deal['note']).strip(' ·')
 
 
-def from_aggregate(path, items, stats, yb_meta):
+def from_aggregate(path, items, stats, yb_meta, seen_day=''):
     data = json.load(open(path, encoding='utf-8'))
     for it in data.get('items') or data:
         code = it['도착지_공항코드']
@@ -209,14 +209,18 @@ def from_aggregate(path, items, stats, yb_meta):
             'airline': it['항공사'],
             'price': int(price),
             'seats': seats_of(it.get('잔여좌석')),
-            'minPax': (meta or {}).get('minPax') or 1,
+            'minPax': max((meta or {}).get('minPax') or 1, int(it.get('인원조건_최소') or 1)),
             'times': (it.get('출발시각') or '') + ('–' + it['귀국시각'] if it.get('귀국시각') else ''),
             'url': fix_link(url, it['출발일'], it['귀국일']),
-            'seen': '통합 목록 2026-11-19 11:21 기준',
+            'seen': '통합 목록 %s 기준' % seen_day,
             'note': clean(note),
         }
         if meta and meta.get('note'):
             deal['note'] = clean((deal['note'] + ' · ' + meta['note']).strip(' ·'))
+        # 노랑풍선 상품 링크는 수집본에서 행별 '예약링크검증=확인'을 통과한 주소만 meta 에 남는다.
+        # 그 주소가 그대로 들어왔으면 상품 화면으로 열리는 직링크이므로 '미확인' 배지를 붙이지 않는다.
+        if it.get('공급사_키') == 'ybtour' and meta and 'fly.ybtour.co.kr' in str(deal['url']):
+            deal['note'] = clean((deal['note'] + ' · 상품 직링크').strip(' ·'))
         add(items, deal, stats)
 
 
@@ -252,7 +256,7 @@ def parse_seats(v):
     return None, None
 
 
-def from_ttang(path, items, stats):
+def from_ttang(path, items, stats, seen_day=''):
     """땡처리 목록 — 상품별 판매기간과 fare_detail 직링크. 기간형은 outUntil 로 표시한다."""
     data = json.load(open(path, encoding='utf-8'))
     for it in data.get('items') or []:
@@ -267,7 +271,9 @@ def from_ttang(path, items, stats):
         first_back = ''
         m = re.match(r'^(\d{4}[.-]\d{2}[.-]\d{2})\s*[-~]\s*(\d{4}[.-]\d{2}[.-]\d{2})',
                      str(it.get('상세_첫출발_귀국') or ''))
-        if m:
+        # 상세의 첫출발이 이 상품의 출발가능일 시작과 같을 때만 그 귀국일을 쓴다.
+        # 기간형은 상세 기준일이 시작일과 다를 수 있어, 그러면 유효기간(박수)으로 계산한다(8일·26일 같은 오류 방지).
+        if m and iso(m.group(1)) == out:
             first_back = iso(m.group(2))
         back = first_back
         if not back:
@@ -300,7 +306,7 @@ def from_ttang(path, items, stats):
             'minPax': int(it.get('최소인원_명') or 1),
             'times': '',
             'url': url,
-            'seen': '지역별 목록 2026-11-19 12:07~12:25',
+            'seen': '지역별 목록 %s' % seen_day,
             'note': clean(' · '.join(notes)),
         }
         if until and until != out:
@@ -312,6 +318,26 @@ def from_ttang(path, items, stats):
         add(items, deal, stats)
 
 
+def tidy_yb_note(v):
+    """노랑풍선 비고 → 화면에 남길 말만. 수집 메타(미확인·신규 포착 등)는 줄이고, 도시명 차이는 배지 판정에 필요한 짧은 문구로 바꾼다."""
+    keep = []
+    for p in str(v or '').replace(';', ' · ').split(' · '):
+        p = p.strip()
+        if not p:
+            continue
+        if p.startswith('최소예약인원 데이터 없음') or '미노출' in p or '예약페이지' in p or '별도 판매' in p:
+            continue
+        if p.startswith('오늘(') and '신규' in p:
+            p = '신규'
+        if p.startswith('도시명 표기차'):
+            m = re.search(r'\(([A-Z]{3})\)', p)
+            p = '카드 도시명과 실제 도착공항이 다름' + ('(%s)' % m.group(1) if m else '')
+        p = clean(p)
+        if p and p not in keep:
+            keep.append(p)
+    return ' · '.join(keep)
+
+
 def read_ybtour(path):
     """노랑풍선 CSV → (공항+날짜+항공사) 메타 사전 (최소인원·비고·예약불가)."""
     meta, bad = {}, []
@@ -321,15 +347,28 @@ def read_ybtour(path):
             if r.get('예약링크검증') == '불가':
                 bad.append((k, r.get('비고') or ''))
                 continue
-            note = r.get('비고') or ''
+            note = tidy_yb_note(r.get('비고'))
             minpax = int(r['최소예약인원']) if r.get('최소예약인원') else 1
             if minpax > 1 and '최소' not in note:
-                note = (note + ' 최소 %d명' % minpax).strip()
-            meta[k] = {'minPax': minpax, 'note': clean(note)}
+                note = (note + ' · 최소 %d명' % minpax).strip(' ·')
+            meta[k] = {'minPax': minpax, 'note': note}
     return meta, bad
 
 
-def from_modetour_csv(path, items, stats):
+def bigo_note(v):
+    """CSV 비고 열(15열 스키마) → 화면에 남길 메모. ';' 구분, '정가 미표시'처럼 쓸모없는 값은 버린다."""
+    out = []
+    for p in str(v or '').replace(';', ' · ').split(' · '):
+        p = p.strip()
+        if not p or p == '-' or p.startswith('정가 미표시'):
+            continue
+        p = clean(p)
+        if p and p not in out:
+            out.append(p)
+    return ' · '.join(out)
+
+
+def from_modetour_csv(path, items, stats, seen_day=''):
     """모두투어 할인항공 CSV 두 벌을 한 번에 받는다(컬럼이 다르므로 행 단위로 구분)."""
     with open(path, encoding='utf-8-sig') as fp:
         for r in csv.DictReader(fp):
@@ -358,6 +397,7 @@ def from_modetour_csv(path, items, stats):
                 price = r.get('왕복가격') or ''
                 minpax = 1
                 continent = 'SOPA' if (r.get('권역') == '남태평양') else 'JPN'
+            bigo = bigo_note(r.get('비고')) if r.get('비고') else ''
             if not (code and out and back and str(price).replace(',', '').isdigit()):
                 stats['skipped'] += 1
                 continue
@@ -377,13 +417,15 @@ def from_modetour_csv(path, items, stats):
                 'minPax': minpax,
                 'times': times,
                 'url': modetour_url(code, out, back, continent),
-                'seen': '공동구매 목록 2026-11-19',
-                'note': '검색 링크(권역·도시·날짜)' + (' · 최소 %d명' % minpax if minpax > 1 else ''),
+                'seen': '공동구매 목록 %s' % seen_day,
+                'note': clean(' · '.join(p for p in ['검색 링크(권역·도시·날짜)',
+                                                    ('최소 %d명' % minpax) if minpax > 1 else '',
+                                                    bigo] if p)),
             }
             add(items, deal, stats)
 
 
-def from_modetour_json(path, items, stats):
+def from_modetour_json(path, items, stats, seen_day=''):
     """동남아 JSON — flights 목록(pkg/code/depdate/price/booking_url)."""
     data = json.load(open(path, encoding='utf-8'))
     continent = 'ASIA'
@@ -392,9 +434,10 @@ def from_modetour_json(path, items, stats):
         if v in REGION_BY_CONTINENT:
             continent = v
     for f in data.get('flights') or []:
-        out, back = iso(f.get('depdate')), iso(f.get('retdate'))
-        price = f.get('price')
-        if not (f.get('code') and out and back and price):
+        out, back = iso(f.get('depdate') or f.get('dep_date')), iso(f.get('retdate') or f.get('ret_date'))
+        price = f.get('price') or f.get('price_krw')
+        code = f.get('code') or f.get('route_code')
+        if not (code and out and back and price):
             stats['skipped'] += 1
             continue
         times = ((f.get('deptime') or '') + ('–' + f['rettime'] if f.get('rettime') else '')).strip('–')
@@ -402,24 +445,26 @@ def from_modetour_json(path, items, stats):
             'id': 'M%04d' % (len(items) + 1),
             'src': 'g',
             'region': REGION_BY_CONTINENT.get(continent, '동남아'),
-            'city': norm_city(f.get('city')),
-            'code': f['code'],
+            'city': norm_city(f.get('city') or f.get('route')),
+            'code': code,
             'out': out,
             'back': back,
-            'days': f.get('day'),
-            'airline': f.get('air') or '미확인',
+            'days': f.get('day') if f.get('day') is not None else f.get('validity_days'),
+            'airline': f.get('air') or f.get('airline') or '미확인',
             'price': int(price),
             'seats': f.get('seat') if isinstance(f.get('seat'), int) else None,
-            'minPax': 1,
+            'minPax': int(f.get('min_pax_today') or 1) if str(f.get('min_pax_today') or '').isdigit() else 1,
             'times': times,
-            'url': modetour_url(f['code'], out, back, continent),
-            'seen': '동남아 목록 2026-11-19 12:41',
-            'note': '검색 링크(권역·도시·날짜)' + ((' · ' + f['waypoint']) if f.get('waypoint') else ''),
+            'url': modetour_url(code, out, back, continent),
+            'seen': '동남아 목록 %s' % seen_day,
+            'note': '검색 링크(권역·도시·날짜)' + ((' · ' + f['waypoint']) if f.get('waypoint') else '')
+                    + ((' · 최소 %d명' % int(f['min_pax_today'])) if str(f.get('min_pax_today') or '').isdigit()
+                       and int(f['min_pax_today']) > 1 else ''),
         }
         add(items, deal, stats)
 
 
-def from_hanatour_json(path, items, stats, region_of):
+def from_hanatour_json(path, items, stats, region_of, seen_day=''):
     """하나투어 JSON — fareId 딥링크가 그대로 열리는 상품 직링크."""
     data = json.load(open(path, encoding='utf-8'))
     for f in data.get('flights') or []:
@@ -450,7 +495,7 @@ def from_hanatour_json(path, items, stats, region_of):
             'minPax': 1,
             'times': times,
             'url': url,
-            'seen': '공동구매 상세 2026-11-19 13:05',
+            'seen': '공동구매 상세 %s' % seen_day,
             'note': ' · '.join(notes),
         }
         add(items, deal, stats)
@@ -466,7 +511,9 @@ def main(argv):
     ap.add_argument('--modetour-json', action='append', default=[])
     ap.add_argument('--hana-json', action='append', default=[])
     ap.add_argument('--observed', default='2026-11-19 12:25 KST')
+    ap.add_argument('--day', default='', help="'seen' 기록에 쓰는 수집일(비우면 오늘)")
     args = ap.parse_args(argv)
+    seen_day = args.day
 
     yb_meta, bad = {}, []
     for p in args.ybtour:
@@ -477,19 +524,19 @@ def main(argv):
     stats = {'added': 0, 'cheaper': 0, 'relinked': 0, 'dupe': 0, 'skipped': 0}
     items = {}
     for p in args.aggregate:
-        from_aggregate(p, items, stats, yb_meta)
+        from_aggregate(p, items, stats, yb_meta, seen_day)
     for p in args.ttang:
-        from_ttang(p, items, stats)
+        from_ttang(p, items, stats, seen_day)
     for p in args.modetour_csv:
-        from_modetour_csv(p, items, stats)
+        from_modetour_csv(p, items, stats, seen_day)
     for p in args.modetour_json:
-        from_modetour_json(p, items, stats)
+        from_modetour_json(p, items, stats, seen_day)
     region_of = dict(REGION_OF_CODE)
     for d in items.values():
         if d.get('code') and d.get('region') and d['code'] not in region_of:
             region_of[d['code']] = d['region']
     for p in args.hana_json:
-        from_hanatour_json(p, items, stats, region_of)
+        from_hanatour_json(p, items, stats, region_of, seen_day)
 
     deals = sorted(items.values(), key=lambda d: (d['price'], d['out']))
     import datetime

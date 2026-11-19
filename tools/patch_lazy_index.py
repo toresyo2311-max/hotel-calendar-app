@@ -223,9 +223,9 @@ def main(argv):
         # ⑥ 탭 머리 주석 — 데이터 위치가 바뀌었다
         ("   상품 데이터는 `const TTANG`(아래 별도 블록)에 있고 tools/master_db.py inject 가 채운다.",
          "   상품 데이터는 `data/app/tab6_ttang.json` 에 있고(⑥ 탭에 들어갈 때 fetch), tools/master_db.py inject 가 채운다."),
-        # ⑥ 탭 배지 — 로딩 뒤에 실제 건수로 다시 채우고, 그 전에는 HTML 에 적힌 3,476 을 보여 준다
+        # ⑥ 탭 배지 — 로딩 뒤에 실제 건수로 다시 채우고, 그 전에는 HTML 에 적힌 건수를 보여 준다
         ('<button class="tab" data-tab="tt" type="button">⑥ 땡처리 · 부산 출발 <b>0</b></button>',
-         '<button class="tab" data-tab="tt" type="button">⑥ 땡처리 · 부산 출발 <b>3,476</b></button>'),
+         '<button class="tab" data-tab="tt" type="button">⑥ 땡처리 · 부산 출발 <b>3,857</b></button>'),
         # ⑥ 탭 배지 — 로딩 뒤에 채운다
         ("/* 첫 렌더 전에도 탭 배지 숫자가 실제 건수로 보이게 */\n(function(){const tb=document.querySelector('[data-tab=\"tt\"] b');if(tb)tb.textContent=KR(ttAll().length)})();",
          "/* ⑥ 탭 배지 숫자를 실제 건수로 (데이터를 받은 뒤 부른다) */\nfunction ttBadge(){const tb=document.querySelector('[data-tab=\"tt\"] b');if(tb)tb.textContent=KR(ttAll().length)}"),

@@ -761,6 +761,58 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
 .cal-day.overbudget{opacity:.26}
 @media(max-width:760px){.pt-grid{grid-template-columns:1fr}.pt-grid .pt-item:nth-child(2){border-top:1px solid var(--line2)}}
 @media(max-width:430px){#cbBasis{white-space:normal;line-height:1.45;max-width:100%}.cb-src{flex-wrap:wrap}.cb-src .mode-button{flex:1 1 30%}.fav-only{font-size:9.5px;padding:4px 8px}}
+/* ── 🚨 에러가 알람 바 · 📈 가격 추이 차트 (2026-11-19 추가) ──────── */
+.alertbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+.alertbar[hidden]{display:none}
+.alertbtn{max-width:100%;text-align:left;display:inline-flex;align-items:center;gap:8px;border:1px solid #efc4d6;background:linear-gradient(160deg,#fff8fb,#fdecf3);color:#7b1f5e;font-weight:800;font-size:12px;padding:8px 13px;border-radius:10px;box-shadow:var(--shadow);letter-spacing:-.02em}
+.alertbtn:hover{border-color:#e3a8c3}
+.alertbtn.zero{border-color:var(--line);background:var(--card);color:var(--muted);font-weight:700}
+.alertbtn .cnt{font-size:14px;font-weight:900;letter-spacing:-.04em}
+.alertnote{font-size:10.5px;color:var(--muted2);line-height:1.5}
+.hero-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.histbtn{border:1px solid var(--lav3);background:var(--lav);color:var(--violet-d);font-weight:800;font-size:11px;padding:7px 11px;border-radius:9px}
+.histbtn:hover{background:var(--lav3)}
+.hchart{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:7px;font-size:10px;line-height:1;padding:3px 5px;white-space:nowrap}
+.hchart:hover{border-color:var(--lav2);color:var(--violet-d)}
+.hotel-row .hchart{flex:none}
+.fl-detail-head .hchart{margin:6px 0 2px}
+.ovl-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
+.ovl-tools .seg{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:8px;font-size:10.5px;font-weight:700;padding:6px 9px}
+.ovl-tools .seg.on{background:var(--lav);border-color:var(--lav3);color:var(--violet-d)}
+.ovl-tools select{font-size:10.5px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.chartbox{width:100%}
+.chartbox svg{display:block;width:100%;height:auto}
+.chartbox .hx-lab{font-size:9px;fill:#8b86a3;font-weight:700}
+.chartbox .hx-ttl{font-size:9.5px;fill:var(--ink2);font-weight:800}
+.chart-load,.chart-empty{border:1px dashed var(--line);border-radius:10px;padding:26px 14px;text-align:center;color:var(--muted);font-size:11.5px;line-height:1.7}
+.chart-load .dl-spin{display:inline-block;vertical-align:-2px;margin-right:6px}
+.chart-readout{min-height:18px;font-size:10.5px;color:var(--ink2);margin:6px 0 0;font-variant-numeric:tabular-nums}
+.chart-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:4px}
+.chart-legend i{display:inline-block;width:14px;height:0;border-top:2px solid var(--violet);vertical-align:3px;margin-right:5px}
+.chart-legend i.dash{border-top-style:dashed}
+.chart-legend i.orange{border-color:#c2410c}
+.chart-legend i.teal{border-color:#0f766e}
+.al-tags{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.al-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:9px;align-items:center;border-top:1px solid var(--line2);padding:9px 0}
+.al-row:first-of-type{border-top:0}
+.al-k{font-size:9px;font-weight:800;border-radius:6px;padding:2px 5px;background:var(--lav);color:var(--violet-d);white-space:nowrap}
+.al-k.flight{background:#fdeee3;color:#9a3b0c}
+.al-k.ttang{background:#fde8ef;color:#8d1c46}
+.al-n{min-width:0}
+.al-n b{display:block;font-size:11.5px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.al-n span{display:block;font-size:9.5px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.al-p{text-align:right;white-space:nowrap}
+.al-p b{display:block;font-size:12.5px;font-weight:900;letter-spacing:-.03em;color:#7b1f5e}
+.al-p span{display:block;font-size:9px;color:var(--muted2)}
+.al-go{font-size:10px;font-weight:800;color:var(--violet-d);border:1px solid var(--lav3);background:var(--lav);border-radius:7px;padding:5px 7px;white-space:nowrap;text-decoration:none}
+.al-why{font-size:9px;font-weight:800;border-radius:6px;padding:2px 5px;background:#fdeef5;color:#8d1c46;white-space:nowrap}
+.al-rule{border-top:1px solid var(--line2);margin-top:10px;padding-top:10px;font-size:10px;color:var(--muted);line-height:1.65}
+@media(max-width:430px){
+  .alertbtn{font-size:11px;padding:7px 10px}
+  .al-row{grid-template-columns:auto minmax(0,1fr) auto;row-gap:4px}
+  .al-go{grid-column:2/-1;justify-self:start}
+  .chart-legend{font-size:9.5px}
+}
 </style>
 </head>
 <body>
@@ -796,6 +848,10 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
   </nav>
 </div>
 <div class="page">
+  <div class="alertbar" id="alertBar" hidden>
+    <button type="button" class="alertbtn" id="alertBtn" aria-haspopup="dialog" title="에러가 의심되는 가격을 모아 봅니다">🚨 에러가 감시 중</button>
+    <span class="alertnote" id="alertNote"></span>
+  </div>
   <section class="section-intro">
     <div><h2 id="sectionTitle">VIP 요금 · FHR 호텔 24곳</h2><p class="subline" id="sectionSubtitle"></p></div>
     <span class="time-pill" id="checktime">조회 기준: 2026.11.16</span>
@@ -927,6 +983,7 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
       <div class="field cb-fl"><label for="cbPattern">주말 패턴</label><select id="cbPattern" aria-label="주말 패턴 선택"></select></div>
       <div class="field cb-fl"><label for="cbMonth">출발 월</label><select id="cbMonth" aria-label="출발 월 선택"></select></div>
       <label class="toggle cb-fl"><input id="cbDirect" type="checkbox" checked> 직항만 보기</label>
+      <label class="toggle cb-tt" id="cbNextDayWrap" style="display:none" title="밤 출발·새벽 도착 편은 첫날 밤을 호텔에서 보내지 않으므로 체크인을 하루 미룹니다"><input id="cbNextDay" type="checkbox"> 출발+1일 체크인(밤/새벽편 보정)</label>
       <div class="field cb-tt" id="cbTtCityWrap" style="display:none"><label for="cbTtCity">땡처리 도시</label><select id="cbTtCity" aria-label="땡처리 도시 선택"></select></div>
       <div class="field cb-tt" id="cbTtMonthWrap" style="display:none"><label for="cbTtMonth">땡처리 출발 월</label><select id="cbTtMonth" aria-label="땡처리 출발 월 선택"></select></div>
       <div class="cb-count" id="cbCount"></div>
@@ -1172,6 +1229,18 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
   <footer class="smallfooter"><strong>OFFLINE FILE / 2026-11-19 통합판</strong><br>실시간 가격 연결 없음 · 약관 또는 재고 실시간 확인 불가 · 자료 내 날짜별 숫자와 미표시 상태를 그대로 보존. 개인 로그인 정보는 이 파일에 저장하지 않았습니다.<details><summary>통합한 원본 자료 <span id="sourceCount">26</span>개 보기</summary><div class="source-list" id="sources"></div></details></footer>
 </div>
 <div class="modal" id="modal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="modal-head"><div><h3 id="dialogTitle"></h3><p id="dialogSub"></p></div><button type="button" class="close" aria-label="닫기" id="modalClose">×</button></div><div class="modal-body" id="dialogBody"></div></div></div>
+<div class="modal" id="chartModal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="chartTitle"><div class="modal-head"><div><h3 id="chartTitle">📈 가격 추이</h3><p id="chartSub"></p></div><button type="button" class="close" aria-label="닫기" id="chartClose">×</button></div><div class="modal-body">
+  <div class="ovl-tools" id="chartTools"></div>
+  <div class="chartbox" id="chartBox"></div>
+  <p class="chart-readout" id="chartReadout"></p>
+  <p class="chart-note" id="chartNote"></p>
+  <div class="chart-legend" id="chartLegend"></div>
+</div></div></div>
+<div class="modal" id="alertModal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="alertTitle"><div class="modal-head"><div><h3 id="alertTitle">🚨 에러가 의심</h3><p id="alertSub"></p></div><button type="button" class="close" aria-label="닫기" id="alertClose">×</button></div><div class="modal-body">
+  <div class="al-tags" id="alertTags"></div>
+  <div id="alertList"></div>
+  <div class="al-rule" id="alertRule"></div>
+</div></div></div>
 <div class="wxsheet" id="wxSheet" aria-hidden="true"><div class="wxcard" role="dialog" aria-modal="true" aria-labelledby="wxTitle">
   <h3 id="wxTitle">위챗으로 예약</h3>
   <p class="wxsub">중국·홍콩·마카오 아코르 호텔은 위챗 미니프로그램에서 예약합니다.</p>
@@ -1332,7 +1401,7 @@ function renderFilters(){const base=tierFiltered();let cities;
  $('hotelCount').textContent=hotels.length+'개';
  $('hotelList').innerHTML='<button class="hotel-choice '+(st.hotel==='all'?'selected':'')+'" type="button" data-hotel="all"><span class="name">전체 호텔 비교</span><span class="price">'+hotels.length+'곳</span></button>'
   +(hotels.length?hotels.map(h=>{const sub=st.tab==='china'?(h.city+' · '+(TIERSHORT[tierOf(h)]||'')):(h.region&&h.region!==h.city?h.region+' · '+h.city:h.city)+(h.program?(h.program.snu?' · SNU 가능':(h.program.snuBrand===false?' · SNU 미참여':' · SNU 미노출')):'');const on=favHas('hotels',h.id);
-   return '<div class="hotel-row'+(on?' fav':'')+'">'+favStar('hotel',h.id,h.name)+'<button type="button" class="hotel-choice '+(st.hotel===h.id?'selected':'')+'" data-hotel="'+h.id+'" title="'+esc(h.name)+'"><span class="name">'+esc(h.name)+'<span class="smalltown">'+esc(sub)+'</span></span><span class="price">'+esc(listBadge(h))+'</span></button></div>'}).join('')
+   return '<div class="hotel-row'+(on?' fav':'')+'">'+favStar('hotel',h.id,h.name)+'<button type="button" class="hchart" data-hist="hotels" data-hid="'+h.id+'" title="'+esc(h.name)+' 가격 추이 차트" aria-label="'+esc(h.name)+' 가격 추이 차트">📈</button>'+'<button type="button" class="hotel-choice '+(st.hotel===h.id?'selected':'')+'" data-hotel="'+h.id+'" title="'+esc(h.name)+'"><span class="name">'+esc(h.name)+'<span class="smalltown">'+esc(sub)+'</span></span><span class="price">'+esc(listBadge(h))+'</span></button></div>'}).join('')
    :'<div class="rank-empty" style="padding:8px 4px">'+(st.favOnly?'이 탭에서 즐겨찾기한 호텔이 없습니다. 호텔 옆 ☆를 눌러 저장하세요.':'조건에 맞는 호텔이 없습니다 — 예산·필터를 넓혀 보세요.')+'</div>');
 }
 function row(rank,h,price,date,cl='',sub=''){let extra='';if(st.tab==='marriott'){if(pointsMode()){const c=cashOf(h,date);if(c!=null)extra=shortWon(c)}else{const p=ptsOf(h,date);if(p!=null)extra=shortP(p)}}const num=st.tab==='marriott'?shortVal(price):shortWon(price);return '<div class="rank-item"><span class="rank-n">'+String(rank).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+favStar('hotel',h.id,h.name)+esc(h.name)+'</div><div class="rank-meta">'+esc(h.region&&h.region!==h.city?h.region+' · '+h.city:h.city)+' · '+esc(dateLabel(date))+' '+weekday(date)+'요일'+(sub?' · '+esc(sub):'')+(extra?' · '+extra:'')+'</div></div><div class="rank-num '+cl+'">'+num+'</div></div>'}
@@ -1854,7 +1923,7 @@ function setDealPanels(which){$('flightPanel').hidden=which!=='flight';$('ttPane
 function setFlightMode(on){setDealPanels(on?'flight':'')}
 function renderFlightTop5(){
   const rows=flRouteList().map(r=>{const d=[...r.deals].sort((a,b)=>a.price-b.price)[0];return d?{...d,city:r.city,code:r.code}:null}).filter(Boolean).sort((a,b)=>a.price-b.price).slice(0,5);
-  $('flTop5').innerHTML=rows.map((d,i)=>'<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+favStar('route',d.code,d.city+' '+d.code)+esc(d.city)+' <span class="fl-code">'+d.code+'</span></div><div class="rank-meta">'+esc(d.pattern)+' · '+dateLabel(d.date)+' 출발 · '+esc(flMeta(d))+'</div></div><div class="rank-num '+(i===0?'red':'')+'">'+shortWon(d.price)+'</div></div>').join('');
+  $('flTop5').innerHTML=rows.map((d,i)=>'<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+favStar('route',d.code,d.city+' '+d.code)+esc(d.city)+' <span class="fl-code">'+d.code+'</span></div><div class="rank-meta">'+esc(d.pattern)+' · '+dateLabel(d.date)+' 출발 · '+esc(flMeta(d))+'</div>'+'<button type="button" class="hchart" data-hist="flights" data-hid="'+d.code+'" data-pattern="'+esc(d.pattern)+'">📈 노선 추이</button>'+'</div><div class="rank-num '+(i===0?'red':'')+'">'+shortWon(d.price)+'</div></div>').join('');
   if($('flTop5Sub'))$('flTop5Sub').textContent=(fl.region==='all'?'':fl.region+' ') + (fl.favOnly?'즐겨찾기 노선 ':'') + flRouteList().length+'개 노선 중 최저 · 전체 '+KR(flTotal())+'건';
   const all=flAll().sort((a,b)=>a.price-b.price);
   const b=all[0];
@@ -1935,7 +2004,7 @@ function renderFlightDetail(){
   if(!fl.day){box.innerHTML='<p class="fl-empty">달력·도표의 날짜·가격 칸을 누르면 그 출발일의 예약 검색이 새 탭에서 열리고, 이 자리에는 패턴별·노선별 금액과 항공사·직항/경유가 표시됩니다. 값이 없는 칸(—·판매편 0건·미오픈)은 링크 없이 이 상세만 갱신합니다. 당일치기(0박)는 체류시간도 함께 적습니다.</p>';return;}
   const deals=flFiltered().filter(d=>d.date===fl.day).sort((a,b)=>a.price-b.price);
   const min=deals.length?Math.min(...deals.map(d=>d.price)):null;
-  let html='<div class="fl-detail-head"><div><h3>'+fullDate(fl.day)+' ('+weekday(fl.day)+') 출발</h3><div class="meta">'+(deals.length?deals.length+'건 · 최저가순'+((fl.direct||fl.hideLong)?' · 필터 적용(직항만 보기 / 장시간 경유 빼기)':''):'선택한 노선·패턴 조합에는 이 날짜 자료가 없습니다')+'</div></div><button type="button" class="fl-close" id="flClose" aria-label="상세 닫기">✕</button></div>';
+  let html='<div class="fl-detail-head"><div><h3>'+fullDate(fl.day)+' ('+weekday(fl.day)+') 출발</h3>'+(fl.route!=='all'?'<button type="button" class="hchart" data-hist="flights" data-hid="'+fl.route+'" data-date="'+fl.day+'">📈 노선 가격 추이</button>':'')+'<div class="meta">'+(deals.length?deals.length+'건 · 최저가순'+((fl.direct||fl.hideLong)?' · 필터 적용(직항만 보기 / 장시간 경유 빼기)':''):'선택한 노선·패턴 조합에는 이 날짜 자료가 없습니다')+'</div></div><button type="button" class="fl-close" id="flClose" aria-label="상세 닫기">✕</button></div>';
   if(deals.length){
     html+='<div class="fl-detail-grid">';
     for(const p of flPatsOf(deals)){
@@ -2168,7 +2237,8 @@ function renderHero(S){
     +'<div class="hero-hotel">'+esc(name)+'</div>'
     +'<div class="hero-meta">'+esc(cityLine)+' · <b>'+fullDate(cur.d)+'</b>'+(meta.apc?'':' 체크인')+' · '+esc(priceUnit)+'</div>'
     +'<div class="hero-price"><span class="p">'+bigTxt+(meta.apc?'':'<small>원</small>')+'</span><span class="u">'+esc(secLine)+'</span></div>'
-    +'<div class="hero-chips">'+chips+'</div>';
+    +'<div class="hero-chips">'+chips+'</div>'
+    +(h?'<div class="hero-acts"><button type="button" class="histbtn" data-hist="hotels" data-hid="'+h.id+'" data-date="'+cur.d+'">📈 가격 추이 차트</button></div>':'');
   $('heroBenefits').innerHTML=heroBenefitsHtml(h);
 }
 
@@ -2508,6 +2578,7 @@ function renderTtDay(){
       html+='<div class="fl-pcard"><div class="fl-pcard-head"><b>'+esc(d.city)+' <span class="fl-code">'+esc(d.code)+'</span>'+ttChanTag(d)+'</b><span>'+esc(ttRange(d))+' · '+esc(ttSpan(d))+'</span></div>'+
         '<div class="fl-prow"><div class="fl-pname">'+ttAir(d)+(d.times?' · '+esc(d.times):'')+'<div class="fl-pair">잔여 '+esc(ttSeats(d))+(d.note?' · '+esc(d.note):'')+'</div></div>'+
         '<div class="fl-pprice'+(d.price===min?' is-min':'')+'">'+shortWon(d.price)+'</div>'+
+        '<button type="button" class="hchart" data-hist="ttang" data-hid="'+esc(d.code)+'" data-date="'+esc(d.out)+'" data-key="'+esc(ttHistKey(d))+'">📈</button>'+
         '<a class="fl-plink" href="'+esc(d.url)+'" target="_blank" rel="noopener">예약</a></div></div>';
     });
     html+='</div>';
@@ -2632,7 +2703,7 @@ function renderBlackoutBox(){
 /* ══ ✈️+🏨 부산 출발 항공+호텔 주말 콤보 (2026-11-19 추가 · 데이터 무변경) ══
    같은 출발일의 ⑤ 항공 왕복가(성인 1인) + ①~④ 그 도시 호텔의 숙박일별 1박 요금 합계.
    계산에 쓰는 값은 FLIGHTS.deals 와 호텔 rates 뿐이고, 없는 값을 추정하지 않는다. */
-const cb={city:'all',pattern:'금~일',month:'2026-12',direct:true,src:'f',ttCity:'all',ttMonth:'all'};
+const cb={city:'all',pattern:'금~일',month:'2026-12',direct:true,src:'f',ttCity:'all',ttMonth:'all',nextDay:false};
 /* ⑥ 땡처리 도시 이름이 ①~④ 와 다른 2곳만 같은 도시로 묶는다(항주=항저우, 장가계=장자제) */
 const CB_ALIAS={'항주':'항저우','장가계':'장자제'};
 let cbCityIdx=null,cbCityIdxKey='';
@@ -2646,7 +2717,7 @@ function cbHotelIndex(){
 }
 function cbHotelsOf(name){return cbHotelIndex()[name]||[]}
 let cbTtCache=null,cbTtRowsCache=null;
-function cbTtKey(){return (typeof TTANG!=='undefined'&&TTANG.deals?TTANG.deals.length:0)+'|'+allHotels.length}
+function cbTtKey(){return (typeof TTANG!=='undefined'&&TTANG.deals?TTANG.deals.length:0)+'|'+allHotels.length+'|'+(cb.nextDay?'1':'0')}
 /* ⑥ 상품 중 ①~④ 호텔이 있는 도시의 것만 — 기간형(출발일 여러 날)·링크 없는 상품은 뺀다 */
 function cbTtRowsAll(){
   const k=cbTtKey();
@@ -2658,7 +2729,7 @@ function cbTtRowsAll(){
       if(!d.out||!d.back||!d.url||typeof d.price!=='number'||d.price<=0)continue;
       if(d.back<=d.out)continue;
       const hs=cbHotelsOf(d.city);if(!hs.length)continue;
-      const nights=cbNightsOf(d.out,d.back);if(!nights.length)continue;
+      const nights=cbNightsOf(cb.nextDay?flAddDays(d.out,1):d.out,d.back);if(!nights.length)continue;
       out.push({d:d,nights:nights,hs:hs});
     }
   }
@@ -2796,13 +2867,15 @@ function cbFillSelects(){
   }
   document.querySelectorAll('#cbSrc [data-cbsrc]').forEach(function(b){const on=b.getAttribute('data-cbsrc')===cb.src;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});
   document.querySelectorAll('.cb-fl').forEach(function(el){el.style.display=cb.src==='t'?'none':''});
-  const w1=$('cbTtCityWrap'),w2=$('cbTtMonthWrap');
+  const w1=$('cbTtCityWrap'),w2=$('cbTtMonthWrap'),w3=$('cbNextDayWrap');
   if(w1)w1.style.display=cb.src==='f'?'none':'block';
   if(w2)w2.style.display=cb.src==='f'?'none':'block';
+  if(w3)w3.style.display=cb.src==='f'?'none':'block';
+  const nd=$('cbNextDay');if(nd)nd.checked=cb.nextDay;
 }
 function cbNotesHtml(pat){
   const cities=cbCitiesAll(),ttc=cbTtCities();
-  const ttNote=cb.src==='f'?'':'<div class="note-row"><span class="note-mark">🔥</span><span class="note-text"><strong>⑥ 땡처리 특가</strong>는 상품에 적힌 <strong>출발일~귀국일</strong>을 그대로 씁니다(⑤처럼 패턴을 고르지 않습니다). ⑥ 42개 노선 중 ①~④ 호텔이 같은 이름으로 있는 <strong>'+ttc.length+'개 도시</strong>만 계산하고, 도시 이름 표기가 다른 2곳(항주=항저우 · 장가계=장자제)은 같은 도시로 묶었습니다. 출발일이 여러 날인 <strong>기간형 상품</strong>은 날짜를 하나로 정할 수 없어 뺐습니다. 항공 금액은 상품 표시가(성인 1인 왕복 · 유류·세금 포함), 잔여석은 상품에 적힌 값입니다.</span></div>'
+  const ttNote=cb.src==='f'?'':(cb.nextDay?'<div class="note-row"><span class="note-mark">🌙</span><span class="note-text"><strong>출발+1일 체크인</strong>이 켜져 있습니다 — 밤 출발·새벽 도착 편은 출발일 밤을 호텔에서 보내지 않으므로 숙박 시작일을 <strong>출발일+1일</strong>로 잡아 계산했습니다(귀국일 체크아웃은 그대로). 그래서 같은 상품도 숙박 1박이 줄어 총액이 낮게 나옵니다.</span></div>':'')+'<div class="note-row"><span class="note-mark">🔥</span><span class="note-text"><strong>⑥ 땡처리 특가</strong>는 상품에 적힌 <strong>출발일~귀국일</strong>을 그대로 씁니다(⑤처럼 패턴을 고르지 않습니다). ⑥ 42개 노선 중 ①~④ 호텔이 같은 이름으로 있는 <strong>'+ttc.length+'개 도시</strong>만 계산하고, 도시 이름 표기가 다른 2곳(항주=항저우 · 장가계=장자제)은 같은 도시로 묶었습니다. 출발일이 여러 날인 <strong>기간형 상품</strong>은 날짜를 하나로 정할 수 없어 뺐습니다. 항공 금액은 상품 표시가(성인 1인 왕복 · 유류·세금 포함), 잔여석은 상품에 적힌 값입니다.</span></div>'
    +'<div class="note-row"><span class="note-mark">↗</span><span class="note-text">⑥ 줄의 <strong>항공 예약 ↗</strong>은 그 상품의 예약·조회 화면으로 바로 열립니다(공동구매 상품은 구간·도시·날짜가 지정된 조회 링크).</span></div>';
   return '<h3>콤보 총액 계산 기준</h3>'
    +'<div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>항공</strong> = 부산(PUS) 출발 <strong>성인 1인 왕복</strong> 실측 표시가(⑤ 탭 '+(cb.direct?'직항만':'직항·경유')+' · '+esc(cb.pattern)+' '+pat.nights+'박). <strong>숙박</strong> = 같은 출발일~귀국 전날의 1박 요금 합계(성인 2인 1실 · 세금 포함 표시가 ①~④ 중 그 도시 호텔). 두 값을 더한 <strong>1인 항공 + 1실 숙박</strong> 총액입니다.</span></div>'
@@ -2851,7 +2924,7 @@ function renderCombo(){
       +'</div>';
     const tag=cb.src==='all'?'<span class="cb-tag'+(r.src==='t'?' t':'')+'">'+(r.src==='t'?'⑥ 땡처리':'⑤ 정규')+'</span>':'';
     const meta=r.src==='t'
-      ?(dateLabel(r.date)+'('+weekday(r.date)+')~'+dateLabel(r.back)+'('+weekday(r.back)+') · '+r.nights.length+'박 · 항공 '+shortWon(r.flight)+'('+esc(air)+(r.times?' '+esc(r.times):'')+') · 숙박 '+shortWon(r.stay)+(r.seats!=null?' · 잔여 '+r.seats+'석':'')+((r.deal&&r.deal.src==='g')?' · 공동구매':'')+(apcAll?' · APC 적용 시 '+shortWon(r.flight):''))
+      ?(dateLabel(r.date)+'('+weekday(r.date)+')~'+dateLabel(r.back)+'('+weekday(r.back)+') · '+r.nights.length+'박 · 항공 '+shortWon(r.flight)+'('+esc(air)+(r.times?' '+esc(r.times):'')+') · 숙박 '+shortWon(r.stay)+(r.seats!=null?' · 잔여 '+r.seats+'석':'')+((r.deal&&r.deal.src==='g')?' · 공동구매':'')+(cb.nextDay?' · 출발+1일 체크인':'')+(apcAll?' · APC 적용 시 '+shortWon(r.flight):''))
       :(dateLabel(r.date)+'('+weekday(r.date)+')~'+dateLabel(r.back)+'('+weekday(r.back)+') · '+r.nights.length+'박 · 항공 '+shortWon(r.flight)+'('+esc(air)+' '+flViaWord(r.deal)+') · 숙박 '+shortWon(r.stay)+(apcAll?' · APC 적용 시 '+shortWon(r.flight):''));
     return '<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity">'
       +'<div class="rank-name">'+esc(r.city)+' · '+esc(r.h.name)+tag+cbBadges(r)+'</div>'
@@ -2885,6 +2958,409 @@ $('cbSrc').addEventListener('click',function(e){const b=e.target.closest('[data-
   renderCombo()});
 $('cbTtCity').addEventListener('change',e=>{cb.ttCity=e.target.value;renderCombo()});
 $('cbTtMonth').addEventListener('change',e=>{cb.ttMonth=e.target.value;renderCombo()});
+$('cbNextDay').addEventListener('change',e=>{cb.nextDay=e.target.checked;renderCombo()});
+
+
+/* ══ 🚨 에러가 알람 · 📈 가격 추이 차트 (2026-11-19 추가) ══════════════════
+   · data/history/ — tools/master_db.py snapshot 이 쌓은 일자별 스냅샷
+   · alerts.json 은 첫 화면에서 한 번만(수십 KB) 읽고, 차트는 그 카드의 이력 파일
+     1개만 눌렀을 때 fetch 한다. 차트는 외부 라이브러리 없이 SVG 로 그린다. */
+const DATA_HIST='data/history/';
+const HIST_ERR_MIN=10000000;
+const HIST_W=720,HIST_H=300;
+const HIST_DATA={},HIST_PROM={};
+const HIST_DIR={hotels:'hotels/',flights:'flights/',ttang:'ttang/'};
+const HIST_KIND={hotels:'호텔',flights:'항공',ttang:'⑥ 땡처리'};
+const HIST_COLOR={hotels:'#6d28d9',flights:'#6d28d9',ttang:'#8d1c46'};
+let ALERTS=null,ALERT_ERR=false,ALERT_KIND='all';
+const CH={kind:'',id:'',date:'',pattern:'',key:'',tab:'curve',data:null};
+
+function histFetch(kind,id){
+  const key=kind+'/'+id;
+  if(HIST_DATA[key])return Promise.resolve(HIST_DATA[key]);
+  if(HIST_PROM[key])return HIST_PROM[key];
+  const url=DATA_HIST+(HIST_DIR[kind]||'')+encodeURIComponent(id)+'.json';
+  const p=fetch(url).then(function(r){
+    if(!r.ok)throw new Error(url+' → HTTP '+r.status);
+    return r.json();
+  }).then(function(d){HIST_DATA[key]=d;delete HIST_PROM[key];return d})
+    .catch(function(e){delete HIST_PROM[key];throw e});
+  HIST_PROM[key]=p;return p;
+}
+function histSeries(d){return (d&&(d.series||d.keys))||{}}
+function histSnaps(d){
+  const s=new Set(),ser=histSeries(d);
+  for(const k in ser){const arr=ser[k]||[];for(let i=0;i<arr.length;i++)s.add(arr[i][0])}
+  return Array.from(s).sort();
+}
+function histValAt(rows,snap){let hit=null;const a=rows||[];for(let i=0;i<a.length;i++){if(a[i][0]<=snap)hit=a[i];else break}return hit}
+function histNum(v){return (typeof v==='number'&&v<HIST_ERR_MIN)?v:null}
+function ttHistKey(d){return [d.out,d.back,d.code,d.airline||'',d.times||''].join('_')}
+
+/* ── 차트 상자 ─────────────────────────────────────────── */
+function histAxisTicks(xs,xtype){
+  const out=[];
+  if(!xs.length)return out;
+  if(xs.length<=8){xs.forEach(function(x,i){out.push({i:i,text:xtype==='snap'?x.slice(5).replace('-','.'):dateLabel(x)})});return out}
+  let last='';
+  for(let i=0;i<xs.length;i++){
+    const m=xs[i].slice(0,7);
+    if(m!==last){out.push({i:i,text:xs[i].slice(2,4)+'.'+xs[i].slice(5,7)});last=m}
+  }
+  return out;
+}
+function histSvg(cfg){
+  if(!cfg||!cfg.series||!cfg.series.length)return '<div class="chart-empty">표시할 값이 없습니다.</div>';
+  const xs=cfg.xs||[],W=HIST_W,H=HIST_H,L=64,R=18,T=22,B=44;
+  const all=[];
+  cfg.series.forEach(function(s){s.pts.forEach(function(p){if(p.v!=null&&p.v<HIST_ERR_MIN)all.push(p.v)})});
+  (cfg.bands||[]).forEach(function(b){if(b.v!=null&&b.v<HIST_ERR_MIN)all.push(b.v)});
+  if(!all.length)return '<div class="chart-empty">아직 값이 없습니다 — 이 칸은 요금이 표시되지 않은 상태입니다.</div>';
+  let mn=Math.min.apply(null,all),mx=Math.max.apply(null,all);
+  if(mx<=mn)mx=mn+1;
+  const pad=(mx-mn)*0.14;mn=Math.max(0,mn-pad);mx=mx+pad;
+  const n=xs.length;
+  const X=function(i){return n<=1?(L+(W-L-R)/2):L+(W-L-R)*i/(n-1)};
+  const Y=function(v){return T+(H-T-B)*(1-(v-mn)/(mx-mn))};
+  let g='';
+  for(let k=0;k<=4;k++){
+    const v=mn+(mx-mn)*k/4,y=Y(v);
+    g+='<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+(W-R)+'" y2="'+y.toFixed(1)+'" stroke="#efecf7" stroke-width="1"/>';
+    g+='<text class="hx-lab" x="'+(L-8)+'" y="'+(y+3).toFixed(1)+'" text-anchor="end">'+shortWon(v)+'</text>';
+  }
+  g+='<line x1="'+L+'" y1="'+T+'" x2="'+L+'" y2="'+(H-B)+'" stroke="#e6e2f0" stroke-width="1"/>';
+  g+='<line x1="'+L+'" y1="'+(H-B)+'" x2="'+(W-R)+'" y2="'+(H-B)+'" stroke="#e6e2f0" stroke-width="1"/>';
+  let band='';
+  (cfg.bands||[]).forEach(function(b){
+    if(b.v==null||b.v>=HIST_ERR_MIN)return;
+    const y=Y(b.v);
+    band+='<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+(W-R)+'" y2="'+y.toFixed(1)+'" stroke="'+b.color+'" stroke-width="1.1" stroke-dasharray="5 4"/>';
+    band+='<text class="hx-lab" x="'+(W-R)+'" y="'+(y-5).toFixed(1)+'" text-anchor="end" fill="'+b.color+'">'+esc(b.name)+' '+shortWon(b.v)+'</text>';
+  });
+  let xt='';
+  histAxisTicks(xs,cfg.xtype).forEach(function(t){
+    xt+='<text class="hx-lab" x="'+X(t.i).toFixed(1)+'" y="'+(H-B+16)+'" text-anchor="middle">'+esc(t.text)+'</text>';
+  });
+  let path='',dots='';
+  cfg.series.forEach(function(s){
+    let d='',open=false;
+    s.pts.forEach(function(p){
+      if(p.v==null||p.v>=HIST_ERR_MIN){open=false;return}
+      d+=(open?'L':'M')+X(p.i).toFixed(1)+' '+Y(p.v).toFixed(1)+' ';
+      open=true;
+      const r0=n>120?1.4:(n>40?2.1:3.3);
+      dots+='<circle cx="'+X(p.i).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+r0+'" fill="'+s.color+'"><title>'+esc(s.name+' · '+(xs[p.i]||'')+' · '+KR(Math.round(p.v))+'원')+'</title></circle>';
+    });
+    if(!d)return;
+    path+='<path d="'+d+'" fill="none" stroke="'+s.color+'" stroke-width="'+(n>120?1.5:2.2)+'" stroke-linejoin="round" stroke-linecap="round"/>';
+  });
+  let mark='';
+  if(cfg.highlight!=null&&cfg.highlight>=0&&xs[cfg.highlight]){
+    const xh=X(cfg.highlight);
+    mark+='<line x1="'+xh.toFixed(1)+'" y1="'+T+'" x2="'+xh.toFixed(1)+'" y2="'+(H-B)+'" stroke="#c4b5fd" stroke-width="1" stroke-dasharray="3 3"/>';
+  }
+  if(n<=1){
+    const x0=X(0);
+    mark+='<line x1="'+x0.toFixed(1)+'" y1="'+(T+6)+'" x2="'+x0.toFixed(1)+'" y2="'+(H-B)+'" stroke="#ddd6fe" stroke-width="1" stroke-dasharray="2 3"/>';
+    mark+='<text class="hx-ttl" x="'+(x0+8).toFixed(1)+'" y="'+(T+14)+'">1일차 기준점</text>';
+  }
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(cfg.aria||'가격 추이 차트')+'">'+g+band+xt+path+dots+mark+'</s'+'vg>';
+}
+function bindChartHover(cfg){
+  const box=$('chartBox'),out=$('chartReadout');
+  if(!box||!out||!cfg)return;
+  const svg=box.querySelector('svg');
+  if(!svg)return;
+  const xs=cfg.xs||[],L=64,R=18,n=xs.length;
+  svg.addEventListener('pointermove',function(e){
+    const r=svg.getBoundingClientRect();
+    if(!r.width)return;
+    const vx=(e.clientX-r.left)/r.width*HIST_W;
+    const i=Math.max(0,Math.min(n-1,Math.round((vx-L)/(HIST_W-L-R)*(n-1))));
+    const parts=[xs[i]];
+    cfg.series.forEach(function(s){
+      const p=s.pts[i];
+      parts.push(s.name+' '+(p&&p.v!=null&&p.v<HIST_ERR_MIN?KR(Math.round(p.v))+'원':'—'));
+    });
+    out.textContent=parts.join(' · ');
+  });
+  svg.addEventListener('pointerleave',function(){out.textContent=''});
+}
+
+/* ── 호텔 ─────────────────────────────────────────────── */
+function chartHotelCurve(d,last){
+  const ser=histSeries(d),keys=Object.keys(ser).sort(),vals=[],pts=[];
+  keys.forEach(function(k,i){
+    const row=histValAt(ser[k],last),v=row?histNum(row[1]):null;
+    if(v!=null)vals.push(v);
+    pts.push({i:i,v:v});
+  });
+  const avg=vals.length?Math.round(vals.reduce(function(a,b){return a+b},0)/vals.length):null;
+  const min=vals.length?Math.min.apply(null,vals):null;
+  const hi=CH.date?keys.indexOf(CH.date):-1;
+  return {xs:keys,xtype:'date',highlight:hi,
+    series:[{name:'1박 요금',color:HIST_COLOR.hotels,pts:pts}],
+    bands:[{v:avg,name:'기간 평균',color:'#94a3b8'},{v:min,name:'기간 최저',color:'#0f766e'}],
+    note:'<b>'+last+'</b> 스냅샷 기준 · 요금이 있는 <b>'+vals.length+'일</b>을 그렸습니다'+(vals.length<keys.length?' (값 없는 '+(keys.length-vals.length)+'일은 선을 끊었습니다)':'')+'. 1박·세금 포함 표시가이고, 1천만 원 이상(시스템 이상 의심) 값은 축에서 뺐습니다. 스냅샷이 쌓일수록 같은 날짜의 값이 어떻게 움직였는지는 <b>스냅샷 추이</b>에서 봅니다.',
+    legend:[{name:'1박 요금'},{name:'기간 평균',dash:true},{name:'기간 최저',dash:true,cls:'teal'}]};
+}
+function chartHotelSnap(d,snaps){
+  const ser=histSeries(d),keys=Object.keys(ser).sort(),last=snaps[snaps.length-1]||'';
+  let date=CH.date;
+  if(!date||!ser[date])date=(keys.indexOf(CH.date)>=0?CH.date:keys[0])||'';
+  CH.date=date;
+  const rows=ser[date]||[];
+  const pts=snaps.map(function(s,i){const row=histValAt(rows,s);return {i:i,v:row?histNum(row[1]):null}});
+  const vals=[];
+  keys.forEach(function(k){const row=histValAt(ser[k],last);const v=row?histNum(row[1]):null;if(v!=null)vals.push(v)});
+  const avg=vals.length?Math.round(vals.reduce(function(a,b){return a+b},0)/vals.length):null;
+  const min=vals.length?Math.min.apply(null,vals):null;
+  const cur=histValAt(rows,last),curV=cur?histNum(cur[1]):null;
+  const opts=keys.map(function(k){return '<option value="'+k+'"'+(k===date?' selected':'')+'>'+fullDate(k)+' ('+weekday(k)+')</option>'}).join('');
+  const one=snaps.length<2;
+  return {xs:snaps,xtype:'snap',
+    series:[{name:fullDate(date)+' 체크인',color:HIST_COLOR.hotels,pts:pts}],
+    bands:[{v:avg,name:'기간 평균',color:'#94a3b8'},{v:min,name:'기간 최저',color:'#0f766e'}],
+    tools:'<span style="font-size:10.5px;color:var(--muted2)">체크인 날짜</span><select id="chDate" aria-label="체크인 날짜 선택">'+opts+'</select>',
+    note:(one
+      ?'<b>1일차 기준점 기록됨</b> — '+snaps[0]+' 스냅샷의 '+fullDate(date)+' 요금은 <b>'+(curV!=null?KR(curV)+'원':'값 없음')+'</b> 한 점뿐이라 아직 선이 없습니다. 내일부터 inject 가 돌 때마다 이 점이 이어집니다. 점선 밴드는 이 호텔 1년 요금의 평균·최저입니다.'
+      :'스냅샷마다 '+fullDate(date)+' 체크인 요금이 어떻게 움직였는지입니다. 점선은 이 호텔 1년 요금의 평균·최저입니다.'),
+    legend:[{name:fullDate(date)+' 체크인'},{name:'기간 평균',dash:true},{name:'기간 최저',dash:true,cls:'teal'}]};
+}
+
+/* ── ⑤ 항공 ───────────────────────────────────────────── */
+function chartFlightCurve(d,last){
+  const ser=histSeries(d),pats={},byDate={};
+  for(const k in ser){
+    const row=histValAt(ser[k],last);
+    if(!row)continue;
+    const date=row[1],pattern=row[2],price=histNum(row[3]),direct=row[4];
+    if(!date||price==null)continue;
+    pats[pattern]=1;
+    if(CH.pattern&&CH.pattern!==pattern)continue;
+    const o=byDate[date]||(byDate[date]={d:null,v:null,u:null});
+    if(direct===1)o.d=(o.d==null?price:Math.min(o.d,price));
+    else if(direct===0)o.v=(o.v==null?price:Math.min(o.v,price));
+    else o.u=(o.u==null?price:Math.min(o.u,price));
+  }
+  const dates=Object.keys(byDate).sort(),dp=[],vp=[],up=[];
+  dates.forEach(function(dt,i){
+    dp.push({i:i,v:byDate[dt].d});vp.push({i:i,v:byDate[dt].v});up.push({i:i,v:byDate[dt].u});
+  });
+  const flSeries=[{name:'직항 최저',color:'#6d28d9',pts:dp},{name:'경유 최저',color:'#c2410c',pts:vp}];
+  const flLegend=[{name:'직항 최저'},{name:'경유 최저',cls:'orange'}];
+  if(up.some(function(p){return p.v!=null})){flSeries.push({name:'직항 여부 미확인',color:'#94a3b8',pts:up});flLegend.push({name:'직항 여부 미확인'});}
+  const plist=Object.keys(pats).filter(function(p){return p}).sort();
+  const opts='<option value="">전체 패턴</option>'+plist.map(function(p){return '<option value="'+p+'"'+(CH.pattern===p?' selected':'')+'>'+esc(p)+'</option>'}).join('');
+  return {xs:dates,xtype:'date',series:flSeries,bands:[],
+    tools:plist.length>1?('<span style="font-size:10.5px;color:var(--muted2)">패턴</span><select id="chPat" aria-label="패턴 선택">'+opts+'</select>'):'',
+    note:'<b>'+last+'</b> 스냅샷 기준 · 출발일마다 <b>직항</b>과 <b>경유</b> 최저가를 따로 그렸습니다(직항이 더 비싼 날은 두 선이 벌어집니다). 값이 없는 칸(판매편 0건·미오픈)은 선을 끊었고 1천만 원 이상 값은 뺐습니다. 성인 1인 왕복 총액입니다.',
+    legend:flLegend};
+}
+function chartFlightSnap(d,snaps){
+  const ser=histSeries(d),last=snaps[snaps.length-1]||'';
+  let key='';
+  if(CH.date){
+    for(const k in ser){
+      const row=histValAt(ser[k],last);
+      if(row&&row[1]===CH.date&&(!CH.pattern||row[2]===CH.pattern)){key=k;break}
+    }
+  }
+  if(key){
+    const rows=ser[key]||[],r0=histValAt(rows,last);
+    const label=(r0?(r0[1]+' '+r0[2]):CH.date)+(r0&&r0[4]===1?' · 직항':r0&&r0[4]===0?' · 경유':'');
+    const pts=snaps.map(function(s,i){const row=histValAt(rows,s);return {i:i,v:row?histNum(row[3]):null}});
+    const cur=histValAt(rows,last),curV=cur?histNum(cur[3]):null;
+    const one=snaps.length<2;
+    return {xs:snaps,xtype:'snap',
+      series:[{name:label,color:HIST_COLOR.flights,pts:pts}],bands:[],
+      note:(one?'<b>1일차 기준점 기록됨</b> — '+snaps[0]+' 스냅샷의 '+esc(label)+' 값은 <b>'+(curV!=null?KR(curV)+'원':'값 없음')+'</b> 한 점입니다. 내일부터 이 칸의 값이 어떻게 움직이는지 이어집니다.':'그 출발일·패턴 칸의 가격이 스냅샷마다 어떻게 움직였는지입니다.'),
+      legend:[{name:label}]};
+  }
+  const dp=[],vp=[],up=[];
+  snaps.forEach(function(s,i){
+    let dmin=null,vmin=null,umin=null;
+    for(const k in ser){
+      const row=histValAt(ser[k],s);
+      if(!row)continue;
+      const p=histNum(row[3]);
+      if(p==null)continue;
+      if(CH.pattern&&row[2]!==CH.pattern)continue;
+      if(row[4]===1)dmin=(dmin==null?p:Math.min(dmin,p));
+      else if(row[4]===0)vmin=(vmin==null?p:Math.min(vmin,p));
+      else umin=(umin==null?p:Math.min(umin,p));
+    }
+    dp.push({i:i,v:dmin});vp.push({i:i,v:vmin});up.push({i:i,v:umin});
+  });
+  const one=snaps.length<2;
+  const snSeries=[{name:'직항 최저',color:'#6d28d9',pts:dp},{name:'경유 최저',color:'#c2410c',pts:vp}];
+  const snLegend=[{name:'직항 최저'},{name:'경유 최저',cls:'orange'}];
+  if(up.some(function(p){return p.v!=null})){snSeries.push({name:'직항 여부 미확인',color:'#94a3b8',pts:up});snLegend.push({name:'직항 여부 미확인'});}
+  return {xs:snaps,xtype:'snap',series:snSeries,bands:[],
+    note:(one?'<b>1일차 기준점 기록됨</b> — '+snaps[0]+' 스냅샷의 노선 최저만 있어 아직 선이 없습니다. 내일부터 노선 전체 최저가의 움직임이 이어집니다.':(CH.pattern?esc(CH.pattern)+' 패턴만 골라 노선 전체 최저가를 스냅샷별로 그렸습니다.':'노선 전체(모든 패턴) 최저가를 직항·경유로 나눠 스냅샷별로 그렸습니다.')),
+    legend:snLegend};
+}
+
+/* ── ⑥ 땡처리 ─────────────────────────────────────────── */
+function chartTtSnap(d,snaps){
+  const ser=histSeries(d),keys=Object.keys(ser),last=snaps[snaps.length-1]||'';
+  let key=CH.key;
+  if(!key||!ser[key])key=keys[0]||'';
+  CH.key=key;
+  const rows=ser[key]||[],pts=snaps.map(function(s,i){const row=histValAt(rows,s);return {i:i,v:row?histNum(row[1]):null}});
+  const vals=[];
+  keys.forEach(function(k){const row=histValAt(ser[k],last);const v=row?histNum(row[1]):null;if(v!=null)vals.push(v)});
+  const avg=vals.length?Math.round(vals.reduce(function(a,b){return a+b},0)/vals.length):null;
+  const min=vals.length?Math.min.apply(null,vals):null;
+  const cur=histValAt(rows,last),curV=cur?histNum(cur[1]):null;
+  const parts=key.split('_');
+  const label=(parts[0]||'')+'~'+(parts[1]||'')+(parts[3]?' · '+parts[3]:'')+(parts[4]?' '+parts[4]:'');
+  const one=snaps.length<2;
+  const opts=keys.length>1?('<span style="font-size:10.5px;color:var(--muted2)">상품</span><select id="chTt" aria-label="상품 선택">'+keys.slice(0,80).map(function(k){return '<option value="'+esc(k)+'"'+(k===key?' selected':'')+'>'+esc(k.split('_').slice(0,2).join('~')+' '+(k.split('_')[3]||'')+' '+(k.split('_')[4]||''))+'</option>'}).join('')+'</select>'):'';
+  return {xs:snaps,xtype:'snap',
+    series:[{name:label,color:HIST_COLOR.ttang,pts:pts}],
+    bands:[{v:avg,name:'같은 공항 평균',color:'#94a3b8'},{v:min,name:'같은 공항 최저',color:'#0f766e'}],
+    tools:opts,
+    note:(one?'<b>1일차 기준점 기록됨</b> — '+snaps[0]+' 스냅샷의 이 상품 가격은 <b>'+(curV!=null?KR(curV)+'원':'값 없음')+'</b> 한 점입니다. 내일부터 같은 상품(출발·귀국·항공사·시각)의 값이 어떻게 움직이는지 이어집니다.':'같은 상품(출발일·귀국일·항공사·시각)의 가격이 스냅샷마다 어떻게 움직였는지입니다. 점선 밴드는 같은 공항 전체 상품의 평균·최저입니다.'),
+    legend:[{name:'이 상품'},{name:'같은 공항 평균',dash:true},{name:'같은 공항 최저',dash:true,cls:'teal'}]};
+}
+
+/* ── 모달 ─────────────────────────────────────────────── */
+function histOpen(kind,id,opt){
+  opt=opt||{};
+  if(!id||!$('chartModal'))return;
+  CH.kind=kind;CH.id=id;CH.date=opt.date||'';CH.pattern=opt.pattern||'';CH.key=opt.key||'';
+  CH.tab=(kind==='ttang')?'snap':'curve';CH.data=null;
+  $('chartModal').classList.add('show');
+  $('chartModal').setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  $('chartTitle').textContent='📈 가격 추이 — '+(HIST_KIND[kind]||'')+' 불러오는 중…';
+  $('chartSub').textContent='';
+  $('chartTools').innerHTML='';$('chartLegend').innerHTML='';
+  $('chartReadout').textContent='';
+  $('chartBox').innerHTML='<div class="chart-load"><span class="dl-spin" aria-hidden="true"></span>이력 파일 1개만 불러오는 중…</div>';
+  $('chartNote').textContent='';
+  histFetch(kind,id).then(function(d){CH.data=d;drawChart()}).catch(function(err){
+    $('chartTitle').textContent='📈 가격 추이 — '+(HIST_KIND[kind]||'');
+    $('chartBox').innerHTML='<div class="chart-empty">이력 파일을 불러오지 못했습니다.<br>'+(err&&err.message?esc(err.message)+'<br>':'')+(location.protocol==='file:'?'file:// 로 열면 브라우저가 JSON fetch 를 막습니다 — 배포 주소나 로컬 서버로 열어 주세요.':'data/history/ 배포 여부를 확인해 주세요.')+'</div>';
+    $('chartNote').textContent='';
+  });
+}
+function histClose(){
+  const m=$('chartModal');if(!m)return;
+  m.classList.remove('show');m.setAttribute('aria-hidden','true');
+  if(!document.querySelector('.modal.show'))document.body.style.overflow='';
+}
+function drawChart(){
+  const d=CH.data;if(!d)return;
+  const kind=CH.kind,snaps=histSnaps(d),last=snaps[snaps.length-1]||'';
+  const nm=d.name||d.city||d.code||CH.id;
+  const head=(kind==='hotels'?'🏨 ':(kind==='flights'?'✈️ ':'🔥 '))+nm+(kind!=='hotels'?' ('+(d.code||CH.id)+')':(d.city?' · '+d.city:''));
+  $('chartTitle').textContent='📈 가격 추이 — '+head;
+  $('chartSub').textContent='스냅샷 '+snaps.length+'일 · 최근 '+last+(kind==='hotels'?' · 단위 1박 요금(세금 포함)':' · 단위 성인 1인 왕복 총액');
+  const tabs=(kind==='ttang')?[['snap','스냅샷 추이']]:[['curve',kind==='hotels'?'체크인 날짜별':'출발일별 최저'],['snap','스냅샷 추이']];
+  if(!tabs.some(function(t){return t[0]===CH.tab}))CH.tab=tabs[0][0];
+  let tools=tabs.length>1?tabs.map(function(t){return '<button type="button" class="seg'+(CH.tab===t[0]?' on':'')+'" data-chtab="'+t[0]+'">'+t[1]+'</button>'}).join(''):'';
+  let cfg=null;
+  if(kind==='hotels')cfg=CH.tab==='snap'?chartHotelSnap(d,snaps):chartHotelCurve(d,last);
+  else if(kind==='flights')cfg=CH.tab==='snap'?chartFlightSnap(d,snaps):chartFlightCurve(d,last);
+  else cfg=chartTtSnap(d,snaps);
+  if(cfg&&cfg.tools)tools+=cfg.tools;
+  if(!snaps.length){$('chartTools').innerHTML='';$('chartBox').innerHTML='<div class="chart-empty">이력이 아직 비어 있습니다.</div>';$('chartNote').textContent='';$('chartLegend').innerHTML='';return}
+  $('chartTools').innerHTML=tools;
+  $('chartBox').innerHTML=histSvg(cfg);
+  $('chartNote').innerHTML=cfg.note||'';
+  $('chartLegend').innerHTML=(cfg.legend||[]).map(function(l){return '<span><i class="'+(l.dash?'dash ':'')+(l.cls||'')+'"></i>'+esc(l.name)+'</span>'}).join('');
+  $('chartReadout').textContent='';
+  bindChartHover(cfg);
+}
+
+/* ── 🚨 에러가 알람 ───────────────────────────────────── */
+function alertLoad(){
+  fetch(DATA_HIST+'alerts.json').then(function(r){
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(function(a){ALERTS=a;ALERT_ERR=false;renderAlertBar()})
+    .catch(function(){ALERT_ERR=true;renderAlertBar()});
+}
+function renderAlertBar(){
+  const bar=$('alertBar'),btn=$('alertBtn'),note=$('alertNote');
+  if(!bar||!btn)return;
+  bar.hidden=false;
+  const c=(ALERTS&&ALERTS.counts)||{};
+  const n=c.total||0;
+  if(n>0){
+    btn.className='alertbtn';
+    btn.innerHTML='<span aria-hidden="true">🚨</span> 에러가 의심 <span class="cnt">'+KR(n)+'</span>건';
+    note.textContent='호텔 '+KR(c.hotel||0)+' · 항공 '+KR(c.flight||0)+' · ⑥ '+KR(c.ttang||0)+' · '+(ALERTS.generated||'')+' 기준 · 눌러서 상세와 예약 링크';
+  }else{
+    btn.className='alertbtn zero';
+    btn.innerHTML='🚨 에러가 감시 중 (현재 0건 · 기준: 평균 50%↓/초저가)';
+    note.textContent=ALERT_ERR?'이력 파일(alerts.json)을 아직 읽지 못했습니다 — 배포되면 자동으로 채워집니다.':(ALERTS&&ALERTS.generated?ALERTS.generated+' 스냅샷 기준 · 매일 inject 때 다시 계산합니다.':'');
+  }
+}
+function alertOpen(){
+  const m=$('alertModal');if(!m)return;
+  m.classList.add('show');m.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  ALERT_KIND='all';renderAlertList();
+}
+function alertClose(){
+  const m=$('alertModal');if(!m)return;
+  m.classList.remove('show');m.setAttribute('aria-hidden','true');
+  if(!document.querySelector('.modal.show'))document.body.style.overflow='';
+}
+function alertRow(a){
+  const kindTxt=a.k==='hotel'?'호텔':(a.k==='flight'?'항공':'⑥');
+  const sub=[a.date&&fullDate(a.date),a.pattern,a.back?'~'+dateLabel(a.back):'',a.airline].filter(Boolean).join(' · ');
+  const base=a.base?shortWon(a.base):'—';
+  const url=a.url?'<a class="al-go" href="'+esc(a.url)+'" target="_blank" rel="noopener">예약 ↗</a>':'<span class="al-go" style="opacity:.45">링크 없음</span>';
+  const chart='<button type="button" class="hchart" data-hist="'+a.k+(a.k==='hotel'?'s':a.k==='flight'?'s':'')+'" data-hid="'+esc(a.id)+'" data-date="'+esc(a.date||'')+'" data-pattern="'+esc(a.pattern||'')+'" data-key="'+esc(a.key||'')+'" title="가격 추이">📈</button>';
+  return '<div class="al-row"><span class="al-k '+(a.k==='hotel'?'':a.k)+'">'+kindTxt+'</span>'
+    +'<div class="al-n"><b>'+esc(a.name||a.id)+'</b><span>'+esc(sub)+' · <span class="al-why">'+esc(a.why||'')+'</span></span></div>'
+    +'<div class="al-p"><b>'+shortWon(a.price)+'</b><span>평소 '+base+' · '+(a.drop||0)+'%↓</span></div>'
+    +chart+url+'</div>';
+}
+function renderAlertList(){
+  const a=ALERTS||{alerts:[],counts:{}},all=a.alerts||[],c=a.counts||{};
+  $('alertTitle').textContent='🚨 에러가 의심 '+(c.total||0)+'건';
+  $('alertSub').textContent=(a.generated||'')+' 스냅샷 · 평소 중앙값 대비 50%↓ 또는 절대 초저가(호텔 5만·항공 7만 원 이하) · 직항→경유 착시와 1천만 원↑ 값 제외';
+  $('alertTags').innerHTML=[['all','전체 '+(c.total||0)],['hotel','호텔 '+(c.hotel||0)],['flight','항공 '+(c.flight||0)],['ttang','⑥ '+(c.ttang||0)]]
+    .map(function(t){return '<button type="button" class="seg'+(ALERT_KIND===t[0]?' on':'')+'" data-alkind="'+t[0]+'">'+t[1]+'</button>'}).join('');
+  const rows=all.filter(function(x){return ALERT_KIND==='all'||x.k===ALERT_KIND});
+  const shown=rows.slice(0,60);
+  $('alertList').innerHTML=rows.length
+    ? shown.map(alertRow).join('')+(rows.length>shown.length?'<p class="hint">'+KR(rows.length)+'건 중 급락 폭이 큰 '+shown.length+'건만 보여 줍니다 — 필터로 종류를 좁혀 보세요.</p>':'')
+    : '<div class="chart-empty">'+(all.length?'이 종류의 후보는 없습니다.':'아직 에러가 의심되는 가격이 없습니다 — 매일 inject 때 다시 계산합니다.')+'</div>';
+  $('alertRule').innerHTML='<b>감시 기준</b> — 같은 호텔(노선·패턴·직항 여부) 안에서 <b>1년 중앙값 대비 50%↓</b>이거나 <b>직전 스냅샷 대비 50%↓</b>이거나 <b>절대 초저가</b>(호텔 1박 5만 원↓ · 왕복 항공 7만 원↓)인 칸입니다. 같은 값이 3일 이상 반복되는 정상 요금표는 빼고, 1박 1천만 원 이상(시스템 오류 의심)과 직항→경유로 갈아타며 싸진 착시는 제외했습니다. 후보일 뿐 실제 예약 화면에서 요금·조건을 확인해야 합니다.';
+}
+
+/* ── 버튼·이벤트 ──────────────────────────────────────── */
+document.addEventListener('click',function(e){
+  const h=e.target.closest('[data-hist]');
+  if(h){
+    e.preventDefault();e.stopPropagation();
+    histOpen(h.getAttribute('data-hist'),h.getAttribute('data-hid'),{
+      date:h.getAttribute('data-date')||'',pattern:h.getAttribute('data-pattern')||'',key:h.getAttribute('data-key')||''});
+    return;
+  }
+  const t=e.target.closest('[data-chtab]');
+  if(t){CH.tab=t.getAttribute('data-chtab');drawChart();return}
+  const k=e.target.closest('[data-alkind]');
+  if(k){ALERT_KIND=k.getAttribute('data-alkind');renderAlertList();return}
+});
+document.addEventListener('change',function(e){
+  const id=e.target&&e.target.id;
+  if(id==='chDate'){CH.date=e.target.value;drawChart()}
+  else if(id==='chPat'){CH.pattern=e.target.value;drawChart()}
+  else if(id==='chTt'){CH.key=e.target.value;drawChart()}
+});
+if($('alertBtn'))$('alertBtn').addEventListener('click',alertOpen);
+if($('alertClose'))$('alertClose').addEventListener('click',alertClose);
+if($('alertModal'))$('alertModal').addEventListener('click',function(e){if(e.target===$('alertModal'))alertClose()});
+if($('chartClose'))$('chartClose').addEventListener('click',histClose);
+if($('chartModal'))$('chartModal').addEventListener('click',function(e){if(e.target===$('chartModal'))histClose()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){histClose();alertClose()}});
 
 /* ══ 데이터 지연 로딩 — 탭별 JSON ════════════════════════════════
    화면 코드와 집계값(DB.counts)만 index.html 에 두고, 호텔·항공·땡처리 데이터는
@@ -2974,6 +3450,7 @@ function activate(tab){
 /* 첫 화면 — 저장해 둔 즐겨찾기를 먼저 읽고 ① VIP 탭 JSON 만 받아 그린다 */
 favLoad();
 activate('lux');
+alertLoad();
 </script>
 </body>
 </html>

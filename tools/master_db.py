@@ -19,6 +19,7 @@
     python3 tools/master_db.py inject    # master_db.json -> data/app/*.json + index.html 집계값
     python3 tools/master_db.py parts     # master_db.json -> data/app/*.json 만 (index.html 그대로)
     python3 tools/master_db.py stats     # 수록 범위·건수만 출력
+    python3 tools/master_db.py snapshot  # 오늘(KST) 스냅샷을 data/history/ 에 누적 + 에러가 알람
 
 `inject` 는 index.html 과 data/app/*.json 을 백업한 뒤 `const DB` 집계 블록과 탭별 JSON 만
 다시 쓰고, 나머지 바이트는 그대로 둔다. 바꾼 뒤 스스로 `verify` 를 다시 돌려 실패하면 되돌린다.
@@ -2487,9 +2488,11 @@ def cmd_verify(args, quiet=False):
     problems.extend(check_sources(_read(part_path(PART_TTANG))))
     problems.extend(check_flights(flights))
     problems.extend(check_ttang(tt))
+    check_history(problems)
     # ⑥ 탭·탭별 JSON 골격이 빠지지 않았는지(마크업·탭 버튼·데이터 블록)
     for needle in ('id="ttPanel"', 'data-tab="tt"', 'const TTANG', 'const FLIGHTS',
-                   'DATA_ROOT', 'tab6_ttang.json'):
+                   'DATA_ROOT', 'tab6_ttang.json', 'id="alertBar"', 'data/history/',
+                   'function histOpen', 'id="chartModal"', 'cbNextDay'):
         if needle not in src:
             problems.append('⑥ 땡처리 탭·지연 로딩 골격 누락: %s' % needle)
 
@@ -2507,6 +2510,10 @@ def cmd_verify(args, quiet=False):
         print('  flights 당일치기 %d건 · 패턴 %d종' % (flights['counts'].get('daytrip', 0),
                                                    len(flights['patterns'])))
         print('  index.html const DB 호텔 %d곳 (비어 있어야 함)' % len(dbmeta.get('hotels') or []))
+        if os.path.exists(HIST_ALERTS):
+            al = json.loads(_read(HIST_ALERTS))
+            print('  이력 스냅샷 %s · 에러가 의심 %s건 (data/history/)'
+                  % (al.get('generated'), (al.get('counts') or {}).get('total')))
     return 0
 
 
@@ -2531,7 +2538,8 @@ def cmd_inject(args):
         except OSError:
             same = False
         if same:
-            print('배포 파일이 이미 master_db.json 과 같습니다 — 바꾸지 않았습니다.')
+            print('배포 파일이 이미 master_db.json 과 같습니다 — 배포본은 그대로 두고 이력만 쌓습니다.')
+            snapshot_run(master, args)
             return 0
 
     backup = tempfile.mkdtemp(prefix='hca-inject-')
@@ -2553,6 +2561,7 @@ def cmd_inject(args):
         print('검증 실패 — index.html 과 data/app 을 백업으로 되돌렸습니다.')
         return 1
     shutil.rmtree(backup, ignore_errors=True)
+    snapshot_run(master, args)
     counts = master.get('counts') or {}
     print('data/app 갱신 + index.html 집계값 갱신 완료 (호텔 %s곳, 항공 %s노선, ⑥ 땡처리 %s건, SNU %s줄)' % (
         counts.get('hotels'), counts.get('routes'), counts.get('pus_deals'), counts.get('snu')))
@@ -2627,16 +2636,565 @@ def cmd_stats(args):
     return 0
 
 
+# ---------------------------------------------------------------- 이력 저장 · 에러가 알람
+# `inject`(또는 단독 `snapshot`)가 돌 때마다 오늘(KST) 스냅샷을 data/history/ 에 누적한다.
+#   · history/hotels/{hotel_id}.json    체크인 날짜별  [스냅샷일, 현금가, 포인트, 상태]
+#   · history/flights/{route_code}.json 출발일|패턴별  [스냅샷일, 출발일, 패턴, 가격, 직항(1/0), 상태]
+#   · history/ttang/{airport_code}.json 출발_귀국_코드_항공사_시각별 [스냅샷일, 가격, 잔여석]
+#   · history/alerts.json               에러가 의심 후보
+# 직전 스냅샷과 값이 같은 칸은 다시 쓰지 않는다(바뀐 날·최초 기록만 남긴다).
+# 상태 코드: O 판매·요금 있음 · N 요금 미표시 · E 이상 고가(1천만 원↑) ·
+#            D 판매편 없음 · U 예약창 미오픈 · X 이번 스냅샷에서 사라짐
+HIST_DIR = os.path.join(ROOT, 'data', 'history')
+HIST_HOTELS = os.path.join(HIST_DIR, 'hotels')
+HIST_FLIGHTS = os.path.join(HIST_DIR, 'flights')
+HIST_TTANG = os.path.join(HIST_DIR, 'ttang')
+HIST_ALERTS = os.path.join(HIST_DIR, 'alerts.json')
+SCHEMA_HOTEL_HIST = 'hotel-calendar-app/history/hotel/1'
+SCHEMA_FLIGHT_HIST = 'hotel-calendar-app/history/flight/1'
+SCHEMA_TTANG_HIST = 'hotel-calendar-app/history/ttang/1'
+SCHEMA_ALERTS = 'hotel-calendar-app/history/alerts/1'
+HIST_STATUS = ('O', 'N', 'E', 'D', 'U', 'X')
+ERROR_MIN = 10000000          # 1박 1천만 원 이상 — 시스템 폭등 오류로 본다(차트 Y축 제외)
+ALERT_DROP = 0.5              # 유효 중앙값 대비 50% 이상 급락
+ALERT_HOTEL_LOW = 50000       # 절대 초저가 — 호텔 1박
+ALERT_FLIGHT_LOW = 70000      # 절대 초저가 — 왕복 항공
+ALERT_TIER_REPEAT = 3         # 같은 값이 3일 이상 반복되면 정상 요금표로 보고 뺀다
+ALERT_MIN_HOTEL = 30          # 중앙값을 낼 최소 표본(호텔)
+ALERT_MIN_FLIGHT = 8          # 중앙값을 낼 최소 표본(노선·패턴·직항 여부)
+ALERT_MIN_TTANG = 5           # 중앙값을 낼 최소 표본(⑥ 공항·항공사·시각)
+ALERT_CAP = 160               # alerts.json 에 담는 최대 건수(넘으면 급락 폭 큰 순서로 자른다)
+ALERT_WHY = ('직전 대비 50%↓', '기준 대비 50%↓', '초저가')
+KST = datetime.timezone(datetime.timedelta(hours=9))
+
+
+def today_kst(override=None):
+    """오늘 날짜(YYYY-MM-DD, KST). 테스트·소급 실행은 --date 로 바꾼다."""
+    if override:
+        return override
+    return datetime.datetime.now(KST).strftime('%Y-%m-%d')
+
+
+def add_days(day, n):
+    return (datetime.date.fromisoformat(day) + datetime.timedelta(days=n)).isoformat()
+
+
+def _write_json(path, obj):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as fp:
+        fp.write(json.dumps(obj, ensure_ascii=False, separators=(',', ':')))
+        fp.write('\n')
+    os.replace(tmp, path)
+
+
+def _load_hist(path, schema, seed):
+    if not os.path.exists(path):
+        obj = dict(seed)
+        obj['schema'] = schema
+        return obj
+    try:
+        obj = json.loads(_read(path))
+    except ValueError:
+        raise SystemExit('%s 가 올바른 JSON 이 아닙니다 — 지우지 말고 먼저 확인하세요.' % path)
+    if obj.get('schema') != schema:
+        raise SystemExit('%s 의 schema 가 %r 입니다(기대 %r)' % (path, obj.get('schema'), schema))
+    if not isinstance(obj.get('series', obj.get('keys')), dict):
+        raise SystemExit('%s 에 series/keys 가 없습니다' % path)
+    return obj
+
+
+def merge_series(store, current, snap, blank):
+    """store(키 -> [스냅샷일, 값...]) 에 오늘 값이 직전과 다를 때만 덧붙인다.
+
+    blank(key) 는 이번 스냅샷에서 사라진 키에 남길 값 튜플.
+    같은 날 다시 돌면 마지막 줄을 고쳐 쓴다(하루에 여러 번 돌아도 한 줄).
+    """
+    added = changed = 0
+    for key, vals in current.items():
+        arr = store.get(key)
+        if not arr:
+            store[key] = [[snap] + list(vals)]
+            added += 1
+            continue
+        if list(arr[-1][1:]) == list(vals):
+            continue
+        if arr[-1][0] == snap:
+            arr[-1] = [snap] + list(vals)
+        else:
+            arr.append([snap] + list(vals))
+        changed += 1
+    for key in [k for k in store if k not in current]:
+        arr = store[key]
+        vals = blank(key)
+        if arr[-1][0] == snap:
+            if list(arr[-1][1:]) != list(vals):
+                arr[-1] = [snap] + list(vals)
+                changed += 1
+        elif arr[-1][-1] != 'X':
+            arr.append([snap] + list(vals))
+            changed += 1
+    return added, changed
+
+
+def hotel_status(v):
+    if isinstance(v, int):
+        return 'E' if v >= ERROR_MIN else 'O'
+    return 'N'
+
+
+def hotel_current(master):
+    """hotel_id -> {체크인 날짜: (현금가, 포인트, 상태)}."""
+    out = {}
+    for h in master['hotels']:
+        pts = h.get('points') or {}
+        cur = {}
+        for d, v in (h.get('rates') or {}).items():
+            p = pts.get(d)
+            cur[d] = (v if isinstance(v, int) else None,
+                      p if isinstance(p, int) else None,
+                      hotel_status(v))
+        out[h['id']] = cur
+    return out
+
+
+def flight_current(flights):
+    """route_code -> {'출발일|패턴': (출발일, 패턴, 가격, 직항(1/0/None), 상태)}."""
+    out = {}
+    nosale = flights.get('noSale') or []
+    for r in flights.get('routes') or []:
+        cur = {}
+        for d in r.get('deals') or []:
+            v = d.get('via')
+            direct = 1 if v is False else (0 if v is True else None)
+            price = d.get('price')
+            st = 'E' if isinstance(price, int) and price >= ERROR_MIN else 'O'
+            cur['%s|%s' % (d.get('date'), d.get('pattern'))] = (
+                d.get('date'), d.get('pattern'), price if isinstance(price, int) else None,
+                direct, st)
+        for n in nosale:
+            if n.get('code') != r.get('code'):
+                continue
+            key = '%s|%s' % (n.get('date'), n.get('pattern'))
+            if key in cur:
+                continue
+            st = {'unopened': 'U', 'nofare': 'N', 'nosale': 'D'}.get(n.get('status'), 'D')
+            cur[key] = (n.get('date'), n.get('pattern'), None, None, st)
+        out[r['code']] = cur
+    return out
+
+
+def ttang_key(d):
+    return '%s_%s_%s_%s_%s' % (d.get('out'), d.get('back'), d.get('code'),
+                               d.get('airline') or '', d.get('times') or '')
+
+
+def ttang_current(tt):
+    """airport_code -> {고정 키: (가격, 잔여석)}."""
+    out = {}
+    for d in (tt or {}).get('deals') or []:
+        code = d.get('code')
+        if not code:
+            continue
+        price = d.get('price')
+        out.setdefault(code, {})[ttang_key(d)] = (
+            price if isinstance(price, int) else None, d.get('seats'))
+    return out
+
+
+def _median(vals):
+    v = sorted(vals)
+    n = len(v)
+    if not n:
+        return None
+    m = n // 2
+    return v[m] if n % 2 else (v[m - 1] + v[m]) / 2.0
+
+
+def _drop_pct(base, price):
+    if not base or price is None:
+        return 0.0
+    return round(100.0 * (1.0 - float(price) / float(base)), 1)
+
+
+def _mdy(day):
+    return '%s/%s/%s' % (day[5:7], day[8:10], day[0:4])
+
+
+def hotel_url(h, ci, nights=1):
+    """앱의 예약 링크 규칙(index.html bookUrlOf)과 같은 주소."""
+    co = add_days(ci, nights)
+    if h.get('fhr'):
+        return h['fhr']
+    g = h.get('group')
+    if g == 'lux':
+        rid = str(h.get('ref_id') or '').strip()
+        if rid:
+            return ('https://hotel.hotelux.com/#/hotel/detail?hotelId=%s&checkIn=%s&checkOut=%s'
+                    '&numberOfAdults=2&numberOfChildren=0&numberOfRooms=1' % (rid, ci, co))
+        return 'https://hotel.hotelux.com/'
+    if g == 'domestic' and h.get('code'):
+        return ('https://all.accor.com/booking/ko/accor/hotel/%s?dateIn=%s&nights=%d'
+                '&compositions=2&stayplus=false' % (h['code'], ci, nights))
+    if g == 'marriott' and h.get('code'):
+        return ('https://www.marriott.com/reservation/availabilitySearch.mi?propertyCode=%s'
+                '&isSearch=true&fromDate=%s&toDate=%s&numberOfAdults=2&numberOfRooms=1'
+                '&useRewards=false&earchType=QuickSearch' % (h['code'], _mdy(ci), _mdy(co)))
+    return ''
+
+
+def flight_url(code, date, back):
+    return ('https://kr.trip.com/flights/showfarefirst?dcity=pus&acity=' + code.lower()
+            + '&ddate=' + date + '&rdate=' + (back or date) + '&triptype=rt&class=y'
+            '&quantity=1&locale=ko-KR&curr=KRW')
+
+
+def _alert(kind, ident, name, city, date, price, base, why, **extra):
+    a = {'k': kind, 'id': ident, 'name': name, 'city': city, 'date': date,
+         'price': int(round(price)) if isinstance(price, (int, float)) else price,
+         'base': int(round(base)) if base else None,
+         'drop': _drop_pct(base, price), 'why': why}
+    a.update({k: v for k, v in extra.items() if v not in (None, '', [])})
+    return a
+
+
+def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
+    """에러가 의심 후보 — ① 직전 스냅샷 대비 50%↓ ② 유효 중앙값 대비 50%↓ ③ 절대 초저가."""
+    out = []
+
+    # ① 호텔 — 같은 호텔 안에서 1년 중앙값 대비 50%↓ (같은 값이 3일 이상 반복되면 정상 요금표로 보고 뺀다)
+    for h in master['hotels']:
+        series = (hist_hotels.get(h['id']) or {}).get('series') or {}
+        vals, latest, prevmap, rep = [], {}, {}, {}
+        for key, arr in series.items():
+            last = arr[-1]
+            v = last[1]
+            if isinstance(v, int) and v < ERROR_MIN:
+                vals.append(v)
+                rep[v] = rep.get(v, 0) + 1
+            latest[key] = v
+            if len(arr) >= 2 and arr[-2][0] != snap:
+                prevmap[key] = arr[-2][1]
+        med = _median(vals) if len(vals) >= ALERT_MIN_HOTEL else None
+        for key, v in latest.items():
+            if not isinstance(v, int) or v >= ERROR_MIN:
+                continue
+            prev = prevmap.get(key)
+            if isinstance(prev, int) and prev < ERROR_MIN and v <= prev * ALERT_DROP:
+                why, base = '직전 대비 50%↓', prev
+            elif v <= ALERT_HOTEL_LOW:
+                why, base = '초저가', ALERT_HOTEL_LOW
+            elif med and v <= med * ALERT_DROP and rep.get(v, 0) < ALERT_TIER_REPEAT:
+                why, base = '기준 대비 50%↓', med
+            else:
+                continue
+            out.append(_alert('hotel', h['id'], h['name'], h.get('city'), key, v, base, why,
+                              tab=h.get('group'), url=hotel_url(h, key)))
+
+    # ② ⑤ 항공 — 노선·패턴·직항 여부가 같은 칸끼리 비교(직항→경유 전환으로 싸진 착시는 뺀다)
+    for r in master['flights'].get('routes') or []:
+        series = (hist_flights.get(r['code']) or {}).get('series') or {}
+        groups = {}
+        for key, arr in series.items():
+            last = arr[-1]
+            groups.setdefault((last[2], last[4]), []).append((key, last, arr))
+        backs = {}
+        for d in r.get('deals') or []:
+            backs[(d.get('date'), d.get('pattern'))] = d.get('back')
+        for (_pat, _direct), items in groups.items():
+            vals = [x[1][3] for x in items if isinstance(x[1][3], int) and x[1][3] < ERROR_MIN]
+            if len(vals) < ALERT_MIN_FLIGHT:
+                continue
+            med = _median(vals)
+            rep = {}
+            for x in items:
+                if isinstance(x[1][3], int):
+                    rep[x[1][3]] = rep.get(x[1][3], 0) + 1
+            for _key, last, arr in items:
+                _snap, date, pattern, price, direct, _st = last
+                if not isinstance(price, int) or price >= ERROR_MIN:
+                    continue
+                prev = arr[-2] if len(arr) >= 2 and arr[-2][0] != snap else None
+                if prev and isinstance(prev[3], int) and prev[3] < ERROR_MIN \
+                        and prev[4] == direct and price <= prev[3] * ALERT_DROP:
+                    why, base = '직전 대비 50%↓', prev[3]
+                elif price <= ALERT_FLIGHT_LOW:
+                    why, base = '초저가', ALERT_FLIGHT_LOW
+                elif med and price <= med * ALERT_DROP and rep.get(price, 0) < ALERT_TIER_REPEAT:
+                    why, base = '기준 대비 50%↓', med
+                else:
+                    continue
+                back = backs.get((date, pattern))
+                out.append(_alert('flight', r['code'], r.get('city'), r.get('city'), date,
+                                  price, base, why, back=back, pattern=pattern,
+                                  via=(1 if direct == 1 else (0 if direct == 0 else None)),
+                                  tab='flight', url=flight_url(r['code'], date, back)))
+
+    # ③ ⑥ 땡처리 — 공항·항공사·시각이 같은 상품끼리 비교
+    by_air = {}
+    for d in (master.get('ttang') or {}).get('deals') or []:
+        by_air.setdefault(d.get('code'), []).append(d)
+    for code, deals in by_air.items():
+        groups = {}
+        for d in deals:
+            groups.setdefault((d.get('airline') or '', d.get('times') or ''), []).append(d)
+        # 항공사·시각까지 같은 상품이 5건 미만이면 공항 전체(같은 노선)를 기준으로 쓴다
+        if any(len(v) >= ALERT_MIN_TTANG for v in groups.values()):
+            buckets = [v for v in groups.values() if len(v) >= ALERT_MIN_TTANG]
+        else:
+            buckets = [deals]
+        for items in buckets:
+            vals = [d['price'] for d in items if isinstance(d.get('price'), int)
+                    and d['price'] < ERROR_MIN]
+            if len(vals) < ALERT_MIN_TTANG:
+                continue
+            med = _median(vals)
+            rep = {}
+            for d in items:
+                if isinstance(d.get('price'), int):
+                    rep[d['price']] = rep.get(d['price'], 0) + 1
+            for d in items:
+                price = d.get('price')
+                if not isinstance(price, int) or price >= ERROR_MIN:
+                    continue
+                key = ttang_key(d)
+                arr = ((hist_ttang.get(code) or {}).get('keys') or {}).get(key) or []
+                prev = arr[-2] if len(arr) >= 2 and arr[-2][0] != snap else None
+                if prev and isinstance(prev[1], int) and price <= prev[1] * ALERT_DROP:
+                    why, base = '직전 대비 50%↓', prev[1]
+                elif price <= ALERT_FLIGHT_LOW:
+                    why, base = '초저가', ALERT_FLIGHT_LOW
+                elif med and price <= med * ALERT_DROP and rep.get(price, 0) < ALERT_TIER_REPEAT:
+                    why, base = '기준 대비 50%↓', med
+                else:
+                    continue
+                out.append(_alert('ttang', code, d.get('city'), d.get('city'), d.get('out'),
+                                  price, base, why, back=d.get('back'),
+                                  airline=d.get('airline'), seats=d.get('seats'), key=key,
+                                  tab='tt', url=d.get('url')))
+
+    # 같은 호텔이 두 탭에 있을 때 같은 날짜가 두 번 뜨지 않게 묶는다
+    seen = {}
+    for a in out:
+        k = (a['k'], a['name'], a['date'], a.get('pattern'), a.get('airline'), a.get('back'))
+        if k in seen:
+            seen[k]['also'] = (seen[k].get('also') or 0) + 1
+            continue
+        seen[k] = a
+    alerts = list(seen.values())
+    alerts.sort(key=lambda a: (-a['drop'], a['price'] or 0, a['date']))
+    return alerts
+
+
+def snapshot_run(master, args, verbose=True):
+    """data/history/ 에 오늘 스냅샷을 누적하고 alerts.json 을 다시 쓴다."""
+    snap = today_kst(getattr(args, 'date', None))
+    cur_h = hotel_current(master)
+    cur_f = flight_current(master['flights'])
+    cur_t = ttang_current(master.get('ttang'))
+
+    hist_hotels, hist_flights, hist_ttang = {}, {}, {}
+    added = changed = files = 0
+
+    for h in master['hotels']:
+        path = os.path.join(HIST_HOTELS, h['id'] + '.json')
+        obj = _load_hist(path, SCHEMA_HOTEL_HIST,
+                         {'id': h['id'], 'name': h['name'], 'group': h.get('group'),
+                          'city': h.get('city'), 'unit': 'KRW', 'series': {}})
+        series = obj['series']
+        a, c = merge_series(series, cur_h.get(h['id']) or {}, snap,
+                            lambda key: (None, None, 'X'))
+        obj.update({'name': h['name'], 'group': h.get('group'), 'city': h.get('city'),
+                    'updated': snap})
+        if a or c or not os.path.exists(path):
+            _write_json(path, obj)
+            files += 1
+        added += a
+        changed += c
+        hist_hotels[h['id']] = obj
+
+    for r in master['flights'].get('routes') or []:
+        code = r['code']
+        path = os.path.join(HIST_FLIGHTS, code + '.json')
+        obj = _load_hist(path, SCHEMA_FLIGHT_HIST,
+                         {'code': code, 'city': r.get('city'), 'unit': 'KRW', 'series': {}})
+        series = obj['series']
+        a, c = merge_series(series, cur_f.get(code) or {}, snap,
+                            lambda key: (key.split('|')[0], key.split('|')[1], None, None, 'X'))
+        obj.update({'city': r.get('city'), 'updated': snap})
+        if a or c or not os.path.exists(path):
+            _write_json(path, obj)
+            files += 1
+        added += a
+        changed += c
+        hist_flights[code] = obj
+
+    for code, cur in cur_t.items():
+        city = ''
+        for d in (master.get('ttang') or {}).get('deals') or []:
+            if d.get('code') == code:
+                city = d.get('city') or ''
+                break
+        path = os.path.join(HIST_TTANG, code + '.json')
+        obj = _load_hist(path, SCHEMA_TTANG_HIST,
+                         {'code': code, 'city': city, 'unit': 'KRW', 'keys': {}})
+        store = obj['keys']
+        a, c = merge_series(store, cur, snap, lambda key: (None, None))
+        obj.update({'city': city, 'updated': snap})
+        if a or c or not os.path.exists(path):
+            _write_json(path, obj)
+            files += 1
+        added += a
+        changed += c
+        hist_ttang[code] = obj
+
+    alerts = build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap)
+    total = len(alerts)
+    kept = alerts[:ALERT_CAP]
+    counts = {'total': total, 'hotel': 0, 'flight': 0, 'ttang': 0}
+    for a in alerts:
+        counts[a['k']] = counts.get(a['k'], 0) + 1
+    _write_json(HIST_ALERTS, {
+        'schema': SCHEMA_ALERTS,
+        'generated': snap,
+        'rules': {'dropPct': int(ALERT_DROP * 100), 'hotelLow': ALERT_HOTEL_LOW,
+                  'flightLow': ALERT_FLIGHT_LOW, 'excludeAt': ERROR_MIN,
+                  'tierRepeat': ALERT_TIER_REPEAT,
+                  'basis': '같은 호텔(노선·패턴·직항 여부) 안에서 1년 중앙값 대비 50%↓ 또는 '
+                           '직전 스냅샷 대비 50%↓ 또는 절대 초저가'},
+        'counts': counts,
+        'shown': len(kept),
+        'alerts': kept,
+    })
+    files += 1
+
+    hist = {'snap': snap, 'files': files, 'added': added, 'changed': changed,
+            'alerts': total, 'alert_counts': counts, 'shown': len(kept)}
+    if verbose:
+        print('이력 스냅샷 %s — 파일 %d개 갱신(신규 %d줄 · 변경 %d줄)' % (snap, files, added, changed))
+        print('  호텔 %d곳 · 항공 %d노선 · ⑥ 땡처리 %d개 공항'
+              % (len(hist_hotels), len(hist_flights), len(hist_ttang)))
+        print('  🚨 에러가 의심 %d건 (호텔 %d · 항공 %d · ⑥ %d)'
+              % (total, counts.get('hotel', 0), counts.get('flight', 0), counts.get('ttang', 0)))
+    return hist
+
+
+def cmd_snapshot(args):
+    """data/history/ — 오늘 스냅샷만 따로 쌓는다(master_db.json 은 그대로)."""
+    master = json.loads(_read(MASTER))
+    snapshot_run(master, args)
+    size = cnt = 0
+    for base, _dirs, names in os.walk(HIST_DIR):
+        for n in names:
+            size += os.path.getsize(os.path.join(base, n))
+            cnt += 1
+    print('  data/history/ %d개 파일 · %.1f KB' % (cnt, size / 1024.0))
+    return 0
+
+
+def _check_hist_file(problems, path, schema, size, known, keyname):
+    try:
+        obj = json.loads(_read(path))
+    except ValueError:
+        problems.append('history JSON 손상: %s' % os.path.relpath(path, ROOT))
+        return
+    if obj.get('schema') != schema:
+        problems.append('history schema 다름: %s' % os.path.relpath(path, ROOT))
+    series = obj.get('series', obj.get('keys'))
+    if not isinstance(series, dict):
+        problems.append('history series 없음: %s' % os.path.relpath(path, ROOT))
+        return
+    if obj.get(keyname) not in known:
+        problems.append('history %s 가 master 에 없음: %s'
+                        % (keyname, os.path.relpath(path, ROOT)))
+    for key, arr in series.items():
+        if not isinstance(arr, list) or not arr:
+            problems.append('history %s 키 %r 비어 있음' % (os.path.relpath(path, ROOT), key))
+            continue
+        for row in arr:
+            if not isinstance(row, list) or len(row) != size:
+                problems.append('history %s 키 %r 줄 길이 %s (기대 %d)'
+                                % (os.path.relpath(path, ROOT), key,
+                                   len(row) if isinstance(row, list) else row, size))
+                break
+            if not isinstance(row[0], str) or len(row[0]) != 10:
+                problems.append('history %s 키 %r 스냅샷일 이상: %r'
+                                % (os.path.relpath(path, ROOT), key, row[0]))
+                break
+            if size > 3 and row[-1] not in HIST_STATUS:
+                problems.append('history %s 키 %r 상태 코드 이상: %r'
+                                % (os.path.relpath(path, ROOT), key, row[-1]))
+                break
+        dates = [r[0] for r in arr if isinstance(r, list) and r]
+        if dates != sorted(dates):
+            problems.append('history %s 키 %r 스냅샷일 순서 이상'
+                            % (os.path.relpath(path, ROOT), key))
+
+
+def check_history(problems):
+    """data/history/ 가 master_db.json 과 어긋나지 않는지 — 아직 없으면 건너뛴다."""
+    if not os.path.isdir(HIST_DIR):
+        return
+    master = json.loads(_read(MASTER))
+    ids = {h['id'] for h in master['hotels']}
+    codes = {r['code'] for r in master['flights'].get('routes') or []}
+    ttcodes = {d.get('code') for d in (master.get('ttang') or {}).get('deals') or []}
+
+    for folder, schema, size, known, keyname in (
+            (HIST_HOTELS, SCHEMA_HOTEL_HIST, 4, ids, 'id'),
+            (HIST_FLIGHTS, SCHEMA_FLIGHT_HIST, 6, codes, 'code'),
+            (HIST_TTANG, SCHEMA_TTANG_HIST, 3, ttcodes, 'code')):
+        if not os.path.isdir(folder):
+            continue
+        for name in sorted(os.listdir(folder)):
+            if name.endswith('.json'):
+                _check_hist_file(problems, os.path.join(folder, name),
+                                 schema, size, known, keyname)
+
+    if not os.path.exists(HIST_ALERTS):
+        return
+    try:
+        al = json.loads(_read(HIST_ALERTS))
+    except ValueError:
+        problems.append('history alerts.json 손상')
+        return
+    if al.get('schema') != SCHEMA_ALERTS:
+        problems.append('alerts.json schema 다름')
+    rows = al.get('alerts')
+    if not isinstance(rows, list):
+        problems.append('alerts.json alerts 목록 없음')
+        return
+    counts = al.get('counts') or {}
+    if len(rows) < ALERT_CAP and counts.get('total') != len(rows):
+        problems.append('alerts.json counts.total %s vs 목록 %d'
+                        % (counts.get('total'), len(rows)))
+    if len(rows) > ALERT_CAP:
+        problems.append('alerts.json %d건 (상한 %d)' % (len(rows), ALERT_CAP))
+    for a in rows:
+        if a.get('k') not in ('hotel', 'flight', 'ttang'):
+            problems.append('alerts.json 종류 이상: %r' % a.get('k'))
+            break
+        if a.get('why') not in ALERT_WHY:
+            problems.append('alerts.json 사유 이상: %r' % a.get('why'))
+            break
+        if not isinstance(a.get('price'), int) or not a.get('date'):
+            problems.append('alerts.json 값 이상: %r' % a.get('id'))
+            break
+
 def main(argv):
     import argparse
     import datetime
     p = argparse.ArgumentParser(description='hotel-calendar-app 통합 마스터 DB 도구')
-    p.add_argument('command', choices=['extract', 'verify', 'inject', 'parts', 'refresh', 'stats'])
+    p.add_argument('command', choices=['extract', 'verify', 'inject', 'parts', 'refresh',
+                                    'stats', 'snapshot'])
     p.add_argument('--now', default=datetime.datetime.now().astimezone().strftime('%Y-%m-%dT%H:%M:%S%z'),
                    help='extract 시 기록할 생성 시각')
+    p.add_argument('--date', default=None,
+                   help='snapshot/inject 시 기록할 스냅샷 날짜(YYYY-MM-DD, 기본 오늘 KST)')
     args = p.parse_args(argv)
     return {'extract': cmd_extract, 'verify': cmd_verify, 'inject': cmd_inject,
-            'parts': cmd_parts, 'refresh': cmd_refresh, 'stats': cmd_stats}[args.command](args)
+            'parts': cmd_parts, 'refresh': cmd_refresh, 'stats': cmd_stats,
+            'snapshot': cmd_snapshot}[args.command](args)
 
 
 if __name__ == '__main__':

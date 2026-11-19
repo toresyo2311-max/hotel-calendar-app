@@ -43,6 +43,17 @@ CITY_ALIAS = {'상해-푸둥': '상하이', '상해-푸동': '상하이', '상�
               '장가계(다융)': '장가계'}
 
 
+CITY_CANON = {'TPE': '타이베이', 'NRT': '도쿄', 'HND': '도쿄', 'KIX': '오사카', 'PVG': '상하이',
+              'SHA': '상하이', 'TAO': '칭다오', 'SHI': '미야코지마', 'CTS': '삿포로', 'HGH': '항주',
+              'TXN': '황산', 'DYG': '장가계', 'PEK': '베이징', 'KHH': '카오슝', 'CXR': '나트랑',
+              'BKK': '방콕', 'SIN': '싱가포르', 'SGN': '호치민', 'SAI': '씨엠립', 'VTE': '비엔티엔',
+              'TAK': '다카마쓰', 'KMJ': '구마모토', 'KOJ': '가고시마', 'MYJ': '마쓰야마', 'FSZ': '시즈오카',
+              'FUK': '후쿠오카', 'OKA': '오키나와', 'NGO': '나고야', 'KMI': '미야자키', 'GUM': '괌',
+              'CEB': '세부', 'MNL': '마닐라', 'TAG': '보홀', 'CRK': '클락', 'BKI': '코타키나발루',
+              'PQC': '푸꾸옥', 'CNX': '치앙마이', 'DAD': '다낭', 'HAN': '하노이', 'HKG': '홍콩',
+              'RMQ': '타이중', 'XMN': '샤먼', 'CAN': '광저우', 'NGS': '나가사키'}
+
+
 def norm_city(name):
     n = str(name or '').strip()
     return CITY_ALIAS.get(n, n)
@@ -461,6 +472,16 @@ def main(argv):
         d['days'] = real
         keep.append(d)
     deals = keep
+    # 같은 공항(코드)을 소스마다 다르게 적은 이름을 하나로 통일한다(가장 많이 쓰인 이름, 동률이면 짧은 것)
+    names = {}
+    for d in deals:
+        names.setdefault(d['code'], {})
+        names[d['code']][d['city']] = names[d['code']].get(d['city'], 0) + 1
+    canon = {}
+    for code, cnt in names.items():
+        canon[code] = CITY_CANON.get(code) or sorted(cnt.items(), key=lambda kv: (-kv[1], len(kv[0])))[0][0]
+    for d in deals:
+        d['city'] = canon[d['code']]
     for i, d in enumerate(deals, 1):
         d['id'] = 'P%04d' % i
 

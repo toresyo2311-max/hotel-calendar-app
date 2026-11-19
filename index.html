@@ -1909,6 +1909,8 @@ function ttByPrice(a,b){return (a.price-b.price)||String(a.out).localeCompare(St
 function ttBestOf(a){return a.slice().sort(ttByPrice)[0]||null}
 function ttMinOf(a){return a.length?Math.min.apply(null,a.map(function(d){return d.price})):null}
 function ttMonths(){const seen={},out=[];ttAll().forEach(function(d){const k=String(d.out).slice(0,7);if(!seen[k]){seen[k]=1;out.push(k)}});return out.sort()}
+/* 달력은 하루짜리 상품만 쓰므로 달 이동도 그 기준으로 */
+function ttCalMonths(){const seen={},out=[];ttFiltered().forEach(function(d){if(ttIsPeriod(d))return;const k=String(d.out).slice(0,7);if(!seen[k]){seen[k]=1;out.push(k)}});return out.sort()}
 function ttNights(d){return typeof d.nights==='number'?d.nights:(d.days?d.days-1:null)}
 function ttSpan(d){const n=ttNights(d),p=[];if(d.days)p.push(d.days+'일');if(n!=null)p.push(n+'박');return p.join(' · ')}
 function ttRange(d){return dateLabel(d.out)+'–'+dateLabel(d.back)}
@@ -1995,7 +1997,7 @@ function renderTtFilters(){
 
 /* 출발일 달력 — 칸을 누르면 그 날 최저 상품 예약 페이지가 새 탭에서 열린다 */
 function renderTtCal(){
-  const months=ttMonths();
+  const months=ttCalMonths();
   const box=$('ttDays');
   if(!months.length){
     $('ttMonthTitle').textContent='—';$('ttPrevMonth').disabled=true;$('ttNextMonth').disabled=true;
@@ -2088,7 +2090,9 @@ function renderTtTable(){
 
 /* 전체 상품 목록 — 행 전체가 예약 링크 */
 function renderTtList(){
-  const ds=ttFiltered().slice().sort(ttByPrice);
+  const all=ttFiltered().slice().sort(ttByPrice);
+  const CAP=200;
+  const ds=all.slice(0,CAP);
   const min=ttMinOf(ds);
   let html='<div class="tt-thead"><span class="d-date">출발–귀국</span><span class="d-name">노선</span><span class="d-span">기간</span><span class="d-seat">잔여석</span><span class="d-air">항공사</span><span class="d-go">예약</span></div>';
   if(!ds.length){
@@ -2106,7 +2110,7 @@ function renderTtList(){
   }
   $('ttList').className='tt-table tt-dtable';
   $('ttList').innerHTML=html;
-  $('ttListSub').textContent=ds.length?KR(ds.length)+'건 · 싼 순서 · 1인 왕복 총액(유류·세금 포함) 기준':'자료 없음';
+  $('ttListSub').textContent=all.length?KR(all.length)+'건 중 싼 '+KR(ds.length)+'건만 표시 · 1인 왕복 총액(유류·세금 포함) 기준'+(all.length>ds.length?' · 권역·도시 필터로 좁히면 그 안에서 다시 싼 순으로 채십니다':''):'자료 없음';
 }
 
 /* 조회 기준 · 주의 */
@@ -2137,8 +2141,8 @@ function renderTt(){
 (function(){const tb=document.querySelector('[data-tab="tt"] b');if(tb)tb.textContent=KR(ttAll().length)})();
 $('ttRegion').addEventListener('change',function(e){ttst.region=e.target.value;ttst.city='all';renderTtFilters();renderTtKpi();renderTtTop();renderTtRoutes();renderTtCal();renderTtTable();renderTtList();});
 $('ttCity').addEventListener('change',function(e){ttst.city=e.target.value;renderTtKpi();renderTtTop();renderTtRoutes();renderTtCal();renderTtTable();renderTtList();});
-$('ttPrevMonth').addEventListener('click',function(){const ms=ttMonths();const i=ms.indexOf(ttst.month);if(i<=0)return;ttst.month=ms[i-1];ttst.day='';renderTtCal();renderTtDay();});
-$('ttNextMonth').addEventListener('click',function(){const ms=ttMonths();const i=ms.indexOf(ttst.month);if(i<0||i>=ms.length-1)return;ttst.month=ms[i+1];ttst.day='';renderTtCal();renderTtDay();});
+$('ttPrevMonth').addEventListener('click',function(){const ms=ttCalMonths();const i=ms.indexOf(ttst.month);if(i<=0)return;ttst.month=ms[i-1];ttst.day='';renderTtCal();renderTtDay();});
+$('ttNextMonth').addEventListener('click',function(){const ms=ttCalMonths();const i=ms.indexOf(ttst.month);if(i<0||i>=ms.length-1)return;ttst.month=ms[i+1];ttst.day='';renderTtCal();renderTtDay();});
 $('ttDays').addEventListener('click',function(e){
   const a=e.target.closest('[data-tt-date]');
   if(!a)return;

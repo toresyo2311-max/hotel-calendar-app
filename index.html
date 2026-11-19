@@ -3229,6 +3229,7 @@ function chartTtSnap(d,snaps){
 function histOpen(kind,id,opt){
   opt=opt||{};
   if(!id||!$('chartModal'))return;
+  alertClose();
   CH.kind=kind;CH.id=id;CH.date=opt.date||'';CH.pattern=opt.pattern||'';CH.key=opt.key||'';
   CH.tab=(kind==='ttang')?'snap':'curve';CH.data=null;
   $('chartModal').classList.add('show');
@@ -3301,6 +3302,7 @@ function renderAlertBar(){
 }
 function alertOpen(){
   const m=$('alertModal');if(!m)return;
+  histClose();
   m.classList.add('show');m.setAttribute('aria-hidden','false');
   document.body.style.overflow='hidden';
   ALERT_KIND='all';renderAlertList();
@@ -3312,7 +3314,7 @@ function alertClose(){
 }
 function alertRow(a){
   const kindTxt=a.k==='hotel'?'호텔':(a.k==='flight'?'항공':'⑥');
-  const sub=[a.date&&fullDate(a.date),a.pattern,a.back?'~'+dateLabel(a.back):'',a.airline].filter(Boolean).join(' · ');
+  const sub=[a.date&&fullDate(a.date),a.pattern,a.back?'귀국 '+dateLabel(a.back):'',a.airline].filter(Boolean).join(' · ');
   const base=a.base?shortWon(a.base):'—';
   const url=a.url?'<a class="al-go" href="'+esc(a.url)+'" target="_blank" rel="noopener">예약 ↗</a>':'<span class="al-go" style="opacity:.45">링크 없음</span>';
   const chart='<button type="button" class="hchart" data-hist="'+a.k+(a.k==='hotel'?'s':a.k==='flight'?'s':'')+'" data-hid="'+esc(a.id)+'" data-date="'+esc(a.date||'')+'" data-pattern="'+esc(a.pattern||'')+'" data-key="'+esc(a.key||'')+'" title="가격 추이">📈</button>';

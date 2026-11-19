@@ -10,7 +10,7 @@
 
 넣는 자리(마커로 감싸 두어 다시 돌려도 중복되지 않는다):
     CSS      : '/* ── 반응형' 앞
-    NAV      : ⑤ 메리어트 탭 버튼 뒤
+    NAV      : ⑤ 항공 탭 버튼 뒤
     SECTION  : <div class="note-grid" id="hotelNotes"> 앞
     TABS     : const tabs={...} 의 마지막 항목 뒤
     JS       : render(); 호출 앞
@@ -34,8 +34,8 @@ TABS_ENTRY = ("tt:{title:'부산 출발 땡처리 항공권',"
               "새 탭에서 바로 열립니다. / 성인 1인 왕복 총액(유류·세금 포함)',"
               "checked:'수집 기준: 2026-11-19 KST',start:'2026-11',end:'2027-11'}")
 
-NAV_ANCHOR = ('    <button class="tab" data-tab="marriott" type="button">'
-              '⑤ 메리어트 · 중국/한·일 <b>62</b></button>\n')
+NAV_ANCHOR = ('    <button class="tab" data-tab="flight" type="button">'
+              '⑤ 항공 특가 · 부산 출발 <b>47</b></button>\n')
 SEC_ANCHOR = '  <div class="note-grid" id="hotelNotes">\n'
 CSS_ANCHOR = '/* ── 반응형 ─'
 JS_ANCHOR = '\nrender();\n</script>'

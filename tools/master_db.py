@@ -534,9 +534,10 @@ EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
 # 2027.06~11 반영분(3개 원본: 260 + 73 + 53 = 386건)
 # 2027-06은 2026-11-18 동남아 4노선 2~6월 420칸 가운데 6월 80칸을 더한 값(239+80)
 # 2027-06은 필리핀 6월 80칸 + G2 금~월 6월 16칸을 더한 값(319 + 96)
+# 2027-06은 다시 기존 24개 노선 6월 3주차(6/17~21) 120칸 중 새 칸 92를 더한 값(530→622)
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
 # 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
-EXPECT_H2_BY_MONTH = {'2027-06': 530, '2027-07': 631, '2027-08': 454,
+EXPECT_H2_BY_MONTH = {'2027-06': 622, '2027-07': 631, '2027-08': 454,
                       '2027-09': 425, '2027-10': 189, '2027-11': 34}
 # 2027-07 은 2026-11-19 일본 7노선 7월 완결본(값 150칸)을 더한 595 에,
 # 같은 날 필리핀 4노선 미조회 36칸을 더한 631 이다. 8·9·10월에도 필리핀 40·66·32칸을 더했다.
@@ -544,7 +545,9 @@ EXPECT_H2_BY_MONTH = {'2027-06': 530, '2027-07': 631, '2027-08': 454,
 # 2027-08 은 같은 날 일본 7노선 2027년 8월 병합분(120칸 — 시즈오카 20칸은 항공편 0건)을 더했다.
 # 2027-11 은 같은 날 일본 7노선 2027년 11월 병합분(값 33칸 — 미오픈 87 · 시즈오카 판매편 0건 20)을
 # 더한 34 다(기존 1칸은 후쿠오카 11/5~7).
-EXPECT_H2 = {'weekend': 2168, 'day': 95, 'total': 2263}   # 주말형 1,825+190+120+33 · 당일치기 88+7
+EXPECT_H2 = {'weekend': 2260, 'day': 95, 'total': 2355}   # 주말형 1,825+190+120+33 · 당일치기 88+7
+# 2027-06 은 2026-11-19 기존 24개 노선 6월 3주차(6/17~21) 120칸 가운데 새 칸 92를 더한 값이다
+# (530→622 — 같은 주차에 있던 '가격표' 자리표시 28칸은 이번 실측으로 교체, 건수는 그대로).
 EXPECT_NOSALE = {('FUK', '2027-11-12'), ('TYO', '2027-11-12'),
                  ('TYO', '2027-11-16'), ('FUK', '2027-11-20'),
                  ('KWL', '2026-12-05'), ('TXN', '2026-12-05'),   # 중국 2건: 같은 날 복편 0편
@@ -688,6 +691,40 @@ EXPECT_MAY5_LOW = {('HAN', '2027-05-27', '목~일'): 282171,
                    ('FUK', '2027-05-27', '목~월'): 333438}
 # 항저우 3칸 · 칭다오 4칸은 '최저가 탭 값(편성 미확인)' 이라 via=null
 EXPECT_MAY5_UNKNOWN = 7
+
+# 2027년 6월 3주차(6/17~6/21) 기존 24개 노선 × 5패턴 120칸 — 2026-11-19 5번 보고서
+# (부산출발-항공특가-2027년6월-3주차, 2026-11-19 10:29~12:44 KST 실측). 120칸 모두 값이고
+# (미오픈·판매편 0건·요금 미공개 0칸), 이 주차에 남아 있던 '가격표' 자리표시 28칸은
+# 이번 실측값으로 교체했다(0박 당일치기 2칸은 이 조사 범위 밖이라 그대로).
+JUN3_START, JUN3_END = '2027-06-17', '2027-06-21'
+EXPECT_JUN3_TOTAL = 120
+EXPECT_JUN3_OVERALL = (296600, 844300)    # 최저 홍콩 6/18~20 금~일 · 최고 괌 6/18~20·6/19~21
+EXPECT_JUN3_DIRECT = 37                   # 직항이 최저가인 칸
+EXPECT_JUN3_ALT = 33                      # 최저가가 경유일 때 직항 금액을 함께 적은 칸
+EXPECT_JUN3_AVG = {'토~월': 478088, '목~월': 478829, '금~월': 483692,
+                   '목~일': 485375, '금~일': 490150}
+EXPECT_JUN3_ROUTE = {
+    'FUK': (341500, 420400), 'KIX': (353800, 373400), 'TYO': (474600, 528400),
+    'NGO': (620500, 683000), 'OKA': (493100, 639400), 'GUM': (658900, 844300),
+    'PVG': (299000, 488900), 'BJS': (448500, 489100), 'NKG': (484200, 558500),
+    'HGH': (483300, 488700), 'TAO': (471600, 516200),
+    'TPE': (387500, 398300), 'HKG': (296600, 335900), 'KHH': (479300, 499000),
+    'RMQ': (436100, 497300), 'MFM': (484200, 726200),
+    'BKK': (411300, 411400), 'CNX': (538300, 622400), 'DAD': (487600, 488500),
+    'CXR': (429000, 435800), 'HAN': (443600, 447000), 'SGN': (454000, 457600),
+    'SIN': (424500, 430500), 'DPS': (421900, 428900),
+}
+EXPECT_JUN3_LOW = {('HKG', '2027-06-18', '금~일'): 296600,
+                   ('PVG', '2027-06-19', '토~월'): 299000,
+                   ('FUK', '2027-06-17', '목~월'): 341500,
+                   ('GUM', '2027-06-18', '금~일'): 844300,
+                   ('GUM', '2027-06-19', '토~월'): 844300}
+EXPECT_JUN3_ALT_CELLS = {('PVG', '2027-06-18', '금~일'): 521600,
+                         ('SIN', '2027-06-18', '금~일'): 917800,
+                         ('TAO', '2027-06-19', '토~월'): 853600,
+                         ('BJS', '2027-06-17', '목~월'): 552500}
+# 이 주차 5패턴 전부 최저가가 직항인 노선(원문 '한눈에') — 후쿠오카·오사카·도쿄·나트랑·타이베이·홍콩
+EXPECT_JUN3_ALLDIRECT = ('FUK', 'KIX', 'TYO', 'CXR', 'TPE', 'HKG')
 
 # ── 2026-11-18 중국 8개 노선 2027년 7~11월 (15주말 × 7패턴) ────────────────────────
 # `noSale` 은 세 가지를 `status` 로 구분한다 — nosale(조회 결과 판매편 없음) ·
@@ -1255,6 +1292,62 @@ def check_flights(flights):
             if got != price:
                 problems.append('5월 5주차 최저 칸 %s %s %s %s (기대 %d)'
                                 % (code, date, pat, got, price))
+    # 2027년 6월 3주차(6/17~21) — 기존 24개 노선 × 5패턴 120칸(100%). 자리표시 칸이 남지 않았는지,
+    # 최저·최고·직항 칸 수·패턴 평균·노선별 최저/최고가 원문과 같은지.
+    jun3 = [dict(d, code=r['code']) for r in routes if r['code'] in EXPECT_MAR_W1_ROUTES
+            for d in r['deals'] if JUN3_START <= d['date'] <= JUN3_END
+            and d['pattern'] in EXPECT_WEEKEND]
+    if len(jun3) != EXPECT_JUN3_TOTAL:
+        problems.append('6월 3주차 %d칸 (기대 %d칸)' % (len(jun3), EXPECT_JUN3_TOTAL))
+    else:
+        if any(d.get('src') for d in jun3):
+            problems.append('6월 3주차에 가격표 자리표시 칸이 남아 있습니다: %s'
+                            % [(d['code'], d['date']) for d in jun3 if d.get('src')][:4])
+        ps = [d['price'] for d in jun3]
+        if (min(ps), max(ps)) != EXPECT_JUN3_OVERALL:
+            problems.append('6월 3주차 최저·최고 %s (기대 %s)'
+                            % ((min(ps), max(ps)), EXPECT_JUN3_OVERALL))
+        got_direct = sum(1 for d in jun3 if d.get('via') is False)
+        if got_direct != EXPECT_JUN3_DIRECT:
+            problems.append('6월 3주차 직항이 최저가인 칸 %d (기대 %d)'
+                            % (got_direct, EXPECT_JUN3_DIRECT))
+        got_alt = sum(1 for d in jun3 if d.get('alt'))
+        if got_alt != EXPECT_JUN3_ALT:
+            problems.append('6월 3주차 직항 금액 병기 %d칸 (기대 %d칸)'
+                            % (got_alt, EXPECT_JUN3_ALT))
+        unknown = [d for d in jun3 if d.get('via') is None]
+        if unknown:
+            problems.append('6월 3주차 편성 미확인 %d칸 (기대 0칸)' % len(unknown))
+        for pat, want in EXPECT_JUN3_AVG.items():
+            v = [d['price'] for d in jun3 if d['pattern'] == pat]
+            if len(v) != 24:
+                problems.append('6월 3주차 %s %d칸 (기대 24칸)' % (pat, len(v)))
+            elif round(sum(v) / len(v)) != want:
+                problems.append('6월 3주차 %s 평균 %d (기대 %d)'
+                                % (pat, round(sum(v) / len(v)), want))
+        for code, (lo, hi) in EXPECT_JUN3_ROUTE.items():
+            v = [d['price'] for d in jun3 if d['code'] == code]
+            if len(v) != 5:
+                problems.append('6월 3주차 %s %d칸 (기대 5칸)' % (code, len(v)))
+            elif (min(v), max(v)) != (lo, hi):
+                problems.append('6월 3주차 %s 최저·최고 %s (기대 %s)'
+                                % (code, (min(v), max(v)), (lo, hi)))
+        for code in EXPECT_JUN3_ALLDIRECT:
+            v = [d for d in jun3 if d['code'] == code]
+            if any(d.get('via') is not False for d in v):
+                problems.append('6월 3주차 %s 5패턴이 모두 직항이어야 합니다' % code)
+        for (code, date, pat), price in EXPECT_JUN3_LOW.items():
+            got = next((d['price'] for d in jun3 if d['code'] == code
+                        and d['date'] == date and d['pattern'] == pat), None)
+            if got != price:
+                problems.append('6월 3주차 최저 칸 %s %s %s %s (기대 %d)'
+                                % (code, date, pat, got, price))
+        for (code, date, pat), alt in EXPECT_JUN3_ALT_CELLS.items():
+            got = next((d.get('alt') for d in jun3 if d['code'] == code
+                        and d['date'] == date and d['pattern'] == pat), None)
+            if got != alt:
+                problems.append('6월 3주차 직항 금액 %s %s %s %s (기대 %s)'
+                                % (code, date, pat, got, alt))
     for m, n in EXPECT_OLD_BY_MONTH.items():
         if by_month.get(m) != n:
             problems.append('%s 기존 건 %s (기대 %d — 손실/변형)' % (m, by_month.get(m), n))

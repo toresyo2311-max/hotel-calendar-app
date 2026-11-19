@@ -726,6 +726,40 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
 .dl-retry{margin-top:11px;padding:6px 14px;border:1px solid #7c3aed;border-radius:8px;background:#7c3aed;color:#fff;font:inherit;font-weight:600;cursor:pointer}
 .dl-retry:hover{background:#6d28d9}
 @media(prefers-reduced-motion:reduce){.dl-spin{animation:none}}
+/* ── 3단계: 즐겨찾기 · 예산/권역 필터 · 1P 랭킹 · 특가 하이라이트 ── */
+.fav-btn{border:0;background:transparent;color:#b9aad9;font-size:12.5px;line-height:1;padding:1px 2px;border-radius:6px;flex:none;cursor:pointer}
+.fav-btn.on{color:#dfa020}
+.fav-btn:hover{background:#f1ecfd;color:#6d28d9}
+.rank-name .fav-btn{vertical-align:-2px;margin-right:2px;font-size:11px}
+.fl-matrix tbody th.fl-route .fav-btn{float:right;margin:1px 0 0 3px;font-size:11px}
+.hotel-row{display:flex;align-items:center;gap:1px;border-radius:8px;padding-right:2px}
+.hotel-row .hotel-choice{flex:1;min-width:0}
+.hotel-row.fav{background:#fffaef}
+.fav-only{border:1px solid var(--line);border-radius:20px;padding:5px 10px;background:var(--card);color:var(--muted);font-size:10.5px;font-weight:700;white-space:nowrap}
+.fav-only[aria-pressed="true"]{border-color:#f0c46a;background:#fff7e6;color:#8a5a00}
+.budget-ctl{flex:0 0 auto;margin:0;padding:2px}
+.budget-ctl .mode-button{min-height:26px;padding:3px 8px;font-size:10px;flex:0 0 auto}
+.budget-ctl .mode-button.selected{color:#5b21b6}
+.fl-regions{margin:0 0 8px;padding:3px}
+.fl-regions .mode-button{min-height:28px;font-size:10.5px;flex:0 0 auto}
+.cb-src{margin:0 0 10px;padding:3px}
+.cb-src .mode-button{min-height:32px}
+.cb-tag{display:inline-block;font-size:9px;font-weight:800;border-radius:6px;padding:0 4px;margin-left:4px;vertical-align:1px;background:#ede9fe;color:#5b21b6;border:1px solid #ddd6fe}
+.cb-tag.t{background:#fdf1e0;color:#8a5200;border-color:#f3d6a6}
+.cb-seat{font-size:9.5px;color:var(--muted2)}
+.pt-top{margin-bottom:14px}
+.pt-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}
+.pt-item{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:8px;border-top:1px solid var(--line2);padding:6px 0;width:100%;text-align:left;border-left:0;border-right:0;border-bottom:0;background:transparent;min-height:38px;cursor:pointer}
+.pt-grid .pt-item:nth-child(-n+2){border-top:0}
+.pt-item:hover{background:#faf8ff}
+.pt-n{font-size:10.5px;font-weight:800;color:var(--muted2);font-variant-numeric:tabular-nums}
+.pt-name{display:block;font-size:11.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pt-meta{display:block;font-size:9.5px;color:var(--muted2);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pt-val{font-size:12.5px;font-weight:800;color:#0f7a3d;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cal-day.deal{border-color:#8fd6ab;background-image:linear-gradient(180deg,#f1fbf5,#ffffff)}
+.cal-day.deal .daydeal{position:absolute;top:1px;right:2px;font-size:8px;font-weight:800;line-height:1.35;color:#0f7a3d;background:#dcfce7;border:1px solid #a7e8c0;border-radius:6px;padding:0 3px}
+.cal-day.overbudget{opacity:.26}
+@media(max-width:760px){.pt-grid{grid-template-columns:1fr}.pt-grid .pt-item:nth-child(2){border-top:1px solid var(--line2)}}
 </style>
 </head>
 <body>
@@ -779,6 +813,12 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
     <section class="rank-panel"><div class="rank-head"><h3 id="rank2Title">프로모션 · 주요 혜택</h3><span class="rank-label" id="rank2Sub">확인된 조건 요약</span></div><div id="rank2"></div></section>
   </div>
 
+  <section id="ptTopBox" class="rank-panel pt-top" hidden aria-label="메리어트 1P당 가치 TOP 10">
+    <div class="rank-head"><h3>1P당 가치 TOP 10 — 날짜 · 호텔</h3><span class="rank-label" id="ptTopSub"></span></div>
+    <div class="pt-grid" id="ptTop10"></div>
+    <p class="hint" id="ptTopHint"></p>
+  </section>
+
   <div class="workspace">
     <aside class="side"><div class="side-head"><h3>호텔 바로 선택</h3><small id="hotelCount">24개</small></div><div class="hotel-items" id="hotelList"></div><div class="side-foot">가격 미표시(—)는 무료 숙박이 아닙니다. 호텔을 선택하면 그 호텔의 요금만 남습니다.</div></aside>
     <main class="mainpanel">
@@ -814,6 +854,8 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
         <button class="mode-button" type="button" data-prog="spdata">Stay Plus 결제액</button>
       </div>
       <div class="extra-control">
+        <button class="fav-only" type="button" id="favHotelOnly" aria-pressed="false" title="저장한 관심 호텔만 남깁니다">★ 즐겨찾기만 보기 (0)</button>
+        <div class="mode-control budget-ctl" id="budgetCtl" role="group" aria-label="1박 예산 빠른 필터"><button type="button" class="mode-button selected" data-budget="0">전체</button><button type="button" class="mode-button" data-budget="150000">15만↓</button><button type="button" class="mode-button" data-budget="200000">20만↓</button><button type="button" class="mode-button" data-budget="300000">30만↓</button></div>
         <label class="toggle"><input id="weekendOnly" type="checkbox"> 금·토·일만 강조</label>
         <label class="toggle" id="apcOnlyWrap" style="display:none"><input id="apcOnly" type="checkbox"> 12월 APC 가능 호텔만</label>
         <label class="toggle" id="apcDaysWrap" style="display:none"><input id="apcDaysOnly" type="checkbox"> 무료숙박 가능일만 남기기</label>
@@ -840,7 +882,7 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
         <div><h3 id="monthTitle">2026년 12월</h3><div class="meta" id="selectionInfo">전체 호텔 1박 최저가</div></div>
         <div class="nav-month"><button type="button" id="prevMonth" aria-label="이전 달">‹</button><button type="button" id="currentMonth" class="today-button">첫 달</button><button type="button" id="nextMonth" aria-label="다음 달">›</button></div>
       </div>
-      <div class="calendar-context"><div id="monthHighlight">해당 월 최저가</div><div class="legend"><span id="blackoutLegend" style="display:none"><i style="background:#f3d9e6"></i>약관 잠정 제외일</span><span id="modeLegend"></span></div></div>
+      <div class="calendar-context"><div id="monthHighlight">해당 월 최저가</div><div class="legend"><span id="blackoutLegend" style="display:none"><i style="background:#f3d9e6"></i>약관 잠정 제외일</span><span id="dealLegend" style="display:none"><i style="background:#dcfce7;border:1px solid #86d3a3"></i>평균 대비 20%↓ 특가</span><span id="modeLegend"></span></div></div>
       <div class="monthgrid" id="days" role="group" aria-label="월별 호텔 요금 달력"></div>
       <div class="calendar-bottom"><span class="footlegend" id="legendDetail">날짜를 누르면 그 날짜의 예약 페이지가 새 탭에서 열립니다.</span><span class="cal-actions"><button class="action-btn" id="compareDay" type="button" disabled>선택일 호텔 비교</button><button class="action-btn" id="csvExport" type="button">↓ 선택 데이터 CSV 저장</button></span></div>
     </main>
@@ -875,14 +917,17 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
 
   <section id="comboPanel" class="combo-panel" hidden aria-label="부산발 항공+호텔 주말 콤보">
     <div class="cb-head">
-      <div><h2>✈️+🏨 주말 콤보 — 항공 + 숙박 예상 총액</h2><p class="subline" id="cbSub"></p></div>
+      <div><h2>✈️+🏨 콤보 — 항공 + 숙박 예상 총액</h2><p class="subline" id="cbSub"></p></div>
       <span class="time-pill" id="cbBasis"></span>
     </div>
+    <div class="cb-src mode-control" id="cbSrc" role="group" aria-label="항공 소스 선택"><button type="button" class="mode-button selected" data-cbsrc="f">✈️ ⑤ 정규 항공</button><button type="button" class="mode-button" data-cbsrc="t">🔥 ⑥ 땡처리 특가</button><button type="button" class="mode-button" data-cbsrc="all">전체 통합</button></div>
     <div class="cb-toolbar fl-toolbar">
-      <div class="field"><label for="cbCity">도시(노선)</label><select id="cbCity" aria-label="콤보 도시 선택"></select></div>
-      <div class="field"><label for="cbPattern">주말 패턴</label><select id="cbPattern" aria-label="주말 패턴 선택"></select></div>
-      <div class="field"><label for="cbMonth">출발 월</label><select id="cbMonth" aria-label="출발 월 선택"></select></div>
-      <label class="toggle"><input id="cbDirect" type="checkbox" checked> 직항만 보기</label>
+      <div class="field cb-fl"><label for="cbCity">도시(노선)</label><select id="cbCity" aria-label="콤보 도시 선택"></select></div>
+      <div class="field cb-fl"><label for="cbPattern">주말 패턴</label><select id="cbPattern" aria-label="주말 패턴 선택"></select></div>
+      <div class="field cb-fl"><label for="cbMonth">출발 월</label><select id="cbMonth" aria-label="출발 월 선택"></select></div>
+      <label class="toggle cb-fl"><input id="cbDirect" type="checkbox" checked> 직항만 보기</label>
+      <div class="field cb-tt" id="cbTtCityWrap" style="display:none"><label for="cbTtCity">땡처리 도시</label><select id="cbTtCity" aria-label="땡처리 도시 선택"></select></div>
+      <div class="field cb-tt" id="cbTtMonthWrap" style="display:none"><label for="cbTtMonth">땡처리 출발 월</label><select id="cbTtMonth" aria-label="땡처리 출발 월 선택"></select></div>
       <div class="cb-count" id="cbCount"></div>
     </div>
     <div class="stat-strip" id="cbStrip" aria-label="콤보 요약"></div>
@@ -919,10 +964,12 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
     </div>
 
     <div class="fl-toolbar">
+      <div class="fl-regions mode-control" id="flRegion" role="group" aria-label="항공 권역 필터"><button type="button" class="mode-button selected" data-fl-region="all">전체</button><button type="button" class="mode-button" data-fl-region="일본">일본</button><button type="button" class="mode-button" data-fl-region="중국">중국</button><button type="button" class="mode-button" data-fl-region="대만·홍콩">대만·홍콩</button><button type="button" class="mode-button" data-fl-region="동남아">동남아</button><button type="button" class="mode-button" data-fl-region="기타">기타</button></div>
       <div class="field"><label for="flRoute">노선</label><select id="flRoute" aria-label="노선 필터"></select></div>
       <div class="field"><label for="flPattern">패턴</label><select id="flPattern" aria-label="패턴 필터"></select></div>
       <div class="fl-count" id="flCount"></div>
       <div class="fl-extras">
+        <button class="fav-only" type="button" id="favRouteOnly" aria-pressed="false" title="저장한 관심 노선만 남깁니다">★ 즐겨찾기 노선만 (0)</button>
         <label class="toggle"><input id="flDirectOnly" type="checkbox"> 직항만 보기</label>
         <label class="toggle"><input id="flHideLong" type="checkbox"> 장시간 경유(12h 이상) 빼기</label>
         <span class="fl-note" id="flFilterNote"></span>
@@ -1142,8 +1189,27 @@ const FLIGHTS={"patterns":[],"months":[],"weeks":[],"counts":{"total":0},"routes
 const $=id=>document.getElementById(id);
 const tabs={lux:{title:'VIP 요금 · FHR 호텔 162곳',sub:'VIP 요금 138곳 신규 + 기존 24곳 / 서울·부산·도쿄·싱가포르·시드니·뉴욕 외 / 12개월(2026.12~2027.11)',checked:'요금 기준: 2026-11-17 01:13 KST',start:'2026-12',end:'2027-11'},china:{title:'중올플(ALL PLUS China) 289곳 · 99개 도시',sub:'99개 도시 · 부산 출발 가능 중국·홍콩·마카오 APC 참여 287곳 + 기존 2곳 + 이번 조사 신규 5곳 / 김해 직항 116 · 환승·고속철 137 · 국내선 환승 36 / 12개월(2026.12~2027.11) · 30곳은 365일 현금 요금 · APC 무료숙박 가능일은 예약 캘린더 관측(12/1~12/18 · 72시간 규칙)',checked:'APC 관측 기준: 2026-11-16',start:'2026-12',end:'2027-11'},domestic:{title:'아코르 · Stay Plus & SNU 25곳 (국내 4 · 한·중·일 페어몬트·소피텔 21)',sub:'국내 아코르 4곳(울산·전주·서울 2) + 한·중·일 페어몬트·소피텔 21곳 365일 회원가(2026.12~2027.11) / SNU 유효 2027.12.31 · Stay Plus 만료 2027.09.30 / 해외 6개 도시 SNU·Stay Plus 2박 절감액',checked:'조회 기준: 2026.11.16~17 (SNU 2026.11.17 16:30~17:10)',start:'2026-12',default:'2026-12',end:'2027-11'},flight:{title:'부산 출발 항공 특가 — 47개 노선 8,645건',sub:'부산(PUS) 출발 47개 노선 × 주말형 5패턴(금~일·토~월·목~일·금~월·목~월) + 당일치기(0박) 패턴 / 2026.12~2027.11 출발 (2026년 12월~2027년 3월은 기존 24개 노선 5패턴 전수 — 12월 599칸 · 1월 480칸 · 2월 480칸 · 3월 1~4주차 480칸 완결, 2027년 4월 1~4주차 480칸 완결(4주차 최저 타이베이 4/23~26 256,200원) · 4월 5주(4/29~5/3) 120칸 완결(앱 주차 선택 기준, 최저 호찌민 4/29~5/2 325,800원) · 5월 3~4주차(5/13~17 · 5/20~24) 240칸 완결(3주차 최저 타이베이 5/14~17 276,160원 · 4주차 최저 하노이 5/20~24 266,570원) · 5월 4주(5/27~31) 120칸 완결(최저 하노이 5/27~30 282,171원) · 5월 2주차(5/6~10) 120칸 완결(최저 타이베이 5/7~9 258,200원) · 6월 3주차(6/17~21) 120칸 완결(최저 홍콩 6/18~20 296,600원 · 가격표 자리표시 28칸 교체) · 6월 4주차(6/24~28) 120칸 완결(최저 상하이 6/26~28 299,100원 · 가격표 자리표시 19칸 교체) · 7월 1주차(7/1~5) 120칸 완결(최저 후쿠오카 7/1~4·7/1~5 299,700원 · 가격표 자리표시 28칸 교체) + 중국 8개 노선은 2026.12~2027.01 360칸, 2027년 2~6월 840칸(중국 8개 노선 모두 420/420칸 완결 — 2박에 4박까지), 2027년 7~11월 15주말 × 7패턴 840칸(측정 465 · 요금 미공개 255 · 판매편 0건 120) + 미오픈 확인 16칸 — 예약창 2027-10-13까지 + 필리핀 4개 노선 2026.12~2027.01 180칸 · 2027년 2~6월 420칸 · 2027년 7~11월 22주 × 5패턴 440칸(실측 300 + 미오픈 140 — 예약창 2027-10-14까지, 네 노선 75/75칸 완결) + 동남아 4개 노선 178칸 · 2027년 2~6월 420칸 · 2027년 7~11월 22주 × 5패턴 440칸(실측 220 + 미오픈 220 — 예약창 2027-09-14까지) + 일본 7개 노선 2026년 12월 171칸 · 2027년 1월 140칸(값 138 + 항공편 없음 2) 완결 + 당일치기 25칸 + 2027년 2~6월 21주 × 7패턴 1,029칸(실측 537 · 판매편 0건 296 · 요금 미공개 98 · 미조회 98 — 2027년 2월 주말형 140칸은 값 136 + 항공편 없음 4로 완결) + 2027년 7월 5주 × 5패턴 175칸(실측 150 · 미오픈 25, 최저 구마모토 7/8~7/12 483,700원 직항) + 2027년 8월 4주 × 5패턴 140칸(실측 120 · 미오픈 20, 최저 삿포로 8/26~30 573,300원 직항) + 2027년 9~10월 9주 × 5패턴 315칸(실측 190 · 판매편 0건 34 · 요금 미확인 4 · 미오픈 87 — 최저 삿포로 9/24~27 374,540원 직항) + 2027년 11월 4주 × 5패턴 140칸(실측 33 · 미오픈 87 · 시즈오카 판매편 0건 20 — 최저 구마모토 11/4~8 558,700원 경유)) / 성인 1인 왕복 총액. 값이 없는 칸은 판매편 0건 541 · 요금 미공개 357 · 미오픈 595로 나눠 적었습니다',checked:'조회 기준: 2026.11.19 KST · 팀원 보고 13건',start:'2026-12',end:'2027-11'},marriott:{title:'메리어트 중국/한·일 62곳 (중국 40 · 한국 10 · 일본 12)',sub:'중국 본토·홍콩·마카오 40곳 + 한국 10곳 + 일본 12곳 / 2026.12~2027.11 현금(검색 세금 포함 1박 최저) + 아워드 포인트(2026-11-17 기준)',checked:'조회 기준: 2026.11.17 · 포인트 조사 2026-11-17',start:'2026-12',end:'2027-11'},combo:{title:'✈️+🏨 주말 콤보 — 20개 도시 · 항공+숙박',sub:'⑤ 항공 왕복가 + ①~④ 같은 도시 호텔의 숙박일 1박 요금 합계 / 금~일·토~월·목~일·금~월·목~월 / 2026.12~2027.11',checked:'⑤ 항공 2026-11-17~19 · ①~④ 호텔 2026-11-16~17 조회값',start:'2026-12',end:'2027-11'},tt:{title:'부산 출발 땡처리 항공권',sub:'부산(PUS) 출발 땡처리 항공권 — 공동구매·특가 두 채널을 노선·출발일·기간·잔여석 단위로 모아 출발일 달력과 노선별 표로 보여 줍니다. 날짜 칸·노선 행·상품 행을 누르면 그 상품 예약 페이지가 새 탭에서 바로 열립니다. / 성인 1인 왕복 총액(유류·세금 포함)',checked:'수집 기준: 2026-11-19 KST',start:'2026-11',end:'2027-11'}};
 const TTANG={"schema":"team-busan/pus-deals/1","observedAt":"","window":{},"channels":[],"deals":[],"coverage":"","coverageOk":false};
-const st={tab:'lux',city:'all',hotel:'all',month:'2026-12',mode:'cash',cmode:'both',pmode:'both',ctier:'all',apcOnly:false,weekend:false,hideBlackouts:false,blk:'show',apcDaysOnly:false,prog:'all',brand:'all',selectedDay:''};
+const st={tab:'lux',city:'all',hotel:'all',month:'2026-12',mode:'cash',cmode:'both',pmode:'both',ctier:'all',apcOnly:false,weekend:false,hideBlackouts:false,blk:'show',apcDaysOnly:false,prog:'all',brand:'all',selectedDay:'',favOnly:false,budget:0};
 const allHotels=DB.hotels;
+/* ══ ★ 즐겨찾기 — 기기 브라우저(localStorage)에만 저장 ═════════════════
+   호텔 id 와 항공 노선 코드만 담는다. 서버로 보내지 않고, 저장이 막힌 브라우저
+   (사생활 보호 모드 등)에서는 화면에서만 동작하고 새로 고치면 사라진다. */
+const FAV_KEY='teambusan.fav.v1';
+const FAV={hotels:[],routes:[]};
+let FAV_SAVE_OK=true;
+function favLoad(){try{const raw=window.localStorage.getItem(FAV_KEY);if(!raw)return;
+  const o=JSON.parse(raw);
+  if(o&&Array.isArray(o.hotels))FAV.hotels=o.hotels.filter(function(x){return typeof x==='string'});
+  if(o&&Array.isArray(o.routes))FAV.routes=o.routes.filter(function(x){return typeof x==='string'});
+ }catch(e){FAV_SAVE_OK=false}}
+function favSave(){try{window.localStorage.setItem(FAV_KEY,JSON.stringify({hotels:FAV.hotels,routes:FAV.routes}))}catch(e){FAV_SAVE_OK=false}}
+function favKey(kind){return kind==='hotel'?'hotels':kind==='route'?'routes':kind}
+function favHas(kind,id){const k=favKey(kind);return Array.isArray(FAV[k])&&FAV[k].indexOf(id)>=0}
+function favToggle(kind,id){const a=FAV[favKey(kind)],i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);favSave()}
+function favHotelCount(group){if(!group)return FAV.hotels.length;let n=0;
+ for(const id of FAV.hotels){const h=allHotels.find(function(x){return x.id===id});if(h&&h.group===group)n++}return n}
+function favStar(kind,id,label){const on=favHas(kind,id),t=(on?'즐겨찾기 해제':'즐겨찾기 추가')+' — '+label;
+ return '<button type="button" class="fav-btn'+(on?' on':'')+'" data-fav="'+kind+':'+esc(id)+'" aria-pressed="'+on+'" aria-label="'+esc(t)+'" title="'+esc(t)+'">'+(on?'★':'☆')+'</button>'}
 /* ── 값 종류(현금/포인트/APC) 공통 헬퍼 ─────────────────────── */
 const isDateKey=k=>/^\d{4}-\d\d-\d\d$/.test(k);
 const APCTXT={a:'APC 가능',n:'APC 불가',u:'APC 미확인',x:'APC 미참여'};
@@ -1202,7 +1268,10 @@ function tierFiltered(){let hs=groupHotels();
  if(st.tab!=='china')return hs;
  if(st.ctier!=='all')hs=hs.filter(h=>String(tierOf(h))===st.ctier);
  if(st.apcOnly)hs=hs.filter(h=>apcDecCount(h).a>0);return hs}
-function cityFiltered(){return tierFiltered().filter(h=>st.city==='all'||h.city===st.city)}
+function cityFiltered(){let hs=tierFiltered().filter(h=>st.city==='all'||h.city===st.city);
+ if(st.favOnly)hs=hs.filter(h=>favHas('hotels',h.id));
+ if(st.budget&&!pointsMode())hs=hs.filter(h=>{const b=minPerHotel(h);return b!=null&&b[1]<=st.budget});
+ return hs}
 function filteredHotels(){return cityFiltered().filter(h=>st.hotel==='all'||h.id===st.hotel)}
 function isWeekend(dt){return [0,5,6].includes(dayNo(dt))}
 function rate(h,dt){return st.tab!=='domestic'||st.mode==='cash'?h.rates?.[dt]:st.mode==='sp2'?h.stayplus2?.[dt]:h.stayplus3?.[dt]}
@@ -1245,6 +1314,10 @@ function renderHeader(){const t=tabs[st.tab];$('sectionTitle').textContent=t.tit
  const sc=$('sourceCount');if(sc)sc.textContent=DB.sources.length;
  const lg=$('modeLegend');if(lg)lg.innerHTML=st.tab==='marriott'?('<span><i style="background:#6d28d9"></i>아워드 포인트</span><span><i style="background:#8b86a3"></i>현금</span>'):(st.tab==='china'?'<span><i style="background:#7c3aed"></i>APC 가능</span><span><i style="background:#d8d2e8"></i>불가</span><span><i style="background:#ddd6fe"></i>미확인</span>':'');
  if(st.tab==='china'){const at=apcObservedAll();$('checktime').textContent='예약 캘린더 관측'+(at?' · '+at+' 기준':'')+' / 현금 2026.11.16~17';}
+ const fb=$('favHotelOnly');
+ if(fb){const n=favHotelCount(st.tab);fb.textContent=(st.favOnly?'★':'☆')+' 즐겨찾기만 보기 ('+n+')';fb.setAttribute('aria-pressed',String(st.favOnly));fb.title=n?('이 탭에서 저장한 호텔 '+n+'곳만 남깁니다'):'아직 저장한 호텔이 없습니다 — 호텔 옆 ☆를 눌러 저장하세요'}
+ const bc=$('budgetCtl');
+ if(bc){bc.style.display=(st.tab==='marriott'&&pointsMode())?'none':'';bc.querySelectorAll('[data-budget]').forEach(function(b){const on=Number(b.dataset.budget)===st.budget;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))})}
 }
 function listBadge(h){const best=minPerHotel(h);if(best)return shortWon(best[1]);if(st.tab==='china'&&h.accor){const c=apcDecCount(h);if(c.a>0)return 'APC '+c.a+'일'}return '—'}
 function renderFilters(){const base=tierFiltered();let cities;
@@ -1255,9 +1328,13 @@ function renderFilters(){const base=tierFiltered();let cities;
   $('citySelect').innerHTML='<option value="all">전체 도시 ('+base.length+')</option>'+cities.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')}
  $('citySelect').value=st.city;
  const hotels=cityFiltered();$('hotelSelect').innerHTML='<option value="all">전체 호텔 ('+hotels.length+')</option>'+hotels.map(h=>'<option value="'+h.id+'">'+esc(h.name)+'</option>').join('');$('hotelSelect').value=st.hotel;
- $('hotelCount').textContent=hotels.length+'개';$('hotelList').innerHTML='<button class="hotel-choice '+(st.hotel==='all'?'selected':'')+'" type="button" data-hotel="all"><span class="name">전체 호텔 비교</span><span class="price">'+hotels.length+'곳</span></button>'+hotels.map(h=>{const sub=st.tab==='china'?(h.city+' · '+(TIERSHORT[tierOf(h)]||'')):(h.region&&h.region!==h.city?h.region+' · '+h.city:h.city)+(h.program?(h.program.snu?' · SNU 가능':(h.program.snuBrand===false?' · SNU 미참여':' · SNU 미노출')):'');return '<button type="button" class="hotel-choice '+(st.hotel===h.id?'selected':'')+'" data-hotel="'+h.id+'" title="'+esc(h.name)+'"><span class="name">'+esc(h.name)+'<span class="smalltown">'+esc(sub)+'</span></span><span class="price">'+esc(listBadge(h))+'</span></button>'}).join('');
+ $('hotelCount').textContent=hotels.length+'개';
+ $('hotelList').innerHTML='<button class="hotel-choice '+(st.hotel==='all'?'selected':'')+'" type="button" data-hotel="all"><span class="name">전체 호텔 비교</span><span class="price">'+hotels.length+'곳</span></button>'
+  +(hotels.length?hotels.map(h=>{const sub=st.tab==='china'?(h.city+' · '+(TIERSHORT[tierOf(h)]||'')):(h.region&&h.region!==h.city?h.region+' · '+h.city:h.city)+(h.program?(h.program.snu?' · SNU 가능':(h.program.snuBrand===false?' · SNU 미참여':' · SNU 미노출')):'');const on=favHas('hotels',h.id);
+   return '<div class="hotel-row'+(on?' fav':'')+'">'+favStar('hotel',h.id,h.name)+'<button type="button" class="hotel-choice '+(st.hotel===h.id?'selected':'')+'" data-hotel="'+h.id+'" title="'+esc(h.name)+'"><span class="name">'+esc(h.name)+'<span class="smalltown">'+esc(sub)+'</span></span><span class="price">'+esc(listBadge(h))+'</span></button></div>'}).join('')
+   :'<div class="rank-empty" style="padding:8px 4px">'+(st.favOnly?'이 탭에서 즐겨찾기한 호텔이 없습니다. 호텔 옆 ☆를 눌러 저장하세요.':'조건에 맞는 호텔이 없습니다 — 예산·필터를 넓혀 보세요.')+'</div>');
 }
-function row(rank,h,price,date,cl='',sub=''){let extra='';if(st.tab==='marriott'){if(pointsMode()){const c=cashOf(h,date);if(c!=null)extra=shortWon(c)}else{const p=ptsOf(h,date);if(p!=null)extra=shortP(p)}}const num=st.tab==='marriott'?shortVal(price):shortWon(price);return '<div class="rank-item"><span class="rank-n">'+String(rank).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+esc(h.name)+'</div><div class="rank-meta">'+esc(h.region&&h.region!==h.city?h.region+' · '+h.city:h.city)+' · '+esc(dateLabel(date))+' '+weekday(date)+'요일'+(sub?' · '+esc(sub):'')+(extra?' · '+extra:'')+'</div></div><div class="rank-num '+cl+'">'+num+'</div></div>'}
+function row(rank,h,price,date,cl='',sub=''){let extra='';if(st.tab==='marriott'){if(pointsMode()){const c=cashOf(h,date);if(c!=null)extra=shortWon(c)}else{const p=ptsOf(h,date);if(p!=null)extra=shortP(p)}}const num=st.tab==='marriott'?shortVal(price):shortWon(price);return '<div class="rank-item"><span class="rank-n">'+String(rank).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+favStar('hotel',h.id,h.name)+esc(h.name)+'</div><div class="rank-meta">'+esc(h.region&&h.region!==h.city?h.region+' · '+h.city:h.city)+' · '+esc(dateLabel(date))+' '+weekday(date)+'요일'+(sub?' · '+esc(sub):'')+(extra?' · '+extra:'')+'</div></div><div class="rank-num '+cl+'">'+num+'</div></div>'}
 function promoBadge(h){let p=h.promotion||'';if(p.includes('2+1')||p.includes('Stay 3 Pay 2'))return '2+1 무료 1박';if(p.includes('3+1')||p.includes('Stay 4 Pay 3'))return '4박 중 1박 무료';if(p.includes('Stay 5 Pay 4'))return '5박 중 1박 무료';if(p.includes('Club Lounge'))return '클럽 라운지';if(p.includes('25%'))return '최대 25% 할인';if(p.includes('20%')||p.includes('30%'))return '연박 할인';if(p.includes('10%'))return '10% 할인(조건 미확인)';let m=p.match(/(\d+)%\s*OFF/);if(m)return m[1]+'% 할인';if(p.includes('FHR'))return 'FHR 혜택';return null}
 function renderRanking(){const hs=filteredHotels();
  if(st.tab==='lux'){
@@ -1341,6 +1418,11 @@ function renderCalendar(S){
   renderMonthHighlight();
   $('legendDetail').textContent=(st.tab==='domestic'&&st.mode!=='cash'?'세금 별도, Stay Plus 적용 후 '+(st.mode==='sp2'?'2박':'토 체크인 3박')+' 결제액 · ':'')+(st.tab==='china'?'날짜를 누르면 위챗 예약 창이 열립니다 · ':'날짜를 누르면 그 날짜의 예약 페이지가 새 탭에서 열립니다 · ')+'호텔별 금액 비교는 「선택일 호텔 비교」.';
   const byDate={};for(const x of S)byDate[x.d]=x;
+  /* 호텔별 '유효 평균가' — 이상치(1박 1,000만 원 이상)는 빼고 계산. 특가 = 그 호텔 평균의 80% 이하 */
+  const AVG={};
+  if(!apcMode){for(const h of filteredHotels()){const m=valuesOf(h)||{};let s=0,n=0;
+    for(const d in m){const v=m[d];if(typeof v==='number'&&!isOutlier(v)){s+=v;n++}}
+    AVG[h.id]=n?s/n:null}}
   let html='';
   for(const mo of yearMonths()){
     const dates=daysOf(mo);
@@ -1369,6 +1451,9 @@ function renderCalendar(S){
       const lvl=heatLevel(bands,p);
       const out=isOutlier(p);
       const isLow=p!=null&&mMin!=null&&p===mMin;
+      const avgOf=(e&&e.h&&AVG[e.h.id]!=null)?AVG[e.h.id]:null;
+      const deal=p!=null&&!out&&avgOf!=null&&p<=avgOf*0.8;
+      const overb=Boolean(st.budget&&!pointsMode()&&p!=null&&p>st.budget);
       const blackout=Boolean(st.tab==='china'&&e&&((e.h&&(e.h.blackouts||[]).indexOf(date)>=0)||e.blk));
       const blkHide=blackout&&st.blk==='hide';
       const faded=(!isWeekend(date)&&st.weekend)||(blackout&&st.blk==='fade');
@@ -1396,12 +1481,12 @@ function renderCalendar(S){
       }
       if(blkHide){vlabel='<span class="daymiss">제외일</span>';sub='';tail='';}
       const apcOff=Boolean(st.tab==='china'&&st.apcDaysOnly&&!(apcDaySummary(date).a>0));
-      const cls='cal-day '+(lvl?'hm'+lvl+' ':'hm5 ')+(isLow?'low ':'')+(out?'outlier ':'')+(blackout?'blackout ':'')+(faded?'faded ':'')+(apcOff?'apc-off ':'')+(dow===0?'sunday ':dow===6?'saturday ':'')+(st.selectedDay===date?'selected-day':'');
-      const cellInner='<span class="daynum">'+Number(date.slice(-2))+'</span>'+vlabel+sub+tail;
+      const cls='cal-day '+(lvl?'hm'+lvl+' ':'hm5 ')+(isLow?'low ':'')+(out?'outlier ':'')+(deal?'deal ':'')+(overb?'overbudget ':'')+(blackout?'blackout ':'')+(faded?'faded ':'')+(apcOff?'apc-off ':'')+(dow===0?'sunday ':dow===6?'saturday ':'')+(st.selectedDay===date?'selected-day':'');
+      const cellInner='<span class="daynum">'+Number(date.slice(-2))+'</span>'+(deal?'<span class="daydeal">특가</span>':'')+vlabel+sub+tail;
       const bUrl=(p!=null&&!blkHide)?dayBookUrl(date):'';
       const wxH=(st.tab==='china'&&(p!=null||only)&&!blkHide)?(dayHotel(date)||(only?filteredHotels()[0]:null)):null;
       cells+=wxH?('<button type="button" class="'+cls+' wx-cell" data-wx-hotel="'+wxH.id+'" data-wx-date="'+date+'" aria-label="'+fullDate(date)+' '+shortVal(p)+' · 위챗 예약 열기" title="'+fullDate(date)+' · 위챗 예약 창이 열립니다">'+cellInner+'</button>')
-        :bUrl?('<a class="'+cls+'" data-date="'+date+'" href="'+esc(bUrl)+'" target="_blank" rel="noopener" aria-label="'+fullDate(date)+' '+shortVal(p)+' · 예약 페이지 열기" title="'+fullDate(date)+' · 예약 페이지가 새 탭에서 열립니다'+(out?' · ⚠ 1박 1,000만 원 이상 — 시스템 오류가 의심되는 값(0원·무료 아님)':'')+'">'+cellInner+'</a>')
+        :bUrl?('<a class="'+cls+'" data-date="'+date+'" href="'+esc(bUrl)+'" target="_blank" rel="noopener" aria-label="'+fullDate(date)+' '+shortVal(p)+' · 예약 페이지 열기" title="'+fullDate(date)+' · 예약 페이지가 새 탭에서 열립니다'+(out?' · ⚠ 1박 1,000만 원 이상 — 시스템 오류가 의심되는 값(0원·무료 아님)':'')+(deal?' · 이 호텔 유효 평균가 대비 20% 이상 저렴한 특가':'')+(overb?' · 1박 예산 초과':'')+'">'+cellInner+'</a>')
         :('<button type="button" class="'+cls+'" data-date="'+date+'" aria-label="'+fullDate(date)+' 요금 미표시" title="'+date+' 상세 보기">'+cellInner+'</button>');
     }
     const sub=apcMode?(okDays+'일 가능')
@@ -1411,6 +1496,7 @@ function renderCalendar(S){
       +'<div class="days">'+cells+'</div></article>';
   }
   $('days').innerHTML=html;
+  const dlg=$('dealLegend');if(dlg)dlg.style.display=apcMode?'none':'inline-flex';
   renderHotelStatus();renderBlackoutBox();
 }
 function renderNotes(){if(st.tab==='lux'){
@@ -1497,6 +1583,31 @@ function renderHotelStatus(){
     +(out?statPill('p-out','⚠ 이상치 의심',out):'')
     +'<span class="stat-pill hintpill">'+esc(nm)+' · '+(st.tab==='domestic'&&st.mode!=='cash'?'세전 결제액':'NA는 매진·미오픈과 구분하지 않습니다')+(out?' · 이상치는 1박 1,000만 원 이상':'')+'</span>';
 }
+/* ④ 메리어트 — 1P당 가치 TOP 10 (그날 현금 최저가 ÷ 아워드 포인트) */
+function ptTopRows(n){
+  const out=[];
+  for(const h of filteredHotels()){
+    if(!h.points)continue;
+    const p=ptsMap(h),r=h.rates||{};
+    for(const d in p){const pv=p[d];if(!(pv>0))continue;const c=r[d];if(typeof c!=='number'||isOutlier(c))continue;
+      out.push({h:h,date:d,cash:c,pts:pv,v:c/pv})}
+  }
+  out.sort((a,b)=>b.v-a.v||a.date.localeCompare(b.date)||a.h.name.localeCompare(b.h.name,'ko'));
+  return out.slice(0,n||10);
+}
+function renderPtTop(){
+  const box=$('ptTopBox');if(!box)return;
+  const on=st.tab==='marriott';box.hidden=!on;if(!on)return;
+  const rows=ptTopRows(10),filt=(st.city!=='all'||st.hotel!=='all'||st.favOnly||st.budget);
+  $('ptTopSub').textContent=(filt?'현재 필터 범위':'④ 전체')+' · 현금÷포인트';
+  $('ptTop10').innerHTML=rows.length?rows.map(function(r,i){
+    return '<button type="button" class="pt-item" data-pt-hotel="'+esc(r.h.id)+'" data-pt-date="'+esc(r.date)+'" title="'+esc(r.h.name+' · '+fullDate(r.date)+' · 현금 '+exactWon(r.cash)+' ÷ '+KR(r.pts)+'P')+' — 누르면 이 호텔·날짜로 이동">'
+      +'<span class="pt-n">'+String(i+1).padStart(2,'0')+'</span>'
+      +'<span><span class="pt-name">'+esc(r.h.name)+'</span><span class="pt-meta">'+fullDate(r.date)+' '+weekday(r.date)+'요일 · 현금 '+shortWon(r.cash)+' ÷ '+shortP(r.pts)+'</span></span>'
+      +'<span class="pt-val">1P≈'+KR(Math.round(r.v))+'원</span></button>';
+  }).join(''):'<div class="rank-empty">현금과 포인트가 같은 날 함께 있는 자료가 없습니다 — 필터를 넓혀 보세요.</div>';
+  $('ptTopHint').innerHTML='1P당 가치 = 그날 <strong>현금 최저가 ÷ 아워드 포인트</strong>(세금·수수료 포함 현금 기준). 값이 클수록 포인트가 유리합니다. 1박 1,000만 원 이상 이상치 칸은 빼고 계산했고, 포인트만 있거나 현금만 있는 날은 순위에 넣지 않았습니다. 줄을 누르면 그 호텔·날짜로 달력이 이동합니다.';
+}
 /* ④ 메리어트 — 1P당 가치(원/pt) = 그날 현금 최저가 ÷ 아워드 포인트 */
 function ptValue(cash,pts){return (cash!=null&&pts>0)?cash/pts:null}
 function ptValueTag(cash,pts){const v=ptValue(cash,pts);
@@ -1549,12 +1660,12 @@ function render(){
   if(st.tab==='tt'){renderTt();return}
   if(st.tab==='combo'){renderCombo();return}
   setFlightMode(false);
-  renderFilters();renderRanking();
+  renderFilters();renderRanking();renderPtTop();
   SER=dayLowSeries();
   renderCalendar(SER);renderHero(SER);renderInsights(SER);renderGlance(SER);
   renderNotes();
 }
-function setTab(tab){st.tab=tab;st.city='all';st.hotel='all';st.mode='cash';st.cmode='both';st.pmode='both';st.ctier='all';st.apcOnly=false;st.blk='show';st.apcDaysOnly=false;st.prog='all';st.brand='all';st.month=tabs[tab].default||tabs[tab].start;st.selectedDay='';st.weekend=false;st.hideBlackouts=false;$('weekendOnly').checked=false;if($('apcDaysOnly'))$('apcDaysOnly').checked=false;if($('blackoutMode'))$('blackoutMode').value='show';if($('accorBrand'))$('accorBrand').value='all';$('apcOnly').checked=false;if(tab==='combo'&&cb.month!==st.month)cb.month=st.month;activate(tab)}
+function setTab(tab){st.tab=tab;st.city='all';st.hotel='all';st.favOnly=false;st.budget=0;st.mode='cash';st.cmode='both';st.pmode='both';st.ctier='all';st.apcOnly=false;st.blk='show';st.apcDaysOnly=false;st.prog='all';st.brand='all';st.month=tabs[tab].default||tabs[tab].start;st.selectedDay='';st.weekend=false;st.hideBlackouts=false;$('weekendOnly').checked=false;if($('apcDaysOnly'))$('apcDaysOnly').checked=false;if($('blackoutMode'))$('blackoutMode').value='show';if($('accorBrand'))$('accorBrand').value='all';$('apcOnly').checked=false;if(tab==='combo'&&cb.month!==st.month)cb.month=st.month;activate(tab)}
 function setCity(city){st.city=city;st.hotel='all';if(st.tab==='domestic')st.mode=city==='서울'?'sp2':'cash';render()}
 function setHotel(id){st.hotel=id;if(st.tab==='domestic'&&id!=='all'){let h=groupHotels().find(x=>x.id===id);if(h?.city==='서울'&&st.mode==='cash')st.mode='sp2';else if(h?.city!=='서울'&&st.mode!=='cash')st.mode='cash'}render()}
 function switchMode(mode){st.mode=mode;render()}
@@ -1604,10 +1715,19 @@ $('blackoutMode').addEventListener('change',e=>{st.blk=e.target.value;render()})
 $('accorProg').addEventListener('click',e=>{const b=e.target.closest('[data-prog]');if(b){st.prog=b.dataset.prog;st.city='all';st.hotel='all';render()}});
 $('accorBrand').addEventListener('change',e=>{st.brand=e.target.value;st.city='all';st.hotel='all';render()});
 $('marriottMode').addEventListener('click',e=>{const b=e.target.closest('[data-pmode]');if(b)switchPmode(b.dataset.pmode)});
-$('weekendOnly').addEventListener('change',e=>{st.weekend=e.target.checked;render()});$('prevMonth').addEventListener('click',()=>goMonth(-1));$('nextMonth').addEventListener('click',()=>goMonth(1));$('currentMonth').addEventListener('click',()=>{st.month=tabs[st.tab].default||tabs[st.tab].start;render()});$('monthRail').addEventListener('click',e=>{const b=e.target.closest('[data-goto]');if(b)goMonthTo(b.dataset.goto)});$('days').addEventListener('click',e=>{const b=e.target.closest('[data-date]');if(!b)return;const dt=b.dataset.date;st.selectedDay=dt;const cb=$('compareDay');if(cb){cb.disabled=false;cb.textContent=fullDate(dt)+' 호텔 비교'}if(b.tagName!=='A'){openDetail(dt);return}document.querySelectorAll('.cal-day.selected-day').forEach(x=>x.classList.remove('selected-day'));b.classList.add('selected-day');if(SER&&SER.length){renderInsights(SER);renderHero(SER)}});$('csvExport').addEventListener('click',exportCsv);$('compareDay').addEventListener('click',()=>{const dt=st.selectedDay||(SER||[]).filter(x=>x.d&&x.d.startsWith(st.month)&&x.p!=null).sort((a,b)=>a.p-b.p)[0]?.d;if(dt)openDetail(dt)});$('modalClose').addEventListener('click',closeDetail);$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeDetail()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()});
+$('weekendOnly').addEventListener('change',e=>{st.weekend=e.target.checked;render()});
+$('favHotelOnly').addEventListener('click',function(){st.favOnly=!st.favOnly;st.hotel='all';render()});
+$('budgetCtl').addEventListener('click',function(e){const b=e.target.closest('[data-budget]');if(!b)return;const v=Number(b.dataset.budget);st.budget=(st.budget===v?0:v);st.hotel='all';render()});$('prevMonth').addEventListener('click',()=>goMonth(-1));$('nextMonth').addEventListener('click',()=>goMonth(1));$('currentMonth').addEventListener('click',()=>{st.month=tabs[st.tab].default||tabs[st.tab].start;render()});$('monthRail').addEventListener('click',e=>{const b=e.target.closest('[data-goto]');if(b)goMonthTo(b.dataset.goto)});$('days').addEventListener('click',e=>{const b=e.target.closest('[data-date]');if(!b)return;const dt=b.dataset.date;st.selectedDay=dt;const cb=$('compareDay');if(cb){cb.disabled=false;cb.textContent=fullDate(dt)+' 호텔 비교'}if(b.tagName!=='A'){openDetail(dt);return}document.querySelectorAll('.cal-day.selected-day').forEach(x=>x.classList.remove('selected-day'));b.classList.add('selected-day');if(SER&&SER.length){renderInsights(SER);renderHero(SER)}});$('csvExport').addEventListener('click',exportCsv);$('compareDay').addEventListener('click',()=>{const dt=st.selectedDay||(SER||[]).filter(x=>x.d&&x.d.startsWith(st.month)&&x.p!=null).sort((a,b)=>a.p-b.p)[0]?.d;if(dt)openDetail(dt)});$('modalClose').addEventListener('click',closeDetail);$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeDetail()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()});
 $('sources').innerHTML='<ol style="padding-left:20px">'+DB.sources.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol>';
 /* ── ⑤ 부산 출발 항공 특가 탭 ───────────────────────────── */
-const fl={route:'all',pattern:'all',day:'',month:'2026-12',week:'',view:'weekend',direct:false,hideLong:false};
+const fl={route:'all',pattern:'all',day:'',month:'2026-12',week:'',view:'weekend',direct:false,hideLong:false,region:'all',favOnly:false};
+/* 47개 노선 권역 — 노선 코드로 묶는다(데이터에 권역 필드가 없어 코드 표를 쓴다) */
+const FL_REGION={FUK:'일본',KIX:'일본',TYO:'일본',NGO:'일본',OKA:'일본',KMJ:'일본',KOJ:'일본',FSZ:'일본',MYJ:'일본',TAK:'일본',MMY:'일본',CTS:'일본',
+ PVG:'중국',NKG:'중국',HGH:'중국',TAO:'중국',BJS:'중국',SHE:'중국',DLC:'중국',CAN:'중국',XMN:'중국',YNJ:'중국',DYG:'중국',KWL:'중국',TXN:'중국',
+ TPE:'대만·홍콩',HKG:'대만·홍콩',MFM:'대만·홍콩',KHH:'대만·홍콩',RMQ:'대만·홍콩',
+ BKK:'동남아',DAD:'동남아',CXR:'동남아',SGN:'동남아',SIN:'동남아',CNX:'동남아',HAN:'동남아',DPS:'동남아',CEB:'동남아',MNL:'동남아',TAG:'동남아',CRK:'동남아',PQC:'동남아',BKI:'동남아',KUL:'동남아',VTE:'동남아'};
+const flRegionOf=code=>FL_REGION[code]||'기타';
+function flRouteList(){return FLIGHTS.routes.filter(r=>(fl.region==='all'||flRegionOf(r.code)===fl.region)&&(!fl.favOnly||favHas('routes',r.code)))}
 const FL_WD={'일':0,'월':1,'화':2,'수':3,'목':4,'금':5,'토':6};
 const flIsDayLabel=l=>String(l).split('~')[0]===String(l).split('~')[1];
 const flViewPats=()=>FLIGHTS.patterns.filter(p=>fl.view==='day'?p.nights===0:p.nights>0);
@@ -1627,7 +1747,7 @@ const flOuts=w=>{const o={};for(const p of flViewPats())o[p.label]=flAddDays(w.t
 const flAirNames={'중국동방항공(경유)':'중국동방','중국동방항공':'중국동방','홍콩 익스프레스항공':'홍콩익스프레스','트리니티항공':'트리니티','이스타항공':'이스타','비엣젯항공':'비엣젯','아시아나항공(대한항공 운항)':'아시아나(대한항공 운항)','중국동방/상하이항공':'중국동방·상하이','중국동방항공(상하이항공 운항)':'중국동방·상하이','중국국제항공':'중국국제','중국국제항공(에어차이나)':'중국국제','캐세이퍼시픽(홍콩익스프레스 운항)':'캐세이퍼시픽','에어부산+중국동방항공':'에어부산+중국동방','이스타항공+대한항공':'이스타+대한항공','중국남방항공':'중국남방','타이거에어타이완':'타이거에어','이스타항공+제주항공':'이스타+제주','이스타항공+피치항공':'이스타+피치','대한항공+타이거항공':'대한항공+타이거','진에어+타이거항공':'진에어+타이거','진에어+중국동방항공':'진에어+중국동방','타이거항공 타이완':'타이거항공','제주항공+트리니티항공':'제주+트리니티','제주항공+춘추항공':'제주+춘추','진에어+홍콩 익스프레스':'진에어+홍콩익스프레스','제주항공+홍콩 익스프레스':'제주+홍콩익스프레스','에어부산+젯스타 재팬':'에어부산+젯스타','이스타항공+일본 트랜스오션':'이스타+트랜스오션','제주항공+피치항공':'제주+피치','진에어+춘추항공':'진에어+춘추','대한항공+아시아나항공':'대한항공+아시아나','대한항공+중국동방항공':'대한항공+중국동방','대한항공+중국남방항공':'대한항공+중국남방','상하이항공':'상하이'};
 const flAir=d=>d.airline?(flAirNames[d.airline]||String(d.airline)):'항공사 미확인';
 const flAll=()=>FLIGHTS.routes.flatMap(r=>r.deals.map(d=>({...d,city:r.city,code:r.code})));
-const flBase=()=>flAll().filter(d=>(fl.route==='all'||d.code===fl.route)&&(fl.pattern==='all'||d.pattern===fl.pattern));
+const flBase=()=>flAll().filter(d=>(fl.route==='all'||d.code===fl.route)&&(fl.region==='all'||flRegionOf(d.code)===fl.region)&&(!fl.favOnly||favHas('routes',d.code))&&(fl.pattern==='all'||d.pattern===fl.pattern));
 const flFiltered=()=>flBase().filter(d=>(!fl.direct||d.via===false)&&(!fl.hideLong||!flLongClass(d)));
 const flTotal=()=>FLIGHTS.counts.total;   /* 데이터를 fetch 한 뒤 채워지므로 함수로 읽는다 */
 const flLink=d=>'https://kr.trip.com/flights/showfarefirst?dcity=pus&acity='+d.code.toLowerCase()+'&ddate='+d.date+'&rdate='+d.back+'&triptype=rt&class=y&quantity=1&locale=ko-KR&curr=KRW';
@@ -1706,18 +1826,35 @@ document.addEventListener('click',e=>{
   if(el&&el.classList.contains('show')&&(e.target.id==='wxClose'||e.target===el))closeWxSheet();
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeWxSheet()});
+/* ★ 토글 — 별을 누르면 localStorage 에 저장하고 화면을 다시 그린다 */
+document.addEventListener('click',function(e){
+  const b=e.target.closest?e.target.closest('[data-fav]'):null;if(!b)return;
+  e.preventDefault();
+  const v=b.getAttribute('data-fav')||'',i=v.indexOf(':');if(i<0)return;
+  favToggle(v.slice(0,i),v.slice(i+1));render();
+  const again=document.querySelector('[data-fav="'+v+'"]');if(again&&again.focus)again.focus();
+});
+/* 1P TOP 줄 — 그 호텔·날짜로 이동 */
+document.addEventListener('click',function(e){
+  const b=e.target.closest?e.target.closest('[data-pt-hotel]'):null;if(!b)return;
+  const id=b.getAttribute('data-pt-hotel'),dt=b.getAttribute('data-pt-date')||'';
+  const h=allHotels.find(function(x){return x.id===id});if(!h)return;
+  st.city=h.city;st.hotel=h.id;st.selectedDay=dt;if(dt)st.month=dt.slice(0,7);
+  render();
+  const el=document.getElementById('mo-'+st.month);if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});
+});
 (function(){const b=document.getElementById('wxCopy');if(b)b.addEventListener('click',copyWxText)})();
 
 const flViaWord=d=>d.via===false?'직항':d.via===true?'경유':'미확인';
 const flMeta=d=>d.airline?flViaWord(d)+' · '+flAir(d):(d.via==null?'항공사·직항 미확인':flViaWord(d)+' · 항공사 미확인');
 const flViaTag=d=>d.via===false?'<span class="fl-via direct">직항</span>':d.via===true?'<span class="fl-via via">경유</span>':'<span class="fl-via unk">미확인</span>';
 function flMemo(d){if(!d.note)return '';const t=String(d.note).split('※')[0].split('—')[0].trim();return t==='경유'||t==='직항'?'':t}
-function setDealPanels(which){$('flightPanel').hidden=which!=='flight';$('ttPanel').hidden=which!=='tt';const cp=document.getElementById('comboPanel');if(cp)cp.hidden=which!=='combo';const cng=document.querySelector('.note-grid');if(cng)cng.style.display=which==='combo'?'none':'';['.ranking','.workspace'].forEach(function(sel){var el=document.querySelector(sel);if(el)el.style.display=which?'none':''});['glanceBox','hotelNotes'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=which?'none':''})}
+function setDealPanels(which){$('flightPanel').hidden=which!=='flight';$('ttPanel').hidden=which!=='tt';const cp=document.getElementById('comboPanel');if(cp)cp.hidden=which!=='combo';const cng=document.querySelector('.note-grid');if(cng)cng.style.display=which==='combo'?'none':'';['.ranking','.workspace'].forEach(function(sel){var el=document.querySelector(sel);if(el)el.style.display=which?'none':''});['glanceBox','hotelNotes','ptTopBox'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=which?'none':''})}
 function setFlightMode(on){setDealPanels(on?'flight':'')}
 function renderFlightTop5(){
-  const rows=FLIGHTS.routes.map(r=>{const d=[...r.deals].sort((a,b)=>a.price-b.price)[0];return {...d,city:r.city,code:r.code}}).sort((a,b)=>a.price-b.price).slice(0,5);
-  $('flTop5').innerHTML=rows.map((d,i)=>'<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+esc(d.city)+' <span class="fl-code">'+d.code+'</span></div><div class="rank-meta">'+esc(d.pattern)+' · '+dateLabel(d.date)+' 출발 · '+esc(flMeta(d))+'</div></div><div class="rank-num '+(i===0?'red':'')+'">'+shortWon(d.price)+'</div></div>').join('');
-  if($('flTop5Sub'))$('flTop5Sub').textContent=KR(flTotal())+'건 중 노선별 최저';
+  const rows=flRouteList().map(r=>{const d=[...r.deals].sort((a,b)=>a.price-b.price)[0];return d?{...d,city:r.city,code:r.code}:null}).filter(Boolean).sort((a,b)=>a.price-b.price).slice(0,5);
+  $('flTop5').innerHTML=rows.map((d,i)=>'<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+favStar('route',d.code,d.city+' '+d.code)+esc(d.city)+' <span class="fl-code">'+d.code+'</span></div><div class="rank-meta">'+esc(d.pattern)+' · '+dateLabel(d.date)+' 출발 · '+esc(flMeta(d))+'</div></div><div class="rank-num '+(i===0?'red':'')+'">'+shortWon(d.price)+'</div></div>').join('');
+  if($('flTop5Sub'))$('flTop5Sub').textContent=(fl.region==='all'?'':fl.region+' ') + (fl.favOnly?'즐겨찾기 노선 ':'') + flRouteList().length+'개 노선 중 최저 · 전체 '+KR(flTotal())+'건';
   const all=flAll().sort((a,b)=>a.price-b.price);
   const b=all[0];
   const dayAll=all.filter(d=>flIsDayLabel(d.pattern));
@@ -1727,16 +1864,31 @@ function renderFlightTop5(){
 }
 function renderFlightFilters(){
   const routeSel=$('flRoute'),patSel=$('flPattern');
-  if(!routeSel.options.length){
-    routeSel.innerHTML='<option value="all">전체 '+FLIGHTS.routes.length+'개 노선</option>'+FLIGHTS.routes.map(r=>'<option value="'+r.code+'">'+esc(r.city+' ('+r.code+')')+'</option>').join('');
+  const list=flRouteList();
+  if(list.length&&!list.some(r=>r.code===fl.route))fl.route='all';
+  const key=fl.region+'|'+(fl.favOnly?'1':'0')+'|'+list.map(r=>r.code).join(',');
+  if(routeSel.dataset.key!==key){
+    routeSel.dataset.key=key;
+    routeSel.innerHTML='<option value="all">'+(fl.region==='all'?'전체 ':'')+list.length+'개 노선</option>'+list.map(r=>'<option value="'+r.code+'">'+esc(r.city+' ('+r.code+')')+'</option>').join('');
+  }
+  if(!patSel.options.length){
     const wk=FLIGHTS.patterns.filter(p=>p.nights>0),dy=FLIGHTS.patterns.filter(p=>p.nights===0);
     patSel.innerHTML='<option value="all">전체 패턴 ('+FLIGHTS.patterns.length+')</option>'
       +'<optgroup label="주말형 (1~4박)">'+wk.map(p=>'<option value="'+p.label+'">'+p.label+' ('+p.nights+'박)</option>').join('')+'</optgroup>'
       +'<optgroup label="당일치기 (0박 1일)">'+dy.map(p=>'<option value="'+p.label+'">'+p.label+' (0박)</option>').join('')+'</optgroup>';
   }
   routeSel.value=fl.route;patSel.value=fl.pattern;
+  const rc={all:FLIGHTS.routes.length};
+  for(const r of FLIGHTS.routes){const k=flRegionOf(r.code);rc[k]=(rc[k]||0)+1}
+  document.querySelectorAll('#flRegion [data-fl-region]').forEach(function(b){
+    const v=b.dataset.flRegion;b.textContent=(v==='all'?'전체':v)+' '+(rc[v]||0);
+    const on=v===fl.region;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on));
+  });
+  const fb=$('favRouteOnly');
+  if(fb){fb.textContent=(fl.favOnly?'★':'☆')+' 즐겨찾기 노선만 ('+FAV.routes.length+')';fb.setAttribute('aria-pressed',String(fl.favOnly));
+    fb.title=FAV.routes.length?'저장한 노선 '+FAV.routes.length+'개만 남깁니다':'아직 저장한 노선이 없습니다 — 노선 이름 옆 ☆를 눌러 저장하세요'}
   const n=flFiltered().length;
-  $('flCount').textContent='표시 '+KR(n)+'건 / 전체 '+KR(flTotal())+'건'+(fl.route!=='all'||fl.pattern!=='all'?' (필터)':'');
+  $('flCount').textContent='표시 '+KR(n)+'건 / 전체 '+KR(flTotal())+'건'+((fl.route!=='all'||fl.pattern!=='all'||fl.region!=='all'||fl.favOnly)?' (필터)':'');
 }
 function renderFlightCalendar(){
   const month=fl.month;
@@ -1773,7 +1925,7 @@ function renderFlightCalendar(){
       :('<button type="button" class="'+cls+'" data-fl-date="'+date+'" aria-label="'+fullDate(date)+' 출발 최저 '+(flMarkOf((FLIGHTS.noSale||[]).find(n=>n.date===date))?.label||'자료 없음')+'">'+inner+'</button>');
   }
   $('flDays').innerHTML=html;
-  const routeName=fl.route==='all'?FLIGHTS.routes.length+'개 노선':flRouteOf(fl.route).city;
+  const routeName=fl.route==='all'?((fl.region==='all'?'':fl.region+' ')+flRouteList().length+'개 노선'):flRouteOf(fl.route).city;
   const dayN=deals.filter(d=>flIsDayLabel(d.pattern)).length;
   $('flCalSub').textContent=routeName+' · '+(fl.pattern==='all'?'전체 패턴':fl.pattern+'('+flNights(fl.pattern)+'박)')+' · 이 달 '+deals.length+'건(주말형 '+(deals.length-dayN)+' · 당일 '+dayN+')'+(min!=null?' · 최저 '+shortWon(min):'');
 }
@@ -1827,13 +1979,14 @@ function renderFlightMatrix(){
     if(!mk)continue;if(mk.cls==='fl-nofare')weekNoFare++;else if(mk.cls==='fl-unopened')weekUnopened++;else weekNoSale++;}}
   const globalMin=weekDeals.length?Math.min(...weekDeals.map(d=>d.price)):null;
   let h='<thead><tr><th class="fl-corner">노선</th>'+pats.map(p=>'<th'+(fl.pattern!=='all'&&fl.pattern!==p.label?' class="dim"':'')+'>'+p.label+'<small>'+dateLabel(outs[p.label])+'</small></th>').join('')+'</tr></thead><tbody>';
-  for(const r of FLIGHTS.routes){
+  const rlist=flRouteList();
+  for(const r of rlist){
     const dm=r.daytrip;
     const rowDeals=pats.map(p=>byKey[r.code+'|'+p.label+'|'+outs[p.label]]).filter(Boolean);
     const rowMin=rowDeals.length?Math.min(...rowDeals.map(d=>d.price)):null;
     const dayCount=r.deals.filter(d=>flIsDayLabel(d.pattern)).length;
     const tag=day&&dm?(dm.status==='no'?' · 당일 불가':dm.status==='unk'?' · 당일 미확인':dm.status==='short'?' · 체류 '+dm.stay+'(짧음)':' · 체류 '+dm.stay):'';
-    h+='<tr'+(fl.route!=='all'&&fl.route!==r.code?' class="dim"':'')+'><th class="fl-route"><b>'+esc(r.city)+'</b><span>'+r.code+' · '+(day?'당일 '+dayCount+'건':r.deals.length+'건')+tag+'</span></th>';
+    h+='<tr'+(fl.route!=='all'&&fl.route!==r.code?' class="dim"':'')+'><th class="fl-route">'+favStar('route',r.code,r.city+' '+r.code)+'<b>'+esc(r.city)+'</b><span>'+r.code+' · '+(day?'당일 '+dayCount+'건':r.deals.length+'건')+tag+'</span></th>';
     if(day&&dm&&dm.status==='no'){
       h+='<td colspan="'+pats.length+'"><span class="fl-cell fl-none fl-no" title="'+esc(dm.note||'')+'">당일 왕복 불가 — '+esc(dm.short||'')+'</span></td></tr>';
       continue;
@@ -1850,9 +2003,9 @@ function renderFlightMatrix(){
   }
   $('flMatrix').innerHTML=h+'</tbody>';
   $('flMatrix').className='fl-matrix'+(day?' fl-daytrip':'');
-  $('flMatrixTitle').textContent=FLIGHTS.routes.length+'개 노선 × '+pats.length+'패턴 '+(day?'당일치기(0박)':'한눈에 비교');
+  $('flMatrixTitle').textContent=rlist.length+'개 노선 × '+pats.length+'패턴 '+(day?'당일치기(0박)':'한눈에 비교');
   const wnote=(FLIGHTS.notes||{})[wk.month];
-  $('flMatrixSub').textContent=wk.label+' ('+wk.span+') · '+(day?'당일치기 0박 1일':'주말형 1~4박')+' · 실측 '+weekDeals.length+'칸'+(weekNoSale?' + 판매편 0건 '+weekNoSale+'칸':'')+(weekNoFare?' + 요금 미공개 '+weekNoFare+'칸':'')+(weekUnopened?' + 미오픈 '+weekUnopened+'칸':'')+'/'+(FLIGHTS.routes.length*pats.length)+'칸 · 주차 창은 목~수'+((fl.direct||fl.hideLong)?' · 필터 적용 — '+(fl.direct?'직항 확인분만':'')+(fl.direct&&fl.hideLong?' · ':'')+(fl.hideLong?'12시간 이상 경유 제외':'')+' (경유 칸은 흐리게, 값은 유지)':'')+((weekDeals.length||weekNoSale||weekNoFare||weekUnopened)?'':' · 이 주는 실측값이 없습니다(—)');
+  $('flMatrixSub').textContent=wk.label+' ('+wk.span+') · '+(day?'당일치기 0박 1일':'주말형 1~4박')+' · 실측 '+weekDeals.length+'칸'+(weekNoSale?' + 판매편 0건 '+weekNoSale+'칸':'')+(weekNoFare?' + 요금 미공개 '+weekNoFare+'칸':'')+(weekUnopened?' + 미오픈 '+weekUnopened+'칸':'')+'/'+(rlist.length*pats.length)+'칸 · 주차 창은 목~수'+((fl.direct||fl.hideLong)?' · 필터 적용 — '+(fl.direct?'직항 확인분만':'')+(fl.direct&&fl.hideLong?' · ':'')+(fl.hideLong?'12시간 이상 경유 제외':'')+' (경유 칸은 흐리게, 값은 유지)':'')+((weekDeals.length||weekNoSale||weekNoFare||weekUnopened)?'':' · 이 주는 실측값이 없습니다(—)');
   $('flMatrixSub').title=wnote||'';
 }
 function flDayOpen(date,scroll){
@@ -1879,6 +2032,8 @@ function flShiftMonth(n){
 }
 function renderFlight(){setFlightMode(true);renderFlightTop5();renderFlightFilters();renderFlightStatus();renderFlightLogSummary();renderFlightCalendar();renderFlightDist();renderFlightMatrix();renderFlightDetail();}
 document.querySelectorAll('[data-fl-view]').forEach(b=>b.addEventListener('click',()=>flSetView(b.dataset.flView)));
+$('flRegion').addEventListener('click',function(e){const b=e.target.closest('[data-fl-region]');if(!b)return;fl.region=b.getAttribute('data-fl-region');fl.route='all';fl.day='';renderFlight()});
+$('favRouteOnly').addEventListener('click',function(){fl.favOnly=!fl.favOnly;fl.route='all';fl.day='';renderFlight()});
 $('flRoute').addEventListener('change',e=>{fl.route=e.target.value;renderFlight()});
 $('flPattern').addEventListener('change',e=>{fl.pattern=e.target.value;if(fl.pattern!=='all')fl.view=flIsDayLabel(fl.pattern)?'day':'weekend';renderFlight()});
 $('flWeek').addEventListener('change',e=>{const w=FLIGHTS.weeks.find(x=>x.thu===e.target.value);if(!w)return;fl.week=w.thu;if(w.month!==fl.month)fl.month=w.month;if(fl.day&&(!fl.day.startsWith(fl.month)||flWeekOf(fl.day)!==fl.week))fl.day='';renderFlightCalendar();renderFlightMatrix();renderFlightDetail()});
@@ -2156,7 +2311,7 @@ function renderGlance(S){
 }
 
 function renderFlightDist(){
-  const rows=FLIGHTS.routes.map(r=>{const d=[...r.deals].sort((a,b)=>a.price-b.price)[0];return d?{city:r.city,code:r.code,p:d.price,date:d.date,pattern:d.pattern}:null}).filter(Boolean);
+  const rows=flRouteList().map(r=>{const d=[...r.deals].sort((a,b)=>a.price-b.price)[0];return d?{city:r.city,code:r.code,p:d.price,date:d.date,pattern:d.pattern}:null}).filter(Boolean);
   if(!rows.length){$('flDist').innerHTML='<p class="fl-empty">노선 자료가 없습니다.</p>';return}
   rows.sort((a,b)=>a.p-b.p);
   const vals=rows.map(r=>r.p),mn=Math.min(...vals),mx=Math.max(...vals),span=(mx-mn)||1;
@@ -2476,7 +2631,55 @@ function renderBlackoutBox(){
 /* ══ ✈️+🏨 부산 출발 항공+호텔 주말 콤보 (2026-11-19 추가 · 데이터 무변경) ══
    같은 출발일의 ⑤ 항공 왕복가(성인 1인) + ①~④ 그 도시 호텔의 숙박일별 1박 요금 합계.
    계산에 쓰는 값은 FLIGHTS.deals 와 호텔 rates 뿐이고, 없는 값을 추정하지 않는다. */
-const cb={city:'all',pattern:'금~일',month:'2026-12',direct:true};
+const cb={city:'all',pattern:'금~일',month:'2026-12',direct:true,src:'f',ttCity:'all',ttMonth:'all'};
+/* ⑥ 땡처리 도시 이름이 ①~④ 와 다른 2곳만 같은 도시로 묶는다(항주=항저우, 장가계=장자제) */
+const CB_ALIAS={'항주':'항저우','장가계':'장자제'};
+let cbCityIdx=null,cbCityIdxKey='';
+function cbHotelIndex(){
+  const k=String(allHotels.length);
+  if(cbCityIdx&&cbCityIdxKey===k)return cbCityIdx;
+  const idx={};
+  for(const h of allHotels){(idx[h.city]=idx[h.city]||[]).push(h)}
+  for(const a in CB_ALIAS){const real=CB_ALIAS[a];if(idx[real])idx[a]=idx[real]}
+  cbCityIdx=idx;cbCityIdxKey=k;return idx;
+}
+function cbHotelsOf(name){return cbHotelIndex()[name]||[]}
+let cbTtCache=null,cbTtRowsCache=null;
+function cbTtKey(){return (typeof TTANG!=='undefined'&&TTANG.deals?TTANG.deals.length:0)+'|'+allHotels.length}
+/* ⑥ 상품 중 ①~④ 호텔이 있는 도시의 것만 — 기간형(출발일 여러 날)·링크 없는 상품은 뺀다 */
+function cbTtRowsAll(){
+  const k=cbTtKey();
+  if(cbTtRowsCache&&cbTtRowsCache.k===k)return cbTtRowsCache.v;
+  const out=[];
+  if(typeof TTANG!=='undefined'&&TTANG.deals){
+    for(const d of TTANG.deals){
+      if(ttIsPeriod(d))continue;
+      if(!d.out||!d.back||!d.url||typeof d.price!=='number'||d.price<=0)continue;
+      if(d.back<=d.out)continue;
+      const hs=cbHotelsOf(d.city);if(!hs.length)continue;
+      const nights=cbNightsOf(d.out,d.back);if(!nights.length)continue;
+      out.push({d:d,nights:nights,hs:hs});
+    }
+  }
+  cbTtRowsCache={k:k,v:out};return out;
+}
+function cbTtCities(){
+  const k=cbTtKey();
+  if(cbTtCache&&cbTtCache.k===k)return cbTtCache.v;
+  const by={};
+  for(const x of cbTtRowsAll()){
+    const c=x.d.code;
+    if(!by[c])by[c]={code:c,city:x.d.city,hotels:cbHotelsOf(x.d.city),deals:0,months:{}};
+    by[c].deals++;by[c].months[String(x.d.out).slice(0,7)]=1;
+  }
+  const list=Object.keys(by).map(function(c){return by[c]}).sort(function(a,b){return b.hotels.length-a.hotels.length||a.city.localeCompare(b.city,'ko')});
+  cbTtCache={k:k,v:list};return list;
+}
+function cbTtMonths(){
+  const ms={};
+  for(const x of cbTtRowsAll())ms[String(x.d.out).slice(0,7)]=1;
+  return Object.keys(ms).sort();
+}
 const CB_OUT=10000000;
 function cbCitiesAll(){
   const out=[];
@@ -2519,7 +2722,7 @@ function cbBadges(r){
   else if(dm)out.push('<span class="cb-badge mut">SNU 미참여</span>');
   return out.join('');
 }
-function cbCompute(){
+function cbRowsF(){
   const scope=cbCitiesAll().filter(c=>cb.city==='all'||c.code===cb.city);
   const rows=[];
   for(const c of scope){
@@ -2534,12 +2737,36 @@ function cbCompute(){
         const list=groups[k];let best=null;
         for(const h of list){const stay=cbHotelSum(h,nights);if(stay!=null&&(!best||stay<best.stay))best={h:h,stay:stay}}
         if(!best)continue;
-        rows.push({total:deal.price+best.stay,flight:deal.price,stay:best.stay,date:deal.date,back:deal.back,nights:nights,h:best.h,twins:list,deal:deal,city:c.city,code:c.code});
+        rows.push({src:'f',total:deal.price+best.stay,flight:deal.price,stay:best.stay,date:deal.date,back:deal.back,nights:nights,h:best.h,twins:list,deal:deal,city:c.city,code:c.code,url:flLink({code:c.code,date:deal.date,back:deal.back})});
       }
     }
   }
   rows.sort((a,b)=>a.total-b.total||a.date.localeCompare(b.date)||a.h.name.localeCompare(b.h.name,'ko'));
   return rows;
+}
+/* ⑥ 땡처리 상품(출발~귀국 고정) × 그 도시 ①~④ 호텔 1박 합계 */
+function cbRowsT(){
+  const rows=[];
+  for(const x of cbTtRowsAll()){
+    const d=x.d;
+    if(cb.ttCity!=='all'&&d.code!==cb.ttCity)continue;
+    if(cb.ttMonth!=='all'&&String(d.out).slice(0,7)!==cb.ttMonth)continue;
+    const groups={};for(const h of x.hs){(groups[h.name]=groups[h.name]||[]).push(h)}
+    for(const k in groups){
+      const list=groups[k];let best=null;
+      for(const h of list){const stay=cbHotelSum(h,x.nights);if(stay!=null&&(!best||stay<best.stay))best={h:h,stay:stay}}
+      if(!best)continue;
+      rows.push({src:'t',total:d.price+best.stay,flight:d.price,stay:best.stay,date:d.out,back:d.back,nights:x.nights,h:best.h,twins:list,deal:d,city:d.city,code:d.code,url:d.url,seats:d.seats,times:d.times||'',airline:d.airline||''});
+    }
+  }
+  rows.sort((a,b)=>a.total-b.total||a.date.localeCompare(b.date)||a.h.name.localeCompare(b.h.name,'ko'));
+  return rows;
+}
+function cbRows(){
+  let rows=[];
+  if(cb.src==='f'||cb.src==='all')rows=rows.concat(cbRowsF());
+  if(cb.src==='t'||cb.src==='all')rows=rows.concat(cbRowsT());
+  return rows.sort((a,b)=>a.total-b.total||a.date.localeCompare(b.date)||a.h.name.localeCompare(b.h.name,'ko'));
 }
 function cbFillSelects(){
   const cs=$('cbCity');
@@ -2553,15 +2780,36 @@ function cbFillSelects(){
   if(cs)cs.value=cb.city;
   if(!FLIGHTS.patterns.some(p=>p.label===cb.pattern&&p.nights>0))cb.pattern='금~일';
   $('cbPattern').value=cb.pattern;$('cbMonth').value=cb.month;$('cbDirect').checked=cb.direct;
+  const tcs=$('cbTtCity');
+  if(tcs){
+    const tc=cbTtCities(),ml=cbTtMonths();
+    const key=tc.length+'|'+ml.join(',')+'|'+cb.ttCity+'|'+cb.ttMonth;
+    if(tcs.dataset.key!==key){
+      tcs.dataset.key=key;
+      tcs.innerHTML='<option value="all">전체 도시 ('+tc.length+'개 노선)</option>'+tc.map(function(c){return '<option value="'+c.code+'">'+esc(c.city+' ('+c.code+') · 호텔 '+c.hotels.length+'곳 · '+c.deals+'건')+'</option>'}).join('');
+      $('cbTtMonth').innerHTML='<option value="all">전체 출발 월</option>'+ml.map(function(m){return '<option value="'+m+'">'+monlabel(m)+'</option>'}).join('');
+    }
+    if(cb.ttCity!=='all'&&!tc.some(function(c){return c.code===cb.ttCity}))cb.ttCity='all';
+    if(cb.ttMonth!=='all'&&ml.indexOf(cb.ttMonth)<0)cb.ttMonth='all';
+    tcs.value=cb.ttCity;$('cbTtMonth').value=cb.ttMonth;
+  }
+  document.querySelectorAll('#cbSrc [data-cbsrc]').forEach(function(b){const on=b.getAttribute('data-cbsrc')===cb.src;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});
+  document.querySelectorAll('.cb-fl').forEach(function(el){el.style.display=cb.src==='t'?'none':''});
+  const w1=$('cbTtCityWrap'),w2=$('cbTtMonthWrap');
+  if(w1)w1.style.display=cb.src==='f'?'none':'block';
+  if(w2)w2.style.display=cb.src==='f'?'none':'block';
 }
 function cbNotesHtml(pat){
-  const cities=cbCitiesAll();
+  const cities=cbCitiesAll(),ttc=cbTtCities();
+  const ttNote=cb.src==='f'?'':'<div class="note-row"><span class="note-mark">🔥</span><span class="note-text"><strong>⑥ 땡처리 특가</strong>는 상품에 적힌 <strong>출발일~귀국일</strong>을 그대로 씁니다(⑤처럼 패턴을 고르지 않습니다). ⑥ 42개 노선 중 ①~④ 호텔이 같은 이름으로 있는 <strong>'+ttc.length+'개 도시</strong>만 계산하고, 도시 이름 표기가 다른 2곳(항주=항저우 · 장가계=장자제)은 같은 도시로 묶었습니다. 출발일이 여러 날인 <strong>기간형 상품</strong>은 날짜를 하나로 정할 수 없어 뺐습니다. 항공 금액은 상품 표시가(성인 1인 왕복 · 유류·세금 포함), 잔여석은 상품에 적힌 값입니다.</span></div>'
+   +'<div class="note-row"><span class="note-mark">↗</span><span class="note-text">⑥ 줄의 <strong>항공 예약 ↗</strong>은 그 상품의 예약·조회 화면으로 바로 열립니다(공동구매 상품은 구간·도시·날짜가 지정된 조회 링크).</span></div>';
   return '<h3>콤보 총액 계산 기준</h3>'
    +'<div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>항공</strong> = 부산(PUS) 출발 <strong>성인 1인 왕복</strong> 실측 표시가(⑤ 탭 '+(cb.direct?'직항만':'직항·경유')+' · '+esc(cb.pattern)+' '+pat.nights+'박). <strong>숙박</strong> = 같은 출발일~귀국 전날의 1박 요금 합계(성인 2인 1실 · 세금 포함 표시가 ①~④ 중 그 도시 호텔). 두 값을 더한 <strong>1인 항공 + 1실 숙박</strong> 총액입니다.</span></div>'
    +'<div class="note-row"><span class="note-mark">◇</span><span class="note-text">도시는 ⑤ 노선과 ①~④ 호텔이 <strong>같은 이름으로 있는 '+cities.length+'곳</strong>만 계산합니다(괌·발리처럼 항공만 있는 노선은 뺐습니다). 숙박일 1박이라도 요금이 없는 호텔, 1박 1,000만 원 이상 이상치 값은 그 조합에서 제외했습니다 — 빈 값을 추정해 채우지 않았습니다.</span></div>'
    +'<div class="note-row"><span class="note-mark">🎫</span><span class="note-text"><strong>APC 무료숙박</strong> 배지는 ② 중올플 무료숙박 재고가 <strong>모든 숙박일에 확인된</strong> 경우에만 붙습니다(관측 창 2026-12-01~12-18, 그 밖은 <strong>미확인</strong>). 배지가 있어도 총액을 0원으로 바꾸지 않고, 참고로 <strong>APC 적용 시(항공만)</strong> 금액을 함께 적었습니다 — 실제 쿼터·재고는 예약 화면/위챗에서 확인해야 합니다.</span></div>'
    +'<div class="note-row"><span class="note-mark">S+</span><span class="note-text"><strong>Stay Plus · SNU</strong> 배지는 ③ 아코르 호텔의 프로그램 참여 표시입니다. Stay Plus 2박 결제액이 조사된 날짜(서울 2곳)는 그 금액을 배지에 함께 적었지만, 총액에는 <strong>일반 1박 회원가</strong>를 썼습니다(2박·토 3박 조건과 숙박일이 다를 수 있음).</span></div>'
-   +'<div class="note-row"><span class="note-mark">!</span><span class="note-text">항공은 좌석·요금이 수시로 바뀌고 호텔 요금은 조회 시점(2026-11-16~17) 값입니다. 「항공 검색」·「호텔 예약」은 각각의 검색·예약 화면으로 열리며 실제 결제 금액은 그 화면에서 확인하세요.</span></div>';
+   +ttNote
+   +'<div class="note-row"><span class="note-mark">!</span><span class="note-text">항공은 좌석·요금이 수시로 바뀌고 호텔 요금은 조회 시점(2026-11-16~17) 값입니다. 「항공 예약」·「항공 검색」·「호텔 예약」은 각각의 화면으로 열리며 실제 결제 금액은 그 화면에서 확인하세요.</span></div>';
 }
 function renderCombo(){
   setDealPanels('combo');
@@ -2569,12 +2817,19 @@ function renderCombo(){
   $('sectionTitle').textContent=t.title;$('sectionSubtitle').textContent=t.sub;$('checktime').textContent=t.checked;
   if(FLIGHTS.months.indexOf(cb.month)<0)cb.month=FLIGHTS.months[0];
   cbFillSelects();
-  const rows=cbCompute(),cities=cbCitiesAll();
+  const rows=cbRows(),cities=cbCitiesAll(),ttcities=cbTtCities();
   const pat=flPat(cb.pattern)||{nights:2};
   const r0=flRouteOf(cb.city);
   const scope=cb.city==='all'?('전체 '+cities.length+'개 도시'):(r0?r0.city:cb.city);
-  $('cbSub').textContent=monlabel(cb.month)+' · '+cb.pattern+'('+pat.nights+'박) · '+scope+' · '+(cb.direct?'직항만':'직항+경유')+' · 항공 1인 왕복 + 숙박 1실(성인 2인) 합계';
-  $('cbBasis').textContent='⑤ 항공 2026-11-17~19 · ①~④ 호텔 2026-11-16~17';
+  const t0=ttcities.find(c=>c.code===cb.ttCity);
+  const tscope=cb.ttCity==='all'?('전체 '+ttcities.length+'개 도시'):(t0?t0.city:cb.ttCity);
+  const srcTxt=cb.src==='f'
+    ?('⑤ 정규 항공 · '+monlabel(cb.month)+' · '+cb.pattern+'('+pat.nights+'박) · '+scope+' · '+(cb.direct?'직항만':'직항+경유'))
+    :cb.src==='t'
+    ?('⑥ 땡처리 특가 · '+(cb.ttMonth==='all'?'전체 출발 월':monlabel(cb.ttMonth))+' · '+tscope+' · 상품의 출발~귀국 날짜 그대로')
+    :('⑤+⑥ 통합 · ⑤ '+scope+' / ⑥ '+tscope);
+  $('cbSub').textContent=srcTxt+' · 항공 1인 왕복 + 숙박 1실(성인 2인) 합계';
+  $('cbBasis').textContent='⑤ 항공 2026-11-17~19 · ⑥ 땡처리 2026-11-19 · ①~④ 호텔 2026-11-16~17';
   const dates=new Set(rows.map(r=>r.date)),hset=new Set(rows.map(r=>r.h.id)),cset=new Set(rows.map(r=>r.city));
   $('cbCount').textContent='계산된 조합 '+KR(rows.length)+'개 · 출발일 '+dates.size+'일 · 호텔 '+hset.size+'곳 · 도시 '+cset.size+'곳';
   $('cbStrip').innerHTML=rows.length
@@ -2583,24 +2838,35 @@ function renderCombo(){
     : '<span class="stat-pill hintpill">이 달·패턴에 항공과 호텔을 함께 계산할 수 있는 조합이 없습니다</span>';
   const top=rows.slice(0,12);
   $('cbTopTitle').textContent='항공+숙박 총액 TOP '+top.length;
-  $('cbTopSub').textContent=rows.length?('최저 '+shortWon(rows[0].total)+' · '+monlabel(cb.month)+' '+cb.pattern):'';
+  $('cbTopSub').textContent=rows.length?('최저 '+shortWon(rows[0].total)+' · '+esc(rows[0].city)+' '+(cb.src==='t'?dateLabel(rows[0].date):monlabel(cb.month)+' '+cb.pattern)):'';
   $('cbTop').innerHTML=top.length?top.map((r,i)=>{
-    const air=r.deal.airline?flAir(r.deal):'항공사 미확인';
+    const air=r.src==='t'?(flAir(r.deal)||'항공사 미확인'):(r.deal.airline?flAir(r.deal):'항공사 미확인');
     const apcAll=cbApcAll(r);
     const hUrl=cbHotelUrl(r.h,r.date,r.nights.length);
-    const links='<div class="cb-links"><a href="'+esc(flLink({code:r.code,date:r.date,back:r.back}))+'" target="_blank" rel="noopener">항공 검색 ↗</a>'
+    const airUrl=r.url||flLink({code:r.code,date:r.date,back:r.back});
+    const links='<div class="cb-links"><a href="'+esc(airUrl)+'" target="_blank" rel="noopener">'+(r.src==='t'?'항공 예약 ↗':'항공 검색 ↗')+'</a>'
       +(r.h.group==='china'?'<button type="button" class="cb-wx" data-wx-hotel="'+r.h.id+'" data-wx-date="'+r.date+'" data-wx-nights="'+r.nights.length+'">위챗 예약</button>'
         :(hUrl?'<a href="'+esc(hUrl)+'" target="_blank" rel="noopener">호텔 예약 ↗</a>':''))
       +'</div>';
+    const tag=cb.src==='all'?'<span class="cb-tag'+(r.src==='t'?' t':'')+'">'+(r.src==='t'?'⑥ 땡처리':'⑤ 정규')+'</span>':'';
+    const meta=r.src==='t'
+      ?(dateLabel(r.date)+'('+weekday(r.date)+')~'+dateLabel(r.back)+'('+weekday(r.back)+') · '+r.nights.length+'박 · 항공 '+shortWon(r.flight)+'('+esc(air)+(r.times?' '+esc(r.times):'')+') · 숙박 '+shortWon(r.stay)+(r.seats!=null?' · 잔여 '+r.seats+'석':'')+((r.deal&&r.deal.src==='g')?' · 공동구매':'')+(apcAll?' · APC 적용 시 '+shortWon(r.flight):''))
+      :(dateLabel(r.date)+'('+weekday(r.date)+')~'+dateLabel(r.back)+'('+weekday(r.back)+') · '+r.nights.length+'박 · 항공 '+shortWon(r.flight)+'('+esc(air)+' '+flViaWord(r.deal)+') · 숙박 '+shortWon(r.stay)+(apcAll?' · APC 적용 시 '+shortWon(r.flight):''));
     return '<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity">'
-      +'<div class="rank-name">'+esc(r.city)+' · '+esc(r.h.name)+cbBadges(r)+'</div>'
-      +'<div class="rank-meta">'+dateLabel(r.date)+'('+weekday(r.date)+')~'+dateLabel(r.back)+'('+weekday(r.back)+') · '+r.nights.length+'박 · 항공 '+shortWon(r.flight)+'('+esc(air)+' '+flViaWord(r.deal)+') · 숙박 '+shortWon(r.stay)+(apcAll?' · APC 적용 시 '+shortWon(r.flight):'')+'</div>'
+      +'<div class="rank-name">'+esc(r.city)+' · '+esc(r.h.name)+tag+cbBadges(r)+'</div>'
+      +'<div class="rank-meta">'+meta+'</div>'
       +links+'</div><div class="rank-num"><span class="cb-total">'+shortWon(r.total)+'</span><span class="cb-total-unit">총액</span></div></div>';
-  }).join(''):('<div class="cb-empty">조건에 맞는 조합이 없습니다. '+(cb.direct?'「직항만 보기」를 끄거나 ':'')+'다른 도시·월·패턴을 골라 보세요.<br>11월(2027-11)은 호텔 요금 자료가 아직 없어 조합이 나오지 않습니다.</div>');
+  }).join(''):('<div class="cb-empty">'+(cb.src==='t'
+      ?'⑥ 땡처리 상품의 출발일과 ①~④ 호텔 요금이 겹치는 날이 없습니다. 다른 도시·출발 월을 골라 보세요.<br>땡처리 출발일은 2026-11~2027-03, 호텔 요금은 2026-12~2027-11입니다.'
+      :cb.src==='all'
+      ?'두 소스 모두 조건에 맞는 조합이 없습니다. 필터를 넓혀 보세요.'
+      :'조건에 맞는 조합이 없습니다. '+(cb.direct?'「직항만 보기」를 끄거나 ':'')+'다른 도시·월·패턴을 골라 보세요.<br>11월(2027-11)은 호텔 요금 자료가 아직 없어 조합이 나오지 않습니다.')+'</div>');
   const best={};
-  for(const r of rows){if(!best[r.code]||r.total<best[r.code].total)best[r.code]=r}
-  const cards='<button type="button" class="cb-city'+(cb.city==='all'?' on':'')+'" data-cb-city="all"><span class="c">전체 도시</span><span class="t">'+(rows.length?shortWon(rows[0].total):'—')+'</span><span class="m">'+(rows.length?esc(rows[0].city+' · '+dateLabel(rows[0].date)):'조합 없음')+'</span></button>'
-    +Object.values(best).sort((a,b)=>a.total-b.total).map(r=>'<button type="button" class="cb-city'+(cb.city===r.code?' on':'')+'" data-cb-city="'+r.code+'"><span class="c">'+esc(r.city)+' <span style="font-weight:600;color:#8b86a3">'+r.code+'</span></span><span class="t">'+shortWon(r.total)+'</span><span class="m">'+dateLabel(r.date)+' '+weekday(r.date)+'~'+dateLabel(r.back)+' · '+esc(r.h.name)+'</span></button>').join('');
+  for(const r of rows){const k=r.src+'|'+r.code;if(!best[k]||r.total<best[k].total)best[k]=r}
+  const allOn=cb.city==='all'&&cb.ttCity==='all';
+  const cards='<button type="button" class="cb-city'+(allOn?' on':'')+'" data-cb-src="all" data-cb-city="all"><span class="c">전체 도시</span><span class="t">'+(rows.length?shortWon(rows[0].total):'—')+'</span><span class="m">'+(rows.length?esc(rows[0].city+' · '+dateLabel(rows[0].date)):'조합 없음')+'</span></button>'
+    +Object.values(best).sort((a,b)=>a.total-b.total).map(r=>{const on=r.src==='t'?cb.ttCity===r.code:cb.city===r.code;
+      return '<button type="button" class="cb-city'+(on?' on':'')+'" data-cb-src="'+r.src+'" data-cb-city="'+esc(r.code)+'"><span class="c">'+esc(r.city)+' <span style="font-weight:600;color:#8b86a3">'+r.code+'</span>'+(cb.src==='all'?'<span class="cb-tag'+(r.src==='t'?' t':'')+'">'+(r.src==='t'?'⑥':'⑤')+'</span>':'')+'</span><span class="t">'+shortWon(r.total)+'</span><span class="m">'+dateLabel(r.date)+' '+weekday(r.date)+'~'+dateLabel(r.back)+' · '+esc(r.h.name)+'</span></button>'}).join('');
   $('cbCities').innerHTML=cards;
   $('cbNotes').innerHTML=cbNotesHtml(pat);
 }
@@ -2608,7 +2874,16 @@ $('cbCity').addEventListener('change',e=>{cb.city=e.target.value;renderCombo()})
 $('cbPattern').addEventListener('change',e=>{cb.pattern=e.target.value;renderCombo()});
 $('cbMonth').addEventListener('change',e=>{cb.month=e.target.value;renderCombo()});
 $('cbDirect').addEventListener('change',e=>{cb.direct=e.target.checked;renderCombo()});
-$('cbCities').addEventListener('click',e=>{const b=e.target.closest('[data-cb-city]');if(!b)return;cb.city=b.dataset.cbCity;renderCombo()});
+$('cbCities').addEventListener('click',e=>{const b=e.target.closest('[data-cb-city]');if(!b)return;
+  const s=b.getAttribute('data-cb-src')||'f',code=b.getAttribute('data-cb-city');
+  if(s==='all'){cb.city='all';cb.ttCity='all'}else if(s==='t'){cb.ttCity=code}else{cb.city=code}
+  renderCombo()});
+$('cbSrc').addEventListener('click',function(e){const b=e.target.closest('[data-cbsrc]');if(!b)return;
+  const v=b.getAttribute('data-cbsrc');if(v===cb.src)return;cb.src=v;
+  if(v!=='f'&&!DATA_READY.tt){activate('combo');return}
+  renderCombo()});
+$('cbTtCity').addEventListener('change',e=>{cb.ttCity=e.target.value;renderCombo()});
+$('cbTtMonth').addEventListener('change',e=>{cb.ttMonth=e.target.value;renderCombo()});
 
 /* ══ 데이터 지연 로딩 — 탭별 JSON ════════════════════════════════
    화면 코드와 집계값(DB.counts)만 index.html 에 두고, 호텔·항공·땡처리 데이터는
@@ -2619,7 +2894,11 @@ const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_acco
 const HOTEL_TABS=['lux','china','domestic','marriott'];
 const DATA_READY={lux:false,china:false,domestic:false,marriott:false,flight:false,tt:false};
 const DATA_LOADING={};
-function tabNeeds(tab){return tab==='combo'?HOTEL_TABS.concat(['flight']):[tab]}
+function tabNeeds(tab){
+  if(tab!=='combo')return [tab];
+  /* ✈️+🏨 콤보 — ⑤ 정규 항공은 기본, ⑥ 땡처리 소스를 고르면 tab6 도 함께 받는다 */
+  return HOTEL_TABS.concat(['flight']).concat((cb&&cb.src&&cb.src!=='f')?['tt']:[]);
+}
 function loadPart(tab){
   if(DATA_READY[tab])return Promise.resolve();
   if(DATA_LOADING[tab])return DATA_LOADING[tab];
@@ -2681,7 +2960,7 @@ function activate(tab){
   if(!missing.length){dlHide();render();return}
   const tok=dlShow((tabs[tab]&&tabs[tab].title)||'',
     missing.length>1
-      ? '이 탭은 '+missing.length+'개 데이터(①~④ 호텔 · ⑤ 항공)가 함께 필요합니다 — 병렬로 불러오는 중입니다'
+      ? '이 탭은 '+missing.length+'개 데이터(①~④ 호텔 · ⑤ 항공'+(missing.indexOf('tt')>=0?' · ⑥ 땡처리':'')+')가 함께 필요합니다 — 병렬로 불러오는 중입니다'
       : missing.map(function(t){return PART_FILE[t]}).join(', ')+' 만 불러옵니다');
   Promise.all(missing.map(loadPart)).then(function(){
     if(st.tab!==tab)return;
@@ -2691,7 +2970,8 @@ function activate(tab){
     dlFail(err,tok);
   });
 }
-/* 첫 화면 — ① VIP 탭 JSON 만 받아 그리고, 나머지는 탭에 들어갈 때 받는다 */
+/* 첫 화면 — 저장해 둔 즐겨찾기를 먼저 읽고 ① VIP 탭 JSON 만 받아 그린다 */
+favLoad();
 activate('lux');
 </script>
 </body>

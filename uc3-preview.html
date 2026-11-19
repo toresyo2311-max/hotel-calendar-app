@@ -1203,8 +1203,9 @@ function favLoad(){try{const raw=window.localStorage.getItem(FAV_KEY);if(!raw)re
   if(o&&Array.isArray(o.routes))FAV.routes=o.routes.filter(function(x){return typeof x==='string'});
  }catch(e){FAV_SAVE_OK=false}}
 function favSave(){try{window.localStorage.setItem(FAV_KEY,JSON.stringify({hotels:FAV.hotels,routes:FAV.routes}))}catch(e){FAV_SAVE_OK=false}}
-function favHas(kind,id){return FAV[kind].indexOf(id)>=0}
-function favToggle(kind,id){const a=FAV[kind],i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);favSave()}
+function favKey(kind){return kind==='hotel'?'hotels':kind==='route'?'routes':kind}
+function favHas(kind,id){const k=favKey(kind);return Array.isArray(FAV[k])&&FAV[k].indexOf(id)>=0}
+function favToggle(kind,id){const a=FAV[favKey(kind)],i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);favSave()}
 function favHotelCount(group){if(!group)return FAV.hotels.length;let n=0;
  for(const id of FAV.hotels){const h=allHotels.find(function(x){return x.id===id});if(h&&h.group===group)n++}return n}
 function favStar(kind,id,label){const on=favHas(kind,id),t=(on?'즐겨찾기 해제':'즐겨찾기 추가')+' — '+label;

@@ -73,6 +73,10 @@ FORBIDDEN = ('accorcards', 'ittaeda', 'roame', '트립닷컴', '호텔럭스', '
              # ⑥ 땡처리 탭 — 예약 사이트 이름은 화면 글자에 남기지 않는다(href 주소는 제외)
              '모두투어', '땡처리닷컴', 'ttang.com', 'modetour.com')
 
+# 예외 — 2026-11-20 한진님 지시로 ① 탭 버튼 이름을 '호텔럭스'로 적는다.
+# 이 문구 하나만 검사에서 빼고, 본문·출처 문구의 사이트 이름 금지는 그대로 둔다.
+ALLOWED_LABELS = ('① 호텔럭스',)
+
 
 def check_ttang(tt):
     """⑥ 땡처리 · 부산 출발 상품 검사 — id 중복·기간 일치·가격·예약 호스트·출발일 창."""
@@ -314,6 +318,8 @@ def strip_booking_links(text_blob):
 def check_sources(text_blob):
     """출처 문구에 제3자 사이트 이름이 남아 있지 않은지 검사."""
     low = strip_booking_links(text_blob).lower()
+    for label in ALLOWED_LABELS:
+        low = low.replace(label.lower(), ' ')
     hits = [w for w in FORBIDDEN if w in low]
     return ['출처 문구에 금지된 사이트 이름: %s' % ', '.join(hits)] if hits else []
 

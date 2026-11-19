@@ -210,6 +210,12 @@ def main(argv):
     out = out[:da] + meta_txt + out[db_:]
 
     # 2) 코드 수정
+    #   ⑤ 항공 전체 건수는 데이터를 받은 뒤에 채워지므로 상수 대신 함수로 읽는다
+    if out.count('const flTotal=FLIGHTS.counts.total;') != 1:
+        raise SystemExit('flTotal 정의를 찾지 못했습니다.')
+    out = out.replace('const flTotal=FLIGHTS.counts.total;',
+                      'const flTotal=()=>FLIGHTS.counts.total;   /* 데이터를 fetch 한 뒤 채워지므로 함수로 읽는다 */')
+    out = out.replace('KR(flTotal)', 'KR(flTotal())').replace('||flTotal;', '||flTotal();')
     edits = [
         # ⑥ 채널 이름 — 로딩 뒤에 다시 만든다
         ("(function(){const cs=(typeof TTANG!=='undefined'&&TTANG.channels)||[];cs.forEach(function(c){ttCh[c.key]=c.label})})();",

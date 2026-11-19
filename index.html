@@ -1533,13 +1533,13 @@ function renderFlightStatus(){
     +'<span class="stat-pill hintpill">—는 미조회(추정 없음) · 경유 12h+ · 20h+(사실상 1박)는 장시간 경유 경고</span>';
   const note=$('flFilterNote');
   if(note)note.textContent=(fl.direct||fl.hideLong)
-    ?((fl.direct?'직항 확인분만 · ':'')+(fl.hideLong?'12시간 이상 경유 제외 · ':'')+'표시 '+KR(flFiltered().length)+' / 전체 '+KR(flTotal)+'건')
+    ?((fl.direct?'직항 확인분만 · ':'')+(fl.hideLong?'12시간 이상 경유 제외 · ':'')+'표시 '+KR(flFiltered().length)+' / 전체 '+KR(flTotal())+'건')
     :'';
 }
 function renderFlightLogSummary(){
   const el=$('flLogSummary');if(!el)return;
   const ns=FLIGHTS.noSale||[],cnt=s=>ns.filter(n=>(n.status||'nosale')===s).length;
-  const c=FLIGHTS.counts||{},tot=c.total||flTotal;
+  const c=FLIGHTS.counts||{},tot=c.total||flTotal();
   el.innerHTML='지금 반영분 <b>'+KR(tot)+'건</b>(주말형 '+KR(tot-(c.daytrip||0))+' · 당일치기 '+KR(c.daytrip||0)+')'
     +' · 값 없는 칸 = 판매편 0건 <b>'+KR(cnt('nosale'))+'</b> · 요금 미공개 <b>'+KR(cnt('nofare'))+'</b> · 미오픈 <b>'+KR(cnt('unopened'))+'</b> · 미조회(—)는 추정하지 않아 건수를 세지 않습니다.';
 }
@@ -1629,7 +1629,7 @@ const flAir=d=>d.airline?(flAirNames[d.airline]||String(d.airline)):'항공사 �
 const flAll=()=>FLIGHTS.routes.flatMap(r=>r.deals.map(d=>({...d,city:r.city,code:r.code})));
 const flBase=()=>flAll().filter(d=>(fl.route==='all'||d.code===fl.route)&&(fl.pattern==='all'||d.pattern===fl.pattern));
 const flFiltered=()=>flBase().filter(d=>(!fl.direct||d.via===false)&&(!fl.hideLong||!flLongClass(d)));
-const flTotal=FLIGHTS.counts.total;
+const flTotal=()=>FLIGHTS.counts.total;   /* 데이터를 fetch 한 뒤 채워지므로 함수로 읽는다 */
 const flLink=d=>'https://kr.trip.com/flights/showfarefirst?dcity=pus&acity='+d.code.toLowerCase()+'&ddate='+d.date+'&rdate='+d.back+'&triptype=rt&class=y&quantity=1&locale=ko-KR&curr=KRW';
 /* ── 날짜 칸 → 예약 페이지 바로가기 ───────────────────────────── */
 const bkPad=n=>String(n).padStart(2,'0');
@@ -1717,12 +1717,12 @@ function setFlightMode(on){setDealPanels(on?'flight':'')}
 function renderFlightTop5(){
   const rows=FLIGHTS.routes.map(r=>{const d=[...r.deals].sort((a,b)=>a.price-b.price)[0];return {...d,city:r.city,code:r.code}}).sort((a,b)=>a.price-b.price).slice(0,5);
   $('flTop5').innerHTML=rows.map((d,i)=>'<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+esc(d.city)+' <span class="fl-code">'+d.code+'</span></div><div class="rank-meta">'+esc(d.pattern)+' · '+dateLabel(d.date)+' 출발 · '+esc(flMeta(d))+'</div></div><div class="rank-num '+(i===0?'red':'')+'">'+shortWon(d.price)+'</div></div>').join('');
-  if($('flTop5Sub'))$('flTop5Sub').textContent=KR(flTotal)+'건 중 노선별 최저';
+  if($('flTop5Sub'))$('flTop5Sub').textContent=KR(flTotal())+'건 중 노선별 최저';
   const all=flAll().sort((a,b)=>a.price-b.price);
   const b=all[0];
   const dayAll=all.filter(d=>flIsDayLabel(d.pattern));
   const bd=dayAll[0];
-  $('flHint').innerHTML='전체 '+KR(flTotal)+'건 중 가장 싼 조합은 <strong>'+esc(b.city)+' '+esc(b.pattern)+' '+dateLabel(b.date)+' '+KR(b.price)+'원</strong>('+esc(flMeta(b))+'). 아래 도표에서 '+FLIGHTS.routes.length+'개 노선 × '+FLIGHTS.patterns.length+'패턴(주말형 5 · 당일치기 '+FLIGHTS.patterns.filter(p=>p.nights===0).length+')을 주차별로 비교할 수 있습니다.'
+  $('flHint').innerHTML='전체 '+KR(flTotal())+'건 중 가장 싼 조합은 <strong>'+esc(b.city)+' '+esc(b.pattern)+' '+dateLabel(b.date)+' '+KR(b.price)+'원</strong>('+esc(flMeta(b))+'). 아래 도표에서 '+FLIGHTS.routes.length+'개 노선 × '+FLIGHTS.patterns.length+'패턴(주말형 5 · 당일치기 '+FLIGHTS.patterns.filter(p=>p.nights===0).length+')을 주차별로 비교할 수 있습니다.'
     +(bd?'<br>당일치기(0박) 최저는 <strong>'+esc(bd.city)+' '+dateLabel(bd.date)+' '+KR(bd.price)+'원</strong> — 당일치기 '+KR(dayAll.length)+'건 실측.':'');
 }
 function renderFlightFilters(){
@@ -1736,7 +1736,7 @@ function renderFlightFilters(){
   }
   routeSel.value=fl.route;patSel.value=fl.pattern;
   const n=flFiltered().length;
-  $('flCount').textContent='표시 '+KR(n)+'건 / 전체 '+KR(flTotal)+'건'+(fl.route!=='all'||fl.pattern!=='all'?' (필터)':'');
+  $('flCount').textContent='표시 '+KR(n)+'건 / 전체 '+KR(flTotal())+'건'+(fl.route!=='all'||fl.pattern!=='all'?' (필터)':'');
 }
 function renderFlightCalendar(){
   const month=fl.month;

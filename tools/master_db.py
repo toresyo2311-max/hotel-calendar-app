@@ -51,7 +51,7 @@ WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 
 # 탭별 기대 호텔 수 — ② 중올플 289곳(참여 287 + 기존 미참여·자격없음 2) · ③ 아코르 25곳 · 총 538곳
-EXPECT_TABS = {'lux': 162, 'china': 289, 'domestic': 25, 'marriott': 62}
+EXPECT_TABS = {'lux': 162, 'china': 289, 'domestic': 51, 'marriott': 62}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 중올플 APC — 참여 282 + 기존 2 = 284곳 · 12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715
 EXPECT_APC = {'hotels': 289, 'participating': 287, 'dec_available': 210,
@@ -60,7 +60,7 @@ EXPECT_APC = {'hotels': 289, 'participating': 287, 'dec_available': 210,
 
 # ③ 아코르 · Stay Plus & SNU — 국내 4곳 + 한·중·일 페어몬트·소피텔 21곳(365일)
 EXPECT_ACCOR3 = {
-    'hotels': 25, 'new': 21,
+    'hotels': 51, 'new': 21,
     'priced': {'C1B5': 0, 'A7Z9': 124, 'A5G7': 263, '8167': 357, 'B6R8': 362},
     'snu_rows': 43, 'snu_cities': 8,
 }

@@ -793,7 +793,7 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
       <div id="accorProg" class="mode-control" style="display:none" aria-label="아코르 조건 필터">
         <button class="mode-button selected" type="button" data-prog="all">전체</button>
         <button class="mode-button" type="button" data-prog="snu">SNU 참여</button>
-        <button class="mode-button" type="button" data-prog="nosnu">SNU 미참여</button>
+        <button class="mode-button" type="button" data-prog="nosnu">SNU 미참여·미노출</button>
         <button class="mode-button" type="button" data-prog="spdata">Stay Plus 결제액</button>
       </div>
       <div class="extra-control">
@@ -1207,7 +1207,7 @@ function renderHeader(){const t=tabs[st.tab];$('sectionTitle').textContent=t.tit
  if($('blackoutMode'))$('blackoutMode').value=st.blk;
  if($('accorProg')){$('accorProg').style.display=st.tab==='domestic'?'flex':'none';
   const dm=groupHotels(),pg={all:dm.length,snu:dm.filter(h=>Boolean((h.program||{}).snu)).length,nosnu:dm.filter(h=>!((h.program||{}).snu)).length,spdata:dm.filter(h=>Boolean((h.stayplus2&&Object.keys(h.stayplus2).length)||(h.stayplus3&&Object.keys(h.stayplus3).length))).length};
-  const plab={all:'전체',snu:'SNU 참여',nosnu:'SNU 미참여',spdata:'Stay Plus 결제액'};
+  const plab={all:'전체',snu:'SNU 참여',nosnu:'SNU 미참여·미노출',spdata:'Stay Plus 결제액'};
   document.querySelectorAll('#accorProg [data-prog]').forEach(b=>{const v=b.dataset.prog;b.textContent=plab[v]+' '+pg[v];const on=v===st.prog;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});
   const bw=$('accorBrandWrap');if(bw)bw.style.display=st.tab==='domestic'?'block':'none';
   const bs=$('accorBrand');if(bs){const brands=[...new Set(allHotels.filter(h=>h.group==='domestic').map(h=>h.brand||'기타'))].sort((a,b)=>a.localeCompare(b,'ko'));

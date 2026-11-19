@@ -2,17 +2,26 @@
 # -*- coding: utf-8 -*-
 """hotel-calendar-app 통합 마스터 DB 도구.
 
-`index.html` 안의 `const DB`(호텔 238곳 × 365일)와 `const FLIGHTS`(부산 출발 항공 특가)를
-읽어 `data/master_db.json` 한 파일로 모으고, 그 파일이 라이브 앱과 정확히 같은지 검사한다.
+데이터는 두 층으로 나뉜다.
+
+  · `data/master_db.json` — 병합 도구(merge_*.py)가 고치는 **정본**. 호텔 538곳 × 365일 ·
+    항공 47개 노선 · ⑥ 땡처리 상품을 한 파일에 담는다(바뀌지 않음).
+  · `data/app/*.json` — 앱이 탭에 들어갈 때 `fetch` 로 받는 **탭별 배포본**(지연 로딩).
+      tab1_vip.json(①) · tab2_china.json(②) · tab3_accor.json(③ + SNU rows)
+      tab4_marriott.json(④) · tab5_flights.json(⑤) · tab6_ttang.json(⑥)
+  · `index.html` — 화면 코드 + 집계값만. `const DB` 에는 호텔이 없고(`hotels: []`),
+    출처·기준일·갱신 이력·counts 만 둔다. `const FLIGHTS` / `const TTANG` 은 빈 골격이며
+    실제 값은 tab5/tab6 JSON 이 채운다.
 
 사용법 (저장소 루트에서):
-    python3 tools/master_db.py extract   # index.html -> data/master_db.json (전체 재생성)
-    python3 tools/master_db.py verify    # master_db.json 이 index.html 과 일치하는지 검사
-    python3 tools/master_db.py inject    # master_db.json -> index.html (DB·FLIGHTS 다시 채움)
+    python3 tools/master_db.py extract   # data/app/*.json -> data/master_db.json (전체 재생성)
+    python3 tools/master_db.py verify    # master_db.json == data/app/*.json + index.html 집계값
+    python3 tools/master_db.py inject    # master_db.json -> data/app/*.json + index.html 집계값
+    python3 tools/master_db.py parts     # master_db.json -> data/app/*.json 만 (index.html 그대로)
     python3 tools/master_db.py stats     # 수록 범위·건수만 출력
 
-`inject` 는 index.html 을 백업한 뒤 `const DB = ...` / `const FLIGHTS = ...` 두 구간만
-바꾸고, 나머지 바이트는 그대로 둔다. 바꾼 뒤 스스로 `verify` 를 다시 돌려 실패하면 되돌린다.
+`inject` 는 index.html 과 data/app/*.json 을 백업한 뒤 `const DB` 집계 블록과 탭별 JSON 만
+다시 쓰고, 나머지 바이트는 그대로 둔다. 바꾼 뒤 스스로 `verify` 를 다시 돌려 실패하면 되돌린다.
 """
 import datetime
 import hashlib
@@ -26,6 +35,15 @@ import tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX = os.path.join(ROOT, 'index.html')
 MASTER = os.path.join(ROOT, 'data', 'master_db.json')
+
+# 탭별 지연 로딩 배포본 — index.html 은 이 파일들을 fetch 해서 화면을 그린다
+APP_DIR = os.path.join(ROOT, 'data', 'app')
+PART_TABS = (('lux', 'tab1_vip.json'), ('china', 'tab2_china.json'),
+             ('domestic', 'tab3_accor.json'), ('marriott', 'tab4_marriott.json'))
+PART_FLIGHTS = 'tab5_flights.json'
+PART_TTANG = 'tab6_ttang.json'
+PART_ORDER = [tab for tab, _ in PART_TABS]
+PART_ADDRESS = dict(PART_TABS)
 
 WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
@@ -2165,19 +2183,67 @@ def find_literal(src, name):
     raise SystemExit('const %s 의 JSON 이 닫히지 않았습니다.' % name)
 
 
-def read_index(path=INDEX):
+def read_db_literal(path=INDEX):
+    """index.html 의 `const DB` — 호텔을 뺀 집계·출처 블록과 그 위치."""
     src = _read(path)
     a, b = find_literal(src, 'DB')
-    db = json.loads(src[a:b])
-    c, d = find_literal(src, 'FLIGHTS')
-    flights = json.loads(src[c:d])
-    return src, db, flights, (a, b), (c, d)
+    return src, json.loads(src[a:b]), (a, b)
 
 
-def read_ttang(src):
-    """⑥ 땡처리 상품 — `const TTANG` 블록과 그 위치."""
-    a, b = find_literal(src, 'TTANG')
-    return json.loads(src[a:b]), (a, b)
+def part_path(name):
+    return os.path.join(APP_DIR, name)
+
+
+def write_part(name, obj):
+    """탭별 JSON 한 파일 — 들여쓰기 없이 써서 전송량을 줄인다."""
+    path = part_path(name)
+    os.makedirs(APP_DIR, exist_ok=True)
+    tmp = path + '.tmp'
+    with open(tmp, 'w', encoding='utf-8') as fp:
+        fp.write(compact(obj))
+        fp.write('\n')
+    os.replace(tmp, path)
+
+
+def read_parts():
+    """data/app/*.json — (탭별 호텔 묶음, 호텔 전체, 항공, 땡처리)."""
+    parts, hotels = {}, []
+    for tab, name in PART_TABS:
+        part = json.loads(_read(part_path(name)))
+        if part.get('tab') != tab:
+            raise SystemExit('%s: tab 이 %r (기대 %r)' % (name, part.get('tab'), tab))
+        if part.get('count') != len(part.get('hotels') or []):
+            raise SystemExit('%s: count 와 hotels 수가 다릅니다 (%r vs %d)'
+                             % (name, part.get('count'), len(part.get('hotels') or [])))
+        parts[tab] = part
+        hotels.extend(part['hotels'])
+    flights = json.loads(_read(part_path(PART_FLIGHTS)))
+    tt = json.loads(_read(part_path(PART_TTANG)))
+    return parts, hotels, flights, tt
+
+
+def split_hotels(hotels):
+    """호텔을 탭(group)별 묶음으로 나눈다 — 각 탭 안의 순서는 원본 그대로 보존."""
+    out = {tab: [] for tab in PART_ORDER}
+    for h in hotels:
+        g = h.get('group')
+        if g not in out:
+            raise SystemExit('알 수 없는 group %r (호텔 %s)' % (g, h.get('id')))
+        out[g].append(h)
+    return out
+
+
+def write_parts(master):
+    """master_db.json -> data/app/*.json (탭별 지연 로딩 배포본)."""
+    groups = split_hotels(master['hotels'])
+    for tab, name in PART_TABS:
+        part = {'tab': tab, 'count': len(groups[tab]), 'hotels': groups[tab]}
+        if tab == 'domestic':
+            part['accor'] = master.get('accor')
+        write_part(name, part)
+    write_part(PART_FLIGHTS, master['flights'])
+    write_part(PART_TTANG, master.get('ttang') or {'deals': []})
+    return groups
 
 
 def compact(obj):
@@ -2223,8 +2289,9 @@ def stats_of(db, flights, tt=None):
 # ---------------------------------------------------------------- extract
 
 def cmd_extract(args):
-    src, db, flights, _, _ = read_index()
-    tt, _ = read_ttang(src)
+    _, dbmeta, _ = read_db_literal()
+    parts, hotels, flights, tt = read_parts()
+    accor = parts['domestic'].get('accor')
     commit = os.environ.get('MASTER_DB_COMMIT', '')
     if not commit:
         try:
@@ -2233,23 +2300,23 @@ def cmd_extract(args):
                                              text=True).strip()
         except Exception:
             commit = 'unknown'
-    st = stats_of(db, flights, tt)
+    st = stats_of({'hotels': hotels, 'accor': accor}, flights, tt)
     master = {
         'schema': 'hotel-calendar-app/master-db',
         'version': 1,
         'generated_at': args.now,
-        'source': {'file': 'index.html', 'commit': commit, 'tool': 'tools/master_db.py extract'},
+        'source': {'file': 'data/app/*.json', 'commit': commit, 'tool': 'tools/master_db.py extract'},
         'window': {'start': WINDOW_START, 'end': WINDOW_END, 'days': 365},
-        'built': db.get('built'),
-        'voucherExpiry': db.get('voucherExpiry'),
-        'extended': db.get('extended'),
+        'built': dbmeta.get('built'),
+        'voucherExpiry': dbmeta.get('voucherExpiry'),
+        'extended': dbmeta.get('extended'),
         'counts': {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus',
                                       'routes', 'deals', 'snu', 'pus_deals', 'pus_routes')},
-        'sources': db.get('sources') or [],
-        'hotels': db['hotels'],
+        'sources': dbmeta.get('sources') or [],
+        'hotels': hotels,
         'flights': flights,
         'ttang': tt,
-        'accor': db.get('accor'),
+        'accor': accor,
     }
     os.makedirs(os.path.dirname(MASTER), exist_ok=True)
     tmp = MASTER + '.tmp'
@@ -2268,7 +2335,7 @@ def cmd_extract(args):
 # ---------------------------------------------------------------- verify
 
 def project(master):
-    """master_db.json -> index.html 의 `const DB` / `const FLIGHTS` / `const TTANG` 에 들어가야 할 값."""
+    """master_db.json -> 검사·통계용 전체 DB(호텔 포함)."""
     db = {
         'hotels': master['hotels'],
         'sources': master['sources'],
@@ -2278,6 +2345,19 @@ def project(master):
         'accor': master.get('accor'),
     }
     return db, master['flights'], master.get('ttang') or {'deals': []}
+
+
+def project_meta(master):
+    """master_db.json -> index.html 의 `const DB` (호텔은 탭별 JSON 으로 빠지고 집계값만 남는다)."""
+    return {
+        'hotels': [],
+        'sources': master['sources'],
+        'built': master['built'],
+        'voucherExpiry': master['voucherExpiry'],
+        'extended': master['extended'],
+        'accor': None,
+        'counts': master.get('counts') or {},
+    }
 
 
 def check_tabs(db):
@@ -2342,31 +2422,50 @@ def check_tabs(db):
 
 def cmd_verify(args, quiet=False):
     master = json.loads(_read(MASTER))
-    src, db, flights, _, _ = read_index()
-    tt, _ = read_ttang(src)
+    src, dbmeta, _ = read_db_literal()
+    parts, hotels, flights, tt = read_parts()
     problems = []
 
     mdb, mfl, mtt = project(master)
-    if compact(mdb) != compact(db):
-        # 어느 부분이 다른지 좁혀서 알려준다
-        if list(mdb.keys()) != list(db.keys()):
-            problems.append('DB key 순서/구성 다름: %s vs %s' % (list(mdb.keys()), list(db.keys())))
-        if mdb['hotels'] != db['hotels']:
-            for a, b in zip(mdb['hotels'], db['hotels']):
-                if a != b:
-                    problems.append('hotel %s 내용 다름' % a.get('id'))
-                    break
-            else:
-                problems.append('hotel 개수 다름: %d vs %d' % (len(mdb['hotels']), len(db['hotels'])))
-        for k in ('sources', 'built', 'voucherExpiry', 'extended', 'accor'):
-            if mdb.get(k) != db.get(k):
-                problems.append('DB.%s 다름' % k)
-    if compact(mfl) != compact(flights):
-        problems.append('FLIGHTS 내용 다름')
-    if compact(mtt) != compact(tt):
-        problems.append('TTANG(⑥ 땡처리) 내용 다름')
 
-    st = stats_of(db, flights, tt)
+    # 1) index.html 의 `const DB` — 호텔을 뺀 집계·출처 블록이 master 와 같은지
+    meta = project_meta(master)
+    if meta != dbmeta:
+        if list(meta.keys()) != list(dbmeta.keys()):
+            problems.append('DB key 구성 다름: %s vs %s' % (list(meta.keys()), list(dbmeta.keys())))
+        for k in meta:
+            if meta[k] != dbmeta.get(k):
+                problems.append('DB.%s 다름' % k)
+    if dbmeta.get('hotels'):
+        problems.append('index.html 에 호텔 %d곳이 아직 인라인으로 남아 있습니다' % len(dbmeta['hotels']))
+
+    # 2) 탭별 호텔 JSON — 건수·id 순서(탭 안 순서)·항목 내용이 master 와 같은지
+    by_group = split_hotels(master['hotels'])
+    for tab in PART_ORDER:
+        name = PART_ADDRESS[tab]
+        got = parts[tab]['hotels']
+        want = by_group[tab]
+        if len(got) != len(want):
+            problems.append('%s 호텔 %d곳 (master %d곳)' % (name, len(got), len(want)))
+        gid = [h.get('id') for h in got]
+        wid = [h.get('id') for h in want]
+        if gid != wid:
+            missing = [i for i in wid if i not in set(gid)]
+            extra = [i for i in gid if i not in set(wid)]
+            problems.append('%s 호텔 id 순서/구성 다름 (빠짐 %s · 더있음 %s)' % (name, missing[:5], extra[:5]))
+        for a, b in zip(got, want):
+            if a != b:
+                problems.append('%s 호텔 %s 내용 다름' % (name, a.get('id')))
+                break
+    if parts['domestic'].get('accor') != master.get('accor'):
+        problems.append('tab3_accor.json 의 accor(SNU) 블록이 master 와 다름')
+    if compact(flights) != compact(mfl):
+        problems.append('%s 내용 다름' % PART_FLIGHTS)
+    if compact(tt) != compact(mtt):
+        problems.append('%s(⑥ 땡처리) 내용 다름' % PART_TTANG)
+
+    # 3) 탭별 JSON 을 합친 실제 배포 데이터로 통계
+    st = stats_of({'hotels': hotels, 'accor': parts['domestic'].get('accor')}, flights, tt)
     expect = master.get('counts') or {}
     for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus', 'routes', 'deals', 'snu',
               'pus_deals', 'pus_routes'):
@@ -2379,15 +2478,20 @@ def cmd_verify(args, quiet=False):
             problems.append('%s 날짜 칸 %d개 (365 이어야 함)' % (hid, n))
 
     # 탭 구성 검사 (①~④ 기존 데이터가 손상되지 않았는지 포함)
-    problems.extend(check_tabs(db))
+    problems.extend(check_tabs(mdb))
     problems.extend(check_sources(src))
     problems.extend(check_sources(_read(MASTER)))
+    for _tab, _name in PART_TABS:
+        problems.extend(check_sources(_read(part_path(_name))))
+    problems.extend(check_sources(_read(part_path(PART_FLIGHTS))))
+    problems.extend(check_sources(_read(part_path(PART_TTANG))))
     problems.extend(check_flights(flights))
     problems.extend(check_ttang(tt))
-    # ⑥ 탭의 정적 골격이 빠지지 않았는지(마크업·탭 버튼·데이터 블록)
-    for needle in ('id="ttPanel"', 'data-tab="tt"', 'const TTANG'):
+    # ⑥ 탭·탭별 JSON 골격이 빠지지 않았는지(마크업·탭 버튼·데이터 블록)
+    for needle in ('id="ttPanel"', 'data-tab="tt"', 'const TTANG', 'const FLIGHTS',
+                   'DATA_ROOT', 'tab6_ttang.json'):
         if needle not in src:
-            problems.append('⑥ 땡처리 탭 골격 누락: %s' % needle)
+            problems.append('⑥ 땡처리 탭·지연 로딩 골격 누락: %s' % needle)
 
     if problems:
         print('VERIFY FAIL')
@@ -2395,48 +2499,91 @@ def cmd_verify(args, quiet=False):
             print('  - ' + p)
         return 1
     if not quiet:
-        print('VERIFY OK — master_db.json == index.html')
+        print('VERIFY OK — master_db.json == data/app/*.json + index.html 집계값')
         print('  hotels %(hotels)d  tabs %(tabs)s' % st)
         print('  cells %(cells)d  priced %(priced)d  na %(na)d  stayplus %(stayplus)d' % st)
         print('  routes {routes}  deals {deals}  window {date_min}~{date_max}'.format(**st))
         print('  ⑥ 땡처리 {pus_deals}건 · {pus_routes}개 노선'.format(**st))
         print('  flights 당일치기 %d건 · 패턴 %d종' % (flights['counts'].get('daytrip', 0),
                                                    len(flights['patterns'])))
+        print('  index.html const DB 호텔 %d곳 (비어 있어야 함)' % len(dbmeta.get('hotels') or []))
     return 0
 
 
 # ---------------------------------------------------------------- inject
 
+def _part_files():
+    return [PART_ADDRESS[tab] for tab in PART_ORDER] + [PART_FLIGHTS, PART_TTANG]
+
+
 def cmd_inject(args):
     if cmd_verify(args, quiet=True) != 0:
-        print('master_db.json 이 이미 index.html 과 다릅니다 — verify 로 차이를 먼저 확인하세요.')
+        print('배포 파일(data/app/*.json + index.html 집계값)이 이미 master_db.json 과 다릅니다')
+        print('— verify 로 차이를 먼저 확인하세요.')
         print('(다른 데이터를 넣으려면 수정한 뒤 inject 하는 것이 맞습니다. 계속 진행합니다.)')
     master = json.loads(_read(MASTER))
-    mdb, mfl, mtt = project(master)
-    src, db, flights, span_db, span_fl = read_index()
-    tt, span_tt = read_ttang(src)
+    meta = project_meta(master)
+    src, dbmeta, span_db = read_db_literal()
 
-    if compact(db) == compact(mdb) and compact(flights) == compact(mfl) and compact(tt) == compact(mtt):
-        print('index.html 이 이미 master_db.json 과 같습니다 — 바꾸지 않았습니다.')
-        return 0
+    if compact(meta) == compact(dbmeta):
+        try:
+            same = all(_read(part_path(n)) == _part_text(master, n) for n in _part_files())
+        except OSError:
+            same = False
+        if same:
+            print('배포 파일이 이미 master_db.json 과 같습니다 — 바꾸지 않았습니다.')
+            return 0
 
-    new = src
-    # 뒤쪽(TTANG → FLIGHTS)부터 바꿔야 앞쪽 오프셋이 흔들리지 않는다
-    new = new[:span_tt[0]] + compact(mtt) + new[span_tt[1]:]
-    new = new[:span_fl[0]] + compact(mfl) + new[span_fl[1]:]
-    new = new[:span_db[0]] + compact(mdb) + new[span_db[1]:]
+    backup = tempfile.mkdtemp(prefix='hca-inject-')
+    saved = [('index.html', INDEX)] + [(n, part_path(n)) for n in _part_files()]
+    for name, path in saved:
+        if os.path.exists(path):
+            shutil.copy2(path, os.path.join(backup, name))
 
-    backup = INDEX + '.bak'
-    shutil.copy2(INDEX, backup)
+    new = src[:span_db[0]] + compact(meta) + src[span_db[1]:]
     with open(INDEX, 'w', encoding='utf-8') as fp:
         fp.write(new)
+    write_parts(master)
+
     if cmd_verify(args, quiet=True) != 0:
-        shutil.copy2(backup, INDEX)
-        print('검증 실패 — index.html 을 백업으로 되돌렸습니다.')
+        for name, path in saved:
+            srcp = os.path.join(backup, name)
+            if os.path.exists(srcp):
+                shutil.copy2(srcp, path)
+        print('검증 실패 — index.html 과 data/app 을 백업으로 되돌렸습니다.')
         return 1
-    os.remove(backup)
-    print('index.html 갱신 완료 (DB %d호텔, FLIGHTS %d노선, ⑥ 땡처리 %d건)' % (
-        len(mdb['hotels']), len(mfl.get('routes') or []), len((mtt or {}).get('deals') or [])))
+    shutil.rmtree(backup, ignore_errors=True)
+    counts = master.get('counts') or {}
+    print('data/app 갱신 + index.html 집계값 갱신 완료 (호텔 %s곳, 항공 %s노선, ⑥ 땡처리 %s건, SNU %s줄)' % (
+        counts.get('hotels'), counts.get('routes'), counts.get('pus_deals'), counts.get('snu')))
+    for name in _part_files():
+        print('  %-20s %8.1f KB' % (name, os.path.getsize(part_path(name)) / 1024.0))
+    return 0
+
+
+def _part_text(master, name):
+    """write_parts 가 쓸 내용(비교용) — 파일을 건드리지 않는다."""
+    groups = split_hotels(master['hotels'])
+    for tab, fname in PART_TABS:
+        if fname == name:
+            part = {'tab': tab, 'count': len(groups[tab]), 'hotels': groups[tab]}
+            if tab == 'domestic':
+                part['accor'] = master.get('accor')
+            return compact(part) + '\n'
+    if name == PART_FLIGHTS:
+        return compact(master['flights']) + '\n'
+    return compact(master.get('ttang') or {'deals': []}) + '\n'
+
+
+def cmd_parts(args):
+    """master_db.json -> data/app/*.json 만 다시 쓴다(index.html 은 그대로)."""
+    master = json.loads(_read(MASTER))
+    groups = write_parts(master)
+    print('wrote data/app/ — ' + ', '.join('%s %d곳' % (PART_ADDRESS[t], len(groups[t]))
+                                          for t in PART_ORDER))
+    print('  %s · %s' % (PART_FLIGHTS, PART_TTANG))
+    for name in _part_files():
+        print('  %-20s %8.1f KB' % (name, os.path.getsize(part_path(name)) / 1024.0))
     return 0
 
 
@@ -2459,10 +2606,9 @@ def cmd_refresh(args):
 
 
 def cmd_stats(args):
-    src, db, flights, _, _ = read_index()
-    tt, _ = read_ttang(src)
-    st = stats_of(db, flights, tt)
-    print('index.html 기준')
+    parts, hotels, flights, tt = read_parts()
+    st = stats_of({'hotels': hotels, 'accor': parts['domestic'].get('accor')}, flights, tt)
+    print('data/app 기준 (탭별 지연 로딩 배포본)')
     print('  hotels  %d  %s' % (st['hotels'], st['tabs']))
     print('  cells   %d  (priced %d / NA %d)' % (st['cells'], st['priced'], st['na']))
     print('  stayplus %d건 · SNU 후보 %d줄' % (st['stayplus'], st['snu']))
@@ -2470,8 +2616,13 @@ def cmd_stats(args):
     print('  ⑥ 땡처리 %d건 · %d개 노선' % (st['pus_deals'], st['pus_routes']))
     print('  window  %s ~ %s (%d일)' % (st['date_min'], st['date_max'], st['dates']))
     print()
+    print('파일 크기 (KB)')
+    print('  %-18s %8.1f' % ('index.html', os.path.getsize(INDEX) / 1024.0))
+    for name in _part_files():
+        print('  %-18s %8.1f' % (name, os.path.getsize(part_path(name)) / 1024.0))
+    print()
     print('호텔별 요금 표기 칸수')
-    for h in db['hotels']:
+    for h in hotels:
         print('  %-7s %-34s %3d/365' % (h['id'], h['name'], st['priced_per_hotel'][h['id']]))
     return 0
 
@@ -2480,12 +2631,12 @@ def main(argv):
     import argparse
     import datetime
     p = argparse.ArgumentParser(description='hotel-calendar-app 통합 마스터 DB 도구')
-    p.add_argument('command', choices=['extract', 'verify', 'inject', 'refresh', 'stats'])
+    p.add_argument('command', choices=['extract', 'verify', 'inject', 'parts', 'refresh', 'stats'])
     p.add_argument('--now', default=datetime.datetime.now().astimezone().strftime('%Y-%m-%dT%H:%M:%S%z'),
                    help='extract 시 기록할 생성 시각')
     args = p.parse_args(argv)
     return {'extract': cmd_extract, 'verify': cmd_verify, 'inject': cmd_inject,
-            'refresh': cmd_refresh, 'stats': cmd_stats}[args.command](args)
+            'parts': cmd_parts, 'refresh': cmd_refresh, 'stats': cmd_stats}[args.command](args)
 
 
 if __name__ == '__main__':

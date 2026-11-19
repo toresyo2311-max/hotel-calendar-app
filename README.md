@@ -14,8 +14,37 @@
 (가능/불가/미확인, 72시간 신선도 규칙)과 **부산 접근 권역**(김해 직항 / 환승·고속철 / 국내선 환승)을 붙였습니다.
 그중 **30곳은 365일 현금 요금**까지 채웠습니다. ③ 아코르 탭은 국내 4곳에 **한·중·일 페어몬트·소피텔 21곳(365일)** 과
 **SNU·Stay Plus 2박 후보 43줄(절감액)** 을 더한 **25곳**입니다.
-서버·로그인·DB가 필요 없는 **정적 HTML 한 장**이라 GitHub 저장소에 올리고 GitHub Pages를 켜 두면
+서버·로그인·DB가 필요 없는 **정적 사이트**(`index.html` + `data/app/*.json`)라 GitHub 저장소에 올리고 GitHub Pages를 켜 두면
 링크 하나로 계속 열어볼 수 있습니다(빌드·호스팅 무료, 대역폭 제한 사실상 없음).
+
+## 데이터 구조 — 탭별 JSON 지연 로딩 (2026-11-19 4단계)
+
+앱은 더 이상 모든 데이터를 `index.html` 한 파일에 담지 않습니다. 화면 코드와 집계값만
+`index.html`(**340 KB**, 이전 8.68 MB)에 두고, 호텔·항공·땡처리 데이터는 **탭에 처음 들어갈 때**
+`data/app/*.json` 을 `fetch` 해서 받습니다(받은 탭은 메모리에 캐시).
+
+| 탭 | 파일 | 내용 | 크기 |
+| --- | --- | --- | --- |
+| ① VIP 요금 · FHR | `data/app/tab1_vip.json` | 호텔 162곳 | 1.21 MB |
+| ② 중올플 | `data/app/tab2_china.json` | 호텔 289곳 + APC | 2.37 MB |
+| ③ 아코르 | `data/app/tab3_accor.json` | 호텔 25곳 + SNU 43줄(`accor`) | 0.20 MB |
+| ④ 메리어트 | `data/app/tab4_marriott.json` | 호텔 62곳(현금·포인트) | 0.62 MB |
+| ⑤ 항공 | `data/app/tab5_flights.json` | 47개 노선 8,645건 | 1.89 MB |
+| ⑥ 땡처리 | `data/app/tab6_ttang.json` | 42개 노선 3,476건 | 1.87 MB |
+
+- **첫 화면**은 `index.html`(340 KB) + `tab1_vip.json`(1.21 MB)만 받습니다 — 약 **1.55 MB**
+  (이전 8.68 MB에서 **-82%**, gzip 전송 기준으로는 차이가 더 큽니다).
+- **탭을 처음 누를 때** 그 탭의 JSON 하나만 받아 그리고, 이미 받은 탭은 다시 받지 않습니다.
+- **✈️+🏨 콤보**는 ①~④ 호텔과 ⑤ 항공이 함께 필요하므로, 아직 받지 않은 JSON만
+  `Promise.all(fetch ...)` 로 **병렬**로 받은 뒤 계산합니다.
+- 받는 동안 화면 가운데에 「데이터 불러오는 중…」 카드가 뜨고(어떤 파일을 받는지 표시),
+  실패하면 이유와 `다시 시도` 버튼을 보여 줍니다.
+- `index.html` 의 `const DB` 에는 `hotels: []`(빈 배열) · `sources` · `built` · `voucherExpiry` ·
+  `extended` · `accor: null` · **`counts`**(538곳 · 196,370칸 · 142바우처 등 집계값)만 들어 있습니다.
+  상단 지표(`통합 호텔 538` 등)는 이 `counts` 로 그리므로 탭을 옮겨도 숫자가 바뀌지 않습니다.
+  `const FLIGHTS` / `const TTANG` 은 빈 골격이고 실제 값은 ⑤·⑥ JSON 이 채웁니다.
+- **로컬에서 열 때 주의**: 브라우저는 `file://` 에서 `fetch` 를 막습니다. 반드시 HTTP 로 열어야 합니다.
+  `python3 -m http.server 8000` 실행 후 `http://localhost:8000/` 로 열거나 GitHub Pages 주소를 쓰세요.
 
 ## 탭 구성 (6개 + ✈️+🏨 콤보)
 
@@ -604,9 +633,16 @@ G2 는 부록 420줄을 21주 × 5패턴 표와 대조한 뒤 **이미 앱에 �
 ## 파일 구성
 
 ```
-index.html              앱 본체. 화면 + 데이터(const DB, const FLIGHTS)가 한 파일에 들어 있습니다.
-data/master_db.json     통합 마스터 DB. 호텔 538곳 × 365일 + 항공 특가 8,645건(47개 노선) + SNU·Stay Plus 43줄의 단일 원본.
-tools/master_db.py      마스터 DB 추출·검증·주입 도구 (표준 라이브러리만 사용).
+index.html              앱 본체. 화면 코드 + 집계값(const DB 의 counts·sources)만. 호텔·항공·땡처리 데이터는 없습니다(340 KB).
+data/app/tab1_vip.json  ① VIP 요금 · FHR 호텔 162곳 (탭 진입 시 fetch)
+data/app/tab2_china.json  ② 중올플 289곳 + APC 무료숙박 가능일
+data/app/tab3_accor.json  ③ 아코르 25곳 + SNU·Stay Plus 43줄(accor)
+data/app/tab4_marriott.json  ④ 메리어트 62곳 (현금 + 아워드 포인트)
+data/app/tab5_flights.json  ⑤ 부산 출발 항공 47개 노선 8,645건
+data/app/tab6_ttang.json  ⑥ 땡처리 42개 노선 3,476건
+data/master_db.json     통합 마스터 DB(정본). 호텔 538곳 × 365일 + 항공 특가 8,645건(47개 노선) + SNU·Stay Plus 43줄의 단일 원본.
+tools/master_db.py      마스터 DB 추출·검증·주입 도구 (표준 라이브러리만 사용). extract/verify/inject/parts/stats.
+tools/patch_lazy_index.py  (1회용) index.html 을 탭별 JSON 지연 로딩 구조로 바꾸는 패치 도구 — 이미 패치된 파일에는 아무 것도 하지 않습니다.
 tools/import_marriott.py  중국 메리어트 8개 md → ④ 탭 40곳 파서.
 tools/import_marriott_kj.py  한국·일본 메리어트 CSV(현금·포인트) → ④ 탭 22곳 파서.
 tools/import_apc_all.py APC 관측 JSON → ② 중올플 284곳(참여 282 + 기존 2) 주입·이름/권역 생성.
@@ -698,7 +734,7 @@ netlify.toml            (구) Netlify 배포 설정 — GitHub Pages로 이전�
   "schema": "hotel-calendar-app/master-db",
   "version": 1,
   "generated_at": "…KST",
-  "source": { "file": "index.html", "commit": "…", "tool": "tools/master_db.py extract" },
+  "source": { "file": "data/app/*.json", "commit": "…", "tool": "tools/master_db.py extract" },
   "window": { "start": "2026-12-01", "end": "2027-11-30", "days": 365 },
   "built": "2026-11-17",
   "voucherExpiry": "2027-09-30",
@@ -707,7 +743,7 @@ netlify.toml            (구) Netlify 배포 설정 — GitHub Pages로 이전�
               "cells": 196370, "priced": 79787, "na": 116583,
               "stayplus": 142, "routes": 47, "deals": 5633, "snu": 43 },
   "sources":  ["…조사 원문 파일명…"],
-  "hotels":   [ // index.html 의 const DB.hotels 와 같은 순서·같은 구조
+  "hotels":   [ // 탭별 JSON(tab1~tab4)을 이어 붙인 순서 — 각 탭 안의 순서는 화면 목록 순서와 같다
     {
       "id": "h01", "group": "lux", "city": "부산", "region": "부산",
       "name": "파라다이스 호텔 부산", "english": "Paradise Hotel Busan",
@@ -764,20 +800,30 @@ netlify.toml            (구) Netlify 배포 설정 — GitHub Pages로 이전�
   21곳은 `id`가 `a`+아코르 코드(`aB6R8` 등)이고, ②·① 과 겹치는 20곳은 `alsoIn`(반대편 호텔 id)을 양쪽에 가집니다.
 - `accor`(최상위) = SNU·Stay Plus 인사이트입니다. `program`(만료일 2027-12-31 / 2027-09-30 · 조회 시각 · 규칙)과
   `rows` 43줄(`city` · `hotel` · `code` · `checkin` · `snu` 2박 요금 · `list` 정가 · `save` 절감 · `saveGiven` 원문 표기 여부)입니다.
-- `hotels` 순서는 화면 탭 순서(① 162 → ② 289 → ③ 25 → ④ 62)와 같습니다.
+- `hotels` 순서는 탭 묶음 순서(① 162 → ② 289 → ③ 25 → ④ 62)이고, 각 탭 안의 순서는 화면 목록 순서입니다.
+  `data/app/tab1~tab4.json` 이 이 묶음을 그대로 나눠 가지므로, 앱에서 `DB.hotels` 에 탭별로 push 해도
+  탭별 목록 순서는 원본과 같습니다.
+- `accor`(SNU 43줄)는 `data/app/tab3_accor.json` 에 함께 실려 ③ 탭 진입 시 로딩됩니다.
+- **`index.html` 의 `const DB` 는 호텔 배열이 비어 있습니다**(`hotels: []`). 호텔 데이터의 배포본은
+  `data/app/tab1~tab4.json` 이고, `data/master_db.json` 은 병합 도구가 고치는 정본입니다.
+  `tools/master_db.py verify` 가 **정본 == 배포본 + index.html 집계값** 을 검사합니다.
 
 ## 검증과 갱신 절차
 
 `tools/master_db.py` 하나로 마스터 DB와 라이브 앱의 일치 여부를 확인합니다.
 
 ```bash
-python3 tools/master_db.py verify    # data/master_db.json == index.html 인지 검사
-python3 tools/master_db.py stats     # 수록 범위·호텔별 요금 표기 칸수 출력
-python3 tools/master_db.py extract   # index.html -> data/master_db.json 재생성
-python3 tools/master_db.py inject    # data/master_db.json -> index.html (DB·FLIGHTS만 교체)
+python3 tools/master_db.py verify    # data/master_db.json == data/app/*.json + index.html 집계값 인지 검사
+python3 tools/master_db.py stats     # 수록 범위·파일 크기·호텔별 요금 표기 칸수 출력
+python3 tools/master_db.py parts     # master_db.json -> data/app/*.json 만 다시 쓰기(index.html 그대로)
+python3 tools/master_db.py extract   # data/app/*.json -> data/master_db.json 재생성
+python3 tools/master_db.py inject    # data/master_db.json -> data/app/*.json + index.html 집계값
 ```
 
-`verify`는 탭별 호텔 수, ④ 브랜드 구성, 한·일 22곳의 현금·포인트 칸 수(6,800·6,629),
+`verify`는 먼저 **(1)** `index.html` 의 `const DB` 가 호텔을 갖지 않고 `sources`·`built`·`voucherExpiry`·
+`extended`·`counts` 만 정본과 같은지, **(2)** 탭별 JSON 4개의 호텔 수·id 순서·항목 내용이 정본과 같은지,
+**(3)** `tab3` 의 `accor`(SNU)·`tab5` 항공·`tab6` 땡처리가 정본과 같은지, **(4)** 합친 데이터의 건수가 맞는지를
+검사합니다. 이어서 탭별 호텔 수, ④ 브랜드 구성, 한·일 22곳의 현금·포인트 칸 수(6,800·6,629),
 교차 탭 중복(alsoIn 없는 이름 중복), **② 중올플 289곳**(참여 287 · 권역 분포 116/137/36 · APC 칸 4,715 ·
 12월 가능 210곳 · 현금 보유 40곳 / 미수집 249곳 · 비정상 고가 0 · public_id 중복 없음),
 **③ 아코르 25곳**(신규 21곳 · 우한 124일·피스 263일·싼야 리만 357일·도쿄 362일·다롄 0일 · alsoIn 양방향 ·
@@ -787,11 +833,12 @@ SNU 43줄·8도시)·**출처 문구에 제3자 사이트 이름이 남아 있�
 정상일 때 `verify` 출력:
 
 ```
-VERIFY OK — master_db.json == index.html
+VERIFY OK — master_db.json == data/app/*.json + index.html 집계값
   hotels 538  tabs {'lux': 162, 'china': 289, 'domestic': 25, 'marriott': 62}
   cells 196370  priced 79787  na 116583  stayplus 142
-  routes 47  deals 7093  window 2026-12-01~2027-11-30
+  routes 47  deals 8645  window 2026-12-01~2027-11-30
   flights 당일치기 318건 · 패턴 12종
+  index.html const DB 호텔 0곳 (비어 있어야 함)
 ```
 
 `verify` 는 항공 쪽도 검사합니다: 노선 47개(중국 신규 8개·필리핀 4개·동남아 4개·일본 7개는 이름·건수까지 고정값 대조, 필리핀 4개는 9주 × 5패턴 45칸 완본, 동남아 4개는 비엔티안 2칸만 빈칸인 178칸, 중국 8개는 2027년 2~6월 금~일·토~월·목~일·금~월(선양 4개 노선) 출발일 집합과 황산 판매편 0건 20칸, 일본 7개는 12월 171칸·당일치기 4칸·**1월 4주 × 5패턴 140칸(값 138 + 항공편 없음 2)과 1월 당일치기 21칸**·**2027년 2~6월 21주 × 7패턴 1,029칸(실측 537 + 판매편 0건 296 + 요금 미공개 98 + 미조회 98)**, 동남아 4개는 2027년 2~6월 420칸), 주말형 5패턴·당일치기 패턴(0박·`unk` 허용),
@@ -812,8 +859,10 @@ VERIFY OK — master_db.json == index.html
 1. 조사 원문(md/pdf)에서 뽑은 요금을 **`data/master_db.json`의 해당 호텔 `rates`(과 필요하면
    `stayplus2`/`stayplus3`)에만** 반영합니다. 값이 없는 날은 `null`로 둡니다.
 2. `counts`(요금 표기 칸수 등)와 `built`·`extended`·`sources`를 실제 값으로 고칩니다.
-3. `python3 tools/master_db.py inject` — index.html의 `const DB`/`const FLIGHTS`만 다시 채웁니다.
-   디자인·스크립트·탭 구조는 그대로이고, 자동 검증이 실패하면 원본으로 되돌립니다.
+3. `python3 tools/master_db.py inject` — `data/app/*.json`(탭별 호텔·항공·땡처리)과 index.html 의
+   집계값(`const DB` 의 `counts`·`sources`·`built`·`extended`)을 다시 씁니다. 디자인·스크립트·탭 구조는
+   그대로이고, 자동 검증이 실패하면 모두 원본으로 되돌립니다. index.html 은 그대로 두고
+   탭별 JSON 만 다시 쓰려면 `python3 tools/master_db.py parts` 를 씁니다.
 4. `python3 tools/master_db.py verify` 로 확인한 뒤 commit → push 합니다.
 
 항공 특가는 md 한 장을 통째로 병합할 수 있습니다. 같은 (노선·출발일·패턴) 이 이미 있으면
@@ -893,7 +942,9 @@ python3 tools/master_db.py refresh && python3 tools/master_db.py inject && pytho
 
 저장소 `toresyo2311-max/hotel-calendar-app`(public)의 Settings → Pages 설정은
 **Source: Deploy from a branch / Branch: `main` / Folder: `/ (root)`** 입니다. 빌드 단계가 없어
-루트의 `index.html`이 그대로 게시되고, push하면 GitHub가 자동으로 다시 게시합니다(보통 1~2분).
+루트의 `index.html`과 `data/app/*.json`이 그대로 게시되고, push하면 GitHub가 자동으로 다시 게시합니다(보통 1~2분).
+`data/app/*.json`을 빠뜨리고 push하면 첫 화면은 열리지만 탭을 누를 때 데이터 로딩이 실패하므로,
+push 전에 `python3 tools/master_db.py verify` 로 배포 파일까지 확인합니다.
 
 ```
 변경 → git add · commit → git push origin main → Pages 자동 재게시 (1~2분)

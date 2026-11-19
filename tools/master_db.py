@@ -560,7 +560,7 @@ EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
 #   같은 날짜에 남아 있던 '가격표' 자리표시 28칸은 실측으로 교체했으므로 건수는 그대로)
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
 # 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
-EXPECT_H2_BY_MONTH = {'2027-06': 723, '2027-07': 857, '2027-08': 659,
+EXPECT_H2_BY_MONTH = {'2027-06': 723, '2027-07': 959, '2027-08': 659,
                       '2027-09': 654, '2027-10': 205, '2027-11': 34}
 # 2027-07 은 2026-11-19 일본 7노선 7월 완결본(값 150칸)을 더한 595 에,
 # 같은 날 필리핀 4노선 미조회 36칸을 더한 631 이고, A조 12노선 7월 3~5주차 134칸을 더한 857 이다.
@@ -571,12 +571,14 @@ EXPECT_H2_BY_MONTH = {'2027-06': 723, '2027-07': 857, '2027-08': 659,
 # 더한 34 다(기존 1칸은 후쿠오카 11/5~7).
 # 2027-07은 2026-11-19 A조 12개 노선 7월 3~5주차(7/15~8/2) 실측분 134칸을 더한 857 이다(723→857 —
 #   기존 가격표 자리표시 1칸은 재실측으로 교체했으므로 건수는 그대로).
+# 2027-07은 같은 날 기존 24개 노선 7월 2주차(7/8~12) 120칸 중 새 칸 102를 더한 959 다(857→959 —
+#   같은 주차에 남아 있던 '가격표' 자리표시 18칸은 실측으로 교체했으므로 건수는 그대로).
 # 2027-08은 2026-11-19 A조 12개 노선 8월 4주 5패턴분 중 빈칸 205칸을 더한 659 다(454→659 —
 #   이미 있던 3칸(마카오·상하이·타이베이 8/6 금~일)은 재실측으로 교체했으므로 건수는 그대로).
 # 2027-09는 2026-11-20 A조 12개 노선 9월 5주(9/2~10/4) 빈칸 245칸 가운데 출발일이 9월인 229칸을
 #   더한 654 이고(425→654), 2027-10은 같은 원본의 10/1·10/2 출발 16칸을 더한 205 다(189→205 —
 #   방콕 10/1 금~일 1칸은 재실측으로 교체했으므로 건수는 그대로).
-EXPECT_H2 = {'weekend': 3037, 'day': 95, 'total': 3132}   # 주말형 2,587+205+245 · 당일치기 95
+EXPECT_H2 = {'weekend': 3139, 'day': 95, 'total': 3234}   # 주말형 2,587+205+245+102 · 당일치기 95
 # 2027-06 은 2026-11-19 기존 24개 노선 6월 3주차(6/17~21) 120칸 가운데 새 칸 92를 더하고(530→622),
 # 같은 날 4주차(6/24~28) 120칸 가운데 새 칸 101을 더한 723 이다
 # (각 주차의 '가격표' 자리표시 28칸·19칸은 실측으로 교체 — 건수는 그대로).
@@ -847,6 +849,51 @@ EXPECT_JUL1_ALT_CELLS = {('HKG', '2027-07-02', '금~일'): 647600,
 EXPECT_JUL1_ALLDIRECT = ('FUK', 'KIX', 'TYO', 'CXR', 'TPE')
 # 5패턴 전부 직항 운임이 표시되지 않은 노선(원문 '한눈에'와 칸별 값이 같다 — 칭다오 포함 9개)
 EXPECT_JUL1_NODIRECT = ('MFM', 'BKK', 'DAD', 'NKG', 'GUM', 'NGO', 'HGH', 'TAO', 'DPS')
+
+# 2027년 7월 2주차(7/8~7/12) 기존 24개 노선 × 5패턴 120칸 — 2026-11-19 5번 보고서
+# (부산출발-항공특가-2027년7월-2주차, 2026-11-19 15:00~15:47 KST 실측). 120칸 모두 값이고
+# (미오픈·판매편 0건·요금 미공개 0칸), 이 주차에 남아 있던 '가격표' 자리표시 18칸은
+# 이번 실측값으로 교체했다(0박 당일치기 칸 — 상하이 7/8 목~목 1칸 — 은 이 조사 범위 밖이라 그대로).
+# 7/8이 목요일이라 5패턴의 출발일이 7/8(목)·7/9(금)·7/10(토)에 걸린다.
+JUL2_START, JUL2_END = '2027-07-08', '2027-07-12'
+EXPECT_JUL2_TOTAL = 120
+EXPECT_JUL2_OVERALL = (272300, 840000)    # 최저 후쿠오카 7/8~12 목~월 · 최고 괌 7/9~11 금~일
+EXPECT_JUL2_DIRECT = 39                   # 직항이 최저가인 칸
+EXPECT_JUL2_ALT = 25                      # '직항편 우선' 금액을 함께 적은 칸
+EXPECT_JUL2_THIN = 3                      # '9석 미만' 표시가 붙은 칸(괌 ③④⑤)
+EXPECT_JUL2_NODIRECT = 55                 # '직항 운임 미표시' 칸(경유 최저 81칸 중 55칸)
+EXPECT_JUL2_AVG = {'토~월': 495429, '금~월': 503775, '목~월': 508446,
+                   '금~일': 509725, '목~일': 511825}
+EXPECT_JUL2_ROUTE = {
+    'PVG': (318500, 505800), 'FUK': (272300, 318900), 'KIX': (382900, 402600),
+    'TYO': (480200, 541000), 'BKK': (429000, 431300), 'DAD': (499500, 501100),
+    'CXR': (484400, 513300), 'TPE': (436400, 440000), 'HKG': (296500, 335500),
+    'MFM': (613500, 735100), 'NKG': (503100, 553400), 'SGN': (470700, 471000),
+    'SIN': (444000, 450000), 'GUM': (635600, 840000), 'NGO': (621200, 680900),
+    'OKA': (494400, 643800), 'HGH': (503100, 620600), 'TAO': (494800, 504300),
+    'HAN': (462000, 463900), 'CNX': (549600, 759100), 'DPS': (450600, 450600),
+    'KHH': (552500, 593800), 'RMQ': (435400, 587600), 'BJS': (452500, 519900),
+}
+EXPECT_JUL2_LOW = {('FUK', '2027-07-08', '목~월'): 272300,
+                   ('HKG', '2027-07-10', '토~월'): 296500,
+                   ('PVG', '2027-07-10', '토~월'): 318500,
+                   ('KIX', '2027-07-10', '토~월'): 382900,
+                   ('BKK', '2027-07-09', '금~일'): 429000,
+                   ('GUM', '2027-07-09', '금~일'): 840000,
+                   ('GUM', '2027-07-10', '토~월'): 804500,
+                   ('CNX', '2027-07-09', '금~일'): 759100}
+EXPECT_JUL2_ALT_CELLS = {('PVG', '2027-07-09', '금~일'): 527400,
+                         ('SIN', '2027-07-08', '목~월'): 787300,
+                         ('SIN', '2027-07-10', '토~월'): 872200,
+                         ('HAN', '2027-07-09', '금~일'): 480600,
+                         ('KHH', '2027-07-09', '금~월'): 764600,
+                         ('KHH', '2027-07-08', '목~월'): None,
+                         ('RMQ', '2027-07-09', '금~월'): 646100,
+                         ('BJS', '2027-07-08', '목~월'): 513900}
+# 이 주차 5패턴 전부 최저가가 직항인 노선 — 후쿠오카·오사카·도쿄·나트랑·타이베이·홍콩
+EXPECT_JUL2_ALLDIRECT = ('FUK', 'KIX', 'TYO', 'CXR', 'TPE', 'HKG')
+# 5패턴 전부 직항 운임이 표시되지 않은 노선(원문 '한눈에'와 칸별 값이 같다 — 9개)
+EXPECT_JUL2_NODIRECT_ROUTES = ('MFM', 'BKK', 'DAD', 'NKG', 'GUM', 'NGO', 'HGH', 'TAO', 'DPS')
 
 # 부산 출발 A조 12개 노선 2027년 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) — 2026-11-19 5번 보고서
 # (잔여 3주 실측, 2026-11-19 21:07~2026-11-20 00:40 KST). 12노선 × 5패턴 × 3주 = 180칸 가운데
@@ -1708,6 +1755,84 @@ def check_flights(flights):
                 break
             if d.get('via') is False and '직항' not in (d.get('note') or ''):
                 problems.append('7월 1주차 직항 칸 note 이상: %s %s'
+                                % (d['code'], d['date']))
+                break
+    # 2027년 7월 2주차(7/8~12) — 기존 24개 노선 × 5패턴 120칸(100%). 자리표시 칸이 남지 않았는지,
+    # 최저·최고·직항 칸 수·직항 금액 병기·직항 운임 미표시·9석 미만·패턴 평균·노선별 최저/최고가
+    # 원문과 같은지, 0박 당일치기 칸이 그대로인지는 위쪽 노선별 검사에서 본다.
+    jul2 = [dict(d, code=r['code']) for r in routes if r['code'] in EXPECT_MAR_W1_ROUTES
+            for d in r['deals'] if JUL2_START <= d['date'] <= JUL2_END
+            and d['pattern'] in EXPECT_WEEKEND]
+    if len(jul2) != EXPECT_JUL2_TOTAL:
+        problems.append('7월 2주차 %d칸 (기대 %d칸)' % (len(jul2), EXPECT_JUL2_TOTAL))
+    else:
+        if any(d.get('src') for d in jul2):
+            problems.append('7월 2주차에 가격표 자리표시 칸이 남아 있습니다: %s'
+                            % [(d['code'], d['date']) for d in jul2 if d.get('src')][:4])
+        ps = [d['price'] for d in jul2]
+        if (min(ps), max(ps)) != EXPECT_JUL2_OVERALL:
+            problems.append('7월 2주차 최저·최고 %s (기대 %s)'
+                            % ((min(ps), max(ps)), EXPECT_JUL2_OVERALL))
+        got_direct = sum(1 for d in jul2 if d.get('via') is False)
+        if got_direct != EXPECT_JUL2_DIRECT:
+            problems.append('7월 2주차 직항이 최저가인 칸 %d (기대 %d)'
+                            % (got_direct, EXPECT_JUL2_DIRECT))
+        got_alt = sum(1 for d in jul2 if d.get('alt'))
+        if got_alt != EXPECT_JUL2_ALT:
+            problems.append('7월 2주차 직항 금액 병기 %d칸 (기대 %d칸)'
+                            % (got_alt, EXPECT_JUL2_ALT))
+        got_thin = sum(1 for d in jul2 if '잔여 9석 미만' in (d.get('note') or ''))
+        if got_thin != EXPECT_JUL2_THIN:
+            problems.append('7월 2주차 9석 미만 표시 %d칸 (기대 %d칸)'
+                            % (got_thin, EXPECT_JUL2_THIN))
+        got_nod = sum(1 for d in jul2 if '직항편 없음' in (d.get('note') or ''))
+        if got_nod != EXPECT_JUL2_NODIRECT:
+            problems.append('7월 2주차 직항 운임 미표시 %d칸 (기대 %d칸)'
+                            % (got_nod, EXPECT_JUL2_NODIRECT))
+        unknown = [d for d in jul2 if d.get('via') is None]
+        if unknown:
+            problems.append('7월 2주차 편성 미확인 %d칸 (기대 0칸)' % len(unknown))
+        for pat, want in EXPECT_JUL2_AVG.items():
+            v = [d['price'] for d in jul2 if d['pattern'] == pat]
+            if len(v) != 24:
+                problems.append('7월 2주차 %s %d칸 (기대 24칸)' % (pat, len(v)))
+            elif round(sum(v) / len(v)) != want:
+                problems.append('7월 2주차 %s 평균 %d (기대 %d)'
+                                % (pat, round(sum(v) / len(v)), want))
+        for code, (lo, hi) in EXPECT_JUL2_ROUTE.items():
+            v = [d['price'] for d in jul2 if d['code'] == code]
+            if len(v) != 5:
+                problems.append('7월 2주차 %s %d칸 (기대 5칸)' % (code, len(v)))
+            elif (min(v), max(v)) != (lo, hi):
+                problems.append('7월 2주차 %s 최저·최고 %s (기대 %s)'
+                                % (code, (min(v), max(v)), (lo, hi)))
+        for code in EXPECT_JUL2_ALLDIRECT:
+            v = [d for d in jul2 if d['code'] == code]
+            if any(d.get('via') is not False for d in v):
+                problems.append('7월 2주차 %s 5패턴이 모두 직항이어야 합니다' % code)
+        for code in EXPECT_JUL2_NODIRECT_ROUTES:
+            v = [d for d in jul2 if d['code'] == code]
+            if any('직항편 없음' not in (d.get('note') or '') or d.get('alt') for d in v):
+                problems.append('7월 2주차 %s 5패턴 전부 직항 운임 없음이어야 합니다' % code)
+        for (code, date, pat), price in EXPECT_JUL2_LOW.items():
+            got = next((d['price'] for d in jul2 if d['code'] == code
+                        and d['date'] == date and d['pattern'] == pat), None)
+            if got != price:
+                problems.append('7월 2주차 최저/최고 칸 %s %s %s %s (기대 %d)'
+                                % (code, date, pat, got, price))
+        for (code, date, pat), alt in EXPECT_JUL2_ALT_CELLS.items():
+            got = next((d.get('alt') for d in jul2 if d['code'] == code
+                        and d['date'] == date and d['pattern'] == pat), 'MISSING')
+            if got != alt:
+                problems.append('7월 2주차 직항 금액 %s %s %s %s (기대 %s)'
+                                % (code, date, pat, got, alt))
+        for d in jul2:
+            if d.get('via') is True and '총' not in (d.get('note') or ''):
+                problems.append('7월 2주차 경유 칸에 총 소요시간이 없습니다: %s %s'
+                                % (d['code'], d['date']))
+                break
+            if d.get('via') is False and '직항' not in (d.get('note') or ''):
+                problems.append('7월 2주차 직항 칸 note 이상: %s %s'
                                 % (d['code'], d['date']))
                 break
     # A조 12개 노선 2027년 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) — 180칸이 모두 값인지,

@@ -195,7 +195,7 @@ def check_accor3(db):
 # 예약 링크(href) 호스트 — 화면에 보이는 글자가 아니라 날짜 칸이 여는 주소이므로
 # 출처 문구 검사에서 제외한다. 그 밖의 출처 표기는 그대로 검사한다.
 LINK_HOSTS = ('marriott.com', 'ritzcarlton.com', 'all.accor.com', 'accor.com',
-              'hotelux.com', 'trip.com', 'weixin.qq.com')
+              'hotelux.com', 'trip.com', 'weixin.qq.com', 'americanexpress.com')
 _LINK_RE = re.compile(r'https?://([^\s"\'<>()\\]+)', re.I)
 
 
@@ -1912,6 +1912,11 @@ def check_tabs(db):
                                              (h['id'], prev) in KNOWN_DUP):
             problems.append('호텔 중복: %s ↔ %s (%s)' % (prev, h['id'], key))
         seen.setdefault(key, h['id'])
+    # 예약 링크를 프로그램 페이지(h.fhr)로 보내는 호텔은 그 주소가 공식 프로그램 페이지인지 확인
+    for h in db['hotels']:
+        u = h.get('fhr')
+        if u and not u.startswith('https://www.americanexpress.com/'):
+            problems.append('%s fhr 주소가 아멕스 공식 페이지가 아님: %s' % (h['id'], u))
     problems.extend(check_apc(db))
     problems.extend(check_accor3(db))
     return problems

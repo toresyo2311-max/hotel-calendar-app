@@ -1617,7 +1617,7 @@ function renderFlightCalendar(){
   const note=(FLIGHTS.notes||{})[month];
   const mn=$('flMonthNote');
   mn.hidden=!note&&deals.length>0;
-  mn.innerHTML=note?'<b>ⓘ '+esc(monlabel(month))+'</b> '+esc(note):(deals.length?'':'<b>ⓘ</b> 이 달은 실측값이 없습니다 — 빈칸(—)은 추정하지 않은 칸입니다.');
+  mn.innerHTML=note?(note.length>160?'<details class="logfold"><summary>ⓘ '+esc(monlabel(month))+' 병합·보완 내역 <small>'+note.length+'자</small></summary><div class="logbody" style="max-height:260px">'+esc(note)+'</div></details>':'<b>ⓘ '+esc(monlabel(month))+'</b> '+esc(note)):(deals.length?'':'<b>ⓘ</b> 이 달은 실측값이 없습니다 — 빈칸(—)은 추정하지 않은 칸입니다.');
   const min=deals.length?Math.min(...deals.map(d=>d.price)):null;
   const [y,m]=month.split('-').map(Number);const leading=new Date(Date.UTC(y,m-1,1)).getUTCDay();const dates=daysOf(month);
   const dayMin={};for(const d of deals){if(dayMin[d.date]==null||d.price<dayMin[d.date])dayMin[d.date]=d.price}
@@ -1638,7 +1638,7 @@ function renderFlightCalendar(){
     }else{const mk=(FLIGHTS.noSale||[]).filter(n=>n.date===date&&(fl.route==='all'||n.code===fl.route)&&(fl.pattern==='all'||n.pattern===fl.pattern));const mks= mk.length?flMarkOf(mk[0]):null;
       const baseN=flBase().filter(x=>x.date===date).length;
       const flt=(fl.direct||fl.hideLong)&&baseN>0;
-      inner+='<span class="daymiss'+(mks?' '+mks.cls:(flt?' fl-via-warn':''))+'">'+(mks?mks.short:(flt?(fl.direct?'직항없음':'장시간제외'):'—'))+'</span>';}
+      inner+='<span class="daymiss'+(mks?' '+mks.cls:(flt?' fl-via-warn':''))+'">'+(mks?mks.short:(flt?(fl.direct?'직항 없음':'장시간 제외'):'—'))+'</span>';}
     html+=low?('<a class="'+cls+'" data-fl-date="'+date+'" href="'+esc(flLink(low))+'" target="_blank" rel="noopener" aria-label="'+fullDate(date)+' 출발 최저 '+flMoney(low.price)+' · 예약 검색 열기" title="'+esc(low.city+' '+low.pattern+' '+dateLabel(low.date)+'–'+dateLabel(low.back)+' · 예약 검색이 새 탭에서 열립니다')+'">'+inner+'</a>')
       :('<button type="button" class="'+cls+'" data-fl-date="'+date+'" aria-label="'+fullDate(date)+' 출발 최저 '+(flMarkOf((FLIGHTS.noSale||[]).find(n=>n.date===date))?.label||'자료 없음')+'">'+inner+'</button>');
   }
@@ -1722,7 +1722,8 @@ function renderFlightMatrix(){
   $('flMatrix').className='fl-matrix'+(day?' fl-daytrip':'');
   $('flMatrixTitle').textContent=FLIGHTS.routes.length+'개 노선 × '+pats.length+'패턴 '+(day?'당일치기(0박)':'한눈에 비교');
   const wnote=(FLIGHTS.notes||{})[wk.month];
-  $('flMatrixSub').textContent=wk.label+' ('+wk.span+') · '+(day?'당일치기 0박 1일':'주말형 1~4박')+' · 실측 '+weekDeals.length+'칸'+(weekNoSale?' + 판매편 0건 '+weekNoSale+'칸':'')+(weekNoFare?' + 요금 미공개 '+weekNoFare+'칸':'')+(weekUnopened?' + 미오픈 '+weekUnopened+'칸':'')+'/'+(FLIGHTS.routes.length*pats.length)+'칸 · 주차 창은 목~수'+((fl.direct||fl.hideLong)?' · 필터 적용 — '+(fl.direct?'직항 확인분만':'')+(fl.direct&&fl.hideLong?' · ':'')+(fl.hideLong?'12시간 이상 경유 제외':'')+' (경유 칸은 흐리게, 값은 유지)':'')+((weekDeals.length||weekNoSale||weekNoFare||weekUnopened)?'':' · 이 주는 실측값이 없습니다(—)')+(wnote?' · '+wnote:'');
+  $('flMatrixSub').textContent=wk.label+' ('+wk.span+') · '+(day?'당일치기 0박 1일':'주말형 1~4박')+' · 실측 '+weekDeals.length+'칸'+(weekNoSale?' + 판매편 0건 '+weekNoSale+'칸':'')+(weekNoFare?' + 요금 미공개 '+weekNoFare+'칸':'')+(weekUnopened?' + 미오픈 '+weekUnopened+'칸':'')+'/'+(FLIGHTS.routes.length*pats.length)+'칸 · 주차 창은 목~수'+((fl.direct||fl.hideLong)?' · 필터 적용 — '+(fl.direct?'직항 확인분만':'')+(fl.direct&&fl.hideLong?' · ':'')+(fl.hideLong?'12시간 이상 경유 제외':'')+' (경유 칸은 흐리게, 값은 유지)':'')+((weekDeals.length||weekNoSale||weekNoFare||weekUnopened)?'':' · 이 주는 실측값이 없습니다(—)');
+  $('flMatrixSub').title=wnote||'';
 }
 function flDayOpen(date,scroll){
   fl.day=date;const mo=date.slice(0,7);if(FLIGHTS.months.includes(mo))fl.month=mo;fl.week=flWeekOf(date);
@@ -2065,7 +2066,7 @@ function ttSorted(a){var l=a.slice();
   if(ttst.sort==='soon')return l.sort(function(x,y){return String(x.out).localeCompare(String(y.out))||ttByPrice(x,y)});
   if(ttst.sort==='seats')return l.sort(function(x,y){var sx=x.seats==null?9999:x.seats,sy=y.seats==null?9999:y.seats;return sx-sy||ttByPrice(x,y)});
   return l.sort(ttByPrice)}
-function ttSortLabel(){return ttst.sort==='soon'?'출발 임박':ttst.sort==='seats'?'잔여석 적은':'최저가'}
+function ttSortLabel(){return ttst.sort==='soon'?'출발 임박 순':ttst.sort==='seats'?'잔여석 적은 순':'가격 낮은 순'}
 function ttFilterNoteText(){var a=[];if(ttst.fewSeats)a.push('잔여 5석 이하');if(ttst.pax1)a.push('1명 예약 가능');
   return a.length?('필터 — '+a.join(' · ')+' · 표시 '+KR(ttFiltered().length)+' / 전체 '+KR(ttAll().length)+'건'):''}
 function ttByPrice(a,b){return (a.price-b.price)||String(a.out).localeCompare(String(b.out))||String(a.city).localeCompare(String(b.city),'ko')}
@@ -2115,7 +2116,7 @@ function renderTtKpi(){
 /* TOP 5 — 카드를 누르면 그 상품 예약 페이지가 새 탭에서 열린다 */
 function renderTtTop(){
   const top=ttSorted(ttFiltered()).slice(0,5);
-  const tt=document.getElementById('ttTopTitle');if(tt)tt.textContent=ttst.sort==='price'?'전체 최저가 TOP 5':ttSortLabel()+' TOP 5';
+  const tt=document.getElementById('ttTopTitle');if(tt)tt.textContent=(ttst.sort==='price'?'전체 최저가':'')+' TOP 5';
   $('ttTop5').innerHTML=top.length?top.map(function(d,i){
     return ttRow('rank-item tt-hit',d.url,d.city+' '+ttWhen(d)+' '+KR(d.price)+'원',
       '<span class="rank-n">'+String(i+1).padStart(2,'0')+'</span>'+
@@ -2274,9 +2275,9 @@ function renderTtList(){
     });
   }
   $('ttList').className='tt-table tt-dtable';
-  const lg=document.getElementById('ttListLegend');if(lg)lg.textContent=ttSortLabel()+' 순서';
+  const lg=document.getElementById('ttListLegend');if(lg)lg.textContent=ttSortLabel();
   $('ttList').innerHTML=html;
-  $('ttListSub').textContent=all.length?KR(all.length)+'건 중 '+ttSortLabel()+' '+KR(ds.length)+'건만 표시 · 1인 왕복 총액(유류·세금 포함) 기준'+(all.length>ds.length?' · 권역·도시·잔여석 필터로 좁히면 그 안에서 다시 '+ttSortLabel()+'으로 채웁니다':''):'자료 없음';
+  $('ttListSub').textContent=all.length?KR(all.length)+'건 중 '+KR(ds.length)+'건 표시 · '+ttSortLabel()+' · 1인 왕복 총액(유류·세금 포함) 기준'+(all.length>ds.length?' · 권역·도시·잔여석 필터로 좁히면 그 안에서 다시 정렬합니다':''):'자료 없음';
 }
 
 /* 조회 기준 · 주의 */

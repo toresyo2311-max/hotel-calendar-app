@@ -5139,7 +5139,7 @@ function renderVtMode(){
   if(!hotel||!lounge)return;
   const isL=lg.view==='lounge';
   hotel.hidden=isL;lounge.hidden=!isL;
-  if(hn)hn.hidden=isL;
+  if(hn)hn.style.display=isL?'none':'';
   if($('vtManage')&&isL&&vt.manage){vt.manage=false;$('vtManage').hidden=true;$('vtMyCardsBtn').setAttribute('aria-expanded','false')}
   document.querySelectorAll('#valetPanel [data-vt-mode]').forEach(function(b){
     const on=b.dataset.vtMode===lg.view;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));

@@ -43,6 +43,20 @@ CITY_ALIAS = {'상해-푸둥': '상하이', '상해-푸동': '상하이', '상�
               '장가계(다융)': '장가계'}
 
 
+# 공항 코드 → 권역. 소스에 권역 칸이 없을 때(하나투어 JSON 등) 쓰는 기본값.
+REGION_OF_CODE = {
+    'CTS': '일본', 'FSZ': '일본', 'FUK': '일본', 'KIX': '일본', 'KMI': '일본', 'KMJ': '일본',
+    'KOJ': '일본', 'MYJ': '일본', 'NGO': '일본', 'NGS': '일본', 'NRT': '일본', 'HND': '일본',
+    'OKA': '일본', 'SHI': '일본', 'TAK': '일본',
+    'GUM': '남태평양', 'SPN': '남태평양', 'ROR': '남태평양',
+    'CAN': '중국', 'HGH': '중국', 'PEK': '중국', 'PVG': '중국', 'SHA': '중국', 'TAO': '중국',
+    'TXN': '중국', 'DYG': '중국', 'RMQ': '중국', 'XMN': '중국', 'HKG': '중국', 'MFM': '중국',
+    'BKI': '동남아', 'BKK': '동남아', 'CEB': '동남아', 'CNX': '동남아', 'CRK': '동남아',
+    'CXR': '동남아', 'DAD': '동남아', 'HAN': '동남아', 'MNL': '동남아', 'PQC': '동남아',
+    'SAI': '동남아', 'SGN': '동남아', 'SIN': '동남아', 'TAG': '동남아', 'VTE': '동남아',
+    'TPE': '동남아', 'KHH': '동남아',
+}
+
 CITY_CANON = {'TPE': '타이베이', 'NRT': '도쿄', 'HND': '도쿄', 'KIX': '오사카', 'PVG': '상하이',
               'SHA': '상하이', 'TAO': '칭다오', 'SHI': '미야코지마', 'CTS': '삿포로', 'HGH': '항주',
               'TXN': '황산', 'DYG': '장가계', 'PEK': '베이징', 'KHH': '카오슝', 'CXR': '나트랑',
@@ -115,6 +129,25 @@ def link_note(url):
     if 'ttang.com' in url:
         return '목록 링크(출발일 기준)'
     return ''
+
+
+def note_parts(note):
+    """비고 문구를 항목별로 나누고 같은 항목 반복을 지운다."""
+    out = []
+    for p in str(note or '').split(' · '):
+        p = p.strip()
+        if p and p not in out:
+            out.append(p)
+    return out
+
+
+def fix_note(note, url):
+    """예약 주소와 맞지 않는 링크 설명을 빼고(검색 링크 ↔ 상품 직링크) 반복 항목을 정리한다."""
+    parts = note_parts(note)
+    search = 'modetour.com/flights/discount-flight?' in str(url or '')
+    drop = '상품 직링크' if search else '검색 링크(권역·도시·날짜)'
+    lost = [p for p in parts if p != drop]
+    return clean(' · '.join(lost))
 
 
 def key_of(d):
@@ -397,10 +430,15 @@ def from_hanatour_json(path, items, stats, region_of):
             stats['skipped'] += 1
             continue
         times = ((f.get('dep_time') or '') + ('–' + f['ret_time'] if f.get('ret_time') else '')).strip('–')
+        notes = ['상품 직링크']
+        for b in f.get('baggage') or []:
+            if isinstance(b, dict) and b.get('limit'):
+                notes.append('위탁 %s%s' % (b['limit'], 'kg' if str(b.get('baggUnit')).upper() == 'K' else '개'))
+                break
         deal = {
             'id': 'H%04d' % (len(items) + 1),
             'src': 'g',
-            'region': region_of.get(f['airport'], '기타'),
+            'region': region_of.get(f['airport']) or REGION_OF_CODE.get(f['airport']) or '기타',
             'city': norm_city(f.get('city')),
             'code': f['airport'],
             'out': out,
@@ -412,8 +450,8 @@ def from_hanatour_json(path, items, stats, region_of):
             'minPax': 1,
             'times': times,
             'url': url,
-            'seen': '통합 목록 2026-11-19 12:12',
-            'note': '상품 직링크',
+            'seen': '공동구매 상세 2026-11-19 13:05',
+            'note': ' · '.join(notes),
         }
         add(items, deal, stats)
 
@@ -446,7 +484,7 @@ def main(argv):
         from_modetour_csv(p, items, stats)
     for p in args.modetour_json:
         from_modetour_json(p, items, stats)
-    region_of = {}
+    region_of = dict(REGION_OF_CODE)
     for d in items.values():
         if d.get('code') and d.get('region') and d['code'] not in region_of:
             region_of[d['code']] = d['region']
@@ -482,6 +520,7 @@ def main(argv):
         canon[code] = CITY_CANON.get(code) or sorted(cnt.items(), key=lambda kv: (-kv[1], len(kv[0])))[0][0]
     for d in deals:
         d['city'] = canon[d['code']]
+        d['note'] = fix_note(d.get('note'), d.get('url'))
     for i, d in enumerate(deals, 1):
         d['id'] = 'P%04d' % i
 

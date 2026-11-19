@@ -18,6 +18,7 @@ import argparse
 import importlib.util
 import json
 import os
+import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,9 +43,61 @@ def read_block(path):
     return data
 
 
+def norm_airline(name):
+    """항공사 표기 통일 — '트리니티 항공' / '트리니티항공(구)티웨이항공' / '트리니티항공' 을 하나로.
+
+    이름이 조금씩 달라 같은 항공편이 두 줄로 남는 것을 막는다(괄호 설명·공백만 지운다).
+    """
+    s = str(name or '').strip()
+    s = re.sub(r'\s*\(구\).*$', '', s)
+    s = re.sub(r'\s+', '', s)
+    return s or '미확인'
+
+
 def deal_key(d):
     """같은 항공편 = 도착공항+출발일+귀국일+항공사. 공급사(채널)가 달라도 한 줄로 합친다."""
-    return (d.get('code'), d.get('out'), d.get('back'), d.get('airline'))
+    return (d.get('code'), d.get('out'), d.get('back'), norm_airline(d.get('airline')))
+
+
+def is_search_link(d):
+    return '검색 링크' in str(d.get('note') or '')
+
+
+def norm_note(note):
+    """비고 반복 항목 제거('검색 링크 · 검색 링크 · 최소 2명' → '검색 링크 · 최소 2명')."""
+    out = []
+    for p in str(note or '').split(' · '):
+        p = p.strip()
+        if p and p not in out:
+            out.append(p)
+    return ' · '.join(out)
+
+
+def normalize_deals(deals):
+    """항공사 이름을 통일하고, 그 결과 같은 항공편이 된 줄은 가장 싼 한 줄로 합친다."""
+    out, index = [], {}
+    merged = 0
+    for d in deals:
+        d = dict(d)
+        d['airline'] = norm_airline(d.get('airline'))
+        if d.get('note'):
+            d['note'] = norm_note(d['note'])
+        k = deal_key(d)
+        if k not in index:
+            index[k] = len(out)
+            out.append(d)
+            continue
+        merged += 1
+        cur = out[index[k]]
+        win = d if (d.get('price') or 10 ** 9) < (cur.get('price') or 10 ** 9) else cur
+        lose = cur if win is d else d
+        if win.get('price') == lose.get('price') and is_search_link(win) and not is_search_link(lose):
+            win, lose = lose, win
+        for f in ('seats', 'minPax', 'times', 'note', 'outUntil', 'priceTo', 'seatsTo'):
+            if not win.get(f) and lose.get(f):
+                win[f] = lose[f]
+        out[index[k]] = win
+    return out, merged
 
 
 def main(argv):
@@ -86,7 +139,11 @@ def main(argv):
             seen_in_file.add(k)
             if k in index:
                 old = deals[index[k]]
-                if d.get('price', 10 ** 9) <= old.get('price', 10 ** 9):
+                # 더 싸면 갈아치우고, 같은 값이면 직링크(상품 상세) 쪽을 남긴다(조회 링크보다 정확).
+                better = d.get('price', 10 ** 9) < old.get('price', 10 ** 9) or (
+                    d.get('price') == old.get('price')
+                    and (is_search_link(old) or not is_search_link(d)))
+                if better:
                     d['id'] = old.get('id') or d['id']
                     deals[index[k]] = old = d
                     updated += 1
@@ -111,6 +168,9 @@ def main(argv):
         if 'coverageOk' in block:
             coverage_ok = bool(block['coverageOk'])
 
+    deals, folded = normalize_deals(deals)
+    if folded:
+        print('  항공사 표기 통일로 같은 항공편 %d줄 합침' % folded)
     merged = {
         'schema': cur.get('schema') or md.TTANG_SCHEMA,
         'observedAt': observed or '—',

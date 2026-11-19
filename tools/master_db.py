@@ -559,15 +559,18 @@ EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
 #   같은 날짜에 남아 있던 '가격표' 자리표시 28칸은 실측으로 교체했으므로 건수는 그대로)
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
 # 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
-EXPECT_H2_BY_MONTH = {'2027-06': 723, '2027-07': 723, '2027-08': 454,
+EXPECT_H2_BY_MONTH = {'2027-06': 723, '2027-07': 857, '2027-08': 454,
                       '2027-09': 425, '2027-10': 189, '2027-11': 34}
 # 2027-07 은 2026-11-19 일본 7노선 7월 완결본(값 150칸)을 더한 595 에,
-# 같은 날 필리핀 4노선 미조회 36칸을 더한 631 이다. 8·9·10월에도 필리핀 40·66·32칸을 더했다.
+# 같은 날 필리핀 4노선 미조회 36칸을 더한 631 이고, A조 12노선 7월 3~5주차 134칸을 더한 857 이다.
+#   삽8·9·10월에도 필리핀 40·66·32칸을 더했다.
 # 2027-09·10 은 2026-11-19 일본 7노선 2027년 9~10월 병합분(출발일 기준 9월 127칸 · 10월 63칸)을 더했고,
 # 2027-08 은 같은 날 일본 7노선 2027년 8월 병합분(120칸 — 시즈오카 20칸은 항공편 0건)을 더했다.
 # 2027-11 은 같은 날 일본 7노선 2027년 11월 병합분(값 33칸 — 미오픈 87 · 시즈오카 판매편 0건 20)을
 # 더한 34 다(기존 1칸은 후쿠오카 11/5~7).
-EXPECT_H2 = {'weekend': 2453, 'day': 95, 'total': 2548}   # 주말형 1,825+190+120+33+101+92 · 당일치기 88+7
+# 2027-07은 2026-11-19 A조 12개 노선 7월 3~5주차(7/15~8/2) 실측분 134칸을 더한 857 이다(723→857 —
+#   기존 가격표 자리표시 1칸은 재실측으로 교체했으므로 건수는 그대로).
+EXPECT_H2 = {'weekend': 2587, 'day': 95, 'total': 2682}   # 주말형 1,825+190+120+33+101+92+134 · 당일치기 88+7
 # 2027-06 은 2026-11-19 기존 24개 노선 6월 3주차(6/17~21) 120칸 가운데 새 칸 92를 더하고(530→622),
 # 같은 날 4주차(6/24~28) 120칸 가운데 새 칸 101을 더한 723 이다
 # (각 주차의 '가격표' 자리표시 28칸·19칸은 실측으로 교체 — 건수는 그대로).
@@ -831,6 +834,25 @@ EXPECT_JUL1_ALT_CELLS = {('HKG', '2027-07-02', '금~일'): 647600,
 EXPECT_JUL1_ALLDIRECT = ('FUK', 'KIX', 'TYO', 'CXR', 'TPE')
 # 5패턴 전부 직항 운임이 표시되지 않은 노선(원문 '한눈에'와 칸별 값이 같다 — 칭다오 포함 9개)
 EXPECT_JUL1_NODIRECT = ('MFM', 'BKK', 'DAD', 'NKG', 'GUM', 'NGO', 'HGH', 'TAO', 'DPS')
+
+# 부산 출발 A조 12개 노선 2027년 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) — 2026-11-19 5번 보고서
+# (잔여 3주 실측, 2026-11-19 21:07~2026-11-20 00:40 KST). 12노선 × 5패턴 × 3주 = 180칸 가운데
+# 빈칸 134칸을 실측하고 1칸(후쿠오카 7/30~8/1 금~일 447,100→325,800원)을 다시 재 본 값으로
+# 교체해 180칸이 모두 값이 됐다. 나머지 45칸은 앞선 가격표 조사분(편성 미확인, `via: null`).
+# 0박 당일치기 2칸(후쿠오카 7/30 금~금 · 오사카 7/16 금~금)은 이 조사 범위 밖이라 그대로다.
+GRP_A_JUL = ('FUK', 'KIX', 'TYO', 'TPE', 'HKG', 'MFM', 'PVG', 'BKK', 'DAD', 'CXR',
+             'NKG', 'SGN')
+GRP_A_JUL_WEEKS = ('2027-07-15', '2027-07-22', '2027-07-29')
+GRP_A_JUL_START, GRP_A_JUL_END = '2027-07-15', '2027-07-31'
+GRP_A_JUL_TOTAL = 180          # 12노선 × 5패턴 × 3주가 모두 값
+GRP_A_JUL_MEASURED = 135       # 이번 실측분(+ 재확인 1칸)
+GRP_A_JUL_OVERALL = (300500, 913300)   # 후쿠오카 7/22~26 목~월 · 마카오 7/23~25 금~일
+GRP_A_JUL_DIRECT = 60          # 실측분 가운데 직항이 최저가인 칸
+GRP_A_JUL_ALT = 6              # 직항이 있어도 최저가가 경유라 직항 금액을 병기한 칸
+GRP_A_JUL_THIN = 5             # '잔여 9석 미만' 표시가 붙은 칸
+GRP_A_JUL_ROUTE_MEASURED = {'FUK': 11, 'KIX': 11, 'TYO': 10, 'TPE': 7, 'HKG': 9,
+                            'MFM': 13, 'PVG': 14, 'BKK': 14, 'DAD': 14, 'CXR': 9,
+                            'NKG': 13, 'SGN': 10}
 
 # ── 2026-11-18 중국 8개 노선 2027년 7~11월 (15주말 × 7패턴) ────────────────────────
 # `noSale` 은 세 가지를 `status` 로 구분한다 — nosale(조회 결과 판매편 없음) ·
@@ -1600,6 +1622,58 @@ def check_flights(flights):
                 problems.append('7월 1주차 직항 칸 note 이상: %s %s'
                                 % (d['code'], d['date']))
                 break
+    # A조 12개 노선 2027년 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) — 180칸이 모두 값인지,
+    # 실측분·자리표시·최저/최고·직항 칸·직항 금액 병기·9석 미만·노선별 칸 수가 보고서와 같은지.
+    grp = [dict(d, code=r['code']) for r in routes if r['code'] in GRP_A_JUL
+           for d in r['deals'] if GRP_A_JUL_START <= d['date'] <= GRP_A_JUL_END
+           and d['pattern'] in EXPECT_WEEKEND]
+    if len(grp) != GRP_A_JUL_TOTAL:
+        problems.append('A조 7월 3~5주 %d칸 (기대 %d칸)' % (len(grp), GRP_A_JUL_TOTAL))
+    else:
+        want = set()
+        for code in GRP_A_JUL:
+            for thu in GRP_A_JUL_WEEKS:
+                for label in EXPECT_WEEKEND:
+                    dt = (datetime.date.fromisoformat(thu) + datetime.timedelta(
+                        days=(FL_WD[label[0]] - FL_WD['목']) % 7)).isoformat()
+                    want.add((code, dt, label))
+        got = {(d['code'], d['date'], d['pattern']) for d in grp}
+        if got != want:
+            problems.append('A조 7월 3~5주 격자 차이: %s' % sorted(got ^ want)[:6])
+        measured = [d for d in grp if d.get('via') is not None]
+        if len(measured) != GRP_A_JUL_MEASURED:
+            problems.append('A조 7월 3~5주 실측 %d칸 (기대 %d칸)'
+                            % (len(measured), GRP_A_JUL_MEASURED))
+        else:
+            ps = [d['price'] for d in measured]
+            if (min(ps), max(ps)) != GRP_A_JUL_OVERALL:
+                problems.append('A조 7월 3~5주 최저·최고 %s (기대 %s)'
+                                % ((min(ps), max(ps)), GRP_A_JUL_OVERALL))
+            direct = sum(1 for d in measured if d.get('via') is False)
+            if direct != GRP_A_JUL_DIRECT:
+                problems.append('A조 7월 3~5주 직항이 최저가인 칸 %d (기대 %d)'
+                                % (direct, GRP_A_JUL_DIRECT))
+            alt = sum(1 for d in measured if d.get('alt'))
+            if alt != GRP_A_JUL_ALT:
+                problems.append('A조 7월 3~5주 직항 금액 병기 %d칸 (기대 %d칸)'
+                                % (alt, GRP_A_JUL_ALT))
+            thin = sum(1 for d in measured if '잔여 9석 미만' in (d.get('note') or ''))
+            if thin != GRP_A_JUL_THIN:
+                problems.append('A조 7월 3~5주 9석 미만 표시 %d칸 (기대 %d칸)'
+                                % (thin, GRP_A_JUL_THIN))
+            for code, n in GRP_A_JUL_ROUTE_MEASURED.items():
+                c = sum(1 for d in measured if d['code'] == code)
+                if c != n:
+                    problems.append('A조 7월 3~5주 %s 실측 %d칸 (기대 %d칸)' % (code, c, n))
+            for d in measured:
+                if d.get('via') is True and '총' not in (d.get('note') or ''):
+                    problems.append('A조 경유 칸에 총 소요시간이 없습니다: %s %s'
+                                    % (d['code'], d['date']))
+                    break
+                if d.get('via') is False and '직항' not in (d.get('note') or ''):
+                    problems.append('A조 직항 칸 note 이상: %s %s' % (d['code'], d['date']))
+                    break
+
     for m, n in EXPECT_OLD_BY_MONTH.items():
         if by_month.get(m) != n:
             problems.append('%s 기존 건 %s (기대 %d — 손실/변형)' % (m, by_month.get(m), n))

@@ -561,7 +561,7 @@ EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
 # 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
 EXPECT_H2_BY_MONTH = {'2027-06': 723, '2027-07': 959, '2027-08': 659,
-                      '2027-09': 654, '2027-10': 436, '2027-11': 34}
+                      '2027-09': 654, '2027-10': 436, '2027-11': 143}
 # 2027-07 은 2026-11-19 일본 7노선 7월 완결본(값 150칸)을 더한 595 에,
 # 같은 날 필리핀 4노선 미조회 36칸을 더한 631 이고, A조 12노선 7월 3~5주차 134칸을 더한 857 이다.
 #   삽8·9·10월에도 필리핀 40·66·32칸을 더했다.
@@ -580,12 +580,14 @@ EXPECT_H2_BY_MONTH = {'2027-06': 723, '2027-07': 959, '2027-08': 659,
 #   방콕 10/1 금~일 1칸은 재실측으로 교체했으므로 건수는 그대로).
 # 2027-10은 2026-11-20 A조 12개 노선 10월 4주(10/7~11/1) 빈칸 231칸을 더한 436 이다(205→436 —
 #   이번 원본은 교체 0칸이고, 격자에 이미 있던 9칸(금~일 10/8·10/15 8칸 + 후쿠오카 10/29)은 그대로).
-EXPECT_H2 = {'weekend': 3370, 'day': 95, 'total': 3465}   # 주말형 2,587+205+245+102+231 · 당일치기 95
+EXPECT_H2 = {'weekend': 3479, 'day': 95, 'total': 3574}   # 주말형 2,587+205+245+102+231+109 · 당일치기 95
 # 2027-06 은 2026-11-19 기존 24개 노선 6월 3주차(6/17~21) 120칸 가운데 새 칸 92를 더하고(530→622),
 # 같은 날 4주차(6/24~28) 120칸 가운데 새 칸 101을 더한 723 이다
 # (각 주차의 '가격표' 자리표시 28칸·19칸은 실측으로 교체 — 건수는 그대로).
 EXPECT_NOSALE = {('FUK', '2027-11-12'), ('TYO', '2027-11-12'),
                  ('TYO', '2027-11-16'), ('FUK', '2027-11-20'),
+                 ('MFM', '2027-11-13'), ('MFM', '2027-11-12'), ('MFM', '2027-11-11'),
+                 ('CXR', '2027-11-12'), ('CXR', '2027-11-13'), ('CXR', '2027-11-11'),
                  ('KWL', '2026-12-05'), ('TXN', '2026-12-05'),   # 중국 2건: 같은 날 복편 0편
                  ('TAK', '2027-01-30'), ('FSZ', '2027-01-15')}   # 일본 1월: 가격표에도 항공편 없음
 # 2026-11-18 황산 완본 — 토~월·금~월·목~월 9주 27칸은 조회 결과 판매편 0건(가격 아님)
@@ -1037,6 +1039,57 @@ GRP_A_OCT_LONG = (4, 1)
 # 이번 원본이 쓴 note 꼴 — 출발-도착 시각이 괄호 앞 공백 뒤에 붙는다(앞선 조사분 9칸은
 # '직항(14:50-16:00)' · '경유(서울 1회) · 직항 없음' 처럼 공백이 없어 걸러진다).
 GRP_A_OCT_NOTE = re.compile(r' \(\d\d:\d\d-\d\d:\d\d[^)]*\)$')
+
+# ── 2026-11-20 A조 12개 노선 2027년 11월 2주(11/4~8 · 11/11~15) 5패턴 120칸 ─────────────
+# 빈칸 117칸을 실측해 값 109칸을 넣고, 조회 결과 판매편이 없던 8칸(마카오 3 · 나트랑 5,
+# 모두 11/11주)은 금액 대신 noSale(status: nosale)로 적었다. 앱에 이미 있던 3칸
+# (후쿠오카 11/5~7 금~일 664,700원 + 후쿠오카·도쿄 11/12~14 금~일 판매편 0건)은 그대로 둔다.
+# 격자는 값 110칸 + 판매편 0건 10칸 = 120칸이 모두 채워져 미조회 0칸이다.
+GRP_A_NOV = GRP_A_OCT
+GRP_A_NOV_WEEKS = ('2027-11-04', '2027-11-11')
+GRP_A_NOV_START, GRP_A_NOV_END = '2027-11-04', '2027-11-15'  # 11/4(목) ~ 11/11주 토~월(11/15)
+GRP_A_NOV_TOTAL = 120          # 12노선 × 5패턴 × 2주가 모두 값 또는 판매편 0건
+GRP_A_NOV_MEASURED = 109       # 이번 원본의 금액 칸(교체 0칸)
+GRP_A_NOV_NOSALE = 8           # 이번 원본의 판매편 0건(NA) 칸
+GRP_A_NOV_OVERALL = (363000, 1659500)   # 홍콩 11/13 토~월 · 후쿠오카 11/13 토~월
+GRP_A_NOV_AVG = 649015         # 실측 109칸 평균(반올림)
+GRP_A_NOV_MEDIAN = 578900      # 실측 109칸 중앙값
+GRP_A_NOV_DIRECT = 35          # 실측분 가운데 직항이 최저가인 칸
+GRP_A_NOV_MEASURED_BY_ROUTE = {'FUK': 8, 'KIX': 10, 'TYO': 9, 'TPE': 10, 'HKG': 10,
+                               'MFM': 7, 'PVG': 10, 'BKK': 10, 'DAD': 10, 'CXR': 5,
+                               'NKG': 10, 'SGN': 10}
+# 노선: (값 칸수, 판매편 0건 칸수, 최저, 최고, 평균) — 실측분 기준
+GRP_A_NOV_ROUTE = {
+    'FUK': (8, 0, 553000, 1659500, 996938), 'KIX': (10, 0, 628700, 1101200, 776240),
+    'TYO': (9, 0, 507700, 837400, 661878), 'TPE': (10, 0, 425000, 487900, 443000),
+    'HKG': (10, 0, 363000, 402800, 376840), 'MFM': (7, 3, 751700, 1039100, 876886),
+    'PVG': (10, 0, 507500, 581600, 540470), 'BKK': (10, 0, 562900, 604200, 589760),
+    'DAD': (10, 0, 526500, 571400, 549500), 'CXR': (5, 5, 1025300, 1031100, 1026640),
+    'NKG': (10, 0, 545100, 850400, 580160), 'SGN': (10, 0, 604500, 908000, 697910)}
+GRP_A_NOV_MONTH = {'2027-11': 109}   # 실측분의 출발일 기준 월별 칸수
+# 주차: (칸수, 합, 평균(반올림), 최저, 최고)
+GRP_A_NOV_WEEK = {'2027-11-04': (59, 35909900, 608642, 363200, 1031100),
+                  '2027-11-11': (50, 34832700, 696654, 363000, 1659500)}
+GRP_A_NOV_BUCKET = {'30만원 미만': 0, '30만~40만원': 9, '40만~50만원': 11,
+                    '50만~60만원': 40, '60만~70만원': 22, '70만원 이상': 27}
+GRP_A_NOV_PAT_AVG = {'금~일': 616640, '토~월': 682850, '목~일': 609513,
+                     '금~월': 671091, '목~월': 663832}
+# 이번 원본이 판매편 0건으로 적은 8칸 — 금액이 없고 상태가 nosale 이어야 한다
+GRP_A_NOV_NA = {('MFM', '2027-11-13', '토~월'), ('MFM', '2027-11-12', '금~월'),
+                ('MFM', '2027-11-11', '목~월'), ('CXR', '2027-11-12', '금~일'),
+                ('CXR', '2027-11-13', '토~월'), ('CXR', '2027-11-11', '목~일'),
+                ('CXR', '2027-11-12', '금~월'), ('CXR', '2027-11-11', '목~월')}
+# 앞선 조사분 3칸 — 금액은 값, 판매편 0건 2칸은 상태만 그대로
+GRP_A_NOV_KEEP = {('FUK', '2027-11-05', '금~일'): 664700}
+GRP_A_NOV_KEEP_NOSALE = {('FUK', '2027-11-12', '금~일'), ('TYO', '2027-11-12', '금~일')}
+# 병합 뒤 120칸 격자의 노선별 (최저, 최고) — 값 칸만 센다
+GRP_A_NOV_GRID_ROUTE = {c: (v[2], v[3]) for c, v in GRP_A_NOV_ROUTE.items()}
+GRP_A_NOV_GRID_OVERALL = (363000, 1659500)
+# 실측분의 장시간 경유 — 12시간 이상이 15칸(그중 20시간 미만 13칸), 20시간 이상이 2칸
+GRP_A_NOV_LONG = (15, 2)
+# 이 원본이 쓴 note 꼴 — 출발-도착 시각이 괄호 앞 공백 뒤에 붙는다(앞선 조사분 1칸은
+# '경유(서울 1시간 35분) · 직항 없음' 이라 걸러진다).
+GRP_A_NOV_NOTE = GRP_A_OCT_NOTE
 
 # ── 2026-11-18 중국 8개 노선 2027년 7~11월 (15주말 × 7패턴) ────────────────────────
 # `noSale` 은 세 가지를 `status` 로 구분한다 — nosale(조회 결과 판매편 없음) ·
@@ -2208,6 +2261,179 @@ def check_flights(flights):
                     break
                 if '2026-11-2' in note:
                     problems.append('A조 10월 note 에 조사 시각이 들어갔습니다: %s %s'
+                                    % (d['code'], d['date']))
+                    break
+
+    # A조 12개 노선 2027년 11월 2주(11/4~8 · 11/11~15) — 격자 120칸이 값(110) 또는 판매편 0건(10)으로
+    # 채워졌는지, 앞선 조사분 3칸이 그대로인지, 실측 109칸의 최저·최고·평균·중앙값·직항 칸·노선별·
+    # 주차별·10만원 구간·장시간 경유가 보고서와 같은지, 판매편 0건 8칸에 금액이 없는지.
+    nv = [dict(d, code=r['code']) for r in routes if r['code'] in GRP_A_NOV
+          for d in r['deals'] if GRP_A_NOV_START <= d['date'] <= GRP_A_NOV_END
+          and d['pattern'] in EXPECT_WEEKEND]
+    nv_marks = [n for n in (flights.get('noSale') or []) if n.get('code') in GRP_A_NOV
+                and GRP_A_NOV_START <= n.get('date', '') <= GRP_A_NOV_END
+                and n.get('pattern') in EXPECT_WEEKEND]
+    if len(nv) + len(nv_marks) != GRP_A_NOV_TOTAL:
+        problems.append('A조 11월 2주 %d칸 + 판매편 0건 %d칸 (기대 %d칸)'
+                        % (len(nv), len(nv_marks), GRP_A_NOV_TOTAL))
+    else:
+        want = set()
+        for code in GRP_A_NOV:
+            for thu in GRP_A_NOV_WEEKS:
+                for label in EXPECT_WEEKEND:
+                    dt = (datetime.date.fromisoformat(thu) + datetime.timedelta(
+                        days=(FL_WD[label[0]] - FL_WD['목']) % 7)).isoformat()
+                    want.add((code, dt, label))
+        got = {(d['code'], d['date'], d['pattern']) for d in nv} | \
+              {(n['code'], n['date'], n['pattern']) for n in nv_marks}
+        if got != want:
+            problems.append('A조 11월 2주 격자 차이: %s' % sorted(got ^ want)[:6])
+        na_got = {(n['code'], n['date'], n['pattern']) for n in nv_marks
+                  if (n.get('status') or 'nosale') == 'nosale'}
+        if na_got - GRP_A_NOV_KEEP_NOSALE != GRP_A_NOV_NA:
+            problems.append('A조 11월 판매편 0건 칸이 다릅니다: %s'
+                            % sorted((na_got - GRP_A_NOV_KEEP_NOSALE) ^ GRP_A_NOV_NA)[:6])
+        for n in nv_marks:
+            if 'price' in n:
+                problems.append('A조 11월 판매편 0건 칸에 금액이 있습니다: %s %s'
+                                % (n['code'], n['date']))
+                break
+        nofare = [d for d in nv if not d.get('price')]
+        if nofare:
+            problems.append('A조 11월 금액 없는 칸 %d칸 (기대 0칸)' % len(nofare))
+        ps = [d['price'] for d in nv]
+        for (code, date, pat), want_price in GRP_A_NOV_KEEP.items():
+            hit = next((d for d in nv if d['code'] == code and d['date'] == date
+                        and d['pattern'] == pat), None)
+            if not hit or hit['price'] != want_price:
+                problems.append('A조 11월 그대로 두어야 할 칸 %s %s %s %s (기대 %s원)'
+                                % (code, date, pat, hit and hit['price'],
+                                   format(want_price, ',')))
+        keep_ns = {(n['code'], n['date'], n['pattern']) for n in nv_marks} & GRP_A_NOV_KEEP_NOSALE
+        if keep_ns != GRP_A_NOV_KEEP_NOSALE:
+            problems.append('A조 11월 그대로 두어야 할 판매편 0건 칸: %s'
+                            % sorted(GRP_A_NOV_KEEP_NOSALE - keep_ns))
+        if ps and (min(ps), max(ps)) != GRP_A_NOV_GRID_OVERALL:
+            problems.append('A조 11월 격자 최저·최고 %s (기대 %s)'
+                            % ((min(ps), max(ps)), GRP_A_NOV_GRID_OVERALL))
+        for code, (low, high) in GRP_A_NOV_GRID_ROUTE.items():
+            v = [d['price'] for d in nv if d['code'] == code]
+            if len(v) != GRP_A_NOV_ROUTE[code][0] + (1 if code == 'FUK' else 0):
+                problems.append('A조 11월 격자 %s %d칸 (기대 %d칸)'
+                                % (code, len(v), GRP_A_NOV_ROUTE[code][0]
+                                   + (1 if code == 'FUK' else 0)))
+            elif (min(v), max(v)) != (low, high):
+                problems.append('A조 11월 격자 %s 최저·최고 %s (기대 %s)'
+                                % (code, (min(v), max(v)), (low, high)))
+        unk = sorted((d['code'], d['date'], d['pattern']) for d in nv if d.get('via') is None)
+        if unk:
+            problems.append('A조 11월 편성 미확인 칸이 생겼습니다: %s' % unk[:4])
+        rich = [d for d in nv if GRP_A_NOV_NOTE.search(d.get('note') or '')]
+        if len(rich) != GRP_A_NOV_MEASURED:
+            problems.append('A조 11월 이번 실측분 note %d칸 (기대 %d칸)'
+                            % (len(rich), GRP_A_NOV_MEASURED))
+        else:
+            rp = [d['price'] for d in rich]
+            if (min(rp), max(rp)) != GRP_A_NOV_OVERALL:
+                problems.append('A조 11월 실측 최저·최고 %s (기대 %s)'
+                                % ((min(rp), max(rp)), GRP_A_NOV_OVERALL))
+            if _rnd(sum(rp) / len(rp)) != GRP_A_NOV_AVG:
+                problems.append('A조 11월 실측 평균 %d (기대 %d)'
+                                % (_rnd(sum(rp) / len(rp)), GRP_A_NOV_AVG))
+            sp = sorted(rp)
+            med = sp[len(sp) // 2]
+            if med != GRP_A_NOV_MEDIAN:
+                problems.append('A조 11월 실측 중앙값 %d (기대 %d)' % (med, GRP_A_NOV_MEDIAN))
+            got_direct = sum(1 for d in rich if d.get('via') is False)
+            if got_direct != GRP_A_NOV_DIRECT:
+                problems.append('A조 11월 직항이 최저가인 칸 %d (기대 %d)'
+                                % (got_direct, GRP_A_NOV_DIRECT))
+            for code, n in GRP_A_NOV_MEASURED_BY_ROUTE.items():
+                c = sum(1 for d in rich if d['code'] == code)
+                if c != n:
+                    problems.append('A조 11월 %s 실측 %d칸 (기대 %d칸)' % (code, c, n))
+            for m, n in GRP_A_NOV_MONTH.items():
+                c = sum(1 for d in rich if d['date'][:7] == m)
+                if c != n:
+                    problems.append('A조 11월 실측 %s 출발 %d칸 (기대 %d칸)' % (m, c, n))
+            for code, (_n, na, low, high, avg) in GRP_A_NOV_ROUTE.items():
+                v = [d['price'] for d in rich if d['code'] == code]
+                got_na = sum(1 for k in GRP_A_NOV_NA if k[0] == code)
+                if not v:
+                    if _n or got_na != na:
+                        problems.append('A조 11월 %s 실측 칸이 없습니다 (기대 %d칸 · 0건 %d칸)'
+                                        % (code, _n, na))
+                    continue
+                if (len(v), min(v), max(v), _rnd(sum(v) / len(v))) != (_n, low, high, avg):
+                    problems.append('A조 11월 %s 집계 %s (기대 %s)'
+                                    % (code, (len(v), min(v), max(v),
+                                              _rnd(sum(v) / len(v))),
+                                       (_n, low, high, avg)))
+                if got_na != na:
+                    problems.append('A조 11월 %s 판매편 0건 %d칸 (기대 %d칸)'
+                                    % (code, got_na, na))
+            for thu, (cells_n, total, avg, low, high) in GRP_A_NOV_WEEK.items():
+                v = [d['price'] for d in rich
+                     if (datetime.date.fromisoformat(d['date']) - datetime.timedelta(
+                         days=(datetime.date.fromisoformat(d['date']).weekday()
+                               - 3) % 7)).isoformat() == thu]   # 3 = datetime 목요일
+                if not v:
+                    problems.append('A조 11월 %s 실측 칸이 없습니다' % thu)
+                    continue
+                if (len(v), sum(v), _rnd(sum(v) / len(v)), min(v), max(v)) != \
+                        (cells_n, total, avg, low, high):
+                    problems.append('A조 11월 %s 주차 집계 %s (기대 %s)'
+                                    % (thu, (len(v), sum(v), _rnd(sum(v) / len(v)),
+                                             min(v), max(v)),
+                                       (cells_n, total, avg, low, high)))
+            bucket = {'30만원 미만': 0, '30만~40만원': 0, '40만~50만원': 0,
+                      '50만~60만원': 0, '60만~70만원': 0, '70만원 이상': 0}
+            for p in rp:
+                if p < 300000:
+                    bucket['30만원 미만'] += 1
+                elif p < 400000:
+                    bucket['30만~40만원'] += 1
+                elif p < 500000:
+                    bucket['40만~50만원'] += 1
+                elif p < 600000:
+                    bucket['50만~60만원'] += 1
+                elif p < 700000:
+                    bucket['60만~70만원'] += 1
+                else:
+                    bucket['70만원 이상'] += 1
+            if bucket != GRP_A_NOV_BUCKET:
+                problems.append('A조 11월 10만원 구간 %s (기대 %s)'
+                                % (bucket, GRP_A_NOV_BUCKET))
+            for pat, want_avg in GRP_A_NOV_PAT_AVG.items():
+                v = [d['price'] for d in rich if d['pattern'] == pat]
+                if not v or _rnd(sum(v) / len(v)) != want_avg:
+                    problems.append('A조 11월 %s 평균 %s (기대 %d)'
+                                    % (pat, v and _rnd(sum(v) / len(v)), want_avg))
+            long_cells = []
+            for d in rich:
+                lay = FL_LAY.search(d.get('note') or '')
+                if lay:
+                    long_cells.append(int(lay.group(1)) * 60 + int(lay.group(2) or 0))
+            if (sum(1 for x in long_cells if x >= 720),
+                    sum(1 for x in long_cells if x >= 1200)) != GRP_A_NOV_LONG:
+                problems.append('A조 11월 장시간 경유 %d/%d칸 (기대 %s)'
+                                % (sum(1 for x in long_cells if x >= 720),
+                                   sum(1 for x in long_cells if x >= 1200), GRP_A_NOV_LONG))
+            for d in rich:
+                note = d.get('note') or ''
+                if d.get('via') is True and '총' not in note:
+                    problems.append('A조 11월 경유 칸에 총 소요시간이 없습니다: %s %s'
+                                    % (d['code'], d['date']))
+                    break
+                if d.get('via') is False and '직항' not in note:
+                    problems.append('A조 11월 직항 칸 note 이상: %s %s' % (d['code'], d['date']))
+                    break
+                if '가격표' in note or d.get('alt'):
+                    problems.append('A조 11월 칸에 자리표시·직항 금액이 붙었습니다: %s %s'
+                                    % (d['code'], d['date']))
+                    break
+                if '2026-11-2' in note:
+                    problems.append('A조 11월 note 에 조사 시각이 들어갔습니다: %s %s'
                                     % (d['code'], d['date']))
                     break
 

@@ -760,6 +760,7 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
 .cal-day.deal .daydeal{position:absolute;top:1px;right:2px;font-size:8px;font-weight:800;line-height:1.35;color:#0f7a3d;background:#dcfce7;border:1px solid #a7e8c0;border-radius:6px;padding:0 3px}
 .cal-day.overbudget{opacity:.26}
 @media(max-width:760px){.pt-grid{grid-template-columns:1fr}.pt-grid .pt-item:nth-child(2){border-top:1px solid var(--line2)}}
+@media(max-width:430px){#cbBasis{white-space:normal;line-height:1.45;max-width:100%}.cb-src{flex-wrap:wrap}.cb-src .mode-button{flex:1 1 30%}.fav-only{font-size:9.5px;padding:4px 8px}}
 </style>
 </head>
 <body>
@@ -2829,7 +2830,7 @@ function renderCombo(){
     ?('⑥ 땡처리 특가 · '+(cb.ttMonth==='all'?'전체 출발 월':monlabel(cb.ttMonth))+' · '+tscope+' · 상품의 출발~귀국 날짜 그대로')
     :('⑤+⑥ 통합 · ⑤ '+scope+' / ⑥ '+tscope);
   $('cbSub').textContent=srcTxt+' · 항공 1인 왕복 + 숙박 1실(성인 2인) 합계';
-  $('cbBasis').textContent='⑤ 항공 2026-11-17~19 · ⑥ 땡처리 2026-11-19 · ①~④ 호텔 2026-11-16~17';
+  $('cbBasis').textContent='⑤ 2026-11-17~19 · ⑥ 2026-11-19 · ①~④ 호텔 2026-11-16~17';
   const dates=new Set(rows.map(r=>r.date)),hset=new Set(rows.map(r=>r.h.id)),cset=new Set(rows.map(r=>r.city));
   $('cbCount').textContent='계산된 조합 '+KR(rows.length)+'개 · 출발일 '+dates.size+'일 · 호텔 '+hset.size+'곳 · 도시 '+cset.size+'곳';
   $('cbStrip').innerHTML=rows.length

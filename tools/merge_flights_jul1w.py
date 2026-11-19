@@ -213,6 +213,12 @@ def parse():
                     pass                      # 편성이 이미 직항 — 덧붙일 것이 없다
                 elif re.match(r'^재조회 \d+회 동일', piece):
                     recall = True
+                    got = re.search(r'가격표 ([\d,]+) 일치', piece)
+                    if got:
+                        amt = int(got.group(1).replace(',', ''))
+                        if amt != price:
+                            raise SystemExit('%s 재조회 칸의 가격표 금액 %s 가 카드 금액 %d 와 다릅니다'
+                                             % (code, format(amt, ','), price))
                 elif re.match(r'^가격표 [\d,]+ 일치$', piece):
                     got = int(re.search(r'([\d,]+)', piece).group(1).replace(',', ''))
                     if got != price:

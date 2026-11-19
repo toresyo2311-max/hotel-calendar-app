@@ -1007,7 +1007,7 @@ function renderCalendar(S){
   $('selectionInfo').textContent=only?(filteredHotels()[0]?.name||'전체 호텔'):(st.tab==='domestic'?(st.mode==='cash'?'선택 호텔 중 그날 1박 최저가':'선택 호텔 중 가장 낮은 Stay Plus 결제액'):st.tab==='marriott'?(pointsMode()?'선택 호텔 중 그날 아워드 최저 포인트':'선택 호텔 중 그날 1박 최저가'):apcMode?'선택 호텔 중 그날 APC 무료숙박 가능 수':'선택 호텔 중 그날 1박 최저가');
   $('monthRail').innerHTML=yearMonths().map(m=>'<button type="button" data-goto="'+m+'" class="'+(m===st.month?'on':'')+'">'+Number(m.slice(5,7))+'월</button>').join('');
   renderMonthHighlight();
-  $('legendDetail').textContent=(st.tab==='domestic'&&st.mode!=='cash'?'세금 별도, Stay Plus 적용 후 '+(st.mode==='sp2'?'2박':'토 체크인 3박')+' 결제액 · ':'')+(st.tab==='china'?'날짜를 누르면 위우 예약 창이 열립니다 · ':'날짜를 누르면 그 날짜의 예약 페이지가 새 탭에서 열립니다 · ')+'호텔별 금액 비교는 「선택일 호텔 비교」.';
+  $('legendDetail').textContent=(st.tab==='domestic'&&st.mode!=='cash'?'세금 별도, Stay Plus 적용 후 '+(st.mode==='sp2'?'2박':'토 체크인 3박')+' 결제액 · ':'')+(st.tab==='china'?'날짜를 누르면 위챗 예약 창이 열립니다 · ':'날짜를 누르면 그 날짜의 예약 페이지가 새 탭에서 열립니다 · ')+'호텔별 금액 비교는 「선택일 호텔 비교」.';
   const byDate={};for(const x of S)byDate[x.d]=x;
   let html='';
   for(const mo of yearMonths()){
@@ -1028,9 +1028,9 @@ function renderCalendar(S){
         const main=only?(APCWORD[s]||'—'):((sum.a>0)?sum.a+'곳':(sum.u+sum.x>=sum.total?'—':'0곳'));
         const badge=only?apcBadgeFor(s):(sum.a>0?'<span class="apc yes">APC 가능</span>':(sum.u+sum.x>=sum.total?(sum.x>=sum.total?'<span class="apc none">미참여</span>':'<span class="apc unk">미확인</span>'):'<span class="apc no">불가</span>'));
         const cls='cal-day '+(ok?'apcok ':'')+(dow===0?'sunday ':dow===6?'saturday ':'')+(st.selectedDay===date?'selected-day':'');
-        const apcH=dayHotel(date);
+        const apcH=dayHotel(date)||(only?filteredHotels()[0]:null);
         const apcInner='<span class="daynum">'+Number(date.slice(-2))+'</span><span class="dayprice">'+main+'</span>'+(sum.cash!=null?'<span class="daycash">'+shortWon(sum.cash)+'</span>':'')+badge;
-        cells+=apcH?('<button type="button" class="'+cls+' wx-cell" data-wx-hotel="'+apcH.id+'" data-wx-date="'+date+'" aria-label="'+fullDate(date)+' APC '+main+' · 위우 예약 열기" title="'+fullDate(date)+' · 위우 예약 창이 열립니다">'+apcInner+'</button>')
+        cells+=apcH?('<button type="button" class="'+cls+' wx-cell" data-wx-hotel="'+apcH.id+'" data-wx-date="'+date+'" aria-label="'+fullDate(date)+' APC '+main+' · 위챗 예약 열기" title="'+fullDate(date)+' · 위챗 예약 창이 열립니다">'+apcInner+'</button>')
           :('<button type="button" class="'+cls+'" data-date="'+date+'" aria-label="'+fullDate(date)+' APC '+main+'" title="'+date+' APC 상세">'+apcInner+'</button>');
         continue;
       }
@@ -1062,8 +1062,8 @@ function renderCalendar(S){
       const cls='cal-day '+(lvl?'hm'+lvl+' ':'hm5 ')+(isLow?'low ':'')+(blackout?'blackout ':'')+(faded?'faded ':'')+(dow===0?'sunday ':dow===6?'saturday ':'')+(st.selectedDay===date?'selected-day':'');
       const cellInner='<span class="daynum">'+Number(date.slice(-2))+'</span>'+vlabel+sub+tail;
       const bUrl=p!=null?dayBookUrl(date):'';
-      const wxH=(st.tab==='china'&&bUrl)?dayHotel(date):null;
-      cells+=wxH?('<button type="button" class="'+cls+' wx-cell" data-wx-hotel="'+wxH.id+'" data-wx-date="'+date+'" aria-label="'+fullDate(date)+' '+shortVal(p)+' · 위우 예약 열기" title="'+fullDate(date)+' · 위우 예약 창이 열립니다">'+cellInner+'</button>')
+      const wxH=(st.tab==='china'&&(p!=null||only))?(dayHotel(date)||(only?filteredHotels()[0]:null)):null;
+      cells+=wxH?('<button type="button" class="'+cls+' wx-cell" data-wx-hotel="'+wxH.id+'" data-wx-date="'+date+'" aria-label="'+fullDate(date)+' '+shortVal(p)+' · 위챗 예약 열기" title="'+fullDate(date)+' · 위챗 예약 창이 열립니다">'+cellInner+'</button>')
         :bUrl?('<a class="'+cls+'" data-date="'+date+'" href="'+esc(bUrl)+'" target="_blank" rel="noopener" aria-label="'+fullDate(date)+' '+shortVal(p)+' · 예약 페이지 열기" title="'+fullDate(date)+' · 예약 페이지가 새 탭에서 열립니다">'+cellInner+'</a>')
         :('<button type="button" class="'+cls+'" data-date="'+date+'" aria-label="'+fullDate(date)+' 요금 미표시" title="'+date+' 상세 보기">'+cellInner+'</button>');
     }
@@ -1169,7 +1169,7 @@ function openDetail(dt){st.selectedDay=dt;if(SER&&SER.length){renderInsights(SER
   else{sub=detailStatus(h,dt,o)}
   const right=v==null?'—':(st.tab==='marriott'?shortVal(v):shortWon(v));
   const under=v==null?'':(st.tab==='marriott'?exactP(v):(st.tab==='lux'||st.tab==='china'||(st.tab==='domestic'&&st.mode==='cash')?'반올림 표시가':'₩'+KR(v)));
-  return '<div class="deal"><div><div class="dealname">'+esc(h.name)+tag+'</div><div class="dealsub">'+esc(sub)+(v!=null&&(st.tab==='lux'||(st.tab==='marriott'&&st.hotel!=='all'))?'<br>'+esc(h.promotion||''):'')+'</div></div><div class="dealprice" style="color:'+(o.blocked?'#8a5a2b':'#241a3f')+'">'+right+'<div style="font-size:10px;color:#9a94b0;text-align:right;font-weight:500;">'+under+'</div></div>'+(v!=null?(h.group==='china'?'<button type="button" class="deal-book" data-wx-hotel="'+h.id+'" data-wx-date="'+dt+'" title="'+esc(h.name+' · '+fullDate(dt)+' 체크인 위우 예약')+'">예약 ↗</button>':'<a class="deal-book" href="'+esc(bookUrlOf(h,dt))+'" target="_blank" rel="noopener" title="'+esc(h.name+' · '+fullDate(dt)+' 체크인 예약 페이지')+'">예약 ↗</a>'):'')+'</div>'}).join(''):'<div class="deal-empty">선택 날짜에 해당하는 호텔이 없습니다.</div>';
+  return '<div class="deal"><div><div class="dealname">'+esc(h.name)+tag+'</div><div class="dealsub">'+esc(sub)+(v!=null&&(st.tab==='lux'||(st.tab==='marriott'&&st.hotel!=='all'))?'<br>'+esc(h.promotion||''):'')+'</div></div><div class="dealprice" style="color:'+(o.blocked?'#8a5a2b':'#241a3f')+'">'+right+'<div style="font-size:10px;color:#9a94b0;text-align:right;font-weight:500;">'+under+'</div></div>'+(v!=null?(h.group==='china'?'<button type="button" class="deal-book" data-wx-hotel="'+h.id+'" data-wx-date="'+dt+'" title="'+esc(h.name+' · '+fullDate(dt)+' 체크인 위챗 예약')+'">예약 ↗</button>':'<a class="deal-book" href="'+esc(bookUrlOf(h,dt))+'" target="_blank" rel="noopener" title="'+esc(h.name+' · '+fullDate(dt)+' 체크인 예약 페이지')+'">예약 ↗</a>'):'')+'</div>'}).join(''):'<div class="deal-empty">선택 날짜에 해당하는 호텔이 없습니다.</div>';
  $('modal').classList.add('show');$('modal').setAttribute('aria-hidden','false');$('modalClose').focus();document.body.style.overflow='hidden';}
 function closeDetail(){$('modal').classList.remove('show');$('modal').setAttribute('aria-hidden','true');document.body.style.overflow=''}
 function exportCsv(){const hs=filteredHotels(),mode=st.mode;const header=['프로그램','지역','도시','호텔','체크인 날짜','요일','현금(KRW)','포인트(pt)','APC 무료숙박','권역','12월 APC 가능일','금액 종류','약관 제외일','기준자료'];const rows=[header];
@@ -1244,7 +1244,7 @@ function dayHotel(dt){
   return best?best.h:null;
 }
 function dayBookUrl(dt){return bookUrlOf(dayHotel(dt),dt)}
-/* ── ② 중올플 — 위우 예약 창(호텔명·날짜 복사 + 위우 열기) ───────────── */
+/* ── ② 중올플 — 위챗 예약 창(호텔명·날짜 복사 + 위챗 열기) ───────────── */
 const wxSheetEl=()=>document.getElementById('wxSheet');
 function wxHotel(id){const hs=(DB&&DB.hotels)||[];return hs.find(h=>h.id===id)||null}
 function wxCopyText(h,dt){

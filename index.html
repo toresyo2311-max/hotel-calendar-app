@@ -2032,7 +2032,10 @@ function hlxUrl(id,ci,co){return 'https://hotel.hotelux.com/#/hotel/detail?hotel
    · 안드로이드(Chrome·삼성 인터넷 등 intent:// 를 다루는 브라우저) : 예약 앱을 먼저 부르고,
      앱이 없거나 열리지 않으면 S.browser_fallback_url 로 같은 호텔·같은 날짜의 웹페이지가 열린다.
      앱에 넘기는 주소는 예약 사이트가 공식 등록한 App Link 주소(상위 도메인의 /app,
-     /app/hotel/<호텔 ID>)다. 예약 웹 도메인(hotel.<도메인>)에는 App Link 등록이 없어
+     /app/hotel/<호텔 ID>)이고 **날짜는 넘기지 않는다** — 앱이 `/app/hotel/<ID>?checkIn=…`
+     전체를 호텔 ID로 읽어 오류를 내는 것을 2026-11-19 안드로이드 기기에서 확인했다
+     (`Cast to ObjectId failed … at path "_id"`). 날짜는 앱 화면에서 고른다.
+     예약 웹 도메인(hotel.<도메인>)에는 App Link 등록이 없어
      (.well-known/assetlinks.json 404 · 2026-11-19 실측) 그 주소로는 앱이 뜨지 않고 웹으로 넘어갔다.
    hlxUrl·bookUrlOf·cbHotelUrl 이 돌려주는 값은 어느 기기에서나 웹 주소 그대로 둔다 —
    복사·공유·계획 문구·PC 동작이 바뀌지 않도록, 클릭 순간에만 hlxAppUrl 이 intent:// 로 바꾼다.
@@ -2050,17 +2053,16 @@ const IS_ANDROID=/Android/i.test(HLX_UA);
 const IS_INAPP=/;\s*wv\)/i.test(HLX_UA)||/KAKAOTALK|NAVER\(inapp|DaumApps|Instagram|FBAN|FBAV|Line\//i.test(HLX_UA);
 /* intent:// 는 Chrome 계열·삼성 인터넷에서 동작한다(Firefox 안드로이드는 intent:// 주소를 열지 못한다) */
 const HLX_USE_INTENT=IS_ANDROID&&!IS_INAPP&&/Chrome\/|SamsungBrowser\/|EdgA\/|Whale\/|OPR\//.test(HLX_UA);
-/* 웹 주소 → 앱이 받는 App Link 주소 (호텔 ID·체크인·체크아웃을 그대로 옮긴다) */
+/* 웹 주소 → 앱이 받는 App Link 주소 (호텔 ID만 넘긴다 — 쿼리를 붙이면 앱이 그 전체를 호텔 ID로
+   읽어 "Cast to ObjectId failed" 오류가 난다. 날짜는 앱에서 고르고, 웹 폴백 주소에는 그대로 남긴다) */
 function hlxAppPath(webUrl){
   const u=String(webUrl||'');
   if(!HLX_APP_HOST||!HLX_WEB_RE.test(u))return '';
   const q=function(k){const m=u.match(new RegExp('[?&]'+k+'=([^&#]*)','i'));return m?m[1]:''};
   const dec=function(v){try{return decodeURIComponent(v)}catch(e){return v}};
-  const id=q('hotelId'),ci=q('checkIn'),co=q('checkOut');
+  const id=q('hotelId');
   if(!id)return 'https://'+HLX_APP_HOST+'/app';
-  let p='https://'+HLX_APP_HOST+'/app/hotel/'+encodeURIComponent(dec(id));
-  if(ci&&co)p+='?checkIn='+encodeURIComponent(dec(ci))+'&checkOut='+encodeURIComponent(dec(co));
-  return p;
+  return 'https://'+HLX_APP_HOST+'/app/hotel/'+encodeURIComponent(dec(id));
 }
 function hlxIntentUrl(webUrl){
   const u=String(webUrl||''),app=hlxAppPath(u);
@@ -2072,9 +2074,9 @@ function hlxAppUrl(webUrl){
   return hlxIntentUrl(webUrl)||webUrl;
 }
 function hlxLinkNoteRow(){
-  if(HLX_USE_INTENT)return '<div class="note-row"><span class="note-mark">📱</span><span class="note-text">예약 링크 — <strong>예약 앱</strong>이 <strong>그 호텔·그 날짜</strong>로 먼저 열리고, 앱이 없거나 열리지 않으면 <strong>같은 호텔·같은 날짜의 예약 웹페이지</strong>가 자동으로 열립니다.</span></div>';
+  if(HLX_USE_INTENT)return '<div class="note-row"><span class="note-mark">📱</span><span class="note-text">예약 링크 — <strong>예약 앱</strong>이 <strong>그 호텔 페이지</strong>로 먼저 열리고(날짜는 앱에서 고릅니다), 앱이 없거나 열리지 않으면 <strong>같은 호텔·같은 날짜의 예약 웹페이지</strong>가 자동으로 열립니다.</span></div>';
   if(IS_ANDROID)return '<div class="note-row"><span class="note-mark">📱</span><span class="note-text">예약 링크 — 이 브라우저에서는 <strong>예약 웹페이지</strong>가 열립니다. 앱 자동 열기는 <strong>Chrome·삼성 인터넷</strong>에서만 동작합니다.</span></div>';
-  return '<div class="note-row"><span class="note-mark">💻</span><span class="note-text">예약 링크 — <strong>예약 웹페이지</strong>가 새 탭에서 열립니다. (안드로이드 휴대폰에서는 예약 앱이 먼저 열리고, 앱이 없으면 같은 웹페이지가 열립니다)</span></div>';
+  return '<div class="note-row"><span class="note-mark">💻</span><span class="note-text">예약 링크 — <strong>예약 웹페이지</strong>가 새 탭에서 열립니다. (안드로이드 휴대폰에서는 예약 앱이 <strong>그 호텔 페이지</strong>로 먼저 열리고 날짜는 앱에서 고릅니다 — 앱이 없으면 같은 날짜의 웹페이지가 열립니다)</span></div>';
 }
 /* 예약 사이트 링크 클릭을 한 곳에서 받는다 — intent:// 는 target="_blank" 로 새 탭에 열면 앱이 뜨지 않고 빈 탭만 남으므로,
    기본 이동을 막고 현재 창에서 연다(앱이 없으면 browser_fallback_url 이 그 창을 웹페이지로 바꾼다).

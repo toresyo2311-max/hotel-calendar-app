@@ -226,6 +226,18 @@
 - GitHub Pages 실제 브라우저에서 확인: ⑤ 프로모션 패널에 **진행 중 1건(일본 전 노선 특가, D-5 · 11/24 17시)** 만 남고
   알짜노선 빅세일·윈터페스타·에어부산 특가(모두 11/17~18 마감)는 표시되지 않음.
 
+## 2026-11-19 ① 앱링크 쿼리 제거 — 앱은 호텔 페이지만 연다 (화면 코드만 변경)
+
+- 한진 님 안드로이드 기기 실측에서 `com.hotelux` 앱은 열렸지만 토스트 오류가 났습니다:
+  `Cast to ObjectId failed for value "5b8ca3928ecdbb943c0abb04?checkIn=2027-09-29&checkOut=2027-09-30"
+  (type string) at path "_id" for model "module_tp_hotel"`.
+  앱이 `/app/hotel/<ID>` 뒤의 `?checkIn=…&checkOut=…` 를 떼지 않고 통째로 MongoDB ObjectId 로 읽는 것이 원인입니다.
+- `hlxAppPath()` 는 이제 **호텔 ID만** 넘깁니다: `https://<앱 도메인>/app/hotel/<호텔 ID>` (호텔이 없으면 `/app`).
+  날짜는 앱 화면에서 고릅니다. `S.browser_fallback_url` 은 기존처럼 **날짜가 들어간 웹 주소 전체**를 그대로 둡니다.
+- 안내 문구도 “예약 앱이 **그 호텔 페이지**로 먼저 열리고(날짜는 앱에서 고릅니다) …”로 사실에 맞게 고쳤습니다.
+- `sw.js` 캐시 이름 `teambusan-v5-2026-11-19e`.
+- 검증: `python3 tools/master_db.py verify` **VERIFY OK** · `esprima 4.0.1` 로 인라인 스크립트 구문 검사 통과.
+
 ## 2026-11-19 ① VIP 예약 링크 — 휴대폰(앱) · PC(웹) 분기 (화면 코드만 변경)
 
 ① VIP 요금 탭과 ✈️+🏨 콤보의 **호텔 예약 링크**를 누를 때, 기기에 따라 여는 곳을 나눴습니다.

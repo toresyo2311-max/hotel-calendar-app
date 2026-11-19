@@ -2099,7 +2099,7 @@ function renderTtKpi(){
   const best=ttBestOf(shown);
   const avg=shown.length?Math.round(shown.reduce(function(n,d){return n+d.price},0)/shown.length):null;
   const chans={};all.forEach(function(d){const k=ttChan(d);chans[k]=(chans[k]||0)+1});
-  const chanTxt=(Object.keys(chans).map(function(k){return k+' '+chans[k]}).join(' · ')||'—')
+  const chanTxt=(Object.keys(chans).map(function(k){return k+' '+KR(chans[k])}).join(' · ')||'—')
     +(all.filter(ttIsPeriod).length?' · 기간형 '+all.filter(ttIsPeriod).length:'');
   const kp=[
     {k:'상품',v:KR(all.length)+'건',i:chanTxt,cls:''},
@@ -2117,7 +2117,7 @@ function renderTtKpi(){
 /* TOP 5 — 카드를 누르면 그 상품 예약 페이지가 새 탭에서 열린다 */
 function renderTtTop(){
   const top=ttSorted(ttFiltered()).slice(0,5);
-  const tt=document.getElementById('ttTopTitle');if(tt)tt.textContent=(ttst.sort==='price'?'전체 최저가':'')+' TOP 5';
+  const tt=document.getElementById('ttTopTitle');if(tt)tt.textContent=(ttst.sort==='price'?'전체 최저가':'')+(ttst.sort==='price'?' TOP 5':(' '+ttSortLabel()+' TOP 5'));
   $('ttTop5').innerHTML=top.length?top.map(function(d,i){
     return ttRow('rank-item tt-hit',d.url,d.city+' '+ttWhen(d)+' '+KR(d.price)+'원',
       '<span class="rank-n">'+String(i+1).padStart(2,'0')+'</span>'+
@@ -2125,7 +2125,7 @@ function renderTtTop(){
       '<div class="rank-meta">'+esc(ttWhen(d))+' · '+esc(ttSpan(d))+' · '+ttAir(d)+' · 잔여 '+esc(ttSeats(d))+'</div></div>'+
       '<div class="rank-num'+(i===0?' red':'')+'">'+ttPrice(d)+'</div>');
   }).join(''):'<div class="rank-empty">아직 수집된 상품이 없습니다 — 수집분이 들어오면 여기부터 채워집니다.</div>';
-  $('ttTopSub').textContent=ttFiltered().length?ttSortLabel()+' 순 · '+KR(ttFiltered().length)+'건 중':'자료 없음';
+  $('ttTopSub').textContent=ttFiltered().length?ttSortLabel()+' · '+KR(ttFiltered().length)+'건 중':'자료 없음';
   const b=ttBestOf(ttFiltered());
   $('ttTopHint').innerHTML=b?('가장 싼 상품은 <strong>'+esc(b.city)+' '+esc(ttWhen(b))+' '+KR(b.price)+'원</strong>('+ttAir(b)+' · '+esc(ttSpan(b))+'). 카드를 누르면 그 상품 예약 페이지가 <strong>새 탭에서 바로</strong> 열립니다.'):'';
 }

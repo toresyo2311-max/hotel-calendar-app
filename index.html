@@ -4701,7 +4701,7 @@ function renderVtChips(){
     return '<div class="vt-issuer"><b>'+esc(iss)+'</b><div>'+by[iss].map(function(c){
       const on=s.has(c.id);
       const cnt=on?'<span class="vt-use"><button type="button" data-vt-minus="'+c.id+'" aria-label="'+esc(c.name)+' 이번 달 사용 1회 줄이기">−</button><em>'+vtUsed(c.id)+'/'+c.limit_n+'</em><button type="button" data-vt-plus="'+c.id+'" aria-label="'+esc(c.name)+' 이번 달 사용 1회 기록">+</button></span>':'';
-      return '<span class="vt-cw"><button type="button" class="vt-chip" data-vt-card="'+c.id+'" aria-pressed="'+on+'" title="'+esc(c.name+' · '+c.network+' · '+c.limit_label+' · '+c.prev_spend)+'"><i></i>'+esc(vtShort(c))+'</button>'+cnt+'</span>';
+      return '<span class="vt-cw"><button type="button" class="vt-chip" data-vt-card="'+c.id+'" aria-pressed="'+on+'" title="'+esc(c.name+' · '+c.network+' · '+c.limit_label+' · '+c.prev_label)+'"><i></i>'+esc(vtShort(c))+'</button>'+cnt+'</span>';
     }).join('')+'</div></div>';
   }).join('');
 }

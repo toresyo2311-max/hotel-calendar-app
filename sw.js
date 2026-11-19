@@ -1,8 +1,8 @@
-/* TEAM-부산 호텔·항공 요금 달력 — 서비스 워커 (2026-11-19 · 5단계 PWA · ① VIP 링크 기기 분기 반영)
+/* TEAM-부산 호텔·항공 요금 달력 — 서비스 워커 (2026-11-19 · 5단계 PWA · ① 17개 호텔 재실측 반영)
    · 앱 셸(index.html·manifest·아이콘)은 미리 저장
    · data/app/*.json · data/history/*.json 은 네트워크 우선(항상 새 값 시도) → 실패하면 저장본
    · 오프라인에서도 마지막으로 본 탭·달력이 열리고, 저장본이 없으면 안내 문구를 보여 준다 */
-const VERSION = 'teambusan-v5-2026-11-19d';
+const VERSION = 'teambusan-v5-2026-11-19e';
 const SHELL = ['./', './index.html', './manifest.json',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 /* 오프라인 폴백은 캐시에 마지막으로 저장된 응답을 그대로 쓴다 */

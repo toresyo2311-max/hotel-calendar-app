@@ -1,8 +1,8 @@
-/* TEAM-부산 호텔·항공 요금 달력 — 서비스 워커 (2026-11-20 · 5단계 PWA · ⑥ 땡처리 3,857건 43노선 전면 갱신 · ⑤ A조 12노선 2027년 10월 4주 240칸)
+/* TEAM-부산 호텔·항공 요금 달력 — 서비스 워커 (2026-11-20 · 5단계 PWA · 🅿️ 발렛 탭 신설(valet.json 지연 로딩) · ② 탭 영문 표기 정리 · ⑥ 땡처리 3,857건)
    · 앱 셸(index.html·manifest·아이콘)은 미리 저장
    · data/app/*.json · data/history/*.json 은 네트워크 우선(항상 새 값 시도) → 실패하면 저장본
    · 오프라인에서도 마지막으로 본 탭·달력이 열리고, 저장본이 없으면 안내 문구를 보여 준다 */
-const VERSION = 'teambusan-v5-2026-11-20d';
+const VERSION = 'teambusan-v5-2026-11-20e';
 const SHELL = ['./', './index.html', './manifest.json',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 /* 오프라인 폴백은 캐시에 마지막으로 저장된 응답을 그대로 쓴다 */

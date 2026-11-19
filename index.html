@@ -733,7 +733,7 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
 .rank-name .fav-btn{vertical-align:-2px;margin-right:2px;font-size:11px}
 .fl-matrix tbody th.fl-route .fav-btn{float:right;margin:1px 0 0 3px;font-size:11px}
 .hotel-row{display:flex;align-items:center;gap:1px;border-radius:8px;padding-right:2px}
-.hotel-row .hotel-choice{flex:1;min-width:0}
+.hotel-row .hotel-choice{flex:1;min-width:0;width:auto}
 .hotel-row.fav{background:#fffaef}
 .fav-only{border:1px solid var(--line);border-radius:20px;padding:5px 10px;background:var(--card);color:var(--muted);font-size:10.5px;font-weight:700;white-space:nowrap}
 .fav-only[aria-pressed="true"]{border-color:#f0c46a;background:#fff7e6;color:#8a5a00}
@@ -1497,7 +1497,7 @@ function renderCalendar(S){
       +'<div class="days">'+cells+'</div></article>';
   }
   $('days').innerHTML=html;
-  const dlg=$('dealLegend');if(dlg)dlg.style.display=apcMode?'none':'inline-flex';
+  const dlg=$('dealLegend');if(dlg)dlg.style.display=(apcMode||pointsMode())?'none':'inline-flex';
   renderHotelStatus();renderBlackoutBox();
 }
 function renderNotes(){if(st.tab==='lux'){

@@ -5100,8 +5100,8 @@ function renderLounge(){
   const nE=cnt.eligible||cards.filter(function(c){return c.status==='eligible'}).length;
   const nU=cnt.unknown||cards.filter(function(c){return c.status==='unknown'}).length;
   const el=function(id){return cards.filter(function(c){return c.status==='eligible'&&(c.airports||[]).indexOf(id)>=0}).length};
-  const k=[[nE,'장','내 카드 중 라운지 가능'],[cnt.annual_free_total||0,'회','7장 합산 연간 무료'],
-           [el('icn1')+'/'+el('icn2'),'장','인천 T1 / T2'],[(cnt.with_companion||0)+' · '+nU,'장','동반 무료 · 확인 필요']];
+  const k=[[nE,'장','내 카드 중 라운지 가능'],[cnt.annual_free_total||0,'회','라운지 7장 합산 연간 무료'],
+           [el('icn1')+' / '+el('icn2'),'장','인천 T1 / T2'],(cnt.with_companion||0),'장','동반 1인 무료 카드']];
   $('lgKpis').innerHTML=k.map(function(x){return '<div class="vt-kpi"><span>'+esc(x[2])+'</span><b>'+esc(String(x[0]))+'<i style="font-style:normal;font-size:10px;color:#8b86a3;margin-left:2px">'+esc(x[1])+'</i></b></div>'}).join('');
   $('lgBasis').textContent='기준 '+LOUNGE.generated+' · '+LOUNGE.basis;
   const ap=$('lgAirport');
@@ -5113,7 +5113,7 @@ function renderLounge(){
   $('lgHideNone').checked=lg.hideNone;
   document.querySelectorAll('#lgSort [data-lg-sort]').forEach(function(b){const on=b.dataset.lgSort===lg.sort;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
   const rows=lgFiltered();
-  $('lgCount').textContent='카드 '+rows.length+'장'+(lg.hideNone?' · 라운지 가능만':' · 전체 58장');
+  $('lgCount').textContent='카드 '+rows.length+'장'+(lg.hideNone?' · 라운지 가능만':' · 전체 58장')+(lg.hideNone&&nU?' · 확인 필요 '+nU+'장':'')+' · 라운지 없는 카드 '+(cnt.none||0)+'장';
   box.innerHTML=rows.length?rows.map(lgRowHtml).join(''):'<div class="vt-empty">조건에 맞는 카드가 없습니다 — “라운지 되는 카드만”을 끄면 라운지 없는 카드까지 보입니다.</div>';
   const tr=Object.keys(lgYear).reduce(function(n,k){return n+Number(lgYear[k]||0)},0);
   $('lgUseNote').textContent='이 기기에만 저장 · 올해 기록 '+tr+'회 · '+lgMonthKey().slice(-5)+' 기록 '+(Object.keys(lgMonth).reduce(function(n,k){return n+Number(lgMonth[k]||0)},0))+'회';

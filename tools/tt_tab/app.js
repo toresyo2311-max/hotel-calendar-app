@@ -16,6 +16,12 @@ function ttMonths(){const seen={},out=[];ttAll().forEach(function(d){const k=Str
 function ttNights(d){return typeof d.nights==='number'?d.nights:(d.days?d.days-1:null)}
 function ttSpan(d){const n=ttNights(d),p=[];if(d.days)p.push(d.days+'일');if(n!=null)p.push(n+'박');return p.join(' · ')}
 function ttRange(d){return dateLabel(d.out)+'–'+dateLabel(d.back)}
+/* 기간형: 출발 가능일이 여러 날짜인 상품(outUntil) — 하루짜리 상품과 구분해 보여 준다 */
+function ttIsPeriod(d){return !!(d&&d.outUntil&&d.outUntil!==d.out)}
+function ttWhen(d){return ttIsPeriod(d)?(dateLabel(d.out)+'~'+dateLabel(d.outUntil)):ttRange(d)}
+function ttPrice(d){return d.priceTo?shortWon(d.price)+'~'+shortWon(d.priceTo):shortWon(d.price)}
+function ttPriceWon(d){return d.priceTo?KR(d.price)+'원~'+KR(d.priceTo)+'원':KR(d.price)+'원'}
+function ttPeriodTag(d){return ttIsPeriod(d)?'<span class="tt-period">기간형</span>':''}
 function ttSeats(d){if(d.seats!=null)return d.seats+'석';if(d.minPax&&d.minPax>1)return d.minPax+'명 이상';return '미표시'}
 function ttAir(d){return d.airline?esc(d.airline):'항공사 미확인'}
 function ttRow(cls,href,label,inner,data){
@@ -30,11 +36,12 @@ function renderTtKpi(){
   const best=ttBestOf(shown);
   const avg=shown.length?Math.round(shown.reduce(function(n,d){return n+d.price},0)/shown.length):null;
   const chans={};all.forEach(function(d){const k=ttChan(d);chans[k]=(chans[k]||0)+1});
-  const chanTxt=Object.keys(chans).map(function(k){return k+' '+chans[k]}).join(' · ')||'—';
+  const chanTxt=(Object.keys(chans).map(function(k){return k+' '+chans[k]}).join(' · ')||'—')
+    +(all.filter(ttIsPeriod).length?' · 기간형 '+all.filter(ttIsPeriod).length:'');
   const kp=[
     {k:'상품',v:KR(all.length)+'건',i:chanTxt,cls:''},
     {k:'노선',v:KR(Object.keys(cities).length)+'개',i:ttst.region==='all'&&ttst.city==='all'?'부산(PUS) 출발':'필터 적용 중',cls:''},
-    {k:'최저 왕복',v:best?shortWon(best.price):'—',i:best?esc(best.city)+' · '+ttRange(best):'자료 없음',cls:'red'},
+    {k:'최저 왕복',v:best?shortWon(best.price):'—',i:best?esc(best.city)+' · '+ttWhen(best):'자료 없음',cls:'red'},
     {k:'평균 왕복',v:avg?shortWon(avg):'—',i:shown.length?KR(shown.length)+'건 기준':'자료 없음',cls:''}
   ];
   $('ttKpi').innerHTML=kp.map(function(o){return '<div class="tt-kpi '+o.cls+'"><span>'+o.k+'</span><b>'+o.v+'</b><i>'+o.i+'</i></div>'}).join('');
@@ -48,15 +55,15 @@ function renderTtKpi(){
 function renderTtTop(){
   const top=ttFiltered().slice().sort(ttByPrice).slice(0,5);
   $('ttTop5').innerHTML=top.length?top.map(function(d,i){
-    return ttRow('rank-item tt-hit',d.url,d.city+' '+ttRange(d)+' '+KR(d.price)+'원',
+    return ttRow('rank-item tt-hit',d.url,d.city+' '+ttWhen(d)+' '+KR(d.price)+'원',
       '<span class="rank-n">'+String(i+1).padStart(2,'0')+'</span>'+
-      '<div class="rank-entity"><div class="rank-name">'+esc(d.city)+' <span class="fl-code">'+esc(d.code)+'</span>'+ttChanTag(d)+'</div>'+
-      '<div class="rank-meta">'+esc(ttRange(d))+' · '+esc(ttSpan(d))+' · '+ttAir(d)+' · 잔여 '+esc(ttSeats(d))+'</div></div>'+
-      '<div class="rank-num'+(i===0?' red':'')+'">'+shortWon(d.price)+'</div>');
-  }).join(''):'<div class="rank-empty">아직 수집된 상품이 없습니다 — 팀원 수집분이 들어오면 여기부터 채워집니다.</div>';
+      '<div class="rank-entity"><div class="rank-name">'+esc(d.city)+' <span class="fl-code">'+esc(d.code)+'</span>'+ttChanTag(d)+ttPeriodTag(d)+'</div>'+
+      '<div class="rank-meta">'+esc(ttWhen(d))+' · '+esc(ttSpan(d))+' · '+ttAir(d)+' · 잔여 '+esc(ttSeats(d))+'</div></div>'+
+      '<div class="rank-num'+(i===0?' red':'')+'">'+ttPrice(d)+'</div>');
+  }).join(''):'<div class="rank-empty">아직 수집된 상품이 없습니다 — 수집분이 들어오면 여기부터 채워집니다.</div>';
   $('ttTopSub').textContent=ttFiltered().length?'싼 순서 · '+KR(ttFiltered().length)+'건 중':'자료 없음';
   const b=ttBestOf(ttFiltered());
-  $('ttTopHint').innerHTML=b?('가장 싼 상품은 <strong>'+esc(b.city)+' '+esc(ttRange(b))+' '+KR(b.price)+'원</strong>('+ttAir(b)+' · '+esc(ttSpan(b))+'). 카드를 누르면 그 상품 예약 페이지가 <strong>새 탭에서 바로</strong> 열립니다.'):'';
+  $('ttTopHint').innerHTML=b?('가장 싼 상품은 <strong>'+esc(b.city)+' '+esc(ttWhen(b))+' '+KR(b.price)+'원</strong>('+ttAir(b)+' · '+esc(ttSpan(b))+'). 카드를 누르면 그 상품 예약 페이지가 <strong>새 탭에서 바로</strong> 열립니다.'):'';
 }
 
 /* 노선별 최저가 목록 — 행을 누르면 노선 최저 상품 예약 페이지 */
@@ -65,10 +72,10 @@ function renderTtRoutes(){
   ttFiltered().forEach(function(d){const k=d.code;if(!by[k])by[k]={code:d.code,city:d.city,region:d.region,deals:[]};by[k].deals.push(d)});
   const rows=Object.keys(by).map(function(k){return {g:by[k],b:ttBestOf(by[k].deals)}}).sort(function(a,b){return ttByPrice(a.b,b.b)});
   $('ttRoutes').innerHTML=rows.length?rows.map(function(o){
-    return ttRow('tt-rt',o.b.url,o.g.city+' '+ttRange(o.b)+' '+KR(o.b.price)+'원',
-      '<div><div class="tt-rt-name">'+esc(o.g.city)+' <span class="fl-code">'+esc(o.g.code)+'</span></div>'+
-      '<div class="tt-rt-meta">'+esc(ttRange(o.b))+' · '+esc(ttSpan(o.b))+' · '+ttAir(o.b)+' · '+o.g.deals.length+'건</div></div>'+
-      '<div class="tt-rt-price">'+shortWon(o.b.price)+'</div>');
+    return ttRow('tt-rt',o.b.url,o.g.city+' '+ttWhen(o.b)+' '+KR(o.b.price)+'원',
+      '<div><div class="tt-rt-name">'+esc(o.g.city)+' <span class="fl-code">'+esc(o.g.code)+'</span>'+ttPeriodTag(o.b)+'</div>'+
+      '<div class="tt-rt-meta">'+esc(ttWhen(o.b))+' · '+esc(ttSpan(o.b))+' · '+ttAir(o.b)+' · '+o.g.deals.length+'건</div></div>'+
+      '<div class="tt-rt-price">'+ttPrice(o.b)+'</div>');
   }).join(''):'<div class="rank-empty">표시할 노선이 없습니다.</div>';
   $('ttRouteSub').textContent=rows.length?rows.length+'개 노선':'자료 없음';
   $('ttRouteHint').innerHTML='노선마다 <strong>가장 싼 출발일</strong>을 한 줄씩 놓았습니다. 줄을 누르면 그 상품 예약 페이지가 새 탭에서 열립니다.';
@@ -103,7 +110,8 @@ function renderTtCal(){
   const idx=months.indexOf(ttst.month);
   $('ttMonthTitle').textContent=monlabel(ttst.month);
   $('ttPrevMonth').disabled=idx<=0;$('ttNextMonth').disabled=idx>=months.length-1;
-  const deals=ttFiltered().filter(function(d){return String(d.out).slice(0,7)===ttst.month});
+  const deals=ttFiltered().filter(function(d){return !ttIsPeriod(d)&&String(d.out).slice(0,7)===ttst.month});
+  const periods=ttFiltered().filter(function(d){return ttIsPeriod(d)&&(String(d.out).slice(0,7)===ttst.month||String(d.outUntil).slice(0,7)===ttst.month)});
   const dayMap={};
   deals.forEach(function(d){(dayMap[d.out]=dayMap[d.out]||[]).push(d)});
   const dayMin={};Object.keys(dayMap).forEach(function(k){dayMin[k]=ttMinOf(dayMap[k])});
@@ -131,7 +139,7 @@ function renderTtCal(){
   });
   box.innerHTML=html;
   const nRoutes=Object.keys(dayMap).length?[...new Set(deals.map(function(d){return d.code}))].length:0;
-  $('ttCalSub').textContent=monlabel(ttst.month)+' · 이 달 '+deals.length+'건 · '+nRoutes+'개 노선 · '+Object.keys(dayMap).length+'일'+(monthMin!=null?' · 최저 '+shortWon(monthMin):'')+' · 칸을 누르면 예약 페이지가 새 탭에서 열립니다';
+  $('ttCalSub').textContent=monlabel(ttst.month)+' · 이 달 하루짜리 '+deals.length+'건 · '+nRoutes+'개 노선 · '+Object.keys(dayMap).length+'일'+(monthMin!=null?' · 최저 '+shortWon(monthMin):'')+' · 칸을 누르면 예약 페이지가 새 탭에서 열립니다'+(periods.length?' · 기간형 '+periods.length+'건은 출발일 범위 상품이라 달력 대신 아래 목록에':'');
 }
 
 /* 선택한 출발일 상세 */
@@ -168,12 +176,12 @@ function renderTtTable(){
   }else{
     rows.forEach(function(o){
       const b=o.b;
-      html+=ttRow('tt-trow',b.url,o.g.city+' '+ttRange(b)+' '+KR(b.price)+'원',
-        '<span class="tt-cell r-name"><b>'+esc(o.g.city)+'</b><small>'+esc(o.g.code)+' · '+esc(o.g.region)+' · '+o.g.deals.length+'건</small></span>'+
-        '<span class="tt-cell price low r-price"><b>'+KR(b.price)+'원</b><small>'+esc(ttChan(b))+'</small></span>'+
-        '<span class="tt-cell r-date"><b>'+esc(ttRange(b))+'</b><small>'+esc(weekday(b.out))+' 출발 · '+esc(weekday(b.back))+' 귀국</small></span>'+
+      html+=ttRow('tt-trow',b.url,o.g.city+' '+ttWhen(b)+' '+KR(b.price)+'원',
+        '<span class="tt-cell r-name"><b>'+esc(o.g.city)+'</b><small>'+esc(o.g.code)+' · '+esc(o.g.region)+' · '+o.g.deals.length+'건'+ttPeriodTag(b)+'</small></span>'+
+        '<span class="tt-cell price low r-price"><b>'+KR(b.price)+'원'+(b.priceTo?'~':'')+'</b><small>'+esc(ttChan(b))+(b.priceTo?' · 최대 '+KR(b.priceTo)+'원':'')+'</small></span>'+
+        '<span class="tt-cell r-date"><b>'+esc(ttWhen(b))+'</b><small>'+(ttIsPeriod(b)?'출발 가능일 범위 · 예약 화면에서 날짜 선택':esc(weekday(b.out))+' 출발 · '+esc(weekday(b.back))+' 귀국')+'</small></span>'+
         '<span class="tt-cell r-span">'+esc(ttSpan(b))+'<small>잔여 '+esc(ttSeats(b))+'</small></span>'+
-        '<span class="tt-cell r-air">'+ttAir(b)+'<small>'+esc(b.times||'시각 미표시')+'</small></span>'+
+        '<span class="tt-cell r-air">'+ttAir(b)+'<small>'+esc(b.times||(ttIsPeriod(b)?'예약 화면에서 확인':'시각 미표시'))+'</small></span>'+
         '<span class="tt-cell go r-go"><span class="tt-go">예약 ↗</span></span>');
     });
   }
@@ -191,13 +199,13 @@ function renderTtList(){
     html+='<div class="tt-none">아직 수집된 상품이 없습니다.</div>';
   }else{
     ds.forEach(function(d){
-      html+=ttRow('tt-drow',d.url,d.city+' '+ttRange(d)+' '+KR(d.price)+'원',
-        '<span class="tt-cell d-date"><b>'+esc(ttRange(d))+'</b><small>'+esc(weekday(d.out))+'–'+esc(weekday(d.back))+'</small></span>'+
-        '<span class="tt-cell d-name"><b>'+esc(d.city)+'</b><small>'+esc(d.code)+' · '+esc(d.region)+ttChanTag(d)+'</small></span>'+
+      html+=ttRow('tt-drow',d.url,d.city+' '+ttWhen(d)+' '+KR(d.price)+'원',
+        '<span class="tt-cell d-date"><b>'+esc(ttWhen(d))+'</b><small>'+esc(weekday(d.out))+(ttIsPeriod(d)?'부터 출발 가능':('–'+esc(weekday(d.back))))+'</small></span>'+
+        '<span class="tt-cell d-name"><b>'+esc(d.city)+'</b><small>'+esc(d.code)+' · '+esc(d.region)+ttChanTag(d)+ttPeriodTag(d)+'</small></span>'+
         '<span class="tt-cell d-span">'+esc(ttSpan(d))+'</span>'+
         '<span class="tt-cell d-seat">'+esc(ttSeats(d))+'</span>'+
         '<span class="tt-cell d-air">'+ttAir(d)+'</span>'+
-        '<span class="tt-cell price d-go'+(d.price===min?' low':'')+'"><b>'+KR(d.price)+'원</b><span class="tt-go">예약 ↗</span></span>');
+        '<span class="tt-cell price d-go'+(d.price===min?' low':'')+'"><b>'+KR(d.price)+'원'+(d.priceTo?'~':'')+'</b><span class="tt-go">예약 ↗</span></span>');
     });
   }
   $('ttList').className='tt-table tt-dtable';
@@ -208,7 +216,7 @@ function renderTtList(){
 /* 조회 기준 · 주의 */
 function renderTtNotes(){
   const o=(typeof TTANG!=='undefined'&&TTANG.observedAt)||'—';
-  $('ttBasis').innerHTML='<p class="hint">수집 시각 <strong>'+esc(o)+'</strong>. 부산(PUS) 출발 <strong>왕복</strong> 상품만 담았고, 금액은 <strong>성인 1인 왕복 총액</strong>(유류할증료·공항시설사용료·세금 포함 예약 화면 표시가)입니다. 출발일·귀국일은 상품에 적힌 날짜를 그대로 옮겼고, 기간(일수)은 출발일~귀국일과 일치합니다.<br>달력의 칸은 <strong>그 출발일에서 가장 싼 상품</strong>의 금액이고, 오른쪽 위 작은 숫자는 같은 날짜에 있는 상품 수입니다. 빈칸(—)은 그 날 수집된 상품이 없다는 뜻으로, 추정해서 채우지 않았습니다.</p>';
+  $('ttBasis').innerHTML='<p class="hint">수집 시각 <strong>'+esc(o)+'</strong>. 부산(PUS) 출발 <strong>왕복</strong> 상품만 담았고, 금액은 <strong>성인 1인 왕복 총액</strong>(유류할증료·공항시설사용료·세금 포함 예약 화면 표시가)입니다. 출발일·귀국일은 상품에 적힌 날짜를 그대로 옮겼고, 기간(일수)은 출발일~귀국일과 일치합니다.<br>달력의 칸은 <strong>그 출발일에서 가장 싼 상품</strong>의 금액이고, 오른쪽 위 작은 숫자는 같은 날짜에 있는 상품 수입니다. 빈칸(—)은 그 날 수집된 상품이 없다는 뜻으로, 추정해서 채우지 않았습니다.<br><strong>기간형</strong>은 출발일이 하루로 정해지지 않은 상품(예: 11/28~3/24 출발 가능)이라 달력 대신 목록에 <strong>출발 가능일 범위와 최저~최고 금액</strong>으로 적었습니다. 누르면 그 상품 예약 화면이 열리고, 그 안에서 날짜별 금액·잔여석을 고를 수 있습니다.</p>';
   $('ttCaution').innerHTML='<ul class="hint" style="margin:0;padding-left:16px">'+
     '<li>예약 페이지는 <strong>각 상품의 예약 화면</strong>으로 바로 열립니다. 날짜 칸·노선 행·상품 행 어디를 눌러도 새 탭에서 열립니다.</li>'+
     '<li>땡처리 상품은 <strong>잔여석이 적고</strong> 최소 인원 조건(2명 이상 등)이 붙는 경우가 있습니다. 목록의 잔여석·인원 조건을 먼저 확인하세요.</li>'+

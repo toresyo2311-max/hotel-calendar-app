@@ -88,6 +88,19 @@ def check_ttang(tt):
             problems.append('⑥ %s 출발일이 창(%s~%s) 밖' % (tag, w_start, w_end))
         if b < o:
             problems.append('⑥ %s 귀국일이 출발일보다 이전' % tag)
+        u = d.get('outUntil')
+        if u:
+            try:
+                until = datetime.date.fromisoformat(str(u))
+            except Exception:
+                problems.append('⑥ %s outUntil 형식 이상: %r' % (tag, u))
+                until = None
+            if until is not None and until < o:
+                problems.append('⑥ %s outUntil 이 출발일보다 이전' % tag)
+        pt = d.get('priceTo')
+        if pt is not None:
+            if not isinstance(pt, int) or (isinstance(d.get('price'), int) and pt < d['price']):
+                problems.append('⑥ %s priceTo 값 이상: %r' % (tag, pt))
         if d.get('days') != (b - o).days + 1:
             problems.append('⑥ %s 유효기간 %s일(출발~귀국은 %d일)' % (tag, d.get('days'), (b - o).days + 1))
         nights = d.get('nights')

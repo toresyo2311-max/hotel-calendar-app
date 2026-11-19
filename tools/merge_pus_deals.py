@@ -118,6 +118,10 @@ def main(argv):
         'channels': [chans[k] for k in sorted(chans)],
         'deals': deals,
     }
+    # 병합 뒤 id 는 한 번 더 매긴다(여러 수집본의 id 가 서로 겹치지 않게)
+    deals.sort(key=lambda d: (d.get('price') or 0, str(d.get('out'))))
+    for i, d in enumerate(deals, 1):
+        d['id'] = 'P%04d' % i
     if coverage:
         merged['coverage'] = coverage
     if coverage_ok is not None:

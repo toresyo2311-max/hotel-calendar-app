@@ -47,7 +47,9 @@ EXPECT_ACCOR3 = {
 EXPECT_DOMESTIC_PROGRAM = {'dB220': (True, True), 'dB200': (True, False),
                            'dA3N6': (True, False), 'dC2G2': (True, False)}
 # 출처 문구에 사이트 이름을 쓰지 않는다
-FORBIDDEN = ('accorcards', 'ittaeda', 'roame', '트립닷컴')
+FORBIDDEN = ('accorcards', 'ittaeda', 'roame', '트립닷컴', '호텔럭스', 'hotelux',
+             '아고다', '부킹닷컴', '카약', '스카이스캐너', '호텔스컴바인', '마이리얼트립',
+             '네이버', '야놀자', '여기어때')
 
 
 def check_apc(db):

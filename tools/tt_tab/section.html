@@ -1,0 +1,57 @@
+  <section id="ttPanel" class="tt-panel" hidden aria-label="부산 출발 땡처리 항공권">
+    <div class="tt-banner" id="ttBanner" hidden></div>
+    <div class="tt-summary" id="ttKpi"></div>
+
+    <div class="tt-split">
+      <section class="rank-panel">
+        <div class="rank-head"><h3>전체 최저가 TOP 5</h3><span class="rank-label" id="ttTopSub">출발일 기준</span></div>
+        <div id="ttTop5"></div>
+        <p class="hint" id="ttTopHint"></p>
+      </section>
+      <section class="rank-panel">
+        <div class="rank-head"><h3>노선별 최저가</h3><span class="rank-label" id="ttRouteSub">행을 누르면 예약</span></div>
+        <div class="tt-routes" id="ttRoutes"></div>
+        <p class="hint" id="ttRouteHint"></p>
+      </section>
+    </div>
+
+    <div class="fl-toolbar tt-toolbar">
+      <div class="field"><label for="ttRegion">권역</label><select id="ttRegion" aria-label="권역 필터"></select></div>
+      <div class="field"><label for="ttCity">도시 · 노선</label><select id="ttCity" aria-label="도시 필터"></select></div>
+      <div class="fl-count" id="ttCount"></div>
+    </div>
+
+    <div class="fl-block">
+      <div class="fl-block-head">
+        <div><h3>출발일 달력 — 가장 싼 날</h3><div class="meta" id="ttCalSub"></div></div>
+        <div class="fl-head-right">
+          <div class="nav-month fl-monthnav"><button type="button" id="ttPrevMonth" aria-label="이전 달">‹</button><span id="ttMonthTitle">—</span><button type="button" id="ttNextMonth" aria-label="다음 달">›</button></div>
+          <div class="fl-legend"><span><i class="red"></i>그 달 최저</span><span><i class="grey"></i>자료 없음</span></div>
+        </div>
+      </div>
+      <div class="weekhead"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+      <div id="ttDays" class="tt-days" role="group" aria-label="땡처리 항공권 출발일 달력"></div>
+      <div id="ttDayDetail" class="fl-detail"></div>
+    </div>
+
+    <div class="fl-block">
+      <div class="fl-block-head">
+        <div><h3>노선별 표 — 왕복 최저가</h3><div class="meta" id="ttTableSub"></div></div>
+        <div class="fl-head-right"><div class="fl-legend"><span>행을 누르면 그 상품의 예약 페이지가 새 탭에서 열립니다</span></div></div>
+      </div>
+      <div class="tt-table" id="ttTable"></div>
+    </div>
+
+    <div class="fl-block">
+      <div class="fl-block-head">
+        <div><h3>전체 상품 목록 — 출발일·기간·잔여석</h3><div class="meta" id="ttListSub"></div></div>
+        <div class="fl-head-right"><div class="fl-legend"><span>가격이 싼 순서</span></div></div>
+      </div>
+      <div class="tt-table" id="ttList"></div>
+    </div>
+
+    <div class="note-grid">
+      <section class="notice"><h3>조회 기준과 금액 읽는 법</h3><div id="ttBasis"></div></section>
+      <section class="notice"><h3>예약 전에 꼭 확인하세요</h3><div id="ttCaution"></div></section>
+    </div>
+  </section>

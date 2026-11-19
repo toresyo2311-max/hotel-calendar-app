@@ -49,7 +49,65 @@ EXPECT_DOMESTIC_PROGRAM = {'dB220': (True, True), 'dB200': (True, False),
 # 출처 문구에 사이트 이름을 쓰지 않는다
 FORBIDDEN = ('accorcards', 'ittaeda', 'roame', '트립닷컴', '호텔럭스', 'hotelux',
              '아고다', '부킹닷컴', '카약', '스카이스캐너', '호텔스컴바인', '마이리얼트립',
-             '네이버', '야놀자', '여기어때')
+             '네이버', '야놀자', '여기어때',
+             # ⑥ 땡처리 탭 — 예약 사이트 이름은 화면 글자에 남기지 않는다(href 주소는 제외)
+             '모두투어', '땡처리닷컴', 'ttang.com', 'modetour.com')
+
+
+def check_ttang(tt):
+    """⑥ 땡처리 · 부산 출발 상품 검사 — id 중복·기간 일치·가격·예약 호스트·출발일 창."""
+    problems = []
+    if not isinstance(tt, dict):
+        return ['⑥ 땡처리 데이터가 객체가 아님']
+    deals = tt.get('deals')
+    if not isinstance(deals, list):
+        return ['⑥ ttang.deals 가 배열이 아님']
+    win = tt.get('window') or {}
+    w_start = win.get('start') or TTANG_WINDOW[0]
+    w_end = win.get('end') or TTANG_WINDOW[1]
+    if not win:
+        problems.append('⑥ ttang.window 없음')
+    seen = set()
+    for d in deals:
+        tag = d.get('id') or d.get('city') or '?'
+        for k in ('id', 'src', 'region', 'city', 'code', 'out', 'back', 'airline', 'url'):
+            if not d.get(k):
+                problems.append('⑥ %s 에 %s 없음' % (tag, k))
+        if d.get('id') in seen:
+            problems.append('⑥ 상품 id 중복: %s' % tag)
+        seen.add(d.get('id'))
+        if d.get('src') not in TTANG_SRC:
+            problems.append('⑥ %s src 이상: %r (g/t)' % (tag, d.get('src')))
+        try:
+            o = datetime.date.fromisoformat(str(d.get('out')))
+            b = datetime.date.fromisoformat(str(d.get('back')))
+        except Exception:
+            problems.append('⑥ %s 출발/귀국일 형식 이상' % tag)
+            continue
+        if not (w_start <= str(d.get('out')) <= w_end):
+            problems.append('⑥ %s 출발일이 창(%s~%s) 밖' % (tag, w_start, w_end))
+        if b < o:
+            problems.append('⑥ %s 귀국일이 출발일보다 이전' % tag)
+        if d.get('days') != (b - o).days + 1:
+            problems.append('⑥ %s 유효기간 %s일(출발~귀국은 %d일)' % (tag, d.get('days'), (b - o).days + 1))
+        nights = d.get('nights')
+        if nights is not None and nights != (b - o).days:
+            problems.append('⑥ %s 박수 %s(%d박)' % (tag, nights, (b - o).days))
+        if d.get('airline') == '미확인':
+            pass
+        if not isinstance(d.get('price'), int) or d['price'] <= 0:
+            problems.append('⑥ %s 가격이 양의 정수가 아님(추정·0원 금지): %r' % (tag, d.get('price')))
+        elif d['price'] > 5_000_000:
+            problems.append('⑥ %s 가격 이상 고가: %r' % (tag, d['price']))
+        for k in ('seats', 'minPax'):
+            v = d.get(k)
+            if v is not None and (not isinstance(v, int) or v < 0):
+                problems.append('⑥ %s %s 값 이상: %r' % (tag, k, v))
+        m = _TT_URL_RE.match(str(d.get('url') or ''))
+        host = (m.group(1).lower() if m else '')
+        if not any(host == h or host.endswith('.' + h) for h in TTANG_HOSTS):
+            problems.append('⑥ %s 예약 주소 호스트가 화이트리스트 밖: %s' % (tag, host or '-'))
+    return problems
 
 
 def check_apc(db):
@@ -195,7 +253,17 @@ def check_accor3(db):
 # 예약 링크(href) 호스트 — 화면에 보이는 글자가 아니라 날짜 칸이 여는 주소이므로
 # 출처 문구 검사에서 제외한다. 그 밖의 출처 표기는 그대로 검사한다.
 LINK_HOSTS = ('marriott.com', 'ritzcarlton.com', 'all.accor.com', 'accor.com',
-              'hotelux.com', 'trip.com', 'weixin.qq.com', 'americanexpress.com')
+              'hotelux.com', 'trip.com', 'weixin.qq.com', 'americanexpress.com',
+              'ttang.com', 'modetour.com')
+
+# ── ⑥ 땡처리 · 부산 출발 ────────────────────────────────────────────────
+# 부산(PUS) 출발 땡처리 상품 — `const TTANG`(master 의 ttang). 화면의 날짜 칸·노선 행·상품 행은
+# 모두 이 상품들의 예약 주소(url)로 새 탭을 연다. 추정 금액은 넣지 않는다.
+TTANG_SCHEMA = 'team-busan/pus-deals/1'
+TTANG_WINDOW = ('2026-11-19', '2027-11-30')
+TTANG_HOSTS = ('ttang.com', 'modetour.com')
+TTANG_SRC = ('g', 't')
+_TT_URL_RE = re.compile(r'^https://(?:www\.)?([^/]+)/', re.I)
 _LINK_RE = re.compile(r'https?://([^\s"\'<>()\\]+)', re.I)
 
 
@@ -1767,13 +1835,19 @@ def read_index(path=INDEX):
     return src, db, flights, (a, b), (c, d)
 
 
+def read_ttang(src):
+    """⑥ 땡처리 상품 — `const TTANG` 블록과 그 위치."""
+    a, b = find_literal(src, 'TTANG')
+    return json.loads(src[a:b]), (a, b)
+
+
 def compact(obj):
     return json.dumps(obj, ensure_ascii=False, separators=(',', ':'))
 
 
 # ---------------------------------------------------------------- 통계
 
-def stats_of(db, flights):
+def stats_of(db, flights, tt=None):
     hotels = db['hotels']
     cells = sum(len(h.get('rates') or {}) for h in hotels)
     priced = sum(1 for h in hotels for v in (h.get('rates') or {}).values() if v is not None)
@@ -1796,6 +1870,8 @@ def stats_of(db, flights):
         'stayplus': stayplus,
         'routes': len(routes),
         'deals': deals,
+        'pus_deals': len(((tt or {}).get('deals')) or []),
+        'pus_routes': len({d.get('code') for d in ((tt or {}).get('deals') or [])}),
         'priced_per_hotel': {h['id']: sum(1 for v in (h.get('rates') or {}).values() if v is not None)
                              for h in hotels},
         'cells_per_hotel': {h['id']: len(h.get('rates') or {}) for h in hotels},
@@ -1809,6 +1885,7 @@ def stats_of(db, flights):
 
 def cmd_extract(args):
     src, db, flights, _, _ = read_index()
+    tt, _ = read_ttang(src)
     commit = os.environ.get('MASTER_DB_COMMIT', '')
     if not commit:
         try:
@@ -1817,7 +1894,7 @@ def cmd_extract(args):
                                              text=True).strip()
         except Exception:
             commit = 'unknown'
-    st = stats_of(db, flights)
+    st = stats_of(db, flights, tt)
     master = {
         'schema': 'hotel-calendar-app/master-db',
         'version': 1,
@@ -1828,10 +1905,11 @@ def cmd_extract(args):
         'voucherExpiry': db.get('voucherExpiry'),
         'extended': db.get('extended'),
         'counts': {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus',
-                                      'routes', 'deals', 'snu')},
+                                      'routes', 'deals', 'snu', 'pus_deals', 'pus_routes')},
         'sources': db.get('sources') or [],
         'hotels': db['hotels'],
         'flights': flights,
+        'ttang': tt,
         'accor': db.get('accor'),
     }
     os.makedirs(os.path.dirname(MASTER), exist_ok=True)
@@ -1843,6 +1921,7 @@ def cmd_extract(args):
     print('wrote %s' % os.path.relpath(MASTER, ROOT))
     print('  hotels %(hotels)d  cells %(cells)d  priced %(priced)d  na %(na)d' % st)
     print('  stayplus %(stayplus)d  routes %(routes)d  deals %(deals)d' % st)
+    print('  ⑥ 땡처리 %(pus_deals)d건 · %(pus_routes)d개 노선' % st)
     print('  date window %s ~ %s (%d days)' % (st['date_min'], st['date_max'], st['dates']))
     return 0
 
@@ -1850,7 +1929,7 @@ def cmd_extract(args):
 # ---------------------------------------------------------------- verify
 
 def project(master):
-    """master_db.json -> index.html 의 `const DB` / `const FLIGHTS` 에 들어가야 할 값."""
+    """master_db.json -> index.html 의 `const DB` / `const FLIGHTS` / `const TTANG` 에 들어가야 할 값."""
     db = {
         'hotels': master['hotels'],
         'sources': master['sources'],
@@ -1859,7 +1938,7 @@ def project(master):
         'extended': master['extended'],
         'accor': master.get('accor'),
     }
-    return db, master['flights']
+    return db, master['flights'], master.get('ttang') or {'deals': []}
 
 
 def check_tabs(db):
@@ -1925,9 +2004,10 @@ def check_tabs(db):
 def cmd_verify(args, quiet=False):
     master = json.loads(_read(MASTER))
     src, db, flights, _, _ = read_index()
+    tt, _ = read_ttang(src)
     problems = []
 
-    mdb, mfl = project(master)
+    mdb, mfl, mtt = project(master)
     if compact(mdb) != compact(db):
         # 어느 부분이 다른지 좁혀서 알려준다
         if list(mdb.keys()) != list(db.keys()):
@@ -1944,10 +2024,13 @@ def cmd_verify(args, quiet=False):
                 problems.append('DB.%s 다름' % k)
     if compact(mfl) != compact(flights):
         problems.append('FLIGHTS 내용 다름')
+    if compact(mtt) != compact(tt):
+        problems.append('TTANG(⑥ 땡처리) 내용 다름')
 
-    st = stats_of(db, flights)
+    st = stats_of(db, flights, tt)
     expect = master.get('counts') or {}
-    for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus', 'routes', 'deals', 'snu'):
+    for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus', 'routes', 'deals', 'snu',
+              'pus_deals', 'pus_routes'):
         if k in expect and expect[k] != st[k]:
             problems.append('counts.%s 불일치: master=%s index=%s' % (k, expect[k], st[k]))
     if st['date_min'] != WINDOW_START or st['date_max'] != WINDOW_END or st['dates'] != 365:
@@ -1961,6 +2044,11 @@ def cmd_verify(args, quiet=False):
     problems.extend(check_sources(src))
     problems.extend(check_sources(_read(MASTER)))
     problems.extend(check_flights(flights))
+    problems.extend(check_ttang(tt))
+    # ⑥ 탭의 정적 골격이 빠지지 않았는지(마크업·탭 버튼·데이터 블록)
+    for needle in ('id="ttPanel"', 'data-tab="tt"', 'const TTANG'):
+        if needle not in src:
+            problems.append('⑥ 땡처리 탭 골격 누락: %s' % needle)
 
     if problems:
         print('VERIFY FAIL')
@@ -1972,6 +2060,7 @@ def cmd_verify(args, quiet=False):
         print('  hotels %(hotels)d  tabs %(tabs)s' % st)
         print('  cells %(cells)d  priced %(priced)d  na %(na)d  stayplus %(stayplus)d' % st)
         print('  routes {routes}  deals {deals}  window {date_min}~{date_max}'.format(**st))
+        print('  ⑥ 땡처리 {pus_deals}건 · {pus_routes}개 노선'.format(**st))
         print('  flights 당일치기 %d건 · 패턴 %d종' % (flights['counts'].get('daytrip', 0),
                                                    len(flights['patterns'])))
     return 0
@@ -1984,15 +2073,17 @@ def cmd_inject(args):
         print('master_db.json 이 이미 index.html 과 다릅니다 — verify 로 차이를 먼저 확인하세요.')
         print('(다른 데이터를 넣으려면 수정한 뒤 inject 하는 것이 맞습니다. 계속 진행합니다.)')
     master = json.loads(_read(MASTER))
-    mdb, mfl = project(master)
+    mdb, mfl, mtt = project(master)
     src, db, flights, span_db, span_fl = read_index()
+    tt, span_tt = read_ttang(src)
 
-    if compact(db) == compact(mdb) and compact(flights) == compact(mfl):
+    if compact(db) == compact(mdb) and compact(flights) == compact(mfl) and compact(tt) == compact(mtt):
         print('index.html 이 이미 master_db.json 과 같습니다 — 바꾸지 않았습니다.')
         return 0
 
     new = src
-    # 뒤쪽(FLIGHTS)부터 바꿔야 앞쪽 오프셋이 흔들리지 않는다
+    # 뒤쪽(TTANG → FLIGHTS)부터 바꿔야 앞쪽 오프셋이 흔들리지 않는다
+    new = new[:span_tt[0]] + compact(mtt) + new[span_tt[1]:]
     new = new[:span_fl[0]] + compact(mfl) + new[span_fl[1]:]
     new = new[:span_db[0]] + compact(mdb) + new[span_db[1]:]
 
@@ -2005,7 +2096,8 @@ def cmd_inject(args):
         print('검증 실패 — index.html 을 백업으로 되돌렸습니다.')
         return 1
     os.remove(backup)
-    print('index.html 갱신 완료 (DB %d호텔, FLIGHTS %d노선)' % (len(mdb['hotels']), len(mfl.get('routes') or [])))
+    print('index.html 갱신 완료 (DB %d호텔, FLIGHTS %d노선, ⑥ 땡처리 %d건)' % (
+        len(mdb['hotels']), len(mfl.get('routes') or []), len((mtt or {}).get('deals') or [])))
     return 0
 
 
@@ -2014,9 +2106,10 @@ def cmd_inject(args):
 def cmd_refresh(args):
     """호텔·항공을 병합한 뒤 master_db.json 의 counts 만 다시 센다(데이터는 건드리지 않음)."""
     master = json.loads(_read(MASTER))
-    st = stats_of(master, master['flights'])
+    st = stats_of(master, master['flights'], master.get('ttang'))
     master['counts'] = {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na',
-                                           'stayplus', 'routes', 'deals', 'snu')}
+                                           'stayplus', 'routes', 'deals', 'snu',
+                                           'pus_deals', 'pus_routes')}
     tmp = MASTER + '.tmp'
     with open(tmp, 'w', encoding='utf-8') as fp:
         json.dump(master, fp, ensure_ascii=False, indent=1)
@@ -2027,13 +2120,15 @@ def cmd_refresh(args):
 
 
 def cmd_stats(args):
-    _, db, flights, _, _ = read_index()
-    st = stats_of(db, flights)
+    src, db, flights, _, _ = read_index()
+    tt, _ = read_ttang(src)
+    st = stats_of(db, flights, tt)
     print('index.html 기준')
     print('  hotels  %d  %s' % (st['hotels'], st['tabs']))
     print('  cells   %d  (priced %d / NA %d)' % (st['cells'], st['priced'], st['na']))
     print('  stayplus %d건 · SNU 후보 %d줄' % (st['stayplus'], st['snu']))
     print('  flights %d노선 %d건' % (st['routes'], st['deals']))
+    print('  ⑥ 땡처리 %d건 · %d개 노선' % (st['pus_deals'], st['pus_routes']))
     print('  window  %s ~ %s (%d일)' % (st['date_min'], st['date_max'], st['dates']))
     print()
     print('호텔별 요금 표기 칸수')

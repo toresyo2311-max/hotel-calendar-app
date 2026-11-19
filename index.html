@@ -4951,7 +4951,7 @@ function vtOnChange(e){
   const t=e.target;
   if(t.id==='vtRegion'){vt.region=t.value;renderVtList();return}
   if(t.id==='vtIssuer'){vt.issuer=t.value;renderVtList();return}
-  if(t.id==='vtSearch'){vt.q=t.value;renderVtList();return}
+  if(t.id==='vtSearch'){if(vt.q!==t.value){vt.q=t.value;renderVtList()}return}   /* 포커스가 빠질 때 오는 change 는 같은 값이면 다시 그리지 않는다 — 그리면 누른 버튼·호텔이 사라져 첫 클릭이 먹힌다 */
   if(t.id==='vtMineOnly'){vt.mine=t.checked;vtSavePref();renderVtKpis();renderVtList();return}
   if(t.id==='vtNoReceipt'){vt.noReceipt=t.checked;renderVtList();return}
   if(t.id==='vtFreePark'){vt.freePark=t.checked;renderVtList();return}

@@ -133,6 +133,10 @@ button:disabled{cursor:not-allowed;opacity:.3}
 .hero-price .p{font-size:30px;font-weight:800;letter-spacing:-.055em;line-height:1;color:var(--plum);font-variant-numeric:tabular-nums}
 .hero-price .p small{font-size:14px;font-weight:700;letter-spacing:-.02em;margin-left:1px}
 .hero-price .u{font-size:10px;color:var(--muted2);font-weight:700;padding-bottom:3px}
+.hero-fx{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;margin-top:6px;font-size:11px;font-weight:700;color:var(--muted2)}
+.hero-fx b{font-size:14px;font-weight:800;color:var(--plum);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hero-fx small{font-size:9.5px;font-weight:600}
+.cmpfx{margin:9px 2px 0;font-size:9.5px;line-height:1.5;color:var(--muted2);font-weight:600}
 .hero-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
 .chip{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 8px;font-size:9.5px;font-weight:800;border:1px solid var(--line);background:var(--card);color:var(--muted)}
 .chip.ok{background:var(--lav);border-color:var(--lav2);color:var(--violet-d)}
@@ -1308,7 +1312,7 @@ body.cmp-on{padding-bottom:66px}
     <div><b>스냅샷 기준</b>① VIP·FHR 2026-11-17 01:13 (일본 6·방콕 5·다낭·나트랑 6 = 17곳은 2026-11-19 21:13~23:30 재실측) · ② APC 관측 2026-11-16 / 현금 2026-11-17 · ③ 2026-11-16~17 · ④ 현금·포인트 2026-11-17 · ⑤ 항공 2026-11-17~19 · ⑥ 땡처리 2026-11-19 13:05 KST</div>
     <div><b>호텔 조회 조건</b>성인 2인 1실 · 1박 · <em>세금·수수료 포함</em> 표시가. ④ 중국 40곳은 <em>무료취소</em>를 켠 최저 총액, 한·일 22곳은 검색 최저가입니다. ③ 서울 Stay Plus 결제액은 세전입니다.</div>
     <div><b>항공 조회 조건</b>성인 <em>1인 왕복 총액</em> · 유류할증료·공항시설사용료·세금 포함 표시가(KRW). ⑤는 출발일·귀국일·패턴별 실측값, ⑥은 상품에 적힌 날짜 그대로입니다.</div>
-    <div><b>환율·반올림</b>① 해외 요금은 <em>USD 1 = ₩1,336.02</em>(2026-11-17) 고정 환산 후 100원 단위, ③ 페어몬트·소피텔은 만 원 단위, ④는 K/M 표시입니다.</div>
+    <div><b>환율·반올림</b>① 해외 요금은 <em>USD 1 = ₩1,336.02</em>(2026-11-17) 고정 환산 후 100원 단위, ③ 페어몬트·소피텔은 만 원 단위, ④는 K/M 표시입니다. ①~④ 해외 호텔 상세 카드에는 <em>2026-11-19 참고 환율</em>로 환산한 현지 통화(약 ¥34,693)를 함께 적습니다 — JPY 100 = ₩835.92 · HK$1 = ₩169.75 · MOP 1 = ₩164.80 · CN¥1 = ₩199.56 · ฿1 = ₩39.22 · ₫1 = ₩0.0518 · S$1 = ₩1,033.06 · US$1 = ₩1,331.56 · A$1 = ₩895.46.</div>
     <div><b>값이 없는 칸</b>—(NA)는 요금 미공개이며 매진·미오픈과 구분하지 않습니다. ⑤는 판매편 0건 · 요금 미공개 · 미오픈 · 미조회(—)를 나눠 적었고, <em>⚠ 이상치</em>는 1박 1천만 원 이상으로 시스템 오류가 의심되는 값입니다(0원·무료 아님).</div>
   </section>
   <footer class="smallfooter"><strong>OFFLINE FILE / 2026-11-19 통합판</strong><br>실시간 가격 연결 없음 · 약관 또는 재고 실시간 확인 불가 · 자료 내 날짜별 숫자와 미표시 상태를 그대로 보존. 개인 로그인 정보는 이 파일에 저장하지 않았습니다.<details><summary>통합한 원본 자료 <span id="sourceCount">26</span>개 보기</summary><div class="source-list" id="sources"></div></details></footer>
@@ -1416,6 +1420,55 @@ const dayNo=iso=>new Date(iso+'T12:00:00Z').getUTCDay();
 const weekday=iso=>['일','월','화','수','목','금','토'][dayNo(iso)];
 function shortWon(n){if(n==null)return '—';let v=Math.round(n/1000)/10;return (v>=100?Math.round(v*10)/10:v.toFixed(1))+'만'}
 function exactWon(n){return n==null?'미표시':'₩'+KR(n)}
+
+/* @@FX-BLOCK-START@@ 현지 통화 환산 — 2026-11-19 실측 고정 환율 ──────────
+   해외 호텔을 고르면 그 나라 통화로 바꾼 금액을 상세 카드에 함께 적는다.
+   환율: open.er-api.com 2026-11-19 00:02 UTC, 1단위 = ₩. 국내(KRW) 호텔은 환산하지 않는다. */
+const FX_ASOF='2026-11-19';
+const FX_TABLE={
+  JPY:{krw:8.3592,  sym:'¥',   label:'엔화',      unit:'JPY 100 = ₩835.92', step:1},
+  HKD:{krw:169.75,  sym:'HK$', label:'홍콩달러',  unit:'HKD 1 = ₩169.75',   step:1},
+  MOP:{krw:164.80,  sym:'MOP ',label:'파타카',    unit:'MOP 1 = ₩164.80',   step:1},
+  CNY:{krw:199.56,  sym:'CN¥', label:'위안',      unit:'CNY 1 = ₩199.56',   step:1},
+  THB:{krw:39.22,   sym:'฿',   label:'바트',      unit:'THB 1 = ₩39.22',    step:1},
+  VND:{krw:0.0518,  sym:'₫',   label:'동',        unit:'VND 10,000 = ₩518', step:1000},
+  SGD:{krw:1033.06, sym:'S$',  label:'싱가포르달러',unit:'SGD 1 = ₩1,033.06', step:1},
+  USD:{krw:1331.56, sym:'US$', label:'달러',      unit:'USD 1 = ₩1,331.56', step:1},
+  AUD:{krw:895.46,  sym:'A$',  label:'호주달러',  unit:'AUD 1 = ₩895.46',   step:1}
+};
+const CCY_CITY={};
+'서울 부산 제주 대구 울산 전주 인천 대전 광주 수원 경주'.split(' ').forEach(c=>CCY_CITY[c]='KRW');
+'도쿄 오사카 교토 후쿠오카 오키나와 나라 닛코 나고야 삿포로 요코하마 고베'.split(' ').forEach(c=>CCY_CITY[c]='JPY');
+'광저우 구이린 구이양 난징 난창 난퉁 닝보 다롄 다리 다퉁 단저우 둥관 라싸 롄윈강 루가오 뤄양 르자오 리장 린이 린펀 미러 바오딩 바이산 베이징 사오싱 상하이 샤먼 선양 선전 셴양 쉬저우 스옌 시닝 시안 시창 신양 싼야 쑤저우 안순 양저우 양취안 어얼둬쓰 언스 옌안 옌청 옌타이 우루무치 우시 우한 원저우 웨양 웨이팡 위시 윈청 이싱 이창 인촨 자싱 장인 장자제 저우산 정저우 주자이거우 주하이 지난 지우자이거우 징훙 차오저우 창사 창수 창저우 창춘 청두 충칭 취안저우 치둥 친황다오 칭다오 카슈가르 카이펑 쿤밍 쿤산 타이위안 타이저우 타이저우(장쑤) 타이창 탕산 톈수이 톈진 포산 푸저우 핑야오 하얼빈 하이커우 한단 항저우 허페이 화이안 후이저우 후저우 후허하오터'.split(' ').forEach(c=>CCY_CITY[c]='CNY');
+Object.assign(CCY_CITY,{홍콩:'HKD',마카오:'MOP',싱가포르:'SGD',방콕:'THB',다낭:'VND',나트랑:'VND',뉴욕:'USD',시드니:'AUD'});
+/* 호텔 → 통화 코드. 도시 이름을 먼저 보고, 없으면 권역(region)과 탭으로 보완한다. */
+function currencyOf(h){
+  if(!h)return null;
+  const city=String(h.city||'').trim(),region=String(h.region||'').trim();
+  if(CCY_CITY[city])return CCY_CITY[city];
+  if(/일본/.test(region))return 'JPY';
+  if(/한국/.test(region))return 'KRW';
+  if(/중국/.test(region))return 'CNY';
+  if(CCY_CITY[region])return CCY_CITY[region];
+  if(h.group==='china')return 'CNY';
+  return null;
+}
+function fxNum(n){return new Intl.NumberFormat('ko-KR').format(n)}
+function fxValue(krw,code){const fx=FX_TABLE[code];if(!fx||krw==null||!(+krw>0))return null;const step=fx.step||1;return Math.round((+krw/fx.krw)/step)*step}
+function fxText(krw,code){const v=fxValue(krw,code);return v==null?'':'약 '+FX_TABLE[code].sym+fxNum(v)}
+/* 짧은 줄 — 상세 목록·비교함: '약 ¥34,693' */
+function fxShort(h,krw){const code=currencyOf(h);if(!code||code==='KRW')return '';return fxText(krw,code)}
+/* 긴 줄 — 프로그램 혜택: '엔화 환산 약 ¥34,693 (JPY 100 = ₩835.92 기준, 2026-11-19)' */
+function fxLong(h,krw){const code=currencyOf(h);if(!code||code==='KRW')return '';const fx=FX_TABLE[code];const v=fxValue(krw,code);if(v==null)return '';return fx.label+' 환산 약 <b>'+fx.sym+fxNum(v)+'</b> ('+fx.unit+' 기준, '+FX_ASOF+')'}
+/* 히어로 가격 아래 한 줄 */
+function heroFxLine(krw,h){
+  const code=h?currencyOf(h):null;
+  if(!code||code==='KRW')return '';
+  const t=fxText(krw,code);if(!t)return '';
+  const fx=FX_TABLE[code];
+  return '<div class="hero-fx"><span>'+esc(fx.label)+' 환산</span><b>'+esc(t)+'</b><small>'+esc(fx.unit)+' · '+FX_ASOF+' 기준</small></div>';
+}
+/* @@FX-BLOCK-END@@ */
 function esc(str){return String(str??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function addMonth(iso,n){const [y,m]=iso.split('-').map(Number);const d=new Date(Date.UTC(y,m-1+n,1));return d.toISOString().slice(0,7)}
 function daysOf(month){const [y,m]=month.split('-').map(Number);const last=new Date(Date.UTC(y,m,0)).getUTCDate();return Array.from({length:last},(_,i)=>month+'-'+String(i+1).padStart(2,'0'))}
@@ -1721,8 +1774,8 @@ function renderCalendar(S){
   renderHotelStatus();renderBlackoutBox();
 }
 function renderNotes(){if(st.tab==='lux'){
- $('basis').innerHTML='<div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>VIP 요금 날짜별 최저 1박가</strong> · 성인 2인 1실, 세금 포함 표시가. 해외 호텔은 사이트 USD 표시가를 <strong>USD 1 = ₩1,336.02</strong>(2026-11-17)로 환산해 100원 단위 반올림했습니다. 2026-11-19에 다시 잰 <strong>17곳(일본 6·방콕 5·다낭·나트랑 6)</strong>은 화면의 KRW 표시가를 그대로 적었습니다(환산 없음).</span></div><div class="note-row"><span class="note-mark">◷</span><span class="note-text">수집 <strong>2026-11-17 01:13 KST</strong> + <strong>2026-11-19 21:13~23:30 KST 17곳 재실측</strong> · 요금 공개 <strong>2026-12-01 ~ 2027-10-15</strong>(2027년 8월부터 공개 호텔 감소, 호텔별 마지막 날짜 이후 미공개). 방콕 5곳은 <strong>2026-12-01~2027-03-31만</strong> 다시 쟀고 2027-04-01 이후는 11-17 값입니다.</span></div><div class="note-row"><span class="note-mark">↔</span><span class="note-text">2026-11-19 재실측 17곳은 <strong>공개된 검색 최저가</strong>(VIP 전용 요율 아님)입니다 — 11-17에는 콘래드·페어몬트 도쿄만 VIP 요금이었고, 나머지 15곳은 검색 호텔 값이었습니다. 파크 하얏트 부산·시그니엘 부산만 11-17 VIP 요금(2027-10-08 이후는 기존 검색 값), 파라다이스 부산·상하이 4곳은 11-16 검색 호텔 값입니다.</span></div>'+hlxLinkNoteRow()+'<details><summary>소스 설명 더 보기</summary><p>VIP 요금 등록 191곳 중 <strong>요금이 공개된 142곳</strong>을 실었습니다(나머지 49곳은 요금 미공개). 142곳 중 기존 탭과 겹친 4곳을 빼고 <strong>138곳을 새로 추가</strong>해 ① 탭은 162곳입니다. 칸 수는 호텔 162곳 × 365일 = 59,130칸이며, <strong>—는 요금 미표시(NA)</strong>로 0원·무료 숙박이 아닙니다. 요금 공개가 1~90일뿐인 호텔(하얏트 리젠시 도쿄·하얏트 센트릭 긴자 도쿄·호텔 도라노몬 힐스·더 마크 등 7곳)은 대부분의 날짜가 —로 보입니다.</p></details>';
- $('caution').innerHTML='<ul><li><strong class="alert">표시가는 VIP(및 파트너 요율) 또는 11-19 공개 검색 최저 표시가</strong>입니다. 실제 예약 화면 금액·적용 혜택과 다를 수 있고, 회원 등급·결제 통화에 따라 달라집니다.</li><li><strong>프로모션(15% OFF, 2+1, Stay 4 Pay 3 등)은 예약 기간·숙박 기간·최소 박수 조건</strong>이 있어 달력 1박가에 자동 반영되지 않습니다. 호텔을 선택하면 그 호텔의 조건이 상세에 나옵니다.</li><li><strong>NA(—)는 「요금 미공개」</strong>입니다. 만실·판매 중지·미오픈을 구분하지 않으며, 2027-08 이후는 공개 호텔 수 자체가 줄어 —가 많습니다. 11-19에 다시 잰 17곳도 호텔별 마지막 날짜(2027-09-05~10-15) 이후는 —입니다.</li><li>조식 포함·환불 가능 여부는 사이트가 실시간 조회한 날짜에만 표시되고, 대부분의 날짜는 확인되지 않았습니다.</li><li>환율은 수집 시점(2026-11-17) 고정값이라 이후 환율 변동은 반영되지 않습니다. 11-19 재실측 17곳은 화면의 KRW 표시가라 환산하지 않았습니다.</li></ul><details><summary>자세한 혜택·특이사항 확인</summary><div id="promoNotes"></div></details>';
+ $('basis').innerHTML='<div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>VIP 요금 날짜별 최저 1박가</strong> · 성인 2인 1실, 세금 포함 표시가. 해외 호텔은 사이트 USD 표시가를 <strong>USD 1 = ₩1,336.02</strong>(2026-11-17)로 환산해 100원 단위 반올림했습니다. 2026-11-19에 다시 잰 <strong>17곳(일본 6·방콕 5·다낭·나트랑 6)</strong>은 화면의 KRW 표시가를 그대로 적었습니다(환산 없음). 상세 카드에는 2026-11-19 참고 환율로 환산한 현지 통화(엔화 약 ¥34,693 등)를 함께 적었습니다.</span></div><div class="note-row"><span class="note-mark">◷</span><span class="note-text">수집 <strong>2026-11-17 01:13 KST</strong> + <strong>2026-11-19 21:13~23:30 KST 17곳 재실측</strong> · 요금 공개 <strong>2026-12-01 ~ 2027-10-15</strong>(2027년 8월부터 공개 호텔 감소, 호텔별 마지막 날짜 이후 미공개). 방콕 5곳은 <strong>2026-12-01~2027-03-31만</strong> 다시 쟀고 2027-04-01 이후는 11-17 값입니다.</span></div><div class="note-row"><span class="note-mark">↔</span><span class="note-text">2026-11-19 재실측 17곳은 <strong>공개된 검색 최저가</strong>(VIP 전용 요율 아님)입니다 — 11-17에는 콘래드·페어몬트 도쿄만 VIP 요금이었고, 나머지 15곳은 검색 호텔 값이었습니다. 파크 하얏트 부산·시그니엘 부산만 11-17 VIP 요금(2027-10-08 이후는 기존 검색 값), 파라다이스 부산·상하이 4곳은 11-16 검색 호텔 값입니다.</span></div>'+hlxLinkNoteRow()+'<details><summary>소스 설명 더 보기</summary><p>VIP 요금 등록 191곳 중 <strong>요금이 공개된 142곳</strong>을 실었습니다(나머지 49곳은 요금 미공개). 142곳 중 기존 탭과 겹친 4곳을 빼고 <strong>138곳을 새로 추가</strong>해 ① 탭은 162곳입니다. 칸 수는 호텔 162곳 × 365일 = 59,130칸이며, <strong>—는 요금 미표시(NA)</strong>로 0원·무료 숙박이 아닙니다. 요금 공개가 1~90일뿐인 호텔(하얏트 리젠시 도쿄·하얏트 센트릭 긴자 도쿄·호텔 도라노몬 힐스·더 마크 등 7곳)은 대부분의 날짜가 —로 보입니다.</p></details>';
+ $('caution').innerHTML='<ul><li><strong class="alert">표시가는 VIP(및 파트너 요율) 또는 11-19 공개 검색 최저 표시가</strong>입니다. 실제 예약 화면 금액·적용 혜택과 다를 수 있고, 회원 등급·결제 통화에 따라 달라집니다.</li><li><strong>프로모션(15% OFF, 2+1, Stay 4 Pay 3 등)은 예약 기간·숙박 기간·최소 박수 조건</strong>이 있어 달력 1박가에 자동 반영되지 않습니다. 호텔을 선택하면 그 호텔의 조건이 상세에 나옵니다.</li><li><strong>NA(—)는 「요금 미공개」</strong>입니다. 만실·판매 중지·미오픈을 구분하지 않으며, 2027-08 이후는 공개 호텔 수 자체가 줄어 —가 많습니다. 11-19에 다시 잰 17곳도 호텔별 마지막 날짜(2027-09-05~10-15) 이후는 —입니다.</li><li>조식 포함·환불 가능 여부는 사이트가 실시간 조회한 날짜에만 표시되고, 대부분의 날짜는 확인되지 않았습니다.</li><li>환율은 수집 시점(2026-11-17) 고정값이라 이후 환율 변동은 반영되지 않습니다. 11-19 재실측 17곳은 화면의 KRW 표시가라 환산하지 않았습니다. 상세 카드의 현지 통화 환산은 2026-11-19 참고 환율이며 실제 결제 금액과 다를 수 있습니다.</li></ul><details><summary>자세한 혜택·특이사항 확인</summary><div id="promoNotes"></div></details>';
  $('promoNotes').innerHTML=filteredHotels().filter(h=>h.promotion&& !h.promotion.includes('확인된 프로모션 없음')).map(h=>'<p><strong>'+esc(h.name)+'</strong>: '+esc(h.promotion)+'</p>').join('')||'<p>선택된 호텔에 기재된 체인 프로모션이 없습니다.</p>';
  }else if(st.tab==='china'){
  const at=apcObservedAll()||'—';
@@ -1946,6 +1999,8 @@ function openDetail(dt){
     const ptv=st.tab==='marriott'?ptsOf(h,dt):null;
     let under=(v==null?'':(st.tab==='marriott'?(pointsMode()?exactP(v):(ptv!=null?exactP(ptv):'')):(st.tab==='lux'||st.tab==='china'||(st.tab==='domestic'&&st.mode==='cash')?'반올림 표시가':'₩'+KR(v))))+(st.tab==='marriott'&&v!=null?ptValueTag(cashOf(h,dt),ptv):'');
     if(N>1&&v!=null)under='1박 평균 '+(pointsMode()?exactP(Math.round(v/N)):wonTxt(Math.round(v/N)))+(under?' · '+under:'');
+    const fxs=(v!=null&&!(st.tab==='marriott'&&pointsMode()))?fxShort(h,v):'';
+    if(fxs)under=(under?under+' · ':'')+fxs;
     const url=bookUrlOf(h,dt,N);
     const acts='<div class="deal-acts">'
       +(v!=null?(h.group==='china'
@@ -2466,8 +2521,10 @@ function heroPromoRows(h){
   }
   return rows;
 }
-function heroBenefitsHtml(h){
+function heroBenefitsHtml(h,cur){
   const rows=[];
+  const fxKr=(cur&&cur.p!=null&&cur.p>0&&!apcModeOn())?cur.p:null;
+  const fxRow=(h&&fxKr&&!(st.tab==='marriott'&&pointsMode()))?fxLong(h,fxKr):'';
   if(!h){
     const n=filteredHotels().length,N0=st.nights||1;
     if(N0>1)rows.push('<b>'+N0+'박 연속</b> 합계로 비교 중 — 이 달('+monlabel(st.month)+') 안에서 '+N0+'박이 이어지는 체크인만 남깁니다');
@@ -2479,7 +2536,9 @@ function heroBenefitsHtml(h){
     if(st.tab==='lux'){
       rows.push(h.vip?'<b>VIP 요금</b> 공개 호텔 · 세금 포함 표시가':'<b>검색 최저가</b> 기준 · 세금 포함');
       heroPromoRows(h).forEach(r=>rows.push(r));
-      rows.push('해외 요금은 USD 1 = ₩1,336.02 고정 환산(2026-11-17)');
+      const lc=currencyOf(h);
+      if(fxRow)rows.push(fxRow);
+      else if(lc&&lc!=='KRW')rows.push('현지 통화 환산은 날짜를 고르면 표시합니다');
     }else if(st.tab==='china'){
       const c=apcDecCount(h);
       rows.push(h.accor&&h.accor.participation==='participating'?'<b>APC 무료숙박</b> 참여 호텔':'APC 미참여 · 무료숙박 대상 아님');
@@ -2499,6 +2558,7 @@ function heroBenefitsHtml(h){
       heroPromoRows(h).forEach(r=>rows.push(r));
     }
   }
+  if(fxRow&&st.tab!=='lux')rows.push(fxRow);
   return '<div class="benefit-title">프로그램 혜택 · 조건</div><ul class="benefit-list">'
     +rows.map(r=>'<li><span>'+r+'</span></li>').join('')
     +'</ul><p class="benefit-note">수집된 원문 요약입니다. 실제 적용·잔여 재고는 예약 화면에서 확인해야 합니다.</p></div>';
@@ -2512,7 +2572,7 @@ function renderHero(S){
   const cur=selE||bestE;
   if(!hs.length||!cur){
     $('heroMain').innerHTML='<div class="hero-eyebrow">선택 호텔 요약</div><div class="hero-hotel">표시할 요금이 없습니다</div><div class="hero-meta">필터를 바꾸거나 다른 호텔을 선택해 보세요.</div>';
-    $('heroBenefits').innerHTML=heroBenefitsHtml(h);
+    $('heroBenefits').innerHTML=heroBenefitsHtml(h,null);
     return;
   }
   const name=h?h.name:(hs.length+'곳 비교');
@@ -2529,9 +2589,10 @@ function renderHero(S){
     +'<div class="hero-hotel">'+esc(name)+'</div>'
     +'<div class="hero-meta">'+esc(cityLine)+' · <b>'+fullDate(cur.d)+'</b>'+(meta.apc?'':' 체크인')+' · '+esc(priceUnit)+'</div>'
     +'<div class="hero-price"><span class="p">'+bigTxt+(meta.apc?'':'<small>원</small>')+'</span><span class="u">'+esc(secLine)+'</span></div>'
+    +(h&&!meta.apc&&!(st.tab==='marriott'&&pointsMode())?heroFxLine(cur.p,h):'')
     +'<div class="hero-chips">'+chips+(st.tab==='marriott'&&h?ticketBadge(h,cur.d):'')+'</div>'
     +(h?'<div class="hero-acts"><button type="button" class="histbtn" data-hist="hotels" data-hid="'+h.id+'" data-date="'+cur.d+'">📈 가격 추이 차트</button>'+planBtn('hero|'+h.id+'|'+cur.d+'|'+N,planHotelText(h,cur.d,N))+cmpBtn(cmpHotelItem(h,cur.d,N))+'</div>':'');
-  $('heroBenefits').innerHTML=heroBenefitsHtml(h);
+  $('heroBenefits').innerHTML=heroBenefitsHtml(h,meta.apc?null:cur);
 }
 
 /* ── 인사이트 패널 ──────────────────────────────────────── */
@@ -4007,6 +4068,7 @@ function cmpDraw(){
     ['날짜·박수',function(it){return esc(it.dateTxt||'—')}],
     ['총액',function(it){return '<span class="big">'+esc(it.totalTxt||'—')+'</span>'}],
     ['1박당',function(it){return esc(it.perTxt||'—')}],
+    ['현지 통화',function(it){return esc(it.fxTxt||'—')}],
     ['1P당 가치',function(it){return esc(it.ptTxt||'—')}],
     ['조건',function(it){return (it.cond||[]).filter(Boolean).map(function(c){return '<span class="tag">'+esc(c)+'</span>'}).join(' ')||'—'}],
     ['예약',function(it){
@@ -4019,7 +4081,8 @@ function cmpDraw(){
   ];
   body.innerHTML='<div class="cmpwrap"><table class="cmptable">'+head+'<tbody>'+rows.map(function(r){
     return '<tr><th>'+r[0]+'</th>'+CMP.map(function(it){return '<td>'+r[1](it)+'</td>'}).join('')+'</tr>';
-  }).join('')+'</tbody></table></div>';
+  }).join('')+'</tbody></table></div>'
+  +'<p class="cmpfx">💴 현지 통화는 상세 카드와 같은 <b>2026-11-19 참고 환율</b>로 환산한 참고 금액입니다 — JPY 100 = ₩835.92 · HKD 1 = ₩169.75 · MOP 1 = ₩164.80 · CNY 1 = ₩199.56 · THB 1 = ₩39.22 · VND 10,000 = ₩518 · SGD 1 = ₩1,033.06 · USD 1 = ₩1,331.56 · AUD 1 = ₩895.46. 국내 호텔은 원화 그대로입니다.</p>';
 }
 function cmpHotelItem(h,dt,n){
   n=n||1;
@@ -4040,6 +4103,7 @@ function cmpHotelItem(h,dt,n){
     totalTxt:tot==null?'—':(pm?exactP(tot):exactWon(tot)),
     perTxt:tot==null?'—':(pm?exactP(Math.round(tot/n))+' / 1박':'₩'+KR(Math.round(tot/n))+' / 1박'),
     ptTxt:(p!=null&&c!=null&&!pm)?('1P ≈ '+KR(Math.round(c/p))+'원'):(p!=null?exactP(p):'—'),
+    fxTxt:(tot!=null&&!pm)?(fxShort(h,tot)||'—'):'—',
     cond:cond.filter(Boolean),
     url:bookUrlOf(h,dt,n)||'',urlLabel:'호텔 예약',
     plan:planHotelText(h,dt,n)

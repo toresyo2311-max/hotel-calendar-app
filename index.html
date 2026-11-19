@@ -1522,7 +1522,7 @@ body.cmp-on{padding-bottom:66px}
       <div class="vt-mrows" id="vtMRows"></div>
     </div>
 
-    <div class="note-grid">
+    <div class="note-grid" id="vtHotelNotes">
       <section class="notice"><h3>자료 읽는 법</h3><div id="vtNotice1"></div></section>
       <section class="notice"><h3>방문 전에 확인하세요</h3><div id="vtNotice2"></div></section>
     </div>
@@ -5135,10 +5135,12 @@ function renderLounge(){
   }
 }
 function renderVtMode(){
-  const hotel=$('vtHotelView'),lounge=$('vtLoungeView');
+  const hotel=$('vtHotelView'),lounge=$('vtLoungeView'),hn=$('vtHotelNotes');
   if(!hotel||!lounge)return;
   const isL=lg.view==='lounge';
   hotel.hidden=isL;lounge.hidden=!isL;
+  if(hn)hn.hidden=isL;
+  if($('vtManage')&&isL&&vt.manage){vt.manage=false;$('vtManage').hidden=true;$('vtMyCardsBtn').setAttribute('aria-expanded','false')}
   document.querySelectorAll('#valetPanel [data-vt-mode]').forEach(function(b){
     const on=b.dataset.vtMode===lg.view;b.classList.toggle('on',on);b.setAttribute('aria-selected',String(on));
   });

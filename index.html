@@ -975,7 +975,7 @@ body.cmp-on{padding-bottom:66px}
 .vt-mbs{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
 .vt-mfields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-top:6px}
 .vt-mfields label{display:block;font-size:8.5px;font-weight:800;color:var(--muted2)}
-.vt-mfields input{width:100%;border:1px solid var(--line2);border-radius:6px;padding:4px 6px;font-size:10px;background:#fcfbff;color:var(--ink)}
+.vt-mfields input{width:100%;max-width:360px;border:1px solid var(--line2);border-radius:6px;padding:4px 6px;font-size:10px;background:#fcfbff;color:var(--ink)}
 .vt-mnote{font-size:9px;color:#8a5a2b;background:#fbf6ec;border-radius:6px;padding:2px 5px;margin-top:4px;display:inline-block}
 .vt-empty{border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center;font-size:11px;color:var(--muted2);background:#fff}
 @media (max-width:620px){
@@ -1402,8 +1402,7 @@ body.cmp-on{padding-bottom:66px}
   <section id="valetPanel" class="valet-panel" hidden aria-label="발렛 — 내 카드로 무료 주차되는 국내 호텔">
     <div class="vt-hero">
       <div class="vt-hero-top">
-        <div>
-          <h3>🅿️ 발렛 — 내 카드로 무료 주차되는 호텔</h3>
+        <div class="vt-hero-lead">
           <p id="vtBasis">카드사 공식 발레파킹 안내로 정리한 자료입니다.</p>
         </div>
         <div class="vt-wallet-tools">
@@ -4804,8 +4803,8 @@ function renderVtList(){
 
 function vtMRow(c){
   const card=c.valet_card?vtCard(c.valet_card):null;
-  const vb=c.valet==='eligible'?'<span class="vt-b ok">발렛 가능'+(card?' · '+esc(card.monthly_limit):'')+'</span>'
-    :c.valet==='none'?'<span class="vt-b none">발렛 없음</span>'
+  const vb=c.valet==='eligible'?'<span class="vt-b ok">발렛 가능'+(card?' · '+esc(card.limit_label):'')+'</span>'
+    :c.valet==='none'?'<span class="vt-b none" title="체크·선불·법인 카드는 카드사 호텔 발렛 안내 대상이 아닙니다">발렛 없음</span>'
     :'<span class="vt-b warn">발렛 확인 필요</span>';
   const note=c.status_note?'<span class="vt-mnote">'+esc(c.status_note)+'</span>':'';
   const n=vtNotes[c.seq]||{};

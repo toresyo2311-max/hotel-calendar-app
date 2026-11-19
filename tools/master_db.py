@@ -254,14 +254,14 @@ def check_accor3(db):
 # 출처 문구 검사에서 제외한다. 그 밖의 출처 표기는 그대로 검사한다.
 LINK_HOSTS = ('marriott.com', 'ritzcarlton.com', 'all.accor.com', 'accor.com',
               'hotelux.com', 'trip.com', 'weixin.qq.com', 'americanexpress.com',
-              'ttang.com', 'modetour.com')
+              'ttang.com', 'modetour.com', 'ybtour.co.kr', 'hanatour.com')
 
 # ── ⑥ 땡처리 · 부산 출발 ────────────────────────────────────────────────
 # 부산(PUS) 출발 땡처리 상품 — `const TTANG`(master 의 ttang). 화면의 날짜 칸·노선 행·상품 행은
 # 모두 이 상품들의 예약 주소(url)로 새 탭을 연다. 추정 금액은 넣지 않는다.
 TTANG_SCHEMA = 'team-busan/pus-deals/1'
 TTANG_WINDOW = ('2026-11-19', '2027-11-30')
-TTANG_HOSTS = ('ttang.com', 'modetour.com')
+TTANG_HOSTS = ('ttang.com', 'modetour.com', 'ybtour.co.kr', 'hanatour.com', 'trip.com')
 TTANG_SRC = ('g', 't')
 _TT_URL_RE = re.compile(r'^https://(?:www\.)?([^/]+)/', re.I)
 _LINK_RE = re.compile(r'https?://([^\s"\'<>()\\]+)', re.I)

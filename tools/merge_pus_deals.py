@@ -9,7 +9,7 @@
 `{"observedAt":..,"window":..,"deals":[...]}` 또는 상품 배열만 있어도 된다.
 
 병합 규칙
-  · 같은 상품 키(`src`+`code`+`out`+`back`+`airline`)는 **더 싼 값**으로 갱신한다(같으면 새 값).
+  · 같은 상품 키(`code`+`out`+`back`+`airline`)는 **더 싼 값**으로 갱신한다(같으면 새 값).
   · 새 키는 그대로 추가한다. 삭제는 하지 않는다.
   · `window` 는 합집합, `observedAt` 은 더 늦은 값, `coverage`/`coverageOk` 는 새 파일이 주면 덮어쓴다.
   · 병합 결과가 `tools/master_db.py` 의 `check_ttang` 을 통과하지 못하면 아무것도 쓰지 않는다.
@@ -43,7 +43,8 @@ def read_block(path):
 
 
 def deal_key(d):
-    return (d.get('src'), d.get('code'), d.get('out'), d.get('back'), d.get('airline'))
+    """같은 항공편 = 도착공항+출발일+귀국일+항공사. 공급사(채널)가 달라도 한 줄로 합친다."""
+    return (d.get('code'), d.get('out'), d.get('back'), d.get('airline'))
 
 
 def main(argv):
@@ -136,7 +137,8 @@ def main(argv):
         return 0
 
     master['ttang'] = merged
-    st = md.stats_of({'hotels': master['hotels']}, master['flights'], merged)
+    st = md.stats_of({'hotels': master['hotels'], 'accor': master.get('accor')},
+                     master['flights'], merged)
     master['counts'] = {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus',
                                            'routes', 'deals', 'snu', 'pus_deals', 'pus_routes')}
     tmp = MASTER + '.tmp'

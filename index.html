@@ -4588,7 +4588,7 @@ if(/[?&]diag=1(&|$)/.test(location.search+location.hash)){
    ✈️+🏨 콤보는 ①~④ 호텔과 ⑤ 항공이 모두 필요하므로 없는 것만 병렬로 받는다. */
 const DATA_ROOT='data/app/';
 /* 발렛 자료는 카드사 안내가 바뀔 때만 갱신되므로 배포마다 캐시를 비운다(브라우저 HTTP 캐시 10분 회피) */
-const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20a'};
+const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b'};
 const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json'};
 const HOTEL_TABS=['lux','china','domestic','marriott'];
 const DATA_READY={lux:false,china:false,domestic:false,marriott:false,flight:false,tt:false,valet:false,lounge:false};
@@ -5030,7 +5030,7 @@ function lgRowHtml(c){
   }else if(c.status==='unknown'){
     bs+='<span class="vt-b warn">판본 확인 필요</span>';
   }else{
-    bs+='<span class="vt-b none">공식 안내에 라운지 없음</span>';
+    bs+='<span class="vt-b none">'+(c.basis==='official'?'공식 안내에 라운지 없음':'라운지 프로그램 대상 아님')+'</span>';
   }
   let body='';
   if(c.status==='eligible'){

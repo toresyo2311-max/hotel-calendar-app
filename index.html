@@ -1491,7 +1491,6 @@ body.cmp-on{padding-bottom:66px}
             <button type="button" data-lg-sort="name">이름순</button>
           </div>
           <label class="toggle" title="지금 공항라운지가 되는 카드만 남깁니다."><input type="checkbox" id="lgHideNone" checked> 라운지 되는 카드만</label>
-          <label class="toggle" title="보유 58장 전체를 봅니다. 끄면 라운지 없는 카드도 조건과 함께 나옵니다."><input type="checkbox" id="lgOwnOnly" checked> 내 카드만</label>
           <span class="fl-note" id="lgCount"></span>
         </div>
       </div>
@@ -4988,7 +4987,7 @@ function renderValet(){
    · 카드사 공식 안내로 확인한 값만 표시하고, 판본이 미확정인 카드는 '확인 필요'로 남긴다 */
 const LG_YEAR='teambusan.lounge.year.';
 const LG_MONTH='teambusan.lounge.month.';
-const lg={view:'hotel',airport:'all',net:'all',q:'',sort:'mine',hideNone:true,ownOnly:true,open:''};
+const lg={view:'hotel',airport:'all',net:'all',q:'',sort:'mine',hideNone:true,open:''};
 let lgYear={},lgMonth={},lgLoaded=false;
 function lgCards(){return LOUNGE.cards||[]}
 function lgOf(seq){return lgCards().find(function(c){return c.seq===seq})}
@@ -5080,7 +5079,6 @@ function lgUseHtml(c){
 function lgFiltered(){
   const q=lg.q.trim().toLowerCase();
   let arr=lgCards().slice();
-  if(lg.ownOnly)arr=arr.filter(function(c){return true});   /* 58장 = 보유 카드 전체 */
   if(lg.hideNone)arr=arr.filter(function(c){return c.status==='eligible'});
   if(lg.airport!=='all')arr=arr.filter(function(c){return (c.airports||[]).indexOf(lg.airport)>=0});
   if(lg.net!=='all')arr=arr.filter(function(c){return (c.networks||[]).indexOf(lg.net)>=0});
@@ -5112,10 +5110,10 @@ function renderLounge(){
   const nw=$('lgNet');
   if(nw.options.length<2)nw.innerHTML='<option value="all">전체 네트워크</option>'+(LOUNGE.networks||[]).map(function(n){return '<option value="'+n.id+'">'+esc(n.name)+'</option>'}).join('');
   nw.value=lg.net;
-  $('lgHideNone').checked=lg.hideNone;$('lgOwnOnly').checked=lg.ownOnly;
+  $('lgHideNone').checked=lg.hideNone;
   document.querySelectorAll('#lgSort [data-lg-sort]').forEach(function(b){const on=b.dataset.lgSort===lg.sort;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
   const rows=lgFiltered();
-  $('lgCount').textContent='카드 '+rows.length+'장'+(lg.hideNone?' · 라운지 가능만':'')+(lg.ownOnly?' · 내 카드 58장 기준':'');
+  $('lgCount').textContent='카드 '+rows.length+'장'+(lg.hideNone?' · 라운지 가능만':' · 전체 58장');
   box.innerHTML=rows.length?rows.map(lgRowHtml).join(''):'<div class="vt-empty">조건에 맞는 카드가 없습니다 — “라운지 되는 카드만”을 끄면 라운지 없는 카드까지 보입니다.</div>';
   const tr=Object.keys(lgYear).reduce(function(n,k){return n+Number(lgYear[k]||0)},0);
   $('lgUseNote').textContent='이 기기에만 저장 · 올해 기록 '+tr+'회 · '+lgMonthKey().slice(-5)+' 기록 '+(Object.keys(lgMonth).reduce(function(n,k){return n+Number(lgMonth[k]||0)},0))+'회';
@@ -5205,7 +5203,6 @@ function vtOnChange(e){
   if(t.id==='lgAirport'){lg.airport=t.value;renderLounge();return}
   if(t.id==='lgNet'){lg.net=t.value;renderLounge();return}
   if(t.id==='lgHideNone'){lg.hideNone=t.checked;renderLounge();return}
-  if(t.id==='lgOwnOnly'){lg.ownOnly=t.checked;renderLounge();return}
   if(t.id==='lgSearch'){if(lg.q!==t.value){lg.q=t.value;renderLounge()}return}
   if(t.dataset&&t.dataset.vtNote){const p=t.dataset.vtNote.split('|');vtNotes[p[0]]=vtNotes[p[0]]||{};vtNotes[p[0]][p[1]]=t.value;vtSaveNotes();return}
 }

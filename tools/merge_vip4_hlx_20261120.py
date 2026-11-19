@@ -41,12 +41,13 @@ TARGETS = {
 
 SRC = ('공개 요금 실측 · 2026-11-20 07:30~ KST 예약 사이트 호텔 상세 페이지 직접 조회'
        '(비로그인 · 성인 2인·1실·1박·세금 포함 표시가 "including tax & fees", '
-       '2026-12-01~2027-02-28 90일 전수. 객실 목록이 다 불러온 뒤 값이 안정될 때까지 확인). '
+       '%s %d일 전수. 객실 목록이 다 불러온 뒤 값이 안정될 때까지 확인). '
        '표시 통화 USD를 USD 1 = ₩1,331.56(2026-11-19 기준)로 환산해 100원 단위로 적었습니다. '
-       '2027-03-01~11-30 은 2026-11-19 검색값을 그대로 두었습니다.')
+       '%s 은 2026-11-19 검색값을 그대로 두었습니다.')
 SRC_EXTRA = {
     'h12': ' 기본 객실(King Room City)이 2027-01-17 은 매진, 2026-12-01·12-02 는 전 객실 판매 없음으로 —입니다.',
-    'h13': '',
+    'h13': ' 최저가 객실 일부는 아코르 멤버십(로열티) 번호가 필요한 요금이고, 각 객실의 최저 요금제'
+           '(세이버·회원 요율)를 기준으로 그날 최저값을 적었습니다.',
     'h04': '',
     'h05': '',
 }
@@ -80,7 +81,12 @@ def main(argv=None):
 
     stat = {}
     for pair in args.pairs:
-        hid, _, path = pair.partition('=')
+        hid, _, spec = pair.partition('=')
+        path, _, rng = spec.partition('@')
+        w_start, w_end = (rng.split('/') + ['', ''])[:2] if rng else (WINDOW_START, WINDOW_END)
+        if not (w_start and w_end):
+            raise SystemExit('범위 표기가 이상합니다: %r' % rng)
+        need_h = days(w_start, w_end)
         if hid not in TARGETS:
             raise SystemExit('%s 는 배정 4곳이 아닙니다' % hid)
         h = by_id.get(hid)
@@ -89,12 +95,12 @@ def main(argv=None):
         if h.get('ref_id') and h['ref_id'] != TARGETS[hid][1]:
             raise SystemExit('%s ref_id 가 다릅니다: %s' % (hid, h['ref_id']))
         raw = json.load(open(path, encoding='utf-8'))
-        missing = [d for d in need if d not in raw]
+        missing = [d for d in need_h if d not in raw]
         if missing:
             raise SystemExit('%s 날짜가 %d개 빠졌습니다: %s' % (hid, len(missing), missing[:5]))
         old = h.get('rates') or {}
         same = changed = na2v = v2na = 0
-        for d in need:
+        for d in need_h:
             prev = old.get(d)
             usd = raw[d]
             val = None if usd is None else krw(usd)
@@ -110,18 +116,21 @@ def main(argv=None):
         h['rates'] = dict(sorted(old.items()))
         if len(h['rates']) != 365:
             raise SystemExit('%s %s 칸이 %d개입니다 (365 여야 함)' % (hid, h['name'], len(h['rates'])))
-        h['source'] = SRC + SRC_EXTRA.get(hid, '')
+        h['source'] = (SRC % ('%s~%s' % (w_start, w_end), len(need_h),
+                              (datetime.date.fromisoformat(w_end)
+                               + datetime.timedelta(days=1)).isoformat())
+                       + SRC_EXTRA.get(hid, ''))
         h.pop('vip', None)
-        nums = [v for v in (h['rates'][d] for d in need) if v]
-        stat[hid] = dict(name=h['name'], cells=len(need), same=same, changed=changed,
-                         na2v=na2v, v2na=v2na, na=len(need) - len(nums),
+        nums = [v for v in (h['rates'][d] for d in need_h) if v]
+        stat[hid] = dict(name=h['name'], range='%s~%s' % (w_start, w_end), cells=len(need_h),
+                         same=same, changed=changed, na2v=na2v, v2na=v2na, na=len(need_h) - len(nums),
                          lo=min(nums), hi=max(nums), avg=round(sum(nums) / len(nums)))
 
     for hid in sorted(stat):
         s = stat[hid]
-        print('  %s %-26s %3d칸 | 같음 %3d · 변경 %3d · NA→값 %2d · 값→NA %2d · NA(판매없음) %2d | '
+        print('  %s %-26s %s %3d칸 | 같음 %3d · 변경 %3d · NA→값 %2d · 값→NA %2d · NA(판매없음) %2d | '
               '최저 %s원 · 최고 %s원 · 평균 %s원'
-              % (hid, s['name'], s['cells'], s['same'], s['changed'], s['na2v'], s['v2na'],
+              % (hid, s['name'], s['range'], s['cells'], s['same'], s['changed'], s['na2v'], s['v2na'],
                  s['na'], format(s['lo'], ','), format(s['hi'], ','), format(s['avg'], ',')))
 
     for name in SOURCES_ADD:

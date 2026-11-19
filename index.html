@@ -898,6 +898,95 @@ body.cmp-on{padding-bottom:66px}
   body.cmp-on{padding-bottom:58px}
 }
 @media print{.cmpbar,.toast,.cmpmodal{display:none!important}}
+/* ── 🅿️ 발렛 탭 ──────────────────────────────────────────── */
+#valetPanel[hidden]{display:none}
+.vt-hero{border:1px solid var(--line);border-radius:14px;background:linear-gradient(160deg,#fbf9ff 0%,#fff 62%);padding:14px 16px;margin-bottom:12px}
+.vt-hero-top{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.vt-hero h3{margin:0 0 4px;font-size:15px;letter-spacing:-.04em;color:var(--h1)}
+.vt-hero p{margin:0;font-size:10.5px;color:var(--muted);line-height:1.65;max-width:760px}
+.vt-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.vt-kpi{border:1px solid var(--line2);border-radius:10px;padding:8px 10px;background:#fff;min-width:0}
+.vt-kpi span{display:block;font-size:9px;font-weight:800;color:var(--muted2);letter-spacing:-.01em}
+.vt-kpi b{display:block;font-size:16px;letter-spacing:-.05em;line-height:1.2;color:var(--ink);font-variant-numeric:tabular-nums}
+.vt-kpi i{font-style:normal;display:block;font-size:9.5px;color:var(--muted);margin-top:2px}
+.vt-wallet{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px;margin-bottom:12px}
+.vt-wallet-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.vt-wallet-head h4{margin:0;font-size:12px;letter-spacing:-.02em}
+.vt-wallet-head h4 span{font-weight:600;color:var(--muted2);font-size:10px;margin-left:4px}
+.vt-wallet-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.vt-wallet-tools>button{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:8px;padding:5px 9px;font-size:10px;font-weight:700}
+.vt-chips{display:flex;flex-direction:column;gap:7px;margin-top:6px}
+.vt-issuer{display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap}
+.vt-issuer>b{font-size:9.5px;color:var(--muted2);min-width:64px;font-weight:800;padding-top:6px;letter-spacing:-.02em}
+.vt-cw{display:inline-flex;align-items:center;gap:4px;margin:0 2px 4px 0}
+.vt-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:-.02em}
+.vt-chip i{width:7px;height:7px;border-radius:50%;background:#ddd6fe;flex:none}
+.vt-chip[aria-pressed="true"]{border-color:var(--violet);background:var(--lav);color:var(--violet-d)}
+.vt-chip[aria-pressed="true"] i{background:var(--violet)}
+.vt-use{display:inline-flex;align-items:center;gap:2px;background:#f6f4fc;border:1px solid var(--line2);border-radius:999px;padding:2px 3px}
+.vt-use button{border:0;background:#fff;border-radius:50%;width:17px;height:17px;font-size:11px;line-height:1;color:var(--violet-d);font-weight:900;padding:0}
+.vt-use em{font-style:normal;font-size:9.5px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:26px;text-align:center}
+.vt-toolbar{flex-wrap:wrap;align-items:flex-end}
+.vt-search{flex:1 1 170px;min-width:140px}
+.vt-search label{display:block;font-size:9.5px;font-weight:800;color:var(--muted2);margin-bottom:3px}
+.vt-search input{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:11px;background:#fff;color:var(--ink)}
+.vt-list{display:flex;flex-direction:column;gap:8px}
+.vt-hotel{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.vt-hotel.hit{border-color:var(--lav2)}
+.vt-hotel.mine{border-left:3px solid var(--violet)}
+.vt-sum{display:block;width:100%;text-align:left;border:0;background:#fff;padding:11px 12px;color:inherit}
+.vt-sum-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.vt-name{font-size:12.5px;font-weight:800;letter-spacing:-.03em;color:var(--ink);line-height:1.35}
+.vt-meta{font-size:10px;color:var(--muted2);margin-top:2px}
+.vt-mine-tag{font-size:9.5px;font-weight:800;color:var(--violet-d);background:var(--lav);border-radius:6px;padding:2px 7px;white-space:nowrap;flex:none}
+.vt-mine-tag.off{background:#f4f2f9;color:var(--muted2)}
+.vt-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px}
+.vt-b{font-size:9px;font-weight:800;border-radius:5px;padding:2px 5px;background:#f3f1f9;color:var(--muted);letter-spacing:-.02em;white-space:nowrap}
+.vt-b.ok{background:#eef7ef;color:#256b3a}
+.vt-b.hours{background:var(--lav);color:var(--violet-d)}
+.vt-b.warn{background:#fbf3e8;color:#8a5a2b}
+.vt-b.none{background:#f7f5fb;color:#9a94b0}
+.vt-offers{border-top:1px dashed var(--line);padding:6px 12px 10px;background:#fcfbff;display:none}
+.vt-hotel.open .vt-offers{display:block}
+.vt-off{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:8px 0;border-bottom:1px solid var(--line2);align-items:start}
+.vt-off:last-child{border-bottom:0}
+.vt-off b{font-size:11px;letter-spacing:-.02em}
+.vt-off small{display:block;font-size:9.5px;color:var(--muted);line-height:1.55;margin-top:2px}
+.vt-off small.warn{color:#8a5a2b}
+.vt-off .r{text-align:right;font-size:9.5px;color:var(--muted2);white-space:nowrap;line-height:1.6}
+.vt-off .r a{color:var(--violet-d);font-weight:700;text-decoration:none}
+.vt-off.own{background:#faf7ff;border-radius:9px;padding:8px;border-bottom-color:transparent}
+.vt-off .own-tag{color:var(--violet-d);font-weight:800}
+.vt-foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:9px}
+.vt-go{border:1px solid var(--violet);background:#fff;color:var(--violet-d);border-radius:8px;padding:5px 10px;font-size:10px;font-weight:800;text-decoration:none;display:inline-block}
+.vt-note{font-size:9.5px;color:var(--muted2)}
+.vt-manage{border:1px solid var(--lav2);border-radius:12px;background:#fdfcff;padding:12px;margin:14px 0 12px}
+.vt-manage[hidden]{display:none}
+.vt-manage-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;margin-bottom:6px}
+.vt-manage-head h4{margin:0;font-size:12.5px;letter-spacing:-.03em;color:var(--h1)}
+.vt-mfilters{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+.vt-mfilters button{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:4px 9px;font-size:10px;font-weight:700}
+.vt-mfilters button.on{border-color:var(--violet);background:var(--lav);color:var(--violet-d)}
+.vt-mrows{display:flex;flex-direction:column;gap:6px;max-height:520px;overflow:auto;padding-right:2px}
+.vt-mrow{display:grid;grid-template-columns:26px minmax(0,1fr);gap:8px;border:1px solid var(--line2);border-radius:9px;background:#fff;padding:8px 9px}
+.vt-mseq{font-size:10px;font-weight:900;color:var(--muted2);font-variant-numeric:tabular-nums;padding-top:1px}
+.vt-mname{font-size:11.5px;font-weight:800;letter-spacing:-.03em}
+.vt-mmeta{font-size:9.5px;color:var(--muted2);margin-top:1px}
+.vt-mbs{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.vt-mfields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-top:6px}
+.vt-mfields label{display:block;font-size:8.5px;font-weight:800;color:var(--muted2)}
+.vt-mfields input{width:100%;max-width:360px;border:1px solid var(--line2);border-radius:6px;padding:4px 6px;font-size:10px;background:#fcfbff;color:var(--ink)}
+.vt-mnote{font-size:9px;color:#8a5a2b;background:#fbf6ec;border-radius:6px;padding:2px 5px;margin-top:4px;display:inline-block}
+.vt-empty{border:1px dashed var(--line);border-radius:10px;padding:16px;text-align:center;font-size:11px;color:var(--muted2);background:#fff}
+@media (max-width:620px){
+ .vt-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .vt-issuer>b{min-width:100%}
+ .vt-mfields{grid-template-columns:1fr}
+ .vt-sum-top{flex-direction:column;gap:4px}
+ .vt-mine-tag{align-self:flex-start}
+ .vt-off{grid-template-columns:1fr}
+ .vt-off .r{text-align:left}
+}
 </style>
 </head>
 <body>
@@ -922,7 +1011,7 @@ body.cmp-on{padding-bottom:66px}
   </div>
   <nav class="tabs" aria-label="호텔 · 항공 프로그램" id="tabs">
     <button class="tab active" data-tab="lux" type="button">① VIP 요금 · FHR <b>162</b></button>
-    <button class="tab" data-tab="china" type="button">② 중올플 · ALL PLUS China <b>289</b></button>
+    <button class="tab" data-tab="china" type="button">② 중올플 <b>289</b></button>
     <button class="tab" data-tab="domestic" type="button">③ 아코르 · Stay Plus &amp; SNU <b>25</b></button>
     <button class="tab" data-tab="marriott" type="button">④ 메리어트 · 중국/한·일 <b>62</b></button>
     <button class="tab" data-tab="flight" type="button">⑤ 항공 특가 · 부산 출발 <b>47</b></button>
@@ -930,6 +1019,7 @@ body.cmp-on{padding-bottom:66px}
 <!-- TT:NAV -->
     <button class="tab" data-tab="tt" type="button">⑥ 땡처리 · 부산 출발 <b>3,857</b></button>
 <!-- /TT:NAV -->
+    <button class="tab" data-tab="valet" type="button">🅿️ 발렛 <b>72</b></button>
   </nav>
 </div>
 <div class="page">
@@ -1311,6 +1401,69 @@ body.cmp-on{padding-bottom:66px}
     </div>
   </section>
 <!-- /TT:SECTION -->
+  <section id="valetPanel" class="valet-panel" hidden aria-label="발렛 — 내 카드로 무료 주차되는 국내 호텔">
+    <div class="vt-hero">
+      <div class="vt-hero-top">
+        <div class="vt-hero-lead">
+          <p id="vtBasis">카드사 공식 발레파킹 안내로 정리한 자료입니다.</p>
+        </div>
+        <div class="vt-wallet-tools">
+          <button type="button" id="vtMyCardsBtn" aria-expanded="false">💳 내 보유 카드 58장 관리</button>
+        </div>
+      </div>
+      <div class="vt-kpis" id="vtKpis"></div>
+    </div>
+
+    <div class="vt-wallet">
+      <div class="vt-wallet-head">
+        <h4>내 카드 지갑 <span id="vtWalletSub"></span></h4>
+        <div class="vt-wallet-tools">
+          <label class="toggle"><input type="checkbox" id="vtMineOnly" checked> 내 카드만 보기</label>
+          <button type="button" id="vtUsageReset">이번 달 사용 초기화</button>
+        </div>
+      </div>
+      <div class="vt-chips" id="vtChips" role="group" aria-label="보유 카드 선택"></div>
+    </div>
+
+    <div class="fl-toolbar vt-toolbar">
+      <div class="field"><label for="vtRegion">지역</label><select id="vtRegion" aria-label="지역 필터"></select></div>
+      <div class="field"><label for="vtIssuer">카드사</label><select id="vtIssuer" aria-label="카드사 필터"></select></div>
+      <div class="vt-search"><label for="vtSearch">검색</label><input id="vtSearch" type="search" placeholder="호텔 · 카드 이름" autocomplete="off"></div>
+      <div class="fl-extras">
+        <div class="fl-sort" id="vtSort" role="group" aria-label="정렬">
+          <button type="button" data-vt-sort="mine" class="on">내 카드 우선</button>
+          <button type="button" data-vt-sort="cards">카드 많은 순</button>
+          <button type="button" data-vt-sort="name">이름순</button>
+        </div>
+        <label class="toggle"><input type="checkbox" id="vtNoReceipt"> 영수증 없이 가능</label>
+        <label class="toggle"><input type="checkbox" id="vtFreePark"> 무료 주차 포함</label>
+        <span class="fl-note" id="vtCount"></span>
+      </div>
+    </div>
+
+    <div class="vt-list" id="vtList"></div>
+
+    <div class="vt-manage" id="vtManage" hidden>
+      <div class="vt-manage-head">
+        <h4>내 보유 카드 58장</h4>
+        <span class="vt-note">원문 그대로 보존 — 중복·미확정은 확정하지 않고 배지로만 표시합니다</span>
+      </div>
+      <div class="vt-mfilters" id="vtMFilters" role="group" aria-label="보유 카드 필터">
+        <button type="button" data-vt-mf="all" class="on">전체 58</button>
+        <button type="button" data-vt-mf="valet">발렛 가능</button>
+        <button type="button" data-vt-mf="신용">신용</button>
+        <button type="button" data-vt-mf="체크">체크</button>
+        <button type="button" data-vt-mf="선불">선불</button>
+        <button type="button" data-vt-mf="확인">미확정·중복</button>
+      </div>
+      <div class="vt-mrows" id="vtMRows"></div>
+    </div>
+
+    <div class="note-grid">
+      <section class="notice"><h3>자료 읽는 법</h3><div id="vtNotice1"></div></section>
+      <section class="notice"><h3>방문 전에 확인하세요</h3><div id="vtNotice2"></div></section>
+    </div>
+  </section>
   <div class="note-grid" id="hotelNotes">
     <section class="notice"><h3>조회 기준과 금액 읽는 법</h3><div id="basis"></div></section>
     <section class="notice"><h3>예약 전에 꼭 확인하세요</h3><div id="caution"></div></section>
@@ -1356,7 +1509,7 @@ body.cmp-on{padding-bottom:66px}
 const DB = {"hotels":[],"sources":["머큐어-울산·이비스-전주-12~2월-최저가-달력.md","소피텔·페어몬트-서울-스테이플러스-주말점검.md","중올플-추가4도시-4개월-요금달력.md","페어몬트-서울-스테이플러스-전수조사.md","호텔-요금-조사-다낭·나트랑.md","중올플-6개호텔-4개월-요금달력.md","호텔-요금-조사-일본·방콕.md","호텔-요금-조사-부산·상하이.md","아코르-스테이플러스-SNU-가성비-가이드.md","2026-12_2027-02-호텔-최저가-달력-24곳.pdf","호텔-요금-조사-부산-3곳-2027-03_11.md","호텔-요금-조사-상하이-4곳-2027-03_11.md","국내-아코르-4곳-2027년11월-연장조사.md","중올플-10개호텔-2027-04_11-요금달력.md","호텔-요금-조사-일본-6곳-2027-03_11.md","호텔-요금-조사-방콕-5곳-2027-03_11.md","호텔-요금-조사-다낭·나트랑-6곳-2027-03_11.md","vip-rate.json (VIP 요금 전 호텔·날짜별 요금, 2026-11-17 수집)","marriott-china/0-2026-12_2027-11-중국홍콩마카오-리츠칼튼-part1.md","marriott-china/1-2026-12_2027-11-중국홍콩마카오-리츠칼튼-part1b.md","marriott-china/2-2026-12_2027-11-중국홍콩마카오-리츠칼튼-part2.md","marriott-china/3-2026-12_2027-11-중국홍콩마카오-리츠칼튼-part3.md","marriott-china/4-2026-12_2027-11-중국홍콩마카오-세인트레지스.md","marriott-china/5-2026-12_2027-11-중국홍콩마카오-W호텔.md","marriott-china/6-2026-12_2027-11-중국홍콩마카오-W호텔-part2.md","marriott-china/7-2026-12_2027-11-중국-보완1.md","marriott-korea/korea_marriott_2026_12_2027_11.csv","marriott-japan/japan_marriott_2026_12_2027_11.csv","apc/예약 캘린더_availability.json","apc/fetch_예약 캘린더.py","apc/API-구조.md","apc/부산출발-APC-전체-availability.json","accor_stayplus_snu_12m_report.md","accor-fairmont-sofitel/summary.md · calendar_1~3.md","accor-allplus-china-30/summary.md · calendar.md","2026-11-19_vip-fhr-일본-6개호텔.md","2026-11-19_vip-fhr-방콕-5개호텔.md","2026-11-19_vip-fhr-다낭나트랑-6개호텔.md"],"built":"2026-11-17","voucherExpiry":"2027-09-30","extended":"2026-11-17 11:25~12:05 KST (2·3·4번 계정 연장 조사) / 2026-11-17 13:47 KST VIP 요금 수집 반영 / 2026-11-17 14:10 KST ④ 메리어트(중국·홍콩·마카오 40곳) 수집 반영 / 2026-11-17 14:21 KST ⑤ 항공 12월 잔여 주 5노선 보완2차(마카오·난징·항저우·칭다오·가오슝 99건) 반영 / 2026-11-17 14:40 KST ⑤ 항공 12월 잔여 주 보완1차·2차잔여·3차(302건, 중복 18건 제외) 반영 / 2026-11-17 14:45 KST ⑤ 항공 12월 잔여 최종 18칸(방콕·나트랑·상하이) 반영 — 12월 네 주 24노선 전수 완결 / 2026-11-17 15:10 KST ④ 메리어트 한국 10 + 일본 12곳(현금·아워드 포인트) 수집 반영 / 2026-11-17 15:00 KST ② 중올플 APC 무료숙박 가능일(예약 캘린더 72시간 규칙) 반영 / ⑤ 항공 2027-01 24개 노선 5패턴 전수 실측(보완1~3차 460건, 2026-11-17) / ⑤ 항공 당일치기(0박 1일) 156건 반영(12월 81·1월 75, 2026-11-17) / 2026-11-17 ② 중올플 284곳(참여 282 + 기존 2) · 99개 도시 · 권역(tier) 필터 / 2027년 2월 2~4주차 24개 노선 × 5패턴 345건 병합(기존 후쿠오카 캘린더값 15칸은 최신 실측가로 교체) / 2026-11-17 19:40 KST ⑤ 항공 2027년 6~11월(6개월) 병합 — 6~7월 260칸 · 8~9월 73건 · 10~11월 53칸(+판매편 없음 4건) / 2026-11-17 19:40~11-18 00:05 KST ⑤ 항공 중국 신규 8개 노선(선양·다롄·광저우·샤먼·연길·장가계·구이린·황산) 신설 — 주말형 171칸 + 당일치기 8칸(성립 6·판매편 없음 2) = 177건, 총 2,024→2,201건 / 2026-11-18 KST 아코르 12개월 조사 3건(SNU·Stay Plus 21곳 365일 · 중올플 30곳 365일) 반영 / 2026-11-18 KST ⑤ 항공 중국 4노선(연길·장가계·구이린·황산) 2026.12~2027.01 9주 × 5패턴 완본 병합 — 값 153칸(신규 66칸) + 판매편 0건 27칸(황산 토~월·금~월·목~월) = 180칸, 총 2,201→2,267건(주말형 2,092 · 당일치기 175) / 2026-11-18 KST ⑤ 항공 중국 4노선(선양·다롄·광저우·샤먼) 2026.12~2027.01 9주 × 5패턴 완본 병합 — 빠진 96칸(2~9주 3·4박) 추가로 180칸 완주, 중국 신규 8개 노선 360/360칸(값 333 + 판매편 0건 27), 총 2,363건(주말형 2,188 · 당일치기 175) / 2026-11-18 KST ⑤ 항공: 연길·장가계·구이린·황산 2027년 2~6월 금~일(2박) 66칸(값 58 + 황산 판매편 0건 8) 반영 — 총 2,421건 / 2026-11-18 KST ⑤ 항공 선양·다롄·광저우·샤먼 2027년 2~5월 2박 131칸 반영 / 2026-11-18 KST ⑤ 항공 연길·장가계·구이린·황산 2027년 2~6월 토~월(2박) 35칸(값 29 + 황산 판매편 0건 6) 반영 — 신규 34칸(값 28 + 0건 6), 총 2,603→2,631건 / 2026-11-18 KST ⑤ 항공 2027년 2월 1주차(설 연휴 2/4~8) 24개 노선 × 5패턴 120칸 완결 — 잔여 86칸 추가 + 후쿠오카 3칸 재조회 갱신(392,400→364,100 · 400,000→401,500 · 465,400→467,050), 총 2,631→2,717건 / 2026-11-18 중국 8노선 2027년 2~6월 완주본 2건(선양·다롄·광저우·샤먼 목~일 84칸 + 선양 금~월 1칸, 연길·장가계·구이린·황산 토~월 48칸 + 황산 3/20 판매편 0건 1칸) / 2026-11-18 06:10 KST ⑤ 항공 필리핀 신규 4노선(세부·마닐라·보홀·클락) 2026.12~2027.01 180칸 신설 / 2026-11-18 06:10 KST ⑤ 항공 일본 신규 7노선(구마모토·가고시마·시즈오카·마쓰야마·다카마쓰·미야코지마·삿포로) 12월 1차 90칸 신설 / 2026-11-18 06:10 KST ⑤ 항공 기존 24노선 2027년 3월 1주차(3/4~8) 5패턴 120칸 반영 / 2026-11-18 06:20 KST ⑤ 항공 동남아 신규 4노선(푸꾸옥·코타키나발루·쿠알라룸푸르·비엔티안) 2026.12~2027.01 178칸 신설 / 2026-11-18 06:40 KST ⑤ 항공 팀원 보고 3건 병합 — 일본 7노선 12월 보완 150칸(마쓰야마·다카마쓰·미야코지마 25칸 완결, 신규 60칸) + 당일치기 실측 4칸, 중국 8노선 2027년 2~6월 금~월 83칸·목~일 84칸 = 신규 227칸, 총 3,418→3,649건 / 2026-11-18 07:05 KST ⑤ 항공 팀원 보고 4건 병합 — 3월 2주차 120칸(후쿠오카 238,100) + 일본 12월 완결 171칸(삿포로 25/25, 신규 21칸) + 동남아 4노선 2027년 2~6월 420칸 + 중국 G1 목~월 48칸 = 신규 609칸, 총 3,649→4,258건 / 2026-11-18 07:4x KST 중국 8노선 2027년 7~11월 840칸(측정 465·요금 미공개 255·0건 120)+미오픈 16칸 · 필리핀 4노선 2027년 2~6월 420칸 · 중국 G2 4노선 2027년 2~6월 금~월 84칸 병합 / 2026-11-18 KST 동남아 4노선(푸꾸옥·코타키나발루·쿠알라룸푸르·비엔티안) 2027년 7~11월 22주 × 5패턴 440칸 병합 — 실측 220칸 + 예약 미오픈 220칸(경계 2027-09-14), 총 5,218→5,438건 / 2026-11-18 KST ⑤ 항공 중국 G1 4노선 2027년 2~6월 420/420칸 완결(목~월 9주 36칸) + 일본 7노선 2027년 1월 140칸(값 138 · 항공편 없음 2) + 당일치기 21칸 병합, 총 5,438→5,633건 / 2026-11-18 KST ⑤ 항공 중국 G2 4노선 2027년 2~6월 420/420칸 완결(목~월 84칸 = 값 77 + 판매편 0건 7) + 2027년 3월 3·4주차 24노선 × 5패턴 240칸 병합, 총 5,633→5,950건 / 2026-11-18 필리핀 4개 노선 2027년 7~11월 22주 × 5패턴 440칸 — 실측 126칸(마닐라 57·클락 55·세부 12·보홀 2) + 미오픈 140칸(예약창 2027-10-14) / 2026-11-18 KST ⑤ 항공 일본 7노선(구마모토·가고시마·시즈오카·마쓰야마·다카마쓰·미야코지마·삿포로) 2027년 2~6월 21주 × 7패턴 1,029칸 병합 — 실측 523칸(주말형 480·당일치기 43) + 판매편 0건 303칸 + 요금 미공개 98칸, 미조회 105칸은 빈칸, 총 6,076→6,599건 / 2026-11-18 KST ⑤ 항공 기존 24개 노선 2027년 4월 1~3주차(4/1~5·4/8~12·4/15~19) 5패턴 360칸 완결 — 주차 최저 상하이 4/3~5·4/10~12 299,100원 · 4/17~19 299,000원, 직항이 최저인 칸 47·49·45, 총 6,599→6,959건 / 2026-11-18 KST ⑤ 항공 일본 7노선 2027년 2월 보완 — 2월 주말형 140칸 재조회로 빈칸 7칸 + 판매편 0건 7칸을 값으로 채우고 더 싼 최신 실측 73칸 갱신(주말형 값 136 + 항공편 없음 4로 완결), 총 6,959→6,973건(주말형 6,641→6,655) / 2026-11-18~19 KST ⑤ 항공 기존 24개 노선 2027년 4월 4주차(4/22~26) 5패턴 120칸 완결 — 최저 타이베이 4/23~26 금~월 256,200원(타이거항공 직항), 직항 62·경유 58칸, 4월 1~4주차 480/480칸(100%), 총 6,973→7,093건 / 2026-11-19 KST ⑤ 항공 일본 7노선 2027년 7월 완결본 — 5주 × 5패턴 175칸(값 150 + 미오픈 25), 최저 구마모토 7/8~7/12 483,700원(직항), 총 7,093→7,243건(주말형 6,775→6,925) / 2026-11-19 KST ⑤ 항공 필리핀 4노선 2027년 7~10월 미조회 174칸 전부 실측(세부 63 · 보홀 73 · 마닐라 18 · 클락 20) — 네 노선 75/75칸 완결, 최저 마닐라 10/7~10 399,291원, 총 7,243→7,417건 / 2026-11-19 KST ⑤ 항공 일본 7노선 2027년 9~10월 — 9주 × 5패턴 315칸(값 190 · 판매편 0건 34 · 요금 미확인 4 · 예약창 밖 87), 최저 삿포로 9/24~27 374,540원(직항), 총 7,417→7,607건 / 2026-11-19 KST ⑤ 항공 일본 7노선 2027년 8월 — 4주 × 5패턴 140칸(값 120 + 시즈오카 미오픈 20), 최저 삿포로 8/26~30 573,300원(직항), 총 7,607→7,727건 / 2026-11-19 KST ⑤ 항공 일본 7노선 2027년 11월 — 4주 × 5패턴 140칸(값 33 · 미오픈 87 · 시즈오카 판매편 0건 20), 최저 구마모토 11/4~8 558,700원(서울 1회 경유), 총 7,727→7,760건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 5월 3~4주차(5/13~17 · 5/20~24) 5패턴 240칸 완결 — 최저 하노이 5/20~24 목~월 266,570원(직항), 직항이 최저가인 칸 83, 총 7,760→8,000건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 5월 1주차(4/29~5/3) 5패턴 120칸 완결 — 최저 호찌민 4/29~5/2 목~일 325,800원(직항), 직항이 최저가인 칸 44, 총 8,000→8,120건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 5월 5주차(5/27~31) 5패턴 120칸 완결 — 최저 하노이 5/27~30 목~일 282,171원(직항), 직항이 최저가인 칸 45, 총 8,120→8,240건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 5월 2주차(5/6~10) 5패턴 120칸 완결 — 최저 타이베이 5/7~9 금~일 258,200원(직항), 직항이 최저가인 칸 50, 총 8,240→8,360건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 6월 3주차(6/17~21) 5패턴 120칸 완결 — 최저 홍콩 6/18~20 금~일 296,600원(직항), 직항이 최저가인 칸 37, 가격표 자리표시 28칸 교체, 총 8,360→8,452건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 6월 4주차(6/24~28) 5패턴 120칸 완결 — 최저 상하이 6/26~28 토~월 299,100원(춘추항공 직항), 직항이 최저가인 칸 36, 가격표 자리표시 19칸 교체, 총 8,452→8,553건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 7월 1주차(7/1~5) 5패턴 120칸 완결 — 최저 후쿠오카 7/1~4·7/1~5 299,700원(트리니티항공 직항), 직항이 최저가인 칸 38, 가격표 자리표시 28칸 교체, 총 8,553→8,645건 / 2026-11-19 21:13~23:30 KST ① VIP·FHR 17곳 재실측 반영 — 일본 6(365일) · 다낭·나트랑 6(365일) · 방콕 5(2026-12-01~2027-03-31 121일, 2027-04 이후 기존 유지) / 2026-11-19 KST ⑤ 항공 부산 출발 A조 12개 노선 2027년 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) 5패턴 180칸 완결 — 빈칸 134칸 실측 + 재확인 1칸(후쿠오카 7/30~8/1 447,100→325,800원), 최저 후쿠오카 7/22~26 목~월 300,500원(트리니티항공 직항), 직항이 최저가인 칸 60, 가격표 자리표시 1칸 교체, 총 8,645→8,779건 / 2026-11-19 KST ⑤ 항공 부산 출발 A조 12개 노선 2027년 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) 5패턴 240칸 완결 — 빈칸 205칸 실측 + 재확인 3칸(마카오 8/6 767,700→763,200원 · 상하이 8/6 417,500→422,400원 · 타이베이 8/6 468,400→464,200원), 최저 후쿠오카 8/19~23 금~월 283,700원(트리니티항공 직항), 직항이 최저가인 칸 97, 총 8,779→8,984건 / 2026-11-20 KST ⑤ 항공 부산 출발 A조 12개 노선 2027년 9월 5주(9/2~6 · 9/9~13 · 9/16~20 · 9/23~27 · 9/30~10/4) 5패턴 300칸 완결 — 빈칸 245칸 실측 + 재확인 1칸(방콕 10/1 416,600→408,000원), 최저 상하이 9/4~6 토~월 276,600원(춘추항공 직항), 직항이 최저가인 칸 110, 총 8,984→9,229건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 7월 2주차(7/8~12) 5패턴 120칸 완결 — 최저 후쿠오카 7/8~12 272,300원(트리니티항공 직항), 직항이 최저가인 칸 39, 가격표 자리표시 18칸 교체, 총 9,229→9,331건 / 2026-11-20 KST ⑤ 항공 부산 출발 A조 12개 노선 2027년 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) 5패턴 240칸 완결 — 빈칸 231칸 실측(교체 0칸), 최저 타이베이 10/29 금~일 255,600원(이스타항공 직항), 직항이 최저가인 칸 98, 총 9,331→9,562건 / 2026-11-20 KST ⑤ 항공 부산 출발 A조 12개 노선 2027년 11월 2주(11/4~8 · 11/11~15) 5패턴 120칸 완결 — 빈칸 117칸 조회(값 109 · 판매편 0건 8), 최저 홍콩 11/13 토~월 363,000원(홍콩 익스프레스항공 직항), 직항이 최저가인 칸 35, 총 9,562→9,671건","accor":null,"counts":{"hotels":538,"tabs":{"lux":162,"china":289,"domestic":25,"marriott":62},"cells":196370,"priced":79807,"na":116563,"stayplus":142,"routes":47,"deals":9671,"snu":43,"pus_deals":3857,"pus_routes":43}};
 const FLIGHTS={"patterns":[],"months":[],"weeks":[],"counts":{"total":0},"routes":[],"noSale":[],"notes":{},"bookingWindow":{}};
 const $=id=>document.getElementById(id);
-const tabs={lux:{title:'VIP 요금 · FHR 호텔 162곳',sub:'VIP 요금 138곳 신규 + 기존 24곳 / 서울·부산·도쿄·싱가포르·시드니·뉴욕 외 / 12개월(2026.12~2027.11)',checked:'요금 기준: 2026-11-17 01:13 KST · 일본 6·방콕 5·다낭·나트랑 6 17곳은 2026-11-19 재실측',start:'2026-12',end:'2027-11'},china:{title:'중올플(ALL PLUS China) 289곳 · 99개 도시',sub:'99개 도시 · 부산 출발 가능 중국·홍콩·마카오 APC 참여 287곳 + 기존 2곳 + 이번 조사 신규 5곳 / 김해 직항 116 · 환승·고속철 137 · 국내선 환승 36 / 12개월(2026.12~2027.11) · 30곳은 365일 현금 요금 · APC 무료숙박 가능일은 예약 캘린더 관측(12/1~12/18 · 72시간 규칙)',checked:'APC 관측 기준: 2026-11-16',start:'2026-12',end:'2027-11'},domestic:{title:'아코르 · Stay Plus & SNU 25곳 (국내 4 · 한·중·일 페어몬트·소피텔 21)',sub:'국내 아코르 4곳(울산·전주·서울 2) + 한·중·일 페어몬트·소피텔 21곳 365일 회원가(2026.12~2027.11) / SNU 유효 2027.12.31 · Stay Plus 만료 2027.09.30 / 해외 6개 도시 SNU·Stay Plus 2박 절감액',checked:'조회 기준: 2026.11.16~17 (SNU 2026.11.17 16:30~17:10)',start:'2026-12',default:'2026-12',end:'2027-11'},flight:{title:'부산 출발 항공 특가 — 47개 노선 9,671건',sub:'부산(PUS) 출발 47개 노선 × 주말형 5패턴(금~일·토~월·목~일·금~월·목~월) + 당일치기(0박) 패턴 / 2026.12~2027.11 출발 (2026년 12월~2027년 3월은 기존 24개 노선 5패턴 전수 — 12월 599칸 · 1월 480칸 · 2월 480칸 · 3월 1~4주차 480칸 완결, 2027년 4월 1~4주차 480칸 완결(4주차 최저 타이베이 4/23~26 256,200원) · 4월 5주(4/29~5/3) 120칸 완결(앱 주차 선택 기준, 최저 호찌민 4/29~5/2 325,800원) · 5월 3~4주차(5/13~17 · 5/20~24) 240칸 완결(3주차 최저 타이베이 5/14~17 276,160원 · 4주차 최저 하노이 5/20~24 266,570원) · 5월 4주(5/27~31) 120칸 완결(최저 하노이 5/27~30 282,171원) · 5월 2주차(5/6~10) 120칸 완결(최저 타이베이 5/7~9 258,200원) · 6월 3주차(6/17~21) 120칸 완결(최저 홍콩 6/18~20 296,600원 · 가격표 자리표시 28칸 교체) · 6월 4주차(6/24~28) 120칸 완결(최저 상하이 6/26~28 299,100원 · 가격표 자리표시 19칸 교체) · 7월 1주차(7/1~5) 120칸 완결(최저 후쿠오카 7/1~4·7/1~5 299,700원 · 가격표 자리표시 28칸 교체) · 7월 2주차(7/8~12) 120칸 완결(최저 후쿠오카 7/8~12 272,300원 · 가격표 자리표시 18칸 교체) · 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) 12개 노선 5패턴 180칸 완결(빈칸 134칸 실측 + 재확인 1칸, 최저 후쿠오카 7/22~26 300,500원) · 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) 12개 노선 5패턴 240칸 완결(빈칸 205칸 실측 + 재확인 3칸, 최저 후쿠오카 8/20~23 283,700원) · 9월 5주(9/2~6 · 9/9~13 · 9/16~20 · 9/23~27 · 9/30~10/4) 12개 노선 5패턴 300칸 완결(빈칸 245칸 실측 + 재확인 1칸, 최저 상하이 9/4~6 276,600원) · 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) 12개 노선 5패턴 240칸 완결(빈칸 231칸 실측 · 교체 0칸, 최저 타이베이 10/29~31 255,600원) · 11월 2주(11/4~8 · 11/11~15) 12개 노선 5패턴 120칸 완결(값 109칸 실측 · 판매편 0건 8칸 · 교체 0칸, 최저 홍콩 11/13~15 363,000원) + 중국 8개 노선은 2026.12~2027.01 360칸, 2027년 2~6월 840칸(중국 8개 노선 모두 420/420칸 완결 — 2박에 4박까지), 2027년 7~11월 15주말 × 7패턴 840칸(측정 465 · 요금 미공개 255 · 판매편 0건 120) + 미오픈 확인 16칸 — 예약창 2027-10-13까지 + 필리핀 4개 노선 2026.12~2027.01 180칸 · 2027년 2~6월 420칸 · 2027년 7~11월 22주 × 5패턴 440칸(실측 300 + 미오픈 140 — 예약창 2027-10-14까지, 네 노선 75/75칸 완결) + 동남아 4개 노선 178칸 · 2027년 2~6월 420칸 · 2027년 7~11월 22주 × 5패턴 440칸(실측 220 + 미오픈 220 — 예약창 2027-09-14까지) + 일본 7개 노선 2026년 12월 171칸 · 2027년 1월 140칸(값 138 + 항공편 없음 2) 완결 + 당일치기 25칸 + 2027년 2~6월 21주 × 7패턴 1,029칸(실측 537 · 판매편 0건 296 · 요금 미공개 98 · 미조회 98 — 2027년 2월 주말형 140칸은 값 136 + 항공편 없음 4로 완결) + 2027년 7월 5주 × 5패턴 175칸(실측 150 · 미오픈 25, 최저 구마모토 7/8~7/12 483,700원 직항) + 2027년 8월 4주 × 5패턴 140칸(실측 120 · 미오픈 20, 최저 삿포로 8/26~30 573,300원 직항) + 2027년 9~10월 9주 × 5패턴 315칸(실측 190 · 판매편 0건 34 · 요금 미확인 4 · 미오픈 87 — 최저 삿포로 9/24~27 374,540원 직항) + 2027년 11월 4주 × 5패턴 140칸(실측 33 · 미오픈 87 · 시즈오카 판매편 0건 20 — 최저 구마모토 11/4~8 558,700원 경유)) / 성인 1인 왕복 총액. 값이 없는 칸은 판매편 0건 549 · 요금 미공개 357 · 미오픈 595로 나눠 적었습니다',checked:'조회 기준: 2026.11.20 KST · 팀원 보고 17건',start:'2026-12',end:'2027-11'},marriott:{title:'메리어트 중국/한·일 62곳 (중국 40 · 한국 10 · 일본 12)',sub:'중국 본토·홍콩·마카오 40곳 + 한국 10곳 + 일본 12곳 / 2026.12~2027.11 현금(검색 세금 포함 1박 최저) + 아워드 포인트(2026-11-17 기준)',checked:'조회 기준: 2026.11.17 · 포인트 조사 2026-11-17',start:'2026-12',end:'2027-11'},combo:{title:'✈️+🏨 주말 콤보 — 20개 도시 · 항공+숙박',sub:'⑤ 항공 왕복가 + ①~④ 같은 도시 호텔의 숙박일 1박 요금 합계 / 금~일·토~월·목~일·금~월·목~월 / 2026.12~2027.11',checked:'⑤ 항공 2026-11-17~20 · ①~④ 호텔 2026-11-16~17 조회값',start:'2026-12',end:'2027-11'},tt:{title:'부산 출발 땡처리 항공권',sub:'부산(PUS) 출발 땡처리 항공권 — 공동구매·특가 두 채널을 노선·출발일·기간·잔여석 단위로 모아 출발일 달력과 노선별 표로 보여 줍니다. 날짜 칸·노선 행·상품 행을 누르면 그 상품 예약 페이지가 새 탭에서 바로 열립니다. / 성인 1인 왕복 총액(유류·세금 포함)',checked:'수집 기준: 2026-11-20 KST',start:'2026-11',end:'2027-11'}};
+const tabs={lux:{title:'VIP 요금 · FHR 호텔 162곳',sub:'VIP 요금 138곳 신규 + 기존 24곳 / 서울·부산·도쿄·싱가포르·시드니·뉴욕 외 / 12개월(2026.12~2027.11)',checked:'요금 기준: 2026-11-17 01:13 KST · 일본 6·방콕 5·다낭·나트랑 6 17곳은 2026-11-19 재실측',start:'2026-12',end:'2027-11'},china:{title:'중올플 289곳 · 99개 도시',sub:'99개 도시 · 부산 출발 가능 중국·홍콩·마카오 APC 참여 287곳 + 기존 2곳 + 이번 조사 신규 5곳 / 김해 직항 116 · 환승·고속철 137 · 국내선 환승 36 / 12개월(2026.12~2027.11) · 30곳은 365일 현금 요금 · APC 무료숙박 가능일은 예약 캘린더 관측(12/1~12/18 · 72시간 규칙)',checked:'APC 관측 기준: 2026-11-16',start:'2026-12',end:'2027-11'},domestic:{title:'아코르 · Stay Plus & SNU 25곳 (국내 4 · 한·중·일 페어몬트·소피텔 21)',sub:'국내 아코르 4곳(울산·전주·서울 2) + 한·중·일 페어몬트·소피텔 21곳 365일 회원가(2026.12~2027.11) / SNU 유효 2027.12.31 · Stay Plus 만료 2027.09.30 / 해외 6개 도시 SNU·Stay Plus 2박 절감액',checked:'조회 기준: 2026.11.16~17 (SNU 2026.11.17 16:30~17:10)',start:'2026-12',default:'2026-12',end:'2027-11'},flight:{title:'부산 출발 항공 특가 — 47개 노선 9,671건',sub:'부산(PUS) 출발 47개 노선 × 주말형 5패턴(금~일·토~월·목~일·금~월·목~월) + 당일치기(0박) 패턴 / 2026.12~2027.11 출발 (2026년 12월~2027년 3월은 기존 24개 노선 5패턴 전수 — 12월 599칸 · 1월 480칸 · 2월 480칸 · 3월 1~4주차 480칸 완결, 2027년 4월 1~4주차 480칸 완결(4주차 최저 타이베이 4/23~26 256,200원) · 4월 5주(4/29~5/3) 120칸 완결(앱 주차 선택 기준, 최저 호찌민 4/29~5/2 325,800원) · 5월 3~4주차(5/13~17 · 5/20~24) 240칸 완결(3주차 최저 타이베이 5/14~17 276,160원 · 4주차 최저 하노이 5/20~24 266,570원) · 5월 4주(5/27~31) 120칸 완결(최저 하노이 5/27~30 282,171원) · 5월 2주차(5/6~10) 120칸 완결(최저 타이베이 5/7~9 258,200원) · 6월 3주차(6/17~21) 120칸 완결(최저 홍콩 6/18~20 296,600원 · 가격표 자리표시 28칸 교체) · 6월 4주차(6/24~28) 120칸 완결(최저 상하이 6/26~28 299,100원 · 가격표 자리표시 19칸 교체) · 7월 1주차(7/1~5) 120칸 완결(최저 후쿠오카 7/1~4·7/1~5 299,700원 · 가격표 자리표시 28칸 교체) · 7월 2주차(7/8~12) 120칸 완결(최저 후쿠오카 7/8~12 272,300원 · 가격표 자리표시 18칸 교체) · 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) 12개 노선 5패턴 180칸 완결(빈칸 134칸 실측 + 재확인 1칸, 최저 후쿠오카 7/22~26 300,500원) · 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) 12개 노선 5패턴 240칸 완결(빈칸 205칸 실측 + 재확인 3칸, 최저 후쿠오카 8/20~23 283,700원) · 9월 5주(9/2~6 · 9/9~13 · 9/16~20 · 9/23~27 · 9/30~10/4) 12개 노선 5패턴 300칸 완결(빈칸 245칸 실측 + 재확인 1칸, 최저 상하이 9/4~6 276,600원) · 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) 12개 노선 5패턴 240칸 완결(빈칸 231칸 실측 · 교체 0칸, 최저 타이베이 10/29~31 255,600원) · 11월 2주(11/4~8 · 11/11~15) 12개 노선 5패턴 120칸 완결(값 109칸 실측 · 판매편 0건 8칸 · 교체 0칸, 최저 홍콩 11/13~15 363,000원) + 중국 8개 노선은 2026.12~2027.01 360칸, 2027년 2~6월 840칸(중국 8개 노선 모두 420/420칸 완결 — 2박에 4박까지), 2027년 7~11월 15주말 × 7패턴 840칸(측정 465 · 요금 미공개 255 · 판매편 0건 120) + 미오픈 확인 16칸 — 예약창 2027-10-13까지 + 필리핀 4개 노선 2026.12~2027.01 180칸 · 2027년 2~6월 420칸 · 2027년 7~11월 22주 × 5패턴 440칸(실측 300 + 미오픈 140 — 예약창 2027-10-14까지, 네 노선 75/75칸 완결) + 동남아 4개 노선 178칸 · 2027년 2~6월 420칸 · 2027년 7~11월 22주 × 5패턴 440칸(실측 220 + 미오픈 220 — 예약창 2027-09-14까지) + 일본 7개 노선 2026년 12월 171칸 · 2027년 1월 140칸(값 138 + 항공편 없음 2) 완결 + 당일치기 25칸 + 2027년 2~6월 21주 × 7패턴 1,029칸(실측 537 · 판매편 0건 296 · 요금 미공개 98 · 미조회 98 — 2027년 2월 주말형 140칸은 값 136 + 항공편 없음 4로 완결) + 2027년 7월 5주 × 5패턴 175칸(실측 150 · 미오픈 25, 최저 구마모토 7/8~7/12 483,700원 직항) + 2027년 8월 4주 × 5패턴 140칸(실측 120 · 미오픈 20, 최저 삿포로 8/26~30 573,300원 직항) + 2027년 9~10월 9주 × 5패턴 315칸(실측 190 · 판매편 0건 34 · 요금 미확인 4 · 미오픈 87 — 최저 삿포로 9/24~27 374,540원 직항) + 2027년 11월 4주 × 5패턴 140칸(실측 33 · 미오픈 87 · 시즈오카 판매편 0건 20 — 최저 구마모토 11/4~8 558,700원 경유)) / 성인 1인 왕복 총액. 값이 없는 칸은 판매편 0건 549 · 요금 미공개 357 · 미오픈 595로 나눠 적었습니다',checked:'조회 기준: 2026.11.20 KST · 팀원 보고 17건',start:'2026-12',end:'2027-11'},marriott:{title:'메리어트 중국/한·일 62곳 (중국 40 · 한국 10 · 일본 12)',sub:'중국 본토·홍콩·마카오 40곳 + 한국 10곳 + 일본 12곳 / 2026.12~2027.11 현금(검색 세금 포함 1박 최저) + 아워드 포인트(2026-11-17 기준)',checked:'조회 기준: 2026.11.17 · 포인트 조사 2026-11-17',start:'2026-12',end:'2027-11'},combo:{title:'✈️+🏨 주말 콤보 — 20개 도시 · 항공+숙박',sub:'⑤ 항공 왕복가 + ①~④ 같은 도시 호텔의 숙박일 1박 요금 합계 / 금~일·토~월·목~일·금~월·목~월 / 2026.12~2027.11',checked:'⑤ 항공 2026-11-17~20 · ①~④ 호텔 2026-11-16~17 조회값',start:'2026-12',end:'2027-11'},tt:{title:'부산 출발 땡처리 항공권',sub:'부산(PUS) 출발 땡처리 항공권 — 공동구매·특가 두 채널을 노선·출발일·기간·잔여석 단위로 모아 출발일 달력과 노선별 표로 보여 줍니다. 날짜 칸·노선 행·상품 행을 누르면 그 상품 예약 페이지가 새 탭에서 바로 열립니다. / 성인 1인 왕복 총액(유류·세금 포함)',checked:'수집 기준: 2026-11-20 KST',start:'2026-11',end:'2027-11'},valet:{title:'🅿️ 발렛 — 내 카드로 무료 주차되는 호텔 72곳',sub:'국내 특급호텔 72곳 × 카드사 공식 발레파킹 안내 23종 / 내 보유 카드 58장 중 발렛 확인 카드로 바로 골라 보기 · 영수증 조건·무료 주차 시간·월 횟수·전월 실적 배지 / ①·③·④ 수록 호텔 25곳은 요금 달력으로 바로 이동',checked:'카드사 공식 안내 확인 2026-11-20',start:'2026-11',end:'2027-11'}};
 const TTANG={"schema":"team-busan/pus-deals/1","observedAt":"","window":{},"channels":[],"deals":[],"coverage":"","coverageOk":false};
 const st={tab:'lux',city:'all',hotel:'all',month:'2026-12',mode:'cash',cmode:'both',pmode:'both',ctier:'all',apcOnly:false,weekend:false,hideBlackouts:false,blk:'show',apcDaysOnly:false,prog:'all',brand:'all',selectedDay:'',favOnly:false,budget:0,nights:1,ticket:'all'};
 const allHotels=DB.hotels;
@@ -1947,6 +2100,7 @@ function render(){
   if(st.tab==='flight'){renderFlight();hashSync();return}
   if(st.tab==='tt'){renderTt();hashSync();return}
   if(st.tab==='combo'){renderCombo();hashSync();return}
+  if(st.tab==='valet'){renderValet();hashSync();return}
   setFlightMode(false);
   renderFilters();renderRanking();retitleNights();renderPtTop();
   SER=dayLowSeries();
@@ -2267,7 +2421,7 @@ const flViaWord=d=>d.via===false?'직항':d.via===true?'경유':'미확인';
 const flMeta=d=>d.airline?flViaWord(d)+' · '+flAir(d):(d.via==null?'항공사·직항 미확인':flViaWord(d)+' · 항공사 미확인');
 const flViaTag=d=>d.via===false?'<span class="fl-via direct">직항</span>':d.via===true?'<span class="fl-via via">경유</span>':'<span class="fl-via unk">미확인</span>';
 function flMemo(d){if(!d.note)return '';const t=String(d.note).split('※')[0].split('—')[0].trim();return t==='경유'||t==='직항'?'':t}
-function setDealPanels(which){$('flightPanel').hidden=which!=='flight';$('ttPanel').hidden=which!=='tt';const cp=document.getElementById('comboPanel');if(cp)cp.hidden=which!=='combo';const cng=document.querySelector('.note-grid');if(cng)cng.style.display=which==='combo'?'none':'';['.ranking','.workspace'].forEach(function(sel){var el=document.querySelector(sel);if(el)el.style.display=which?'none':''});['glanceBox','hotelNotes','ptTopBox'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=which?'none':''})}
+function setDealPanels(which){$('flightPanel').hidden=which!=='flight';$('ttPanel').hidden=which!=='tt';const vp=document.getElementById('valetPanel');if(vp)vp.hidden=which!=='valet';const cp=document.getElementById('comboPanel');if(cp)cp.hidden=which!=='combo';const cng=document.querySelector('.note-grid');if(cng)cng.style.display=which==='combo'?'none':'';['.ranking','.workspace'].forEach(function(sel){var el=document.querySelector(sel);if(el)el.style.display=which?'none':''});['glanceBox','hotelNotes','ptTopBox'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=which?'none':''})}
 function setFlightMode(on){setDealPanels(on?'flight':'')}
 function renderFlightTop5(){
   const rows=flRouteList().map(r=>{const d=[...r.deals].sort((a,b)=>a.price-b.price)[0];return d?{...d,city:r.city,code:r.code}:null}).filter(Boolean).sort((a,b)=>a.price-b.price).slice(0,5);
@@ -2517,7 +2671,7 @@ function heroChips(h){
 function heroGrade(h){
   if(st.tab==='marriott')return h.brand||'메리어트';
   if(st.tab==='domestic')return h.program?(h.program.stayplus?'아코르 Stay Plus 참여':'아코르 회원가'):'아코르';
-  if(st.tab==='china')return h.accor?(h.accor.participation==='participating'?'ALL PLUS China 참여':'ALL PLUS 미참여'):'ALL PLUS China';
+  if(st.tab==='china')return h.accor?(h.accor.participation==='participating'?'중올플 참여':'중올플 미참여'):'중올플';
   return h.vip?'VIP 요금 공개':'검색 최저가';
 }
 function heroPromoRows(h){
@@ -4367,11 +4521,12 @@ if(/[?&]diag=1(&|$)/.test(location.search+location.hash)){
    탭에 처음 들어갈 때 data/app/*.json 을 fetch 해서 메모리에 캐시한다.
    ✈️+🏨 콤보는 ①~④ 호텔과 ⑤ 항공이 모두 필요하므로 없는 것만 병렬로 받는다. */
 const DATA_ROOT='data/app/';
-const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json'};
+const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json'};
 const HOTEL_TABS=['lux','china','domestic','marriott'];
-const DATA_READY={lux:false,china:false,domestic:false,marriott:false,flight:false,tt:false};
+const DATA_READY={lux:false,china:false,domestic:false,marriott:false,flight:false,tt:false,valet:false};
 const DATA_LOADING={};
 function tabNeeds(tab){
+  if(tab==='valet')return ['valet'];
   if(tab!=='combo')return [tab];
   /* ✈️+🏨 콤보 — ⑤ 정규 항공은 기본, ⑥ 땡처리 소스를 고르면 tab6 도 함께 받는다 */
   return HOTEL_TABS.concat(['flight']).concat((cb&&cb.src&&cb.src!=='f')?['tt']:[]);
@@ -4392,6 +4547,8 @@ function loadPart(tab){
       Object.assign(FLIGHTS,data);
     }else if(tab==='tt'){
       Object.assign(TTANG,data);ttBuildCh();ttBadge();
+    }else if(tab==='valet'){
+      Object.assign(VALET,data);
     }
     DATA_READY[tab]=true;
   });
@@ -4482,6 +4639,283 @@ function renderPromos(now){now=now==null?Date.now():now;
   note.textContent='기준 '+t.m+'/'+t.d+' '+String(t.h).padStart(2,'0')+':'+String(t.mi).padStart(2,'0')+' KST · 마감 시각이 지난 프로모션은 자동으로 숨깁니다'+(live.length>1?' · 마감이 빠른 순':'');}
 }
 document.addEventListener('visibilitychange',function(){if(!document.hidden)renderPromos()});
+/* ══ 🅿️ 발렛 탭 — 내 카드로 무료 주차되는 호텔 ═══════════════════
+   · data/app/valet.json 을 이 탭에 들어갈 때만 받는다(초기 번들 영향 없음)
+   · 보유 카드 선택·이번 달 사용 횟수·카드 메모는 이 기기(localStorage)에만 저장한다
+   · 기준은 카드사 공식 발레파킹 안내이며 현장에서 달라질 수 있다 */
+const VALET={schema:'',generated:'',basis:'',region_order:[],cards:[],hotels:[],myCards:[],counts:{}};
+const VT_OWN='teambusan.valet.cards.v1';
+const VT_USE='teambusan.valet.usage.';
+const VT_NOTES='teambusan.valet.cardnotes.v1';
+const VT_PREF='teambusan.valet.prefs.v1';
+const vt={q:'',region:'all',issuer:'all',sort:'mine',noReceipt:false,freePark:false,mine:true,open:'',manage:false,mf:'all'};
+let vtOwned=null,vtUse={},vtNotes={},vtLSok=true;
+function vtMonthKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function vtRead(k){try{return window.localStorage.getItem(k)}catch(e){vtLSok=false;return null}}
+function vtWrite(k,v){try{window.localStorage.setItem(k,v)}catch(e){vtLSok=false}}
+function vtSaveOwned(){vtWrite(VT_OWN,JSON.stringify(vtOwned||[]))}
+function vtSaveUse(){vtWrite(VT_USE+vtMonthKey(),JSON.stringify(vtUse))}
+function vtSaveNotes(){vtWrite(VT_NOTES,JSON.stringify(vtNotes))}
+function vtSavePref(){vtWrite(VT_PREF,JSON.stringify({mine:vt.mine,sort:vt.sort}))}
+function vtCard(id){return (VALET.cards||[]).find(function(c){return c.id===id})}
+function vtOwnSet(){return new Set(vtOwned||[])}
+function vtUsed(id){return Number(vtUse[id]||0)}
+function vtRemain(id){const c=vtCard(id);return c?Math.max(0,c.limit_n-vtUsed(id)):null}
+function vtOwnOffers(h){const s=vtOwnSet();return h.offers.filter(function(o){return s.has(o.card)})}
+function vtBest(h){const own=vtOwnOffers(h),arr=own.length?own:h.offers;if(!arr.length)return null;
+  return arr.slice().sort(function(a,b){return (a.receipt_min-b.receipt_min)||(b.hours_n-a.hours_n)||(a.limit_n-b.limit_n)})[0]}
+function vtHoursTxt(o){const m=String(o.parking_hours).match(/(\d+)\s*시간/);return m?m[1]+'h':o.parking_hours}
+function vtReceiptCls(r){return r==='객실·F&B 필수'?'ok':'warn'}
+function vtShort(c){return String(c.name).replace(c.issuer,'').replace(/^[\s·]+/,'')||c.name}
+
+function vtEnsure(){
+  if(vtOwned===null){
+    const raw=vtRead(VT_OWN);
+    if(raw){try{const a=JSON.parse(raw);if(Array.isArray(a))vtOwned=a.filter(function(x){return typeof x==='string'})}catch(e){}}
+    if(!vtOwned){   /* 첫 접속 — 보유 58장 중 공식 발렛 확인 카드를 기본 선택 */
+      vtOwned=[...new Set((VALET.myCards||[]).filter(function(c){return c.valet==='eligible'&&c.valet_card}).map(function(c){return c.valet_card}))];
+      vtSaveOwned();
+    }
+  }
+  const u=vtRead(VT_USE+vtMonthKey());
+  if(u){try{const o=JSON.parse(u);if(o&&typeof o==='object')vtUse=o}catch(e){}}
+  const n=vtRead(VT_NOTES);
+  if(n){try{const o=JSON.parse(n);if(o&&typeof o==='object')vtNotes=o}catch(e){}}
+  const p=vtRead(VT_PREF);
+  if(p){try{const o=JSON.parse(p);if(o&&typeof o==='object'){if(typeof o.mine==='boolean')vt.mine=o.mine;if(o.sort)vt.sort=o.sort}}catch(e){}}
+}
+
+function renderVtKpis(){
+  const s=vtOwnSet(),mine=VALET.hotels.filter(function(h){return h.offers.some(function(o){return s.has(o.card)})}).length;
+  const used=(vtOwned||[]).reduce(function(n,id){return n+vtUsed(id)},0);
+  const k=[[VALET.counts.hotels||VALET.hotels.length,'곳','카드사 안내 확인 호텔'],
+           [mine,'곳','내 카드로 무료 발렛'],
+           [(VALET.cards||[]).length,'종','카드사 공식 안내'],
+           [used,'회',vtMonthKey()+' 사용 기록']];
+  $('vtKpis').innerHTML=k.map(function(x){return '<div class="vt-kpi"><span>'+esc(x[2])+'</span><b>'+KR(x[0])+'<i style="font-style:normal;font-size:10px;color:#8b86a3;margin-left:2px">'+x[1]+'</i></b></div>'}).join('');
+}
+
+function renderVtChips(){
+  const s=vtOwnSet(),by={};
+  (VALET.cards||[]).forEach(function(c){(by[c.issuer]=by[c.issuer]||[]).push(c)});
+  $('vtWalletSub').textContent='발렛 카드 '+(vtOwned||[]).length+'장 선택 · '+vtMonthKey()+' 기준';
+  $('vtChips').innerHTML=Object.keys(by).map(function(iss){
+    return '<div class="vt-issuer"><b>'+esc(iss)+'</b><div>'+by[iss].map(function(c){
+      const on=s.has(c.id);
+      const cnt=on?'<span class="vt-use"><button type="button" data-vt-minus="'+c.id+'" aria-label="'+esc(c.name)+' 이번 달 사용 1회 줄이기">−</button><em>'+vtUsed(c.id)+'/'+c.limit_n+'</em><button type="button" data-vt-plus="'+c.id+'" aria-label="'+esc(c.name)+' 이번 달 사용 1회 기록">+</button></span>':'';
+      return '<span class="vt-cw"><button type="button" class="vt-chip" data-vt-card="'+c.id+'" aria-pressed="'+on+'" title="'+esc(c.name+' · '+c.network+' · '+c.limit_label+' · '+c.prev_label)+'"><i></i>'+esc(vtShort(c))+'</button>'+cnt+'</span>';
+    }).join('')+'</div></div>';
+  }).join('');
+}
+
+function renderVtSelects(){
+  const r=$('vtRegion');
+  if(r.options.length<2)r.innerHTML='<option value="all">전체</option>'+['서울','부산','제주','인천','지방'].map(function(x){return '<option value="'+x+'">'+x+'</option>'}).join('');
+  r.value=vt.region;
+  const is=$('vtIssuer');
+  if(is.options.length<2){
+    const iss=[...new Set((VALET.cards||[]).map(function(c){return c.issuer}))];
+    is.innerHTML='<option value="all">전체</option>'+iss.map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>'}).join('');
+  }
+  is.value=vt.issuer;
+  $('vtMineOnly').checked=vt.mine;
+  $('vtNoReceipt').checked=vt.noReceipt;
+  $('vtFreePark').checked=vt.freePark;
+  document.querySelectorAll('#vtSort [data-vt-sort]').forEach(function(b){const on=b.dataset.vtSort===vt.sort;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))});
+}
+
+function vtFiltered(){
+  const s=vtOwnSet(),q=vt.q.trim().toLowerCase();
+  const list=VALET.hotels.filter(function(h){
+    if(vt.region!=='all'){
+      if(vt.region==='지방'){if(h.region==='서울')return false}
+      else if(h.region!==vt.region)return false;
+    }
+    const offs=h.offers;
+    if(vt.issuer!=='all'&&!offs.some(function(o){const c=vtCard(o.card);return c&&c.issuer===vt.issuer}))return false;
+    if(vt.noReceipt&&!offs.some(function(o){return o.receipt_req==='객실·F&B 필수'}))return false;
+    if(vt.freePark&&!offs.some(function(o){return o.hours_n>0}))return false;
+    if(vt.mine&&!offs.some(function(o){return s.has(o.card)}))return false;
+    if(q){
+      const hit=h.name.toLowerCase().indexOf(q)>=0||String(h.district||'').indexOf(q)>=0||String(h.region||'').indexOf(q)>=0
+        ||offs.some(function(o){const c=vtCard(o.card);return c&&(c.name.toLowerCase().indexOf(q)>=0||c.issuer.indexOf(q)>=0||String(c.network).toLowerCase().indexOf(q)>=0)});
+      if(!hit)return false;
+    }
+    return true;
+  });
+  if(vt.sort==='name')list.sort(function(a,b){return a.name.localeCompare(b.name,'ko')});
+  else if(vt.sort==='cards')list.sort(function(a,b){return (b.card_count-a.card_count)||a.name.localeCompare(b.name,'ko')});
+  else list.sort(function(a,b){return (vtOwnOffers(b).length-vtOwnOffers(a).length)||(b.card_count-a.card_count)||a.name.localeCompare(b.name,'ko')});
+  return list;
+}
+
+function vtOffersHtml(h){
+  const s=vtOwnSet();
+  const offs=h.offers.slice().sort(function(a,b){
+    const oa=s.has(a.card)?0:1,ob=s.has(b.card)?0:1;
+    return (oa-ob)||(a.receipt_min-b.receipt_min)||(b.hours_n-a.hours_n)||(a.prev_n-b.prev_n);
+  });
+  if(!offs.length)return '<div class="vt-note" style="padding:6px 0">확인한 23개 카드사 안내에 이 호텔이 무료 발렛 대상으로 나오지 않습니다 — 유료 발렛 여부·요금은 호텔에 문의하세요.</div>';
+  return offs.map(function(o){
+    const c=vtCard(o.card);if(!c)return '';
+    const mine=s.has(o.card);
+    return '<div class="vt-off'+(mine?' own':'')+'"><div><b>'+esc(c.name)+'</b>'
+      +'<small>'+esc(c.issuer)+' · '+esc(c.network)+'</small>'
+      +'<small>영수증 '+esc(o.receipt_req)+' · 주차 '+esc(o.parking_hours)+' · '+esc(o.monthly_limit)+' · '+esc(o.prev_spend)+'</small>'
+      +(c.coverage_complete?'':'<small class="warn">대상 호텔 전체 목록이 확인되지 않은 카드입니다 — 방문 전 카드사 안내를 확인하세요</small>')
+      +'</div><div class="r">'+(mine?'<span class="own-tag">내 카드 · '+vtMonthKey()+' '+vtUsed(o.card)+'/'+c.limit_n+'회</span><br>':'')
+      +'<a href="'+esc(c.official_url)+'" target="_blank" rel="noopener">공식 안내 ↗</a></div></div>';
+  }).join('');
+}
+
+function vtFoot(h){
+  const r=h.app_hotel_ref;
+  const lbl=r?(r.tab==='lux'?'① VIP':r.tab==='marriott'?'④ 메리어트':r.tab==='domestic'?'③ 아코르':'①~④'):'';
+  const go=(r&&tabs[r.tab])?'<button type="button" class="vt-go" data-vt-go="'+r.tab+'|'+r.id+'">'+lbl+' 요금 달력 보기 →</button>':'';
+  return '<div class="vt-foot">'+go+'<span class="vt-note">위 카드를 누르면 지갑에서 켜고 끕니다 · 사용 기록은 이 기기에만 저장됩니다</span></div>';
+}
+
+function vtRow(h){
+  const own=vtOwnOffers(h),b=vtBest(h);
+  const place=(h.region==='서울'?'서울':h.region)+' '+(h.district||'');
+  const bs=[];
+  if(b){
+    bs.push('<span class="vt-b '+vtReceiptCls(b.receipt_req)+'">'+esc(b.receipt_req)+'</span>');
+    if(b.hours_n>0)bs.push('<span class="vt-b hours">'+esc(vtHoursTxt(b))+' 무료</span>');
+    bs.push('<span class="vt-b">'+esc(b.monthly_limit)+'</span>');
+    if(b.prev_n)bs.push('<span class="vt-b">'+esc(b.prev_spend)+'</span>');
+  }else bs.push('<span class="vt-b warn">무료 발렛 안내 없음</span>');
+  const open=vt.open===h.id;
+  return '<article class="vt-hotel'+(open?' open':'')+(own.length?' mine':'')+'" data-vt-hotel="'+h.id+'">'
+   +'<button type="button" class="vt-sum" aria-expanded="'+open+'">'
+   +'<div class="vt-sum-top"><div><div class="vt-name">'+esc(h.name)+'</div><div class="vt-meta">'+esc(place.trim())
+   +(h.fee?' · 발렛 '+esc(h.fee):'')+' · 카드 '+h.card_count+'종</div></div>'
+   +'<span class="vt-mine-tag'+(own.length?'':' off')+'">'+(own.length?'내 카드 '+own.length+'장':'내 카드 없음')+'</span></div>'
+   +'<div class="vt-badges">'+bs.join('')+'</div></button>'
+   +'<div class="vt-offers">'+vtOffersHtml(h)+vtFoot(h)+'</div></article>';
+}
+
+function renderVtList(){
+  const list=vtFiltered();
+  const s=vtOwnSet();
+  const mineN=list.filter(function(h){return h.offers.some(function(o){return s.has(o.card)})}).length;
+  $('vtCount').textContent=list.length+'곳 표시 · 내 카드 '+mineN+'곳';
+  $('vtList').innerHTML=list.length?list.map(vtRow).join(''):'<div class="vt-empty">조건에 맞는 호텔이 없습니다 — 필터를 풀거나 지갑에서 카드를 선택해 보세요.</div>';
+}
+
+function vtMRow(c){
+  const card=c.valet_card?vtCard(c.valet_card):null;
+  const vb=c.valet==='eligible'?'<span class="vt-b ok">발렛 가능'+(card?' · '+esc(card.limit_label):'')+'</span>'
+    :c.valet==='none'?'<span class="vt-b none" title="체크·선불·법인 카드는 카드사 호텔 발렛 안내 대상이 아닙니다">발렛 없음</span>'
+    :'<span class="vt-b warn">발렛 확인 필요</span>';
+  const note=c.status_note?'<span class="vt-mnote">'+esc(c.status_note)+'</span>':'';
+  const n=vtNotes[c.seq]||{};
+  const f=function(k,lab){return '<label>'+lab+'<input type="text" data-vt-note="'+c.seq+'|'+k+'" value="'+esc(n[k]||c[k]||'')+'" placeholder="직접 입력"></label>'};
+  return '<div class="vt-mrow"><div class="vt-mseq">'+String(c.seq).padStart(2,'0')+'</div><div>'
+   +'<div class="vt-mname">'+esc(c.name)+'</div>'
+   +'<div class="vt-mmeta">'+esc(c.issuer)+' · '+esc(c.type)+'</div>'
+   +'<div class="vt-mbs">'+vb+note+'</div>'
+   +'<div class="vt-mfields">'+f('benefit','주요 혜택')+f('prev_spend','전월 실적')+f('limit','할인·적립 한도')+f('exclude','제외 항목')+'</div>'
+   +'</div></div>';
+}
+
+function renderVtManage(){
+  const box=$('vtManage');if(!box)return;
+  box.hidden=!vt.manage;
+  $('vtMyCardsBtn').setAttribute('aria-expanded',String(vt.manage));
+  if(!vt.manage)return;
+  const all=VALET.myCards||[];
+  const cnt={all:all.length,valet:0,신용:0,체크:0,선불:0,'확인':0};
+  all.forEach(function(c){if(cnt[c.type]!==undefined)cnt[c.type]++;if(c.valet==='eligible')cnt.valet++;if(c.status_note)cnt['확인']++});
+  document.querySelectorAll('#vtMFilters [data-vt-mf]').forEach(function(b){
+    const k=b.dataset.vtMf,on=k===vt.mf;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));
+    const lab=k==='all'?'전체':k==='valet'?'발렛 가능':k==='확인'?'미확정·중복':k;
+    b.textContent=lab+' '+(cnt[k]||0);
+  });
+  const rows=all.filter(function(c){
+    if(vt.mf==='all')return true;
+    if(vt.mf==='valet')return c.valet==='eligible';
+    if(vt.mf==='확인')return Boolean(c.status_note);
+    return c.type===vt.mf;
+  });
+  $('vtMRows').innerHTML=rows.length?rows.map(vtMRow).join(''):'<div class="vt-empty">해당하는 카드가 없습니다.</div>';
+}
+
+function renderValet(){
+  setDealPanels('valet');
+  const vb=document.querySelector('[data-tab="valet"] b');
+  if(vb&&VALET.counts&&VALET.counts.hotels)vb.textContent=KR(VALET.counts.hotels);
+  if(!$('vtNotice1').innerHTML){
+    $('vtNotice1').innerHTML='<ul style="margin:0;padding-left:16px">'
+      +'<li><b>배지</b>는 그 호텔에서 가장 유리한 조건(내 카드 우선)을 보여 줍니다 — 영수증 조건 · 무료 주차 시간 · 월 횟수 · 전월 실적.</li>'
+      +'<li>호텔 이름을 누르면 <b>카드별 조건</b>이 펼쳐집니다. 지갑에서 카드를 켜고 끄면 목록과 배지가 바로 바뀝니다.</li>'
+      +'<li>위쪽 <b>내 카드 지갑</b>의 − · + 로 이번 달 발렛 사용 횟수를 기록하면 남은 횟수를 함께 보여 줍니다.</li>'
+      +'<li><b>내 보유 카드 58장</b>은 순번·발급사·유형 그대로 보관하고, 중복 가능·상품명 미확정은 배지로만 표시합니다.</li>'
+      +'<li>카드사 안내가 2차 자료에서만 확인된 카드는 “대상 호텔 전체 목록 미확인”으로 표시합니다.</li></ul>';
+    $('vtNotice2').innerHTML='<ul style="margin:0;padding-left:16px">'
+      +'<li>발렛은 <b>호텔 객실·식음(연회장 제외) 이용</b>이 조건입니다. 출차할 때 카드 실물과 이용 영수증을 요청받을 수 있습니다.</li>'
+      +'<li>무료 주차 시간을 넘기면 <b>주차비는 본인 부담</b>이고, 성수기·행사·만차·연회 참석 시 제한될 수 있습니다.</li>'
+      +'<li>호텔 발렛 요금은 카드 혜택과 별개입니다. 표시 금액은 호텔 공지 확인값이라 현장에서 달라질 수 있습니다.</li>'
+      +'<li>실물 카드가 필요한 카드가 많습니다(앱카드·가상카드 불가). 카드사 안내 링크에서 최신 조건을 확인하세요.</li></ul>';
+  }
+  if(!VALET.hotels||!VALET.hotels.length){$('vtList').innerHTML='<div class="vt-empty">발렛 자료를 불러오지 못했습니다 — 잠시 뒤 탭을 다시 눌러 주세요.</div>';return}
+  vtEnsure();
+  $('vtBasis').textContent='기준 '+VALET.generated+' · '+VALET.basis;
+  renderVtKpis();renderVtChips();renderVtSelects();renderVtList();renderVtManage();
+}
+
+function vtToggleCard(id){
+  const s=new Set(vtOwned||[]);
+  if(s.has(id))s.delete(id);else s.add(id);
+  vtOwned=[...s];vtSaveOwned();
+  renderVtChips();renderVtKpis();renderVtList();
+  if(vt.manage)renderVtManage();
+}
+function vtBump(id,d){
+  const c=vtCard(id);if(!c)return;
+  const n=Math.max(0,Math.min(c.limit_n,vtUsed(id)+d));
+  if(n===vtUsed(id))return;
+  vtUse[id]=n;vtSaveUse();
+  renderVtChips();renderVtKpis();renderVtList();
+}
+function vtResetUse(){
+  vtUse={};vtSaveUse();
+  renderVtChips();renderVtKpis();renderVtList();
+  if(vt.manage)renderVtManage();
+}
+function valetGo(tab,id){
+  if(!tabs[tab])return;
+  setTab(tab);st.hotel=id;
+  const missing=tabNeeds(tab).filter(function(t){return !DATA_READY[t]});
+  if(!missing.length)setHotel(id);
+}
+function vtOnClick(e){
+  const panel=$('valetPanel');if(!panel||panel.hidden)return;
+  const t=e.target;if(!t||!t.closest)return;
+  const cardBtn=t.closest('[data-vt-card]');if(cardBtn){vtToggleCard(cardBtn.dataset.vtCard);return}
+  const plus=t.closest('[data-vt-plus]');if(plus){vtBump(plus.dataset.vtPlus,1);return}
+  const minus=t.closest('[data-vt-minus]');if(minus){vtBump(minus.dataset.vtMinus,-1);return}
+  const go=t.closest('[data-vt-go]');if(go){const p=go.dataset.vtGo.split('|');valetGo(p[0],p[1]);return}
+  const mf=t.closest('[data-vt-mf]');if(mf){vt.mf=mf.dataset.vtMf;renderVtManage();return}
+  const srt=t.closest('[data-vt-sort]');if(srt){vt.sort=srt.dataset.vtSort;vtSavePref();renderVtSelects();renderVtList();return}
+  const sum=t.closest('.vt-sum');if(sum){const art=sum.closest('[data-vt-hotel]');if(art){vt.open=(vt.open===art.dataset.vtHotel?'':art.dataset.vtHotel);renderVtList()}return}
+  if(t.closest('#vtMyCardsBtn')){vt.manage=!vt.manage;renderVtManage();if(vt.manage)$('vtManage').scrollIntoView({block:'start'});return}
+  if(t.closest('#vtUsageReset')){vtResetUse();return}
+}
+function vtOnChange(e){
+  const t=e.target;
+  if(t.id==='vtRegion'){vt.region=t.value;renderVtList();return}
+  if(t.id==='vtIssuer'){vt.issuer=t.value;renderVtList();return}
+  if(t.id==='vtSearch'){vt.q=t.value;renderVtList();return}
+  if(t.id==='vtMineOnly'){vt.mine=t.checked;vtSavePref();renderVtKpis();renderVtList();return}
+  if(t.id==='vtNoReceipt'){vt.noReceipt=t.checked;renderVtList();return}
+  if(t.id==='vtFreePark'){vt.freePark=t.checked;renderVtList();return}
+  if(t.dataset&&t.dataset.vtNote){const p=t.dataset.vtNote.split('|');vtNotes[p[0]]=vtNotes[p[0]]||{};vtNotes[p[0]][p[1]]=t.value;vtSaveNotes();return}
+}
+document.getElementById('valetPanel').addEventListener('click',vtOnClick);
+document.getElementById('valetPanel').addEventListener('change',vtOnChange);
+document.getElementById('valetPanel').addEventListener('input',function(e){if(e.target.id==='vtSearch')vtOnChange(e)});
+
 /* 첫 화면 — 저장해 둔 즐겨찾기를 먼저 읽고 ① VIP 탭 JSON 만 받아 그린다 */
 favLoad();
 cmpLoad();

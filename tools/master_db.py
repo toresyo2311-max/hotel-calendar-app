@@ -192,9 +192,27 @@ def check_accor3(db):
     return problems
 
 
+# 예약 링크(href) 호스트 — 화면에 보이는 글자가 아니라 날짜 칸이 여는 주소이므로
+# 출처 문구 검사에서 제외한다. 그 밖의 출처 표기는 그대로 검사한다.
+LINK_HOSTS = ('marriott.com', 'ritzcarlton.com', 'all.accor.com', 'accor.com',
+              'hotelux.com', 'trip.com', 'weixin.qq.com')
+_LINK_RE = re.compile(r'https?://([^\s"\'<>()\\]+)', re.I)
+
+
+def strip_booking_links(text_blob):
+    """예약 링크 주소만 지운다(출처 검사 대상 = 화면에 보이는 글자)."""
+    def repl(m):
+        host = m.group(1).split('/')[0].split(':')[0].lower()
+        for h in LINK_HOSTS:
+            if host == h or host.endswith('.' + h):
+                return ' '
+        return m.group(0)
+    return _LINK_RE.sub(repl, text_blob)
+
+
 def check_sources(text_blob):
     """출처 문구에 제3자 사이트 이름이 남아 있지 않은지 검사."""
-    low = text_blob.lower()
+    low = strip_booking_links(text_blob).lower()
     hits = [w for w in FORBIDDEN if w in low]
     return ['출처 문구에 금지된 사이트 이름: %s' % ', '.join(hits)] if hits else []
 

@@ -2196,12 +2196,12 @@ def part_path(name):
 
 
 def write_part(name, obj):
-    """탭별 JSON 한 파일 — 들여쓰기 없이 써서 전송량을 줄인다."""
+    """탭별 JSON 한 파일 — 들여쓰기 없이 + 전송용 압축 인코딩으로 써서 전송량을 줄인다."""
     path = part_path(name)
     os.makedirs(APP_DIR, exist_ok=True)
     tmp = path + '.tmp'
     with open(tmp, 'w', encoding='utf-8') as fp:
-        fp.write(compact(obj))
+        fp.write(compact(encode_part(obj)))
         fp.write('\n')
     os.replace(tmp, path)
 
@@ -2210,7 +2210,7 @@ def read_parts():
     """data/app/*.json — (탭별 호텔 묶음, 호텔 전체, 항공, 땡처리)."""
     parts, hotels = {}, []
     for tab, name in PART_TABS:
-        part = json.loads(_read(part_path(name)))
+        part = decode_part(json.loads(_read(part_path(name))))
         if part.get('tab') != tab:
             raise SystemExit('%s: tab 이 %r (기대 %r)' % (name, part.get('tab'), tab))
         if part.get('count') != len(part.get('hotels') or []):
@@ -2218,8 +2218,8 @@ def read_parts():
                              % (name, part.get('count'), len(part.get('hotels') or [])))
         parts[tab] = part
         hotels.extend(part['hotels'])
-    flights = json.loads(_read(part_path(PART_FLIGHTS)))
-    tt = json.loads(_read(part_path(PART_TTANG)))
+    flights = decode_part(json.loads(_read(part_path(PART_FLIGHTS))))
+    tt = decode_part(json.loads(_read(part_path(PART_TTANG))))
     return parts, hotels, flights, tt
 
 
@@ -2249,6 +2249,120 @@ def write_parts(master):
 
 def compact(obj):
     return json.dumps(obj, ensure_ascii=False, separators=(',', ':'))
+
+
+# ------------------------------------------------- 전송용 압축 인코딩(5단계)
+# data/app/*.json 은 앱이 fetch 해서 그대로 쓰는 배포본이라 **앱이 보는 구조는 그대로**여야
+# 한다. 그래서 파일에만 아래 두 가지를 적용하고, 읽을 때(read_parts)와 앱(loadPart)이
+# 같은 규칙으로 되돌린다. master_db.json(정본)과 index.html 의 구조는 건드리지 않는다.
+#
+#   · 날짜 맵  {"2026-12-01":240000,"2026-12-02":236000,…}  (연속·오름차순 365일)
+#        ->  {"$d":"2026-12-01","$v":[240000,236000,…]}
+#        날짜 키 196,370개(약 2.5MB)를 시작일 + 값 배열로 바꾼다.
+#   · 객체 배열 [{…},{…},…] (3개 이상)
+#        ->  {"$t":[키…],"$r":[[값…],…]}   없는 키는 "$~"(ABSENT)
+#        같은 키 이름을 행마다 반복하지 않는다.
+# 되돌린 결과는 원본과 **구조적으로 같다**(키 순서는 표 순서로 정규화).
+
+ABSENT = '$~'
+_DATE_KEY = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+
+
+def _is_date_key(k):
+    return isinstance(k, str) and bool(_DATE_KEY.match(k))
+
+
+def _as_date(k):
+    try:
+        return datetime.date.fromisoformat(k)
+    except ValueError:
+        return None
+
+
+def _date_map(o):
+    """연속·오름차순 날짜 키 맵이면 압축 표현을, 아니면 None."""
+    if not isinstance(o, dict) or not o:
+        return None
+    keys = list(o.keys())
+    if not all(_is_date_key(k) for k in keys):
+        return None
+    if keys != sorted(keys):
+        return None
+    ds = [_as_date(k) for k in keys]
+    if any(a is None for a in ds):
+        return None
+    for a, b in zip(ds, ds[1:]):
+        if (b - a).days != 1:
+            return None
+    return {'$d': keys[0], '$v': [encode_part(v) for v in o.values()]}
+
+
+def encode_part(o):
+    """앱 배포 JSON -> 전송용 압축 표현(되돌리면 원본과 구조적으로 같다)."""
+    if isinstance(o, dict):
+        dm = _date_map(o)
+        if dm is not None:
+            return dm
+        return {k: encode_part(v) for k, v in o.items()}
+    if isinstance(o, list):
+        if len(o) >= 3 and all(isinstance(x, dict) for x in o):
+            cols = []
+            for x in o:
+                for k in x:
+                    if k not in cols:
+                        cols.append(k)
+            rows = []
+            for x in o:
+                row = []
+                for k in cols:
+                    if k in x:
+                        row.append(encode_part(x[k]))
+                    else:
+                        row.append(ABSENT)
+                rows.append(row)
+            return {'$t': cols, '$r': rows}
+        return [encode_part(x) for x in o]
+    if o == ABSENT:
+        raise SystemExit('전송용 압축: 값 %r 이 예약어와 겹칩니다' % ABSENT)
+    return o
+
+
+def decode_part(o):
+    """전송용 압축 표현 -> 앱이 쓰는 원래 구조."""
+    if isinstance(o, dict):
+        if '$d' in o and '$v' in o and isinstance(o.get('$v'), list):
+            start = _as_date(o['$d'])
+            if start is None:
+                raise SystemExit('전송용 압축: 날짜 맵 시작일이 잘못됐습니다 %r' % o.get('$d'))
+            out = {}
+            for i, v in enumerate(o['$v']):
+                out[(start + datetime.timedelta(days=i)).isoformat()] = decode_part(v)
+            return out
+        if '$t' in o and '$r' in o and isinstance(o.get('$t'), list):
+            cols = o['$t']
+            out = []
+            for row in o['$r']:
+                if not isinstance(row, list) or len(row) != len(cols):
+                    raise SystemExit('전송용 압축: 표 행 길이가 열 수와 다릅니다')
+                item = {}
+                for k, v in zip(cols, row):
+                    if v == ABSENT:
+                        continue
+                    item[k] = decode_part(v)
+                out.append(item)
+            return out
+        return {k: decode_part(v) for k, v in o.items()}
+    if isinstance(o, list):
+        return [decode_part(x) for x in o]
+    return o
+
+
+def plain_size(obj):
+    return len(compact(obj).encode('utf-8'))
+
+
+def encoded_size(obj):
+    return len(compact(encode_part(obj)).encode('utf-8'))
 
 
 # ---------------------------------------------------------------- 통계
@@ -2460,9 +2574,9 @@ def cmd_verify(args, quiet=False):
                 break
     if parts['domestic'].get('accor') != master.get('accor'):
         problems.append('tab3_accor.json 의 accor(SNU) 블록이 master 와 다름')
-    if compact(flights) != compact(mfl):
+    if flights != mfl:
         problems.append('%s 내용 다름' % PART_FLIGHTS)
-    if compact(tt) != compact(mtt):
+    if tt != mtt:
         problems.append('%s(⑥ 땡처리) 내용 다름' % PART_TTANG)
 
     # 3) 탭별 JSON 을 합친 실제 배포 데이터로 통계
@@ -2565,8 +2679,7 @@ def cmd_inject(args):
     counts = master.get('counts') or {}
     print('data/app 갱신 + index.html 집계값 갱신 완료 (호텔 %s곳, 항공 %s노선, ⑥ 땡처리 %s건, SNU %s줄)' % (
         counts.get('hotels'), counts.get('routes'), counts.get('pus_deals'), counts.get('snu')))
-    for name in _part_files():
-        print('  %-20s %8.1f KB' % (name, os.path.getsize(part_path(name)) / 1024.0))
+    _print_part_sizes(master)
     return 0
 
 
@@ -2578,10 +2691,10 @@ def _part_text(master, name):
             part = {'tab': tab, 'count': len(groups[tab]), 'hotels': groups[tab]}
             if tab == 'domestic':
                 part['accor'] = master.get('accor')
-            return compact(part) + '\n'
+            return compact(encode_part(part)) + '\n'
     if name == PART_FLIGHTS:
-        return compact(master['flights']) + '\n'
-    return compact(master.get('ttang') or {'deals': []}) + '\n'
+        return compact(encode_part(master['flights'])) + '\n'
+    return compact(encode_part(master.get('ttang') or {'deals': []})) + '\n'
 
 
 def cmd_parts(args):
@@ -2591,9 +2704,38 @@ def cmd_parts(args):
     print('wrote data/app/ — ' + ', '.join('%s %d곳' % (PART_ADDRESS[t], len(groups[t]))
                                           for t in PART_ORDER))
     print('  %s · %s' % (PART_FLIGHTS, PART_TTANG))
-    for name in _part_files():
-        print('  %-20s %8.1f KB' % (name, os.path.getsize(part_path(name)) / 1024.0))
+    _print_part_sizes()
     return 0
+
+
+def _plain_parts(master):
+    """압축 전(원래 구조) 기준 크기 — 절감 수치 보고용."""
+    groups = split_hotels(master['hotels'])
+    out = []
+    for tab in PART_ORDER:
+        part = {'tab': tab, 'count': len(groups[tab]), 'hotels': groups[tab]}
+        if tab == 'domestic':
+            part['accor'] = master.get('accor')
+        out.append((PART_ADDRESS[tab], part))
+    out.append((PART_FLIGHTS, master['flights']))
+    out.append((PART_TTANG, master.get('ttang') or {'deals': []}))
+    return out
+
+
+def _print_part_sizes(master=None):
+    if master is None:
+        master = json.loads(_read(MASTER))
+    plain = dict(_plain_parts(master))
+    p_sum = e_sum = 0
+    for name in _part_files():
+        p = plain_size(plain[name])
+        e = os.path.getsize(part_path(name))
+        p_sum += p
+        e_sum += e
+        print('  %-20s %8.1f KB -> %7.1f KB  (%4.1f%%↓)' % (name, p / 1024.0, e / 1024.0,
+                                                         100.0 * (1 - e / float(p)) if p else 0))
+    print('  %-20s %8.1f KB -> %7.1f KB  (%4.1f%%↓)' % ('합계', p_sum / 1024.0, e_sum / 1024.0,
+                                                     100.0 * (1 - e_sum / float(p_sum)) if p_sum else 0))
 
 
 # ---------------------------------------------------------------- stats
@@ -2625,10 +2767,12 @@ def cmd_stats(args):
     print('  ⑥ 땡처리 %d건 · %d개 노선' % (st['pus_deals'], st['pus_routes']))
     print('  window  %s ~ %s (%d일)' % (st['date_min'], st['date_max'], st['dates']))
     print()
-    print('파일 크기 (KB)')
+    print('파일 크기 (KB) — 압축 전(원래 구조) -> 배포 파일')
     print('  %-18s %8.1f' % ('index.html', os.path.getsize(INDEX) / 1024.0))
+    plain = dict(_plain_parts(json.loads(_read(MASTER))))
     for name in _part_files():
-        print('  %-18s %8.1f' % (name, os.path.getsize(part_path(name)) / 1024.0))
+        print('  %-18s %8.1f -> %7.1f' % (name, plain_size(plain[name]) / 1024.0,
+                                          os.path.getsize(part_path(name)) / 1024.0))
     print()
     print('호텔별 요금 표기 칸수')
     for h in hotels:

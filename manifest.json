@@ -1,0 +1,23 @@
+{
+  "name": "TEAM-부산 호텔·항공 요금 달력",
+  "short_name": "TEAM부산",
+  "description": "호텔 538곳 · 항공 47개 노선 · 땡처리 상품의 요금 달력을 한 화면에서 보는 오프라인 자료입니다.",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8f7fb",
+  "theme_color": "#1b122b",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "메리어트 35k", "url": "./#tab=marriott&ticket=35" },
+    { "name": "항공 특가", "url": "./#tab=flight" },
+    { "name": "⑥ 땡처리", "url": "./#tab=tt" }
+  ]
+}

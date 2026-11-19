@@ -5101,7 +5101,7 @@ function renderLounge(){
   const nU=cnt.unknown||cards.filter(function(c){return c.status==='unknown'}).length;
   const el=function(id){return cards.filter(function(c){return c.status==='eligible'&&(c.airports||[]).indexOf(id)>=0}).length};
   const k=[[nE,'장','내 카드 중 라운지 가능'],[cnt.annual_free_total||0,'회','라운지 7장 합산 연간 무료'],
-           [el('icn1')+' / '+el('icn2'),'장','인천 T1 / T2'],(cnt.with_companion||0),'장','동반 1인 무료 카드']];
+           [el('icn1')+' / '+el('icn2'),'장','인천 T1 / T2'],[(cnt.with_companion||0),'장','동반 1인 무료 카드']];
   $('lgKpis').innerHTML=k.map(function(x){return '<div class="vt-kpi"><span>'+esc(x[2])+'</span><b>'+esc(String(x[0]))+'<i style="font-style:normal;font-size:10px;color:#8b86a3;margin-left:2px">'+esc(x[1])+'</i></b></div>'}).join('');
   $('lgBasis').textContent='기준 '+LOUNGE.generated+' · '+LOUNGE.basis;
   const ap=$('lgAirport');

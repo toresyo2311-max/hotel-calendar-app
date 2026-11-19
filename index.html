@@ -638,7 +638,7 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
   .daynum{font-size:9px}
   .dayprice{font-size:9px;letter-spacing:-.06em}
   .daytail{display:none}
-  .daynights{font-size:6.5px;margin-left:0}
+  .daynights{font-size:6px}
   .daypoints,.daycash{font-size:7.5px}
   .apc{font-size:7px;padding:0 2px}
   .calendar-title h3{font-size:15px}
@@ -828,7 +828,7 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
 .tkb{display:inline-flex;align-items:center;gap:3px;background:#f3ecff;border:1px solid #ddd0fb;color:#5b21b6;border-radius:5px;padding:1px 5px;font-size:9px;font-weight:800;white-space:nowrap;margin-left:4px}
 .tkb.up{background:#fdf3e6;border-color:#f0d7b4;color:#8a5a1b}
 .tkb.mon{background:#f4f2fa;border-color:#e2ddf0;color:#6b6484}
-.daynights{font-size:7.5px;font-weight:800;color:#6d28d9;margin-left:1px;letter-spacing:-.02em}
+.daynights{display:block;font-size:7px;font-weight:800;color:#6d28d9;letter-spacing:-.02em;line-height:1.15}
 .dayticket{font-size:7.5px;font-weight:800;color:#5b21b6;background:#f1eaff;border-radius:3px;padding:0 2px;margin-top:1px;line-height:1.25;white-space:nowrap;max-width:100%;overflow:hidden}
 .dayticket.up{color:#8a5a1b;background:#fbf0e0}
 .deal-acts{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:none}
@@ -987,7 +987,7 @@ body.cmp-on{padding-bottom:66px}
       </div>
       <div class="extra-control">
         <button class="fav-only" type="button" id="favHotelOnly" aria-pressed="false" title="저장한 관심 호텔만 남깁니다">★ 즐겨찾기만 보기 (0)</button>
-        <div class="mode-control budget-ctl" id="budgetCtl" role="group" aria-label="1박 예산 빠른 필터"><button type="button" class="mode-button selected" data-budget="0">전체</button><button type="button" class="mode-button" data-budget="150000">15만↓</button><button type="button" class="mode-button" data-budget="200000">20만↓</button><button type="button" class="mode-button" data-budget="300000">30만↓</button></div>
+        <div class="mode-control budget-ctl" id="budgetCtl" role="group" aria-label="1박 평균 예산 빠른 필터"><button type="button" class="mode-button selected" data-budget="0">전체</button><button type="button" class="mode-button" data-budget="150000">15만↓</button><button type="button" class="mode-button" data-budget="200000">20만↓</button><button type="button" class="mode-button" data-budget="300000">30만↓</button></div>
         <label class="toggle"><input id="weekendOnly" type="checkbox"> 금·토·일만 강조</label>
         <label class="toggle" id="apcOnlyWrap" style="display:none"><input id="apcOnly" type="checkbox"> 12월 APC 가능 호텔만</label>
         <label class="toggle" id="apcDaysWrap" style="display:none"><input id="apcDaysOnly" type="checkbox"> 무료숙박 가능일만 남기기</label>
@@ -1578,7 +1578,7 @@ function renderCalendar(S){
   $('monthTitle').textContent=monlabel(st.month);
   $('selectionInfo').textContent=only?(filteredHotels()[0]?.name||'전체 호텔'):(st.tab==='domestic'?(st.mode==='cash'?'선택 호텔 중 그날 1박 최저가':'선택 호텔 중 가장 낮은 Stay Plus 결제액'):st.tab==='marriott'?(pointsMode()?'선택 호텔 중 그날 아워드 최저 포인트':'선택 호텔 중 그날 1박 최저가'):apcMode?'선택 호텔 중 그날 APC 무료숙박 가능 수':'선택 호텔 중 그날 1박 최저가');
   $('monthRail').innerHTML=yearMonths().map(m=>'<button type="button" data-goto="'+m+'" class="'+(m===st.month?'on':'')+'">'+Number(m.slice(5,7))+'월</button>').join('');
-  if(N>1)$('selectionInfo').textContent+=' · '+N+'박 합계';
+  if(N>1){const onlyH=st.hotel!=='all'?(filteredHotels()[0]||{}).name:null;$('selectionInfo').textContent=(onlyH?onlyH+' · ':'선택 호텔 중 ')+N+'박 연속 합계 최저';}
   renderMonthHighlight();
   $('legendDetail').textContent=(st.tab==='domestic'&&st.mode!=='cash'?'세금 별도, Stay Plus 적용 후 '+(st.mode==='sp2'?'2박':'토 체크인 3박')+' 결제액 · ':'')+(st.tab==='china'?'날짜를 누르면 위챗 예약 창이 열립니다 · ':'날짜를 누르면 그 날짜의 예약 페이지가 새 탭에서 열립니다 · ')+'호텔별 금액 비교는 「선택일 호텔 비교」.';
   const byDate={};for(const x of S)byDate[x.d]=x;
@@ -1827,7 +1827,7 @@ function render(){
   if(st.tab==='tt'){renderTt();hashSync();return}
   if(st.tab==='combo'){renderCombo();hashSync();return}
   setFlightMode(false);
-  renderFilters();renderRanking();renderPtTop();
+  renderFilters();renderRanking();retitleNights();renderPtTop();
   SER=dayLowSeries();
   renderCalendar(SER);renderHero(SER);renderInsights(SER);renderGlance(SER);
   renderNotes();hashSync();
@@ -2315,10 +2315,10 @@ function heroBenefitsHtml(h){
   if(!h){
     const n=filteredHotels().length,N0=st.nights||1;
     if(N0>1)rows.push('<b>'+N0+'박 연속</b> 합계로 비교 중 — 이 달('+monlabel(st.month)+') 안에서 '+N0+'박이 이어지는 체크인만 남깁니다');
-    if(st.tab==='lux'){rows.push('<b>'+KR(n)+'곳</b>의 날짜별 최저 1박가를 한 화면에서 비교');rows.push('VIP 요금 공개 호텔은 세금 포함 표시가');}
+    if(st.tab==='lux'){rows.push('<b>'+KR(n)+'곳</b>의 날짜별 최저 '+(N0>1?N0+'박 합계':'1박가')+'를 한 화면에서 비교');rows.push('VIP 요금 공개 호텔은 세금 포함 표시가');}
     else if(st.tab==='china'){rows.push('<b>'+KR(n)+'곳</b>의 APC 무료숙박 가능일과 현금가를 함께 표시');rows.push('권역(김해 직항 · 환승·고속철 · 국내선 환승) 필터');}
-    else if(st.tab==='domestic'){rows.push('<b>'+KR(n)+'곳</b>의 회원가와 Stay Plus 결제액 비교');rows.push('SNU 1장 = 1박 스위트 확정 · Stay Plus 1장 = 2박 중 1박 무료');}
-    else {rows.push('<b>'+KR(n)+'곳</b>의 현금가와 아워드 포인트를 함께 표시');rows.push('세금·수수료 포함 검색가 · 포인트는 원 단위');}
+    else if(st.tab==='domestic'){rows.push('<b>'+KR(n)+'곳</b>의 '+(N0>1?N0+'박 회원가 합계':'회원가와 Stay Plus 결제액')+' 비교');rows.push('SNU 1장 = 1박 스위트 확정 · Stay Plus 1장 = 2박 중 1박 무료');}
+    else {rows.push('<b>'+KR(n)+'곳</b>의 현금가와 아워드 포인트를 함께 표시'+(N0>1?' · '+N0+'박 합계 기준':''));rows.push('세금·수수료 포함 검색가 · 포인트는 원 단위');}
   }else{
     if(st.tab==='lux'){
       rows.push(h.vip?'<b>VIP 요금</b> 공개 호텔 · 세금 포함 표시가':'<b>검색 최저가</b> 기준 · 세금 포함');
@@ -4089,6 +4089,12 @@ window.addEventListener('hashchange',function(){
   applyHashState(p);activate(st.tab);
 });
 document.addEventListener('keydown',function(e){if(e.key==='Escape')cmpClose()});
+function retitleNights(){
+  if(!(st.nights>1))return;
+  ['rank1Title','rank1Sub','rank2Title','rank2Sub'].forEach(function(id){
+    const el=$(id);if(el&&el.textContent.indexOf('1박')>=0)el.textContent=el.textContent.replace(/1박/g,st.nights+'박');
+  });
+}
 
 /* ?diag=1 로 열면 오류를 window.__ERRS 에 모은다(배포 화면·동작은 그대로). 점검용입니다. */
 if(/[?&]diag=1(&|$)/.test(location.search+location.hash)){

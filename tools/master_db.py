@@ -560,7 +560,7 @@ EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
 #   같은 날짜에 남아 있던 '가격표' 자리표시 28칸은 실측으로 교체했으므로 건수는 그대로)
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
 # 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
-EXPECT_H2_BY_MONTH = {'2027-06': 886, '2027-07': 959, '2027-08': 659,
+EXPECT_H2_BY_MONTH = {'2027-06': 886, '2027-07': 1106, '2027-08': 659,
                       '2027-09': 654, '2027-10': 436, '2027-11': 143}
 # 2027-07 은 2026-11-19 일본 7노선 7월 완결본(값 150칸)을 더한 595 에,
 # 같은 날 필리핀 4노선 미조회 36칸을 더한 631 이고, A조 12노선 7월 3~5주차 134칸을 더한 857 이다.
@@ -580,7 +580,9 @@ EXPECT_H2_BY_MONTH = {'2027-06': 886, '2027-07': 959, '2027-08': 659,
 #   방콕 10/1 금~일 1칸은 재실측으로 교체했으므로 건수는 그대로).
 # 2027-10은 2026-11-20 A조 12개 노선 10월 4주(10/7~11/1) 빈칸 231칸을 더한 436 이다(205→436 —
 #   이번 원본은 교체 0칸이고, 격자에 이미 있던 9칸(금~일 10/8·10/15 8칸 + 후쿠오카 10/29)은 그대로).
-EXPECT_H2 = {'weekend': 3642, 'day': 95, 'total': 3737}   # 주말형 2,587+205+245+102+231+109+163 · 당일치기 95
+EXPECT_H2 = {'weekend': 3789, 'day': 95, 'total': 3884}   # 주말형 2,587+205+245+102+231+109+163+147 · 당일치기 95
+# 2027-07 은 2026-11-20 B조 12개 노선 7월 3주(7/15~8/2) 빈칸 147칸을 더한 1,106 이다(959→1,106 —
+#   같은 격자의 가격표 자리표시 33칸은 실측값으로 교체했으므로 건수는 그대로).
 # 2027-06 은 2026-11-19 기존 24개 노선 6월 3주차(6/17~21) 120칸 가운데 새 칸 92를 더하고(530→622),
 # 같은 날 4주차(6/24~28) 120칸 가운데 새 칸 101을 더한 723 이었다
 # (각 주차의 '가격표' 자리표시 28칸·19칸은 실측으로 교체 — 건수는 그대로).
@@ -919,6 +921,89 @@ GRP_A_JUL_THIN = 5             # '잔여 9석 미만' 표시가 붙은 칸
 GRP_A_JUL_ROUTE_MEASURED = {'FUK': 11, 'KIX': 11, 'TYO': 10, 'TPE': 7, 'HKG': 9,
                             'MFM': 13, 'PVG': 14, 'BKK': 14, 'DAD': 14, 'CXR': 9,
                             'NKG': 13, 'SGN': 10}
+
+# 부산 출발 B조 12개 노선 2027년 7월 3주(7/15~19 · 7/22~26 · 7/29~8/2) — 2026-11-20 5번 보고서
+# (2026-11-20 05:29~07:11 KST 실측). 12노선 × 5패턴 × 3주 = 180칸을 전수 실측해 값 180칸
+# (판매편 0건 0 · 편성 미확인 0)으로 채웠다. 앱이 '가격표 실측 · 직항/경유 미확인' 자리표시로
+# 갖고 있던 33칸은 같은 노선·출발일·패턴의 실측값(항공사·경유지·소요·시각 포함)으로 교체했고
+# (교체 칸 평균 667,282 → 652,297원), 빈칸 147칸을 새로 넣었다. 0박 당일치기는 이 조사
+# 범위 밖이라 그대로다(이 격자 안에 0박 칸은 없다).
+GRP_B_JUL = ('SIN', 'GUM', 'NGO', 'OKA', 'HGH', 'TAO', 'HAN', 'CNX', 'DPS', 'KHH',
+             'RMQ', 'BJS')
+GRP_B_JUL_WEEKS = ('2027-07-15', '2027-07-22', '2027-07-29')
+GRP_B_JUL_START, GRP_B_JUL_END = '2027-07-15', '2027-07-31'
+GRP_B_JUL_TOTAL = 180          # 12노선 × 5패턴 × 3주가 모두 금액
+GRP_B_JUL_REPLACED = 33        # 가격표 자리표시 → 실측값 교체 칸
+GRP_B_JUL_OVERALL = (433700, 995100)   # 타이중 7/15~19 금~일 · 괌 7/22~26 금~일
+GRP_B_JUL_AVG = 654466         # 180칸 평균(반올림)
+GRP_B_JUL_MEDIAN = 644200      # 180칸 중앙값
+GRP_B_JUL_DIRECT = 22          # 최저가가 직항인 칸
+# 노선: (칸수, 최저, 최고, 평균(반올림), 최저가가 직항인 칸)
+GRP_B_JUL_ROUTE = {
+    'SIN': (15, 448800, 803600, 651687, 3), 'GUM': (15, 637600, 995100, 789433, 0),
+    'NGO': (15, 549600, 701700, 644200, 0), 'OKA': (15, 512500, 864400, 627340, 8),
+    'HGH': (15, 501700, 683700, 600547, 0), 'TAO': (15, 500600, 584800, 553420, 0),
+    'HAN': (15, 483000, 714200, 603500, 0), 'CNX': (15, 581100, 907400, 785367, 2),
+    'DPS': (15, 442300, 833000, 634427, 0), 'KHH': (15, 632900, 759200, 691747, 0),
+    'RMQ': (15, 433700, 968600, 734653, 5), 'BJS': (15, 447100, 652500, 537273, 4)}
+GRP_B_JUL_GRID_ROUTE = {c: (v[1], v[2]) for c, v in GRP_B_JUL_ROUTE.items()}
+GRP_B_JUL_MONTH = {'2027-07': 180}   # 출발일 기준 월별 칸수
+# 주차: (칸수, 합, 평균(반올림), 최저, 최고)
+GRP_B_JUL_WEEK = {'2027-07-15': (60, 36056400, 600940, 433700, 992700),
+                  '2027-07-22': (60, 40173400, 669557, 452100, 995100),
+                  '2027-07-29': (60, 41574100, 692902, 453200, 994700)}
+GRP_B_JUL_PAT_AVG = {'금~일': 633850, '토~월': 702831, '목~일': 615272,
+                     '금~월': 663789, '목~월': 656589}
+# 10만원 단위 구간 — 원본 보고서의 8구간 표와 같다
+GRP_B_JUL_BUCKET = {'30만원 미만': 0, '30만~40만원': 0, '40만~50만원': 18,
+                    '50만~60만원': 49, '60만~70만원': 61, '70만~80만원': 23,
+                    '80만~90만원': 19, '90만~100만원': 10, '100만원 이상': 0}
+# 실측분의 장시간 경유 — 환승 12시간 이상 20시간 미만 15칸 · 20시간 이상 24칸
+GRP_B_JUL_LONG = (15, 24)
+# 총 소요 20시간 초과 칸(보고서 '최저가 기준 총 소요가 20시간을 넘는 칸 38칸')
+GRP_B_JUL_OVER20 = 38
+# 2회 환승 5칸 — 환승 시간 표기가 없어 note 에 경유지 2곳만 적었다
+GRP_B_JUL_TWOHOP = {('HGH', '2027-07-15', '목~일'), ('HGH', '2027-07-22', '목~일'),
+                    ('HGH', '2027-07-29', '목~일'), ('CNX', '2027-07-16', '금~월'),
+                    ('CNX', '2027-07-17', '토~월')}
+# 가격표 자리표시 33칸 — 이번 실측값으로 교체됐는지 본다(교체 뒤 금액)
+GRP_B_JUL_REPLACE = {
+    ('CNX', '2027-07-15', '목~월'): (638500, 684000),
+    ('CNX', '2027-07-15', '목~일'): (664100, 695400),
+    ('DPS', '2027-07-15', '목~월'): (428200, 442300),
+    ('DPS', '2027-07-16', '금~월'): (454100, 740900),
+    ('DPS', '2027-07-17', '토~월'): (989800, 568500),
+    ('DPS', '2027-07-22', '목~일'): (536300, 588400),
+    ('DPS', '2027-07-29', '목~월'): (566100, 782900),
+    ('GUM', '2027-07-15', '목~일'): (652400, 684500),
+    ('GUM', '2027-07-17', '토~월'): (987600, 985500),
+    ('GUM', '2027-07-22', '목~일'): (832500, 638800),
+    ('GUM', '2027-07-29', '목~일'): (596700, 638800),
+    ('HAN', '2027-07-16', '금~월'): (486600, 483000),
+    ('HGH', '2027-07-17', '토~월'): (593500, 648400),
+    ('KHH', '2027-07-30', '금~월'): (742000, 711100),
+    ('NGO', '2027-07-17', '토~월'): (709800, 665500),
+    ('OKA', '2027-07-15', '목~월'): (689400, 611800),
+    ('OKA', '2027-07-15', '목~일'): (628900, 616400),
+    ('OKA', '2027-07-16', '금~월'): (759300, 864400),
+    ('OKA', '2027-07-16', '금~일'): (810200, 667900),
+    ('OKA', '2027-07-17', '토~월'): (816200, 727200),
+    ('OKA', '2027-07-22', '목~일'): (506300, 512500),
+    ('OKA', '2027-07-23', '금~월'): (654900, 645200),
+    ('OKA', '2027-07-29', '목~월'): (596300, 587700),
+    ('OKA', '2027-07-29', '목~일'): (542600, 532200),
+    ('OKA', '2027-07-30', '금~월'): (635700, 648900),
+    ('OKA', '2027-07-30', '금~일'): (641900, 595800),
+    ('SIN', '2027-07-16', '금~월'): (459300, 448800),
+    ('SIN', '2027-07-22', '목~일'): (544100, 653800),
+    ('SIN', '2027-07-23', '금~월'): (1195100, 751000),
+    ('SIN', '2027-07-29', '목~월'): (809800, 803600),
+    ('SIN', '2027-07-30', '금~월'): (652200, 800900),
+    ('TAO', '2027-07-23', '금~일'): (600000, 550600),
+    ('TAO', '2027-07-30', '금~일'): (599900, 549100)}
+GRP_B_JUL_REPLACE_AVG = (667282, 652297)   # 교체 33칸 평균(기존 → 신규)
+# 이 원본이 쓴 note 꼴 — 출발-도착 시각이 괄호 앞 공백 뒤에 붙는다
+GRP_B_JUL_NOTE = re.compile(r' \(\d\d:\d\d-\d\d:\d\d[^)]*\)$')
 
 # 부산 출발 A조 12개 노선 2027년 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) — 2026-11-19 5번 보고서
 # (2026-11-19 22:00~23:12 KST 실측). 12노선 × 5패턴 × 4주 = 240칸 가운데 빈칸 205칸을 실측하고,
@@ -2034,6 +2119,152 @@ def check_flights(flights):
                 if d.get('via') is False and '직항' not in (d.get('note') or ''):
                     problems.append('A조 직항 칸 note 이상: %s %s' % (d['code'], d['date']))
                     break
+    # 부산 출발 B조 12개 노선 2027년 7월 3주(7/15~19 · 7/22~26 · 7/29~8/2) — 격자 180칸이 모두
+    # 금액을 가지는지, 가격표 자리표시가 남지 않았는지, 노선별 15칸(최저/최고/평균/직항 칸)과
+    # 격자 최저·최고·평균·중앙값, 주차·패턴·10만원 구간, 장시간 경유, 2회 환승 칸, 교체 33칸의
+    # 금액이 원본 보고서와 같은지.
+    gb = [dict(d, code=r['code']) for r in routes if r['code'] in GRP_B_JUL
+          for d in r['deals'] if GRP_B_JUL_START <= d['date'] <= GRP_B_JUL_END
+          and d['pattern'] in EXPECT_WEEKEND]
+    if len(gb) != GRP_B_JUL_TOTAL:
+        problems.append('B조 7월 3주 %d칸 (기대 %d칸)' % (len(gb), GRP_B_JUL_TOTAL))
+    else:
+        want = set()
+        for code in GRP_B_JUL:
+            for thu in GRP_B_JUL_WEEKS:
+                for label in EXPECT_WEEKEND:
+                    dt = (datetime.date.fromisoformat(thu) + datetime.timedelta(
+                        days=(FL_WD[label[0]] - FL_WD['목']) % 7)).isoformat()
+                    want.add((code, dt, label))
+        got = {(d['code'], d['date'], d['pattern']) for d in gb}
+        if got != want:
+            problems.append('B조 7월 3주 격자 차이: %s' % sorted(got ^ want)[:6])
+        if [d for d in gb if d.get('src')]:
+            problems.append('B조 7월 3주에 가격표 자리표시가 남아 있습니다')
+        left = [d for d in gb if not d.get('price') or d.get('via') is None]
+        if left:
+            problems.append('B조 7월 3주 금액·편성 없는 칸 %d칸 (기대 0칸): %s'
+                            % (len(left), [(d['code'], d['date']) for d in left][:4]))
+        ps = [d['price'] for d in gb]
+        if (min(ps), max(ps)) != GRP_B_JUL_OVERALL:
+            problems.append('B조 7월 3주 최저·최고 %s (기대 %s)'
+                            % ((min(ps), max(ps)), GRP_B_JUL_OVERALL))
+        if _rnd(sum(ps) / len(ps)) != GRP_B_JUL_AVG:
+            problems.append('B조 7월 3주 평균 %d (기대 %d)'
+                            % (_rnd(sum(ps) / len(ps)), GRP_B_JUL_AVG))
+        sp = sorted(ps)
+        mid = sp[len(sp) // 2] if len(sp) % 2 else (sp[len(sp) // 2 - 1] + sp[len(sp) // 2]) / 2
+        if mid != GRP_B_JUL_MEDIAN:
+            problems.append('B조 7월 3주 중앙값 %s (기대 %s)' % (mid, GRP_B_JUL_MEDIAN))
+        for code, (n, low, high, avg, ndirect) in GRP_B_JUL_ROUTE.items():
+            cells_ = [d for d in gb if d['code'] == code]
+            v = [d['price'] for d in cells_]
+            if len(v) != n:
+                problems.append('B조 7월 3주 %s %d칸 (기대 %d칸)' % (code, len(v), n))
+                continue
+            if (min(v), max(v), _rnd(sum(v) / len(v))) != (low, high, avg):
+                problems.append('B조 7월 3주 %s 집계 %s (기대 %s)'
+                                % (code, (min(v), max(v), _rnd(sum(v) / len(v))),
+                                   (low, high, avg)))
+            if sum(1 for d in cells_ if d.get('via') is False) != ndirect:
+                problems.append('B조 7월 3주 %s 직항이 최저가인 칸 %d (기대 %d)'
+                                % (code, sum(1 for d in cells_ if d.get('via') is False),
+                                   ndirect))
+        for key, (old, new) in GRP_B_JUL_REPLACE.items():
+            hit = [d for d in gb if (d['code'], d['date'], d['pattern']) == key]
+            if not hit:
+                problems.append('B조 7월 3주 교체 칸이 없습니다: %s' % (key,))
+            elif hit[0]['price'] != new:
+                problems.append('B조 7월 3주 교체 칸 %s 금액 %s (기대 %d · 기존 %d)'
+                                % (key, hit[0]['price'], new, old))
+        direct = sum(1 for d in gb if d.get('via') is False)
+        if direct != GRP_B_JUL_DIRECT:
+            problems.append('B조 7월 3주 직항이 최저가인 칸 %d (기대 %d)'
+                            % (direct, GRP_B_JUL_DIRECT))
+        for m, n in GRP_B_JUL_MONTH.items():
+            c = sum(1 for d in gb if d['date'][:7] == m)
+            if c != n:
+                problems.append('B조 7월 3주 %s 출발 %d칸 (기대 %d칸)' % (m, c, n))
+        for thu, (cells_n, total, avg, low, high) in GRP_B_JUL_WEEK.items():
+            v = [d['price'] for d in gb
+                 if (datetime.date.fromisoformat(d['date']) - datetime.timedelta(
+                     days=(datetime.date.fromisoformat(d['date']).weekday()
+                           - 3) % 7)).isoformat() == thu]   # 3 = datetime 목요일
+            if not v:
+                problems.append('B조 7월 3주 %s 칸이 없습니다' % thu)
+                continue
+            got_w = (len(v), sum(v), _rnd(sum(v) / len(v)), min(v), max(v))
+            if got_w != (cells_n, total, avg, low, high):
+                problems.append('B조 7월 3주 %s 주차 집계 %s (기대 %s)'
+                                % (thu, got_w, (cells_n, total, avg, low, high)))
+        for pat, want_avg in GRP_B_JUL_PAT_AVG.items():
+            v = [d['price'] for d in gb if d['pattern'] == pat]
+            if not v or _rnd(sum(v) / len(v)) != want_avg:
+                problems.append('B조 7월 3주 %s 평균 %s (기대 %d)'
+                                % (pat, v and _rnd(sum(v) / len(v)), want_avg))
+        bucket = {k: 0 for k in GRP_B_JUL_BUCKET}
+        edges = ((300000, '30만원 미만'), (400000, '30만~40만원'),
+                 (500000, '40만~50만원'), (600000, '50만~60만원'),
+                 (700000, '60만~70만원'), (800000, '70만~80만원'),
+                 (900000, '80만~90만원'), (1000000, '90만~100만원'))
+        for p in ps:
+            name = '100만원 이상'
+            for edge, label in edges:
+                if p < edge:
+                    name = label
+                    break
+            bucket[name] += 1
+        if bucket != GRP_B_JUL_BUCKET:
+            problems.append('B조 7월 3주 10만원 구간 %s (기대 %s)'
+                            % (bucket, GRP_B_JUL_BUCKET))
+        lay_cells = []
+        for d in gb:
+            lay = FL_LAY.search(d.get('note') or '')
+            if lay:
+                lay_cells.append(int(lay.group(1)) * 60 + int(lay.group(2) or 0))
+        if (sum(1 for x in lay_cells if 720 <= x < 1200),
+                sum(1 for x in lay_cells if x >= 1200)) != GRP_B_JUL_LONG:
+            problems.append('B조 7월 3주 장시간 경유 %d/%d칸 (기대 %s)'
+                            % (sum(1 for x in lay_cells if 720 <= x < 1200),
+                               sum(1 for x in lay_cells if x >= 1200), GRP_B_JUL_LONG))
+        two = sorted((d['code'], d['date'], d['pattern']) for d in gb
+                     if d.get('via') is True and '환승' not in (d.get('note') or ''))
+        if set(two) != GRP_B_JUL_TWOHOP:
+            problems.append('B조 7월 3주 2회 환승 칸이 다릅니다: %s'
+                            % sorted(set(two) ^ GRP_B_JUL_TWOHOP))
+        over20 = 0
+        for d in gb:
+            note = d.get('note') or ''
+            m = re.search(r'총\s*(\d+)시간\s*(?:(\d+)분)?', note) or \
+                re.search(r'직항\s*(\d+)시간\s*(?:(\d+)분)?', note)
+            if m and int(m.group(1)) * 60 + int(m.group(2) or 0) > 1200:
+                over20 += 1
+        if over20 != GRP_B_JUL_OVER20:
+            problems.append('B조 7월 3주 총 소요 20시간 초과 %d칸 (기대 %d칸)'
+                            % (over20, GRP_B_JUL_OVER20))
+        for d in gb:
+            note = d.get('note') or ''
+            if not GRP_B_JUL_NOTE.search(note):
+                problems.append('B조 7월 3주 note 에 출발-도착 시각이 없습니다: %s %s'
+                                % (d['code'], d['date']))
+                break
+            if d.get('via') is True and '총' not in note:
+                problems.append('B조 7월 3주 경유 칸에 총 소요시간이 없습니다: %s %s'
+                                % (d['code'], d['date']))
+                break
+            if d.get('via') is False and '직항' not in note:
+                problems.append('B조 7월 3주 직항 칸 note 이상: %s %s'
+                                % (d['code'], d['date']))
+                break
+            if '가격표' in note or d.get('alt'):
+                problems.append('B조 7월 3주 칸에 자리표시·직항 금액이 붙었습니다: %s %s'
+                                % (d['code'], d['date']))
+                break
+            if '2026-11-2' in note:
+                problems.append('B조 7월 3주 note 에 조사 시각이 들어갔습니다: %s %s'
+                                % (d['code'], d['date']))
+                break
+
     # A조 12개 노선 2027년 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) — 240칸이 모두 값인지,
     # 재확인 3칸의 금액, 노선별 20칸(최저/최고/직항 칸), 격자 최저·최고, note 표기(경유 총 소요).
     ga = [dict(d, code=r['code']) for r in routes if r['code'] in GRP_A_AUG

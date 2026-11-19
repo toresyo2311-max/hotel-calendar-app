@@ -76,6 +76,10 @@ button:disabled{cursor:not-allowed;opacity:.3}
 .rank-label{font-size:9.5px;color:var(--muted2);font-weight:700;text-align:right}
 .rank-item{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:8px;border-top:1px solid var(--line2);padding:8px 0;min-height:42px}
 .rank-item:first-child{border-top:0}
+.rank-item.rank-click{cursor:pointer;border-radius:8px;transition:background .15s}
+.rank-item.rank-click:hover{background:rgba(109,40,217,.06)}
+.rank-item.rank-click:focus-visible{outline:2px solid var(--violet);outline-offset:1px}
+.rank-item.rank-click .rank-num:after{content:"›";margin-left:5px;color:var(--violet);font-weight:700}
 .rank-n{font-weight:800;font-size:11px;color:var(--muted2);font-variant-numeric:tabular-nums}
 .rank-entity{min-width:0}
 .rank-name{font-weight:700;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1503,21 +1507,23 @@ function renderFilters(){const base=tierFiltered();let cities;
    return '<div class="hotel-row'+(on?' fav':'')+'">'+favStar('hotel',h.id,h.name)+'<button type="button" class="hchart" data-hist="hotels" data-hid="'+h.id+'" title="'+esc(h.name)+' 가격 추이 차트" aria-label="'+esc(h.name)+' 가격 추이 차트">📈</button>'+'<button type="button" class="hotel-choice '+(st.hotel===h.id?'selected':'')+'" data-hotel="'+h.id+'" title="'+esc(h.name)+'"><span class="name">'+esc(h.name)+'<span class="smalltown">'+esc(sub)+'</span></span><span class="price">'+esc(listBadge(h))+'</span></button></div>'}).join('')
    :'<div class="rank-empty" style="padding:8px 4px">'+(st.favOnly?'이 탭에서 즐겨찾기한 호텔이 없습니다. 호텔 옆 ☆를 눌러 저장하세요.':'조건에 맞는 호텔이 없습니다 — 예산·필터를 넓혀 보세요.')+'</div>');
 }
-function row(rank,h,price,date,cl='',sub=''){let extra='';if(st.tab==='marriott'){if(pointsMode()){const c=cashOf(h,date);if(c!=null)extra=shortWon(c)}else{const p=ptsOf(h,date);if(p!=null)extra=shortP(p)}}const num=st.tab==='marriott'?shortVal(price):shortWon(price);return '<div class="rank-item"><span class="rank-n">'+String(rank).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+favStar('hotel',h.id,h.name)+esc(h.name)+'</div><div class="rank-meta">'+esc(h.region&&h.region!==h.city?h.region+' · '+h.city:h.city)+' · '+esc(dateLabel(date))+' '+weekday(date)+'요일'+(sub?' · '+esc(sub):'')+(extra?' · '+extra:'')+'</div></div><div class="rank-num '+cl+'">'+num+'</div></div>'}
+/* 순위 목록 항목을 누를 수 있게 하는 공통 속성 — 그 호텔·그 날짜로 달력을 바꾼다 */
+function rankAttr(h,date){return ' data-rank-hotel="'+esc(h&&h.id)+'"'+(date?' data-rank-date="'+esc(date)+'"':'')+' role="button" tabindex="0"'}
+function row(rank,h,price,date,cl='',sub=''){let extra='';if(st.tab==='marriott'){if(pointsMode()){const c=cashOf(h,date);if(c!=null)extra=shortWon(c)}else{const p=ptsOf(h,date);if(p!=null)extra=shortP(p)}}const num=st.tab==='marriott'?shortVal(price):shortWon(price);return '<div class="rank-item rank-click"'+rankAttr(h,date)+' title="'+esc(h.name)+' — 달력에서 이 호텔 요금 보기"><span class="rank-n">'+String(rank).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+favStar('hotel',h.id,h.name)+esc(h.name)+'</div><div class="rank-meta">'+esc(h.region&&h.region!==h.city?h.region+' · '+h.city:h.city)+' · '+esc(dateLabel(date))+' '+weekday(date)+'요일'+(sub?' · '+esc(sub):'')+(extra?' · '+extra:'')+'</div></div><div class="rank-num '+cl+'">'+num+'</div></div>'}
 function promoBadge(h){let p=h.promotion||'';if(p.includes('2+1')||p.includes('Stay 3 Pay 2'))return '2+1 무료 1박';if(p.includes('3+1')||p.includes('Stay 4 Pay 3'))return '4박 중 1박 무료';if(p.includes('Stay 5 Pay 4'))return '5박 중 1박 무료';if(p.includes('Club Lounge'))return '클럽 라운지';if(p.includes('25%'))return '최대 25% 할인';if(p.includes('20%')||p.includes('30%'))return '연박 할인';if(p.includes('10%'))return '10% 할인(조건 미확인)';let m=p.match(/(\d+)%\s*OFF/);if(m)return m[1]+'% 할인';if(p.includes('FHR'))return 'FHR 혜택';return null}
 function renderRanking(){const hs=filteredHotels();
  if(st.tab==='lux'){
-  $('rank1Title').textContent='12개월 1박 최저가 TOP 5';$('rank1Sub').textContent='호텔별 최저일';$('rank2Title').textContent='VIP · FHR 혜택 확인';$('rank2Sub').textContent='프로모션 요약';
+  $('rank1Title').textContent='12개월 1박 최저가 TOP 5';$('rank1Sub').textContent='호텔별 최저일 · 누르면 달력';$('rank2Title').textContent='VIP · FHR 혜택 확인';$('rank2Sub').textContent='프로모션 요약 · 누르면 달력';
   const minlist=hs.map(h=>({h,b:minPerHotel(h)})).filter(o=>o.b).sort((a,b)=>a.b[1]-b.b[1]).slice(0,5);
   $('rank1').innerHTML=minlist.map((v,i)=>row(i+1,v.h,v.b[1],v.b[0],i===0?'red':'')).join('')||'<div class="rank-empty">선택한 호텔의 요금 자료가 없습니다.</div>';
-  const promos=hs.filter(h=>promoBadge(h)).slice(0,5);$('rank2').innerHTML=promos.map((h,i)=>'<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+esc(h.name)+'</div><div class="rank-meta">'+esc(promoBadge(h))+'</div></div><div class="rank-num teal" style="font-size:11px">혜택 확인</div></div>').join('')||'<div class="rank-empty">표기된 프로모션 없음</div>';
-  $('rank2').innerHTML+='<p class="hint">주의: 실제 VIP·FHR 결제가는 위 공개 최저가와 다릅니다. 혜택 적용가 자동 차감 없음.</p>';
+  const promos=hs.filter(h=>promoBadge(h)).slice(0,5);$('rank2').innerHTML=promos.map(function(h,i){const b=minPerHotel(h);return '<div class="rank-item rank-click"'+rankAttr(h,b?b[0]:'')+' title="'+esc(h.name)+' — 달력에서 이 호텔 요금 보기"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+esc(h.name)+'</div><div class="rank-meta">'+esc(promoBadge(h))+(b?' · 최저 '+esc(dateLabel(b[0])):'')+'</div></div><div class="rank-num teal" style="font-size:11px">혜택 확인</div></div>'}).join('')||'<div class="rank-empty">표기된 프로모션 없음</div>';
+  $('rank2').innerHTML+='<p class="hint">항목을 누르면 그 호텔의 달력으로 이동합니다. 주의: 실제 VIP·FHR 결제가는 위 공개 최저가와 다릅니다. 혜택 적용가 자동 차감 없음.</p>';
  }else if(st.tab==='china'){
   $('rank1Title').textContent='12월 APC 무료숙박 가능일 TOP 5';
   $('rank1Sub').textContent='12/1~18 관측 창 · 가능일/관측일';
   const rowsC=hs.map(h=>({h,c:apcDecCount(h)}));
   const topC=rowsC.filter(o=>o.c.a>0).sort((a,b)=>b.c.a-a.c.a||(tierOf(a.h)||9)-(tierOf(b.h)||9)||b.c.o-a.c.o||a.h.name.localeCompare(b.h.name,'ko')).slice(0,5);
-  $('rank1').innerHTML=topC.map((o,i)=>'<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+esc(o.h.name)+'</div><div class="rank-meta">'+esc(o.h.city)+' · '+esc(TIERSHORT[tierOf(o.h)]||'')+' · 가능 '+o.c.a+'/'+(o.c.o||18)+'일</div></div><div class="rank-num '+(i===0?'red':'')+'">'+o.c.a+'일</div></div>').join('')||'<div class="rank-empty">선택 범위에 12월 APC 가능 호텔이 없습니다.</div>';
+  $('rank1').innerHTML=topC.map((o,i)=>'<div class="rank-item rank-click"'+rankAttr(o.h,APCDEC.find(function(d){return apcStateOf(o.h,d)==='a'})||'')+' title="'+esc(o.h.name)+' — 달력에서 이 호텔 요금 보기"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+esc(o.h.name)+'</div><div class="rank-meta">'+esc(o.h.city)+' · '+esc(TIERSHORT[tierOf(o.h)]||'')+' · 가능 '+o.c.a+'/'+(o.c.o||18)+'일</div></div><div class="rank-num '+(i===0?'red':'')+'">'+o.c.a+'일</div></div>').join('')||'<div class="rank-empty">선택 범위에 12월 APC 가능 호텔이 없습니다.</div>';
   $('rank1').innerHTML+='<p class="hint">12월 1~18일 관측 창에서 무료숙박 재고가 확인된 날이 많은 순서입니다. 관측 기록이 없는 날은 <strong>미확인</strong>이며 불가와 다릅니다.</p>';
   $('rank2Title').textContent='12월 APC 가능 호텔 많은 도시 TOP 5';
   $('rank2Sub').textContent='권역 필터 반영';
@@ -2019,10 +2025,15 @@ function bkMarriottSearchUrl(h,ci,co){const q=encodeURIComponent(((h&&(h.english
 /* ① VIP 요금 — 호텔 페이지(체크인·체크아웃·성인 2인·1실) */
 const HLX_HOME='https://hotel.hotelux.com/#/index';
 function hlxUrl(id,ci,co){return 'https://hotel.hotelux.com/#/hotel/detail?hotelId='+encodeURIComponent(id)+'&checkIn='+ci+'&checkOut='+co+'&numberOfAdults=2&numberOfChildren=0&numberOfRooms=1'}
-/* ── ① VIP 예약 링크의 기기 분기 (2026-11-19) ───────────────────────────
+/* ── ① VIP 예약 링크의 기기 분기 (2026-11-19 · 2차 수정) ─────────────────
    · PC·아이폰·기타 브라우저 : 지금처럼 예약 사이트 웹페이지를 새 탭에서 연다.
+     (아이폰은 상위 도메인의 /app 주소가 앱 미설치 시 내려받기 안내로 301 되므로
+      Universal Link 로 보내지 않고 웹 주소를 그대로 둔다 — 2026-11-19 실측)
    · 안드로이드(Chrome·삼성 인터넷 등 intent:// 를 다루는 브라우저) : 예약 앱을 먼저 부르고,
      앱이 없거나 열리지 않으면 S.browser_fallback_url 로 같은 호텔·같은 날짜의 웹페이지가 열린다.
+     앱에 넘기는 주소는 예약 사이트가 공식 등록한 App Link 주소(상위 도메인의 /app,
+     /app/hotel/<호텔 ID>)다. 예약 웹 도메인(hotel.<도메인>)에는 App Link 등록이 없어
+     (.well-known/assetlinks.json 404 · 2026-11-19 실측) 그 주소로는 앱이 뜨지 않고 웹으로 넘어갔다.
    hlxUrl·bookUrlOf·cbHotelUrl 이 돌려주는 값은 어느 기기에서나 웹 주소 그대로 둔다 —
    복사·공유·계획 문구·PC 동작이 바뀌지 않도록, 클릭 순간에만 hlxAppUrl 이 intent:// 로 바꾼다.
    호스트·앱 패키지(com.<사이트>)는 HLX_HOME 에서 만든다 — 화면과 소스에 예약 사이트 이름을
@@ -2030,6 +2041,8 @@ function hlxUrl(id,ci,co){return 'https://hotel.hotelux.com/#/hotel/detail?hotel
 const HLX_HOST=((HLX_HOME.match(/^https:\/\/([^\/?#]+)/)||[])[1]||'');
 const HLX_LABELS=HLX_HOST.split('.');
 const HLX_PKG='com.'+(HLX_LABELS[HLX_LABELS.length-2]||'');
+/* App Link 가 등록된 상위 도메인 — hotel.<도메인> 의 첫 라벨을 뗀다(두 라벨뿐이면 만들지 않는다) */
+const HLX_APP_HOST=HLX_LABELS.length>2?HLX_LABELS.slice(1).join('.'):'';
 const HLX_WEB_RE=new RegExp('^https:\\/\\/'+HLX_HOST.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(\\/|\\?|#|$)','i');
 const HLX_UA=(function(){try{return String(navigator.userAgent||'')}catch(e){return ''}})();
 const IS_ANDROID=/Android/i.test(HLX_UA);
@@ -2037,17 +2050,29 @@ const IS_ANDROID=/Android/i.test(HLX_UA);
 const IS_INAPP=/;\s*wv\)/i.test(HLX_UA)||/KAKAOTALK|NAVER\(inapp|DaumApps|Instagram|FBAN|FBAV|Line\//i.test(HLX_UA);
 /* intent:// 는 Chrome 계열·삼성 인터넷에서 동작한다(Firefox 안드로이드는 intent:// 주소를 열지 못한다) */
 const HLX_USE_INTENT=IS_ANDROID&&!IS_INAPP&&/Chrome\/|SamsungBrowser\/|EdgA\/|Whale\/|OPR\//.test(HLX_UA);
-function hlxIntentUrl(webUrl){
+/* 웹 주소 → 앱이 받는 App Link 주소 (호텔 ID·체크인·체크아웃을 그대로 옮긴다) */
+function hlxAppPath(webUrl){
   const u=String(webUrl||'');
-  if(!HLX_WEB_RE.test(u))return '';
-  return 'intent://'+u.slice(8)+'#Intent;scheme=https;package='+HLX_PKG+';S.browser_fallback_url='+encodeURIComponent(u)+';end';
+  if(!HLX_APP_HOST||!HLX_WEB_RE.test(u))return '';
+  const q=function(k){const m=u.match(new RegExp('[?&]'+k+'=([^&#]*)','i'));return m?m[1]:''};
+  const dec=function(v){try{return decodeURIComponent(v)}catch(e){return v}};
+  const id=q('hotelId'),ci=q('checkIn'),co=q('checkOut');
+  if(!id)return 'https://'+HLX_APP_HOST+'/app';
+  let p='https://'+HLX_APP_HOST+'/app/hotel/'+encodeURIComponent(dec(id));
+  if(ci&&co)p+='?checkIn='+encodeURIComponent(dec(ci))+'&checkOut='+encodeURIComponent(dec(co));
+  return p;
+}
+function hlxIntentUrl(webUrl){
+  const u=String(webUrl||''),app=hlxAppPath(u);
+  if(!app)return '';
+  return 'intent://'+app.slice(8)+'#Intent;scheme=https;package='+HLX_PKG+';S.browser_fallback_url='+encodeURIComponent(u)+';end';
 }
 function hlxAppUrl(webUrl){
   if(!HLX_USE_INTENT)return webUrl;
   return hlxIntentUrl(webUrl)||webUrl;
 }
 function hlxLinkNoteRow(){
-  if(HLX_USE_INTENT)return '<div class="note-row"><span class="note-mark">📱</span><span class="note-text">예약 링크 — <strong>예약 앱</strong>이 먼저 열리고, 앱이 없거나 열리지 않으면 <strong>같은 호텔·같은 날짜의 예약 웹페이지</strong>가 자동으로 열립니다.</span></div>';
+  if(HLX_USE_INTENT)return '<div class="note-row"><span class="note-mark">📱</span><span class="note-text">예약 링크 — <strong>예약 앱</strong>이 <strong>그 호텔·그 날짜</strong>로 먼저 열리고, 앱이 없거나 열리지 않으면 <strong>같은 호텔·같은 날짜의 예약 웹페이지</strong>가 자동으로 열립니다.</span></div>';
   if(IS_ANDROID)return '<div class="note-row"><span class="note-mark">📱</span><span class="note-text">예약 링크 — 이 브라우저에서는 <strong>예약 웹페이지</strong>가 열립니다. 앱 자동 열기는 <strong>Chrome·삼성 인터넷</strong>에서만 동작합니다.</span></div>';
   return '<div class="note-row"><span class="note-mark">💻</span><span class="note-text">예약 링크 — <strong>예약 웹페이지</strong>가 새 탭에서 열립니다. (안드로이드 휴대폰에서는 예약 앱이 먼저 열리고, 앱이 없으면 같은 웹페이지가 열립니다)</span></div>';
 }
@@ -2142,6 +2167,35 @@ document.addEventListener('click',function(e){
   st.city=h.city;st.hotel=h.id;st.selectedDay=dt;if(dt)st.month=dt.slice(0,7);
   render();
   const el=document.getElementById('mo-'+st.month);if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});
+});
+/* TOP 5 · 혜택 목록 항목 — 누르면 그 호텔로 바뀌고 달력이 그 달로 부드럽게 이동한다 */
+function goRankHotel(id,date){
+  const h=allHotels.find(function(x){return x.id===id});if(!h)return false;
+  if(st.city!=='all'&&st.city!==h.city)st.city='all';
+  st.hotel=h.id;
+  if(date&&/^\d{4}-\d{2}-\d{2}$/.test(date)){const {start,end}=targetMonths();const m=date.slice(0,7);st.selectedDay=date;if(m>=start&&m<=end)st.month=m}
+  render();
+  const el=document.getElementById('mo-'+st.month);if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});
+  return true;
+}
+function rankActivate(el){
+  if(!el)return false;
+  const id=el.getAttribute('data-rank-hotel')||'',date=el.getAttribute('data-rank-date')||'';
+  if(!goRankHotel(id,date))return false;
+  const again=document.querySelector('[data-rank-hotel="'+id+'"][data-rank-date="'+date+'"]');
+  if(again&&again.focus)again.focus({preventScroll:true});
+  return true;
+}
+document.addEventListener('click',function(e){
+  const b=e.target.closest?e.target.closest('[data-rank-hotel]'):null;if(!b)return;
+  if(e.target.closest('[data-fav]'))return;      /* 별(즐겨찾기) 클릭은 그대로 둔다 */
+  e.preventDefault();rankActivate(b);
+});
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  const b=e.target.closest?e.target.closest('[data-rank-hotel]'):null;if(!b)return;
+  if(e.target.closest('[data-fav]'))return;
+  e.preventDefault();rankActivate(b);
 });
 (function(){const b=document.getElementById('wxCopy');if(b)b.addEventListener('click',copyWxText)})();
 

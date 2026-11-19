@@ -240,9 +240,9 @@
   기기 분기는 **클릭 순간에만** 일어납니다(`hlxAppUrl`).
 - `intent://` 는 `target="_blank"` 로 새 탭에 열면 앱이 뜨지 않고 빈 탭만 남으므로, 문서 전체 클릭을 한 곳에서 받아
   기본 이동을 막고 **현재 창**에서 엽니다(가운데 클릭·Ctrl/⌘ 클릭은 손대지 않음).
-- 주소의 `#/hotel/detail?…` 경로는 intent URL 의 데이터 부분에 **그대로** 둡니다. Android `Intent.parseUri` 는
-  **마지막 `#`** 을 기준으로 `#Intent;` 파라미터를 읽으므로 앞의 경로 해시가 잘리지 않고, Chromium
-  `ExternalNavigationHandler` 도 같은 `Intent.parseUri` 를 씁니다.
+- (이 1차 구현의 intent 데이터 부분은 웹 주소 `hotel.hotelux.com/#/hotel/detail?…` 였습니다. 그 주소로는 앱이
+  열리지 않아 **아래 2차 수정**에서 공식 App Link 주소로 바꿨습니다. Android `Intent.parseUri` 는 **마지막 `#`**
+  을 기준으로 `#Intent;` 파라미터를 읽고, Chromium `ExternalNavigationHandler` 도 같은 함수를 씁니다.)
 - ① 탭 「조회 기준과 금액 읽는 법」과 콤보 하단 안내에 기기별 동작을 **한 줄**로 적었습니다(안드로이드에서는 앱 우선 문구).
 - 호스트 정규식·앱 패키지 이름은 `HLX_HOME` 주소에서 만들어, 화면·소스에 예약 사이트 이름을 남기지 않는 규칙을 그대로 지켰습니다.
 - `sw.js` 캐시 이름을 `teambusan-v5-2026-11-19b` 로 올려 앱 셸(HTML) 저장본을 새로 받게 했습니다.
@@ -254,6 +254,50 @@
   PC·아이폰·웹뷰·Firefox 는 웹 주소 그대로(클릭 가로채기 없음), 안드로이드 Chrome·삼성은 `intent://` 로 바꿔 현재 창에서 열고,
   intent URL 의 데이터 부분은 웹 주소와 같으며 `S.browser_fallback_url` 은 그 주소를 그대로 디코드합니다.
 - GitHub Pages 실제 브라우저에서 ① 탭·콤보를 열어 콘솔 오류 0건, 링크 `href` 가 여전히 웹 주소(`target="_blank"`)임을 확인.
+
+## 2026-11-19 ① 앱링크(App Link) 주소 적용 + TOP 5·혜택 목록 누르면 달력 (화면 코드만 변경)
+
+### 왜 안드로이드에서 앱이 안 열렸나 (실측)
+- 앱에 넘기던 주소는 예약 **웹** 도메인 `hotel.hotelux.com/#/hotel/detail?…` 인데, 이 호스트에는 App Link 등록이
+  없습니다 — `https://hotel.hotelux.com/.well-known/assetlinks.json` **404**. 등록이 없으니 `com.hotelux` 앱이
+  그 인텐트를 받지 못하고 `S.browser_fallback_url` 로 곧장 빠져 웹페이지만 열렸습니다.
+- 반면 상위 도메인 `hotelux.com` 에는 공식 등록이 있습니다 —
+  `https://hotelux.com/.well-known/assetlinks.json`(`package_name: com.hotelux`, 인증서 2개),
+  `https://hotelux.com/.well-known/apple-app-site-association`(`paths: ["/app", "/app/hotel/*", "/line-auth"]`).
+
+### 바꾼 것
+- `hlxAppPath(webUrl)` 를 새로 두고, **웹 주소에서 `hotelId`·`checkIn`·`checkOut` 을 읽어** 앱이 받는 공식 주소를 만듭니다.
+  - 호텔이 있으면 `https://hotelux.com/app/hotel/<호텔 ID>` (+ `?checkIn=…&checkOut=…`), 없으면(① 홈) `https://hotelux.com/app`.
+  - 이미 인코딩된 값은 **한 번만** 인코딩합니다(`%25` 두 번 인코딩 금지).
+- 안드로이드(Chrome·삼성 인터넷·Edge·웨일·Opera):
+  `intent://hotelux.com/app/hotel/<ID>?checkIn=…&checkOut=…#Intent;scheme=https;package=com.hotelux;S.browser_fallback_url=<웹 주소>;end`
+  — 데이터 부분만 App Link 주소로 바뀌고, **앱이 없을 때 여는 웹 주소는 그대로**입니다.
+- 아이폰·아이패드는 **웹 주소 유지**(Universal Link 로 보내지 않음) — `https://hotelux.com/app` 은 앱 미설치 시
+  `download.html?app=hotelux` 로 **301** 되므로(실측) 앱이 없는 사람에게 내려받기 안내만 열리게 됩니다.
+- PC·인앱 웹뷰·Firefox 는 지금과 같습니다(웹 주소 그대로).
+- `HLX_APP_HOST` 는 `HLX_HOME` 의 첫 라벨을 뗀 값(`hotel.<도메인>` → `<도메인>`)으로 만들어, 화면·소스에 예약 사이트 이름을
+  남기지 않는 규칙을 그대로 지켰습니다(`tools/master_db.py verify` 의 출처 문구 검사 통과).
+- 「조회 기준과 금액 읽는 법」 안내 문구를 “예약 앱이 **그 호텔·그 날짜**로 먼저 열리고 …”로 다듬었습니다.
+- `sw.js` 캐시 이름을 `teambusan-v5-2026-11-19c` 로 올렸습니다.
+
+### ① 탭 목록 항목도 누를 수 있게
+- **12개월 1박 최저가 TOP 5** 와 **VIP · FHR 혜택 확인** 의 각 항목을 누르면 그 호텔이 선택되고, 그 호텔의 최저가 날짜로
+  달력이 바뀐 뒤 해당 월 카드로 **부드럽게 스크롤**합니다(`scrollIntoView({behavior:'smooth',block:'start'})`).
+- 목록을 만드는 공통 함수 `row()` 에 `data-rank-hotel`·`data-rank-date`·`role="button"`·`tabindex="0"` 를 붙여,
+  같은 함수를 쓰는 **④ 메리어트**(현금·포인트 TOP 5)·**③ 아코르**(회원가·Stay Plus TOP) 목록도 함께 눌립니다.
+  **② 중올플**의 “12월 APC 무료숙박 가능일 TOP 5” 도 그 호텔의 첫 APC 가능일로 이동합니다.
+- 키보드 **Enter·Space** 로도 같은 동작, 호버·포커스에 커서·테두리 표시를 넣었습니다.
+- 항목 안의 ☆(즐겨찾기)를 누를 때는 달력으로 가지 않고 저장만 합니다.
+- 프로모션 요약 항목에는 그 호텔의 최저가 날짜(`· 최저 12/05`)를 함께 적었습니다.
+
+### 검증 (2026-11-19 실행)
+- `python3 tools/master_db.py verify` → **VERIFY OK**(538곳 · 196,370칸 · 8,645건 · ⑥ 3,476건) — 데이터 무변경·출처 문구 검사 통과.
+- `esprima 4.0.1` 로 `index.html` 인라인 스크립트 구문 검사 통과(`?.`·`??` 는 같은 뜻으로 바꾼 사본).
+- `work/hlx-link-check/test_hlx_link.py`(quickjs) — UA 8종에서 앱 주소·intent 구조·폴백 주소 확인, 홈/날짜 없음/이중 인코딩/
+  다른 사이트 주소/PC·아이폰 예외까지 통과.
+- `work/hlx-link-check/test_rank_click.py`(quickjs) — 목록 항목 클릭·Enter·Space 로 호텔 선택+월 이동+스크롤,
+  ☆ 클릭 무시, 날짜 없는 항목, 없는 호텔 ID, 12개월 밖 날짜 처리까지 통과.
+- GitHub Pages 라이브 브라우저에서 ① 탭 콘솔 오류 0건, TOP 5·혜택 목록 클릭 → 달력 이동 확인.
 
 ## 수록 범위
 

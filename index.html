@@ -4522,6 +4522,8 @@ if(/[?&]diag=1(&|$)/.test(location.search+location.hash)){
    탭에 처음 들어갈 때 data/app/*.json 을 fetch 해서 메모리에 캐시한다.
    ✈️+🏨 콤보는 ①~④ 호텔과 ⑤ 항공이 모두 필요하므로 없는 것만 병렬로 받는다. */
 const DATA_ROOT='data/app/';
+/* 발렛 자료는 카드사 안내가 바뀔 때만 갱신되므로 배포마다 캐시를 비운다(브라우저 HTTP 캐시 10분 회피) */
+const DATA_BUST={valet:'2026-11-20j'};
 const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json'};
 const HOTEL_TABS=['lux','china','domestic','marriott'];
 const DATA_READY={lux:false,china:false,domestic:false,marriott:false,flight:false,tt:false,valet:false};
@@ -4535,7 +4537,7 @@ function tabNeeds(tab){
 function loadPart(tab){
   if(DATA_READY[tab])return Promise.resolve();
   if(DATA_LOADING[tab])return DATA_LOADING[tab];
-  const url=DATA_ROOT+PART_FILE[tab];
+  const url=DATA_ROOT+PART_FILE[tab]+(DATA_BUST[tab]?'?g='+DATA_BUST[tab]:'');
   const p=fetch(url).then(function(r){
     if(!r.ok)throw new Error(url+' → HTTP '+r.status);
     return r.json();

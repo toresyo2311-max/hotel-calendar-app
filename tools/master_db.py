@@ -559,7 +559,7 @@ EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
 #   같은 날짜에 남아 있던 '가격표' 자리표시 28칸은 실측으로 교체했으므로 건수는 그대로)
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
 # 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
-EXPECT_H2_BY_MONTH = {'2027-06': 723, '2027-07': 857, '2027-08': 454,
+EXPECT_H2_BY_MONTH = {'2027-06': 723, '2027-07': 857, '2027-08': 659,
                       '2027-09': 425, '2027-10': 189, '2027-11': 34}
 # 2027-07 은 2026-11-19 일본 7노선 7월 완결본(값 150칸)을 더한 595 에,
 # 같은 날 필리핀 4노선 미조회 36칸을 더한 631 이고, A조 12노선 7월 3~5주차 134칸을 더한 857 이다.
@@ -570,7 +570,9 @@ EXPECT_H2_BY_MONTH = {'2027-06': 723, '2027-07': 857, '2027-08': 454,
 # 더한 34 다(기존 1칸은 후쿠오카 11/5~7).
 # 2027-07은 2026-11-19 A조 12개 노선 7월 3~5주차(7/15~8/2) 실측분 134칸을 더한 857 이다(723→857 —
 #   기존 가격표 자리표시 1칸은 재실측으로 교체했으므로 건수는 그대로).
-EXPECT_H2 = {'weekend': 2587, 'day': 95, 'total': 2682}   # 주말형 1,825+190+120+33+101+92+134 · 당일치기 88+7
+# 2027-08은 2026-11-19 A조 12개 노선 8월 4주 5패턴분 중 빈칸 205칸을 더한 659 다(454→659 —
+#   이미 있던 3칸(마카오·상하이·타이베이 8/6 금~일)은 재실측으로 교체했으므로 건수는 그대로).
+EXPECT_H2 = {'weekend': 2792, 'day': 95, 'total': 2887}   # 주말형 2,587+205 · 당일치기 95
 # 2027-06 은 2026-11-19 기존 24개 노선 6월 3주차(6/17~21) 120칸 가운데 새 칸 92를 더하고(530→622),
 # 같은 날 4주차(6/24~28) 120칸 가운데 새 칸 101을 더한 723 이다
 # (각 주차의 '가격표' 자리표시 28칸·19칸은 실측으로 교체 — 건수는 그대로).
@@ -853,6 +855,35 @@ GRP_A_JUL_THIN = 5             # '잔여 9석 미만' 표시가 붙은 칸
 GRP_A_JUL_ROUTE_MEASURED = {'FUK': 11, 'KIX': 11, 'TYO': 10, 'TPE': 7, 'HKG': 9,
                             'MFM': 13, 'PVG': 14, 'BKK': 14, 'DAD': 14, 'CXR': 9,
                             'NKG': 13, 'SGN': 10}
+
+# 부산 출발 A조 12개 노선 2027년 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) — 2026-11-19 5번 보고서
+# (2026-11-19 22:00~23:12 KST 실측). 12노선 × 5패턴 × 4주 = 240칸 가운데 빈칸 205칸을 실측하고,
+# 앱에 이미 있던 3칸(마카오·상하이·타이베이 8/6 금~일)을 같은 조건으로 다시 조회한 값으로 교체해
+# 240칸이 모두 값이다. 남은 32칸은 앞선 조사분 값이라 이번 조사 대상이 아니었다(추정·보간 없음).
+# 원본 CSV 208줄 = 실측 205칸 + 대상 외 재확인 3칸.
+GRP_A_AUG = ('FUK', 'KIX', 'TYO', 'TPE', 'HKG', 'MFM', 'PVG', 'BKK', 'DAD', 'CXR',
+             'NKG', 'SGN')
+GRP_A_AUG_WEEKS = ('2027-08-05', '2027-08-12', '2027-08-19', '2027-08-26')
+GRP_A_AUG_START, GRP_A_AUG_END = '2027-08-05', '2027-08-31'
+GRP_A_AUG_TOTAL = 240          # 12노선 × 5패턴 × 4주가 모두 값
+GRP_A_AUG_MEASURED = 208       # 이번 원본의 실측 208칸(재확인 3칸 포함)
+GRP_A_AUG_OVERALL = (283700, 773400)   # 후쿠오카 8/19~23 금~월 · 마카오 8/12~16 금~일
+GRP_A_AUG_AVG = 542357         # 실측 208칸 평균(반올림)
+GRP_A_AUG_DIRECT = 97          # 실측분 가운데 직항이 최저가인 칸
+GRP_A_AUG_MEASURED_BY_ROUTE = {'FUK': 6, 'KIX': 15, 'TYO': 16, 'TPE': 18, 'HKG': 18,
+                               'MFM': 20, 'PVG': 20, 'BKK': 19, 'DAD': 19, 'CXR': 19,
+                               'NKG': 19, 'SGN': 19}
+# 병합 뒤 격자 20칸 기준 노선별 (최저, 최고) — 실측분 + 앞선 조사분 32칸
+GRP_A_AUG_ROUTE = {'FUK': (283700, 528000), 'KIX': (399800, 623900),
+                   'TYO': (472300, 736700), 'TPE': (445000, 465700),
+                   'HKG': (357400, 544100), 'MFM': (594200, 773400),
+                   'PVG': (297900, 541900), 'BKK': (492500, 737000),
+                   'DAD': (520300, 771700), 'CXR': (519800, 680400),
+                   'NKG': (502800, 657100), 'SGN': (506600, 665800)}
+# 8/6(금) 재확인 3칸 — 앱 기입력 → 재실측
+GRP_A_AUG_RECHECK = {('MFM', '2027-08-06', '금~일'): (767700, 763200),
+                     ('PVG', '2027-08-06', '금~일'): (417500, 422400),
+                     ('TPE', '2027-08-06', '금~일'): (468400, 464200)}
 
 # ── 2026-11-18 중국 8개 노선 2027년 7~11월 (15주말 × 7패턴) ────────────────────────
 # `noSale` 은 세 가지를 `status` 로 구분한다 — nosale(조회 결과 판매편 없음) ·
@@ -1673,6 +1704,67 @@ def check_flights(flights):
                 if d.get('via') is False and '직항' not in (d.get('note') or ''):
                     problems.append('A조 직항 칸 note 이상: %s %s' % (d['code'], d['date']))
                     break
+    # A조 12개 노선 2027년 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) — 240칸이 모두 값인지,
+    # 재확인 3칸의 금액, 노선별 20칸(최저/최고/직항 칸), 격자 최저·최고, note 표기(경유 총 소요).
+    ga = [dict(d, code=r['code']) for r in routes if r['code'] in GRP_A_AUG
+          for d in r['deals'] if GRP_A_AUG_START <= d['date'] <= GRP_A_AUG_END
+          and d['pattern'] in EXPECT_WEEKEND]
+    if len(ga) != GRP_A_AUG_TOTAL:
+        problems.append('A조 8월 4주 %d칸 (기대 %d칸)' % (len(ga), GRP_A_AUG_TOTAL))
+    else:
+        want = set()
+        for code in GRP_A_AUG:
+            for thu in GRP_A_AUG_WEEKS:
+                for label in EXPECT_WEEKEND:
+                    dt = (datetime.date.fromisoformat(thu) + datetime.timedelta(
+                        days=(FL_WD[label[0]] - FL_WD['목']) % 7)).isoformat()
+                    want.add((code, dt, label))
+        got = {(d['code'], d['date'], d['pattern']) for d in ga}
+        if got != want:
+            problems.append('A조 8월 4주 격자 차이: %s' % sorted(got ^ want)[:6])
+        left = [d for d in ga if d.get('via') is None]
+        if left:
+            problems.append('A조 8월 4주 편성 미확인 %d칸 (기대 0칸)' % len(left))
+        ps = [d['price'] for d in ga]
+        if (min(ps), max(ps)) != GRP_A_AUG_OVERALL:
+            problems.append('A조 8월 4주 최저·최고 %s (기대 %s)'
+                            % ((min(ps), max(ps)), GRP_A_AUG_OVERALL))
+        for code, (low, high) in GRP_A_AUG_ROUTE.items():
+            v = [d['price'] for d in ga if d['code'] == code]
+            if len(v) != 20:
+                problems.append('A조 8월 4주 %s %d칸 (기대 20칸)' % (code, len(v)))
+            elif (min(v), max(v)) != (low, high):
+                problems.append('A조 8월 4주 %s 최저·최고 %s (기대 %s)'
+                                % (code, (min(v), max(v)), (low, high)))
+        for (code, date, pat), (_old, new) in GRP_A_AUG_RECHECK.items():
+            hit = next((d for d in ga if d['code'] == code and d['date'] == date
+                        and d['pattern'] == pat), None)
+            if not hit or hit['price'] != new:
+                problems.append('A조 8월 4주 재확인 칸 %s %s %s %s (기대 %s원)'
+                                % (code, date, pat, hit and hit['price'], format(new, ',')))
+        for d in ga:
+            note = d.get('note') or ''
+            if ':' not in note:
+                continue      # 앞선 조사분 32칸 — 이번 원본 이전 표기('직항' · '경유(서울)')라 그대로 둔다
+            if d.get('via') is True and '총' not in note:
+                problems.append('A조 8월 경유 칸에 총 소요시간이 없습니다: %s %s'
+                                % (d['code'], d['date']))
+                break
+            if d.get('via') is False and '직항' not in note:
+                problems.append('A조 8월 직항 칸 note 이상: %s %s' % (d['code'], d['date']))
+                break
+            if '가격표' in note or d.get('alt'):
+                problems.append('A조 8월 칸에 자리표시·직항 금액이 붙었습니다: %s %s'
+                                % (d['code'], d['date']))
+                break
+        rich = [d for d in ga if ':' in (d.get('note') or '')]
+        if len(rich) != GRP_A_AUG_MEASURED:
+            problems.append('A조 8월 이번 실측분 note %d칸 (기대 %d칸)'
+                            % (len(rich), GRP_A_AUG_MEASURED))
+        for code, n in GRP_A_AUG_MEASURED_BY_ROUTE.items():
+            c = sum(1 for d in rich if d['code'] == code)
+            if c != n:
+                problems.append('A조 8월 %s 실측 %d칸 (기대 %d칸)' % (code, c, n))
 
     for m, n in EXPECT_OLD_BY_MONTH.items():
         if by_month.get(m) != n:

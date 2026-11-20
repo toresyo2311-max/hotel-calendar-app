@@ -87,6 +87,40 @@
 `EXPECT_TABS`(lux 161) 갱신 · `sw.js` 캐시 버전 `teambusan-v5-2026-11-20z5` · `python3 tools/master_db.py verify` → **VERIFY OK**.
 
 
+## 2026-11-20 ① 예약 링크 — 앱 딥링크 제거, 고른 날짜(1박)가 들어간 웹페이지로 (화면 코드만 변경)
+
+지시: "앱에 날짜 1박으로 세팅해서 열리게 해줘야지". 앱으로 날짜를 넘길 수 있는지 앱 5.6.2를 뜯어 확인했고,
+**넘길 방법이 없어서** 앱 링크를 걷어내고 날짜가 들어간 예약 웹페이지를 열도록 바꿨습니다.
+
+### 조사 — 앱이 받는 링크와 날짜 처리 (구글플레이 최신 5.6.2 APK · React Native 번들 Hermes v96 디컴파일)
+
+- **앱이 받는 호텔 주소는 두 가지뿐**: `hotelux://app/hotel/<호텔 ID>`, `https://hotelux.com/app/hotel/<호텔 ID>`
+  (앱 코드에 `https://hotelux.sg/app/hotel/…`, `https://hoteluxapp.com/app/hotel/…` 변형도 있음).
+  `AndroidManifest.xml` 의 intent-filter 도 `scheme=hotelux` · `host=hotelux.com` · `pathPrefix=/app` 하나입니다
+  (`assetlinks.json` 의 등록 패키지 `com.hotelux`, iOS `apple-app-site-association` 의 paths `/app`, `/app/hotel/*`, `/line-auth`).
+- **링크 처리 함수가 쿼리를 떼지 않습니다**: `/hotel/` 이 들어온 주소에서 접두사만 `replace` 로 지우고 **남은 문자열 전체를
+  호텔 ID로 씁니다**. 그래서 `…/app/hotel/<ID>?checkIn=…&checkOut=…` 은 `<ID>?checkIn=…&checkOut=…` 가 ID가 되어
+  2026-11-19 실기기의 `Cast to ObjectId failed for value "5b8ca392…?checkIn=2027-09-29&checkOut=2027-09-30" (type string) at path "_id"`
+  가 그대로 재현됩니다(앱 쪽에 쿼리를 분리하는 코드가 아예 없음).
+- **호텔 상세 화면은 호텔 ID 하나만 받습니다**: 앱 안에서 `HotelDetail` 로 가는 15곳을 전부 확인했고 모두 `{hotelRef: <ID>}` 만 넘깁니다.
+  화면의 체크인·체크아웃은 앱이 휴대폰에 저장해 둔 **마지막 검색 날짜**(AsyncStorage `hotel_checkIn`·`hotel_checkOut`, `hotelModel.updateMeta` 가 저장)에서 읽습니다.
+  → 앱을 링크로 열면 날짜는 **앱에 저장된 마지막 검색 날짜**로 뜨고, 링크로 지정할 수단이 없습니다.
+- 범용 파라미터 통로 `https://hotelux.com/app?…`(JCB 제휴 안내가 쓰는 형식)도 확인했습니다 — `type`·`path` 등 정해진 키만 처리하고
+  호텔 상세로 갈 때도 날짜를 받지 않습니다. 커스텀 스킴·Firebase Dynamic Links·Branch/Adjust 같은 다른 통로는 앱에 없습니다.
+- 참고: 웹페이지(`https://hotel.hotelux.com/#/hotel/detail?hotelId=…&checkIn=…&checkOut=…`)는 날짜를 정확히 반영합니다
+  (2026-11-20 브라우저 확인 — `13/12/2026 - 14/12/2026 · 1 night` 표시).
+
+### 변경
+
+- `index.html` 의 기기 분기(`intent://`·App Link·`hlxAppPath`·`hlxIntentUrl`·`hlxAppUrl`·클릭 가로채기)를 **전부 제거**했습니다.
+  이제 날짜 칸·호텔 카드를 누르면 어느 기기에서나 `hlxUrl()` 이 만든 **고른 날짜·박수가 들어간 예약 웹페이지**가 열립니다.
+- ① 탭 안내 문구(`hlxLinkNoteRow`)를 "날짜 칸·호텔 카드를 누르면 **그 날짜·1박**이 들어간 **예약 웹페이지**가 열립니다 — 예약 앱은 호텔 페이지만 열고
+  날짜는 앱에 저장된 마지막 검색 날짜로 뜨기 때문에, 날짜가 정확한 웹페이지로 엽니다"로 고쳤습니다.
+- `HLX_HOME`·`hlxUrl` 은 그대로라 복사·공유·계획 문구는 종전과 동일합니다.
+
+`sw.js` 캐시 버전 `teambusan-v5-2026-11-20z11` · `python3 tools/master_db.py verify` **VERIFY OK** · 바뀐 함수(`hlxLinkNoteRow`) 구문 검사 통과.
+
+
 ## 2026-11-19 화면 개선 (1순위 · 데이터 무변경)
 
 달력·표의 **상태 코드와 이상치를 눈으로 구분**하고, ⑤ 항공에 **직항 필터/장시간 경유 경고**, ⑥ 땡처리에

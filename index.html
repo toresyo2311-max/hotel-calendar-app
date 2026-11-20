@@ -908,11 +908,17 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
 .al-chip{font-size:11px;font-weight:700;line-height:1.4;color:var(--ink2);background:#f6f4fb;border:1px solid var(--line2);border-radius:7px;padding:3px 7px;max-width:100%}
 .al-why{font-size:11px;font-weight:800;line-height:1.4;border-radius:7px;padding:3px 7px;background:#fdeef5;color:#8d1c46;white-space:nowrap}
 .al-acts{display:flex;align-items:stretch;gap:7px}
+/* 이중 예약 링크(💎 호텔럭스 + 🏨 메리어트 공홈)가 붙은 줄은 버튼이 셋이 된다 —
+   390px 화면에서 셋이 한 줄에 눌려 글자가 잘리지 않게 두 줄로 접어 준다(링크 둘 + 추이 하나). */
+.al-acts.al3{flex-wrap:wrap}
+.al-acts.al3 .al-btn{flex:1 1 calc(50% - 4px)}
 .al-btn{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:42px;padding:9px 8px;border-radius:10px;border:1px solid var(--line);background:#fbfaff;color:var(--ink2);font-size:13px;font-weight:800;line-height:1.2;letter-spacing:-.02em;text-align:center;text-decoration:none;cursor:pointer}
 .al-btn.chart{color:var(--violet-d);border-color:var(--lav3);background:#f7f3ff}
 .al-btn.chart:hover{background:var(--lav)}
 .al-btn.go{color:#fff;border-color:#5b21b6;background:linear-gradient(160deg,#7c3aed,#6d28d9)}
 .al-btn.go:hover{background:#5b21b6}
+.al-btn.alt{color:#5b21b6;border-color:var(--lav2);background:var(--lav)}
+.al-btn.alt:hover{background:var(--lav3)}
 .al-btn.go.off{color:var(--muted2);border:1px dashed var(--line);background:#fbfaff;cursor:default}
 .al-rule{border-top:1px solid var(--line2);margin-top:12px;padding-top:11px;font-size:11.5px;color:var(--muted);line-height:1.75}
 @media(max-width:430px){
@@ -925,6 +931,8 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
   .al-top{grid-area:top;align-items:center}
   .al-meta{grid-area:meta}
   .al-acts{grid-area:acts;justify-content:flex-end;gap:8px}
+  .al-acts.al3{flex-wrap:wrap;max-width:420px}
+  .al-acts.al3 .al-btn{flex:0 1 auto}
   .al-n b{font-size:14px}
   .al-p b{font-size:18px}
   .al-p span{font-size:11.5px}
@@ -4417,6 +4425,18 @@ function alertClose(){
   m.classList.remove('show');m.setAttribute('aria-hidden','true');
   if(!document.querySelector('.modal.show'))document.body.style.overflow='';
 }
+/* 🚨 알람 줄의 호텔 — 알람 자료(alerts.json)에는 id·이름·도시·탭만 있다.
+   그 탭 자료를 이미 받아 두었으면(DB.hotels) 실제 호텔 객체를 그대로 쓰고, 아니면 알람 값으로
+   최소 객체를 만든다. 짝(MAR_CROSS)과 도시 목록 주소는 이 최소 객체만으로도 만들 수 있어서,
+   ④·① 자료를 받기 전에 알람 창을 열어도 두 링크가 함께 나온다. */
+function alertHotelOf(a){
+  if(!a||a.k!=='hotel')return null;
+  const hit=((DB&&DB.hotels)||[]).filter(x=>x.id===a.id)[0];
+  if(hit)return hit;
+  const tab=String(a.tab||'');
+  const group=(tab==='marriott'||tab==='lux')?tab:(String(a.id||'').charAt(0)==='m'?'marriott':'lux');
+  return {id:a.id,name:a.name||a.id,city:a.city||'',group:group};
+}
 function alertRow(a){
   const kindTxt=a.k==='hotel'?'호텔':(a.k==='flight'?'항공':'⑥');
   const WD=['일','월','화','수','목','금','토'];
@@ -4432,16 +4452,23 @@ function alertRow(a){
   const city=(a.city&&a.city!==a.name)?'<i>'+esc(a.city)+'</i>':'';
   const base=a.base?shortWon(a.base):'—';
   const drop=Number(a.drop||0);
+  /* 이중 예약 링크 — ① 메리어트 계열이면 「🏨 메리어트 공홈」, ④ 중 ① 에도 있는 곳이면 「💎 호텔럭스」를
+     주 링크와 나란히 낸다. 날짜는 알람의 체크인(a.date) 그대로, 1박(다음 날 체크아웃)으로 건다. */
+  const ah=alertHotelOf(a);
+  const alt=(ah&&a.date)?bkAltLinkOf(ah,a.date,1):null;
+  const primLbl=alt?bkPrimName(ah):'';
+  const whenTxt=(a.name||a.id)+(a.date?' · '+fullDate(a.date)+' 체크인':'');
   const book=a.url
-    ?'<a class="al-btn go" href="'+esc(a.url)+'" target="_blank" rel="noopener">예약 페이지 ↗</a>'
+    ?'<a class="al-btn go" href="'+esc(a.url)+'" target="_blank" rel="noopener"'+(alt?' title="'+esc(whenTxt+' · '+primLbl+' 예약 페이지')+'"':'')+'>'+(alt?primLbl+' ↗':'예약 페이지 ↗')+'</a>'
     :'<span class="al-btn go off">링크 없음</span>';
+  const altBtn=alt?'<a class="al-btn alt" href="'+esc(alt.url)+'" target="_blank" rel="noopener" title="'+esc(whenTxt+' · '+alt.label+(alt.kind==='search'?(' — '+(MAR_CITY_EN[ah.city]||ah.city||'')+' 호텔 목록(이 호텔의 공홈 코드 미확인)'):' 해당 호텔 페이지'))+'">'+alt.label+' ↗</a>':'';
   const chart='<button type="button" class="al-btn chart" data-hist="'+a.k+(a.k==='hotel'?'s':a.k==='flight'?'s':'')+'" data-hid="'+esc(a.id)+'" data-date="'+esc(a.date||'')+'" data-pattern="'+esc(a.pattern||'')+'" data-key="'+esc(a.key||'')+'" title="'+esc((a.name||a.id)+' 가격 추이')+'">📈 추이 보기</button>';
   return '<div class="al-row">'
     +'<div class="al-top"><span class="al-k'+(a.k==='hotel'?'':' '+a.k)+'">'+kindTxt+'</span>'
     +'<div class="al-n"><b>'+esc(a.name||a.id)+'</b>'+city+'</div>'
     +'<div class="al-p"><b>'+shortWon(a.price)+'</b><span>평소 '+base+(drop?' · <em>'+drop+'%↓</em>':'')+'</span></div></div>'
     +'<div class="al-meta">'+chips.join('')+'</div>'
-    +'<div class="al-acts">'+chart+book+'</div>'
+    +'<div class="al-acts'+(alt?' al3':'')+'">'+(alt?(book+altBtn+chart):(chart+book))+'</div>'
     +'</div>';
 }
 function renderAlertList(){

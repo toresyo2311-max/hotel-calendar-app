@@ -3905,7 +3905,7 @@ function renderCombo(){
     const tag=cb.src==='all'?'<span class="cb-tag'+(r.src==='t'?' t':'')+'">'+(r.src==='t'?'⑥ 땡처리':'⑤ 정규')+'</span>':'';
     const meta=r.src==='t'
       ?(dateLabel(r.date)+'('+weekday(r.date)+')~'+dateLabel(r.back)+'('+weekday(r.back)+') · '+r.nights.length+'박 · 항공 '+shortWon(r.flight)+'('+esc(air)+(r.times?' '+esc(r.times):'')+') · 숙박 '+shortWon(r.stay)+(r.seats!=null?' · 잔여 '+r.seats+'석':'')+((r.deal&&r.deal.src==='g')?' · 공동구매':'')+(cb.nextDay?' · 출발+1일 체크인':'')+(apcAll?' · APC 적용 시 '+shortWon(r.flight):''))
-      :(dateLabel(r.date)+'('+weekday(r.date)+')~'+dateLabel(r.back)+'('+weekday(r.back)+') · '+r.nights.length+'박 · 항공 '+shortWon(r.flight)+'('+esc(air)+' '+flViaWord(r.deal)+') · 숙박 '+shortWon(r.stay)+(apcAll?' · APC 적용 시 '+shortWon(r.flight):''));
+      :(dateLabel(r.date)+'('+weekday(r.date)+')~'+dateLabel(r.back)+'('+weekday(r.back)+') · '+r.nights.length+'박 · 항공 '+shortWon(r.flight)+'('+esc(flMeta(r.deal))+') · 숙박 '+shortWon(r.stay)+(apcAll?' · APC 적용 시 '+shortWon(r.flight):''));
     return '<div class="rank-item"><span class="rank-n">'+String(i+1).padStart(2,'0')+'</span><div class="rank-entity">'
       +'<div class="rank-name">'+esc(r.city)+' · '+esc(r.h.name)+tag+cbBadges(r)+'</div>'
       +'<div class="rank-meta">'+meta+'</div>'

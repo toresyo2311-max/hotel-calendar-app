@@ -4527,6 +4527,20 @@ ALERT_MIN_FLIGHT = 8          # 중앙값을 낼 최소 표본(노선·패턴·�
 ALERT_MIN_TTANG = 5           # 중앙값을 낼 최소 표본(⑥ 공항·항공사·시각)
 ALERT_CAP = 160               # alerts.json 에 담는 최대 건수(넘으면 급락 폭 큰 순서로 자른다)
 ALERT_WHY = ('직전 대비 50%↓', '기준 대비 50%↓', '초저가')
+# ── 2026-11-20 오탐 차단(에러가) ─────────────────────────────────────────────
+# 실제 요금이 50% 떨어져 보여도 (a) 출처·산식이 바뀐 날 (b) 앞뒤 날짜와 비교하면
+# 정상인 계절 차이 (c) 요금이 없다가 열린 예약창 은 에러가 아니다. 아래 값으로 그 셋을 가른다.
+ALERT_LOCAL_SPAN_H = 35        # 호텔 — 같은 호텔의 앞뒤 35일(같은 요일 5주) 값을 기준으로 비교
+ALERT_LOCAL_SPAN_F = 42        # 항공 — 같은 노선·패턴·직항 여부의 앞뒤 42일
+ALERT_LOCAL_MIN_H = 4          # 호텔 — 가까운 날짜 표본이 이만큼은 있어야 그 기준을 쓴다
+ALERT_LOCAL_MIN_F = 3          # 항공
+ALERT_LOCAL_K = 8              # 가까운 날짜 몇 개까지 볼지
+ALERT_STABLE_RATIO = 1.5       # 한 해 값의 p75/p25 가 이보다 좁을 때만 1년 중앙값을 보조 기준으로
+ALERT_LEVEL_RUN = 5            # 같은 스냅샷에 연속 N일이 함께 크게 움직이면 출처·산식 전환으로 본다
+ALERT_LEVEL_RATIO = 0.30       # 그 '크게'의 폭(중앙값 기준 ±30%)
+ALERT_PREV_SPIKE = 3.0         # 직전 값이 주변의 3배를 넘으면 스파이크로 보고 '직전 대비' 기준에서 뺀다
+ALERT_PER_ID = 6               # 같은 호텔·노선에서 한 번에 올리는 최대 건수(홍수 방지)
+ALERT_LOCAL_STABLE = 2.0       # 가까운 날짜 묶음의 p75/p25 가 이보다 크면 '평소'로 쓰지 않는다
 KST = datetime.timezone(datetime.timedelta(hours=9))
 
 
@@ -4720,71 +4734,233 @@ def _alert(kind, ident, name, city, date, price, base, why, **extra):
     return a
 
 
-def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
-    """에러가 의심 후보 — ① 직전 스냅샷 대비 50%↓ ② 유효 중앙값 대비 50%↓ ③ 절대 초저가."""
-    out = []
+def _pctile(vals, q):
+    v = sorted(vals)
+    if not v:
+        return None
+    return v[int(round((len(v) - 1) * q))]
 
-    # ① 호텔 — 같은 호텔 안에서 1년 중앙값 대비 50%↓ (같은 값이 3일 이상 반복되면 정상 요금표로 보고 뺀다)
+
+def _trim(vals, factor=4.0):
+    """1일 스파이크(주변의 4배 초과)를 빼고 다시 중앙값을 낸다 — 기준선이 부풀지 않게."""
+    if len(vals) < 5:
+        return vals
+    m = _median(vals)
+    if not m:
+        return vals
+    return [v for v in vals if v <= m * factor]
+
+
+def _local_base(pairs, date, span, kmin, k=ALERT_LOCAL_K, same_dow=False):
+    """같은 호텔·노선 안에서 date 앞뒤 span일의 가까운 k개 값 중앙값(스파이크 제거).
+
+    same_dow=True 면 요일이 같은 날짜(7·14·21일 전후)를 먼저 쓴다 — 주말만 비싼 호텔에서
+    화요일 요금이 '평소의 절반'으로 보이는 오탐을 막는다. 그런 표본이 모자라면 전체 창으로 간다.
+    """
+    try:
+        d0 = datetime.date.fromisoformat(date)
+    except ValueError:
+        return None
+    near, same = [], []
+    for d, v in pairs:
+        try:
+            gap = abs((datetime.date.fromisoformat(d) - d0).days)
+        except ValueError:
+            continue
+        if not gap or gap > span:
+            continue
+        near.append((gap, v))
+        if same_dow and gap % 7 == 0:
+            same.append((gap, v))
+    pool = same if len(same) >= kmin else near
+    if len(pool) < kmin:
+        return None
+    pool.sort()
+    vals = [v for _g, v in pool[:k]]
+    if not _stable(vals, ALERT_LOCAL_STABLE):
+        return None      # 그 주변 자체가 들쭉날쭉하면 '평소'라고 부를 수 없다
+    return _median(_trim(vals))
+
+
+def _stable(vals, limit=None):
+    """값 묶음이 계절·객실 타입으로 크게 흔들리지 않는지(p75/p25)."""
+    p25, p75 = _pctile(vals, 0.25), _pctile(vals, 0.75)
+    if not p25 or not p75:
+        return False
+    return p75 / float(p25) <= (limit or ALERT_STABLE_RATIO)
+
+
+def _level_run_dates(changed, minrun=ALERT_LEVEL_RUN, minratio=ALERT_LEVEL_RATIO):
+    """같은 스냅샷에 연속 날짜들이 함께 ±30% 넘게 움직였으면 '출처·산식 전환'으로 본다.
+
+    changed: {날짜: (직전값, 이번값)}. 한 날짜만 튄 스파이크는 여기에 걸리지 않는다.
+    """
+    ratio = {}
+    for d, (a, b) in changed.items():
+        if isinstance(a, int) and isinstance(b, int) and 0 < a < ERROR_MIN and b < ERROR_MIN:
+            ratio[d] = b / float(a)
+    keys = sorted(ratio)
+    out = set()
+    i = 0
+    while i < len(keys):
+        run = [keys[i]]
+        j = i + 1
+        while j < len(keys) and keys[j] == add_days(keys[j - 1], 1):
+            run.append(keys[j])
+            j += 1
+        if len(run) >= minrun:
+            r = _median([ratio[d] for d in run])
+            if r and abs(r - 1) >= minratio:
+                out |= set(run)
+        i = j
+    return out
+
+
+def _method_sig(h):
+    """요금 출처·산식 표지 — 'VIP 요금 조사' / '예약 사이트 직접 조회' / '검색 호텔' 처럼
+    source 문장 앞머리만 남긴다(날짜·회차·숫자는 버린다). 이게 바뀐 스냅샷은 급락이 아니다."""
+    s = str(h.get('source') or '')
+    for sep in (' · ', ' — ', ' / ', ' (', ',', '·'):
+        if sep in s:
+            s = s.split(sep)[0]
+    s = ''.join(ch for ch in s if not ch.isdigit()).strip()
+    return s[:28] or 'unknown'
+
+
+def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
+    """에러가 의심 후보 — ① 직전 스냅샷 대비 50%↓ ② 가까운 날짜 기준 50%↓ ③ 절대 초저가.
+
+    오탐 차단(2026-11-20):
+      (a) 출처·산식 전환 — source 표지가 바뀐 스냅샷, 또는 같은 스냅샷에 연속 5일 이상이
+          함께 ±30% 넘게 움직인 묶음은 '급락'이 아니라 측정 방식이 바뀐 것으로 보고 뺀다.
+      (b) 기준선 — 1년 전체 중앙값 대신 같은 호텔·노선의 앞뒤 35·42일 값을 먼저 쓰고,
+          1일 스파이크(주변의 4배 초과)는 기준선에서 뺀다. 계절 편차가 큰 묶음(p75/p25>1.5)은
+          1년 중앙값을 아예 쓰지 않는다.
+      (c) 예약창 — 직전 스냅샷에 요금이 없던(null·판매편 없음·예약창 미오픈) 칸이 이번에
+          요금을 얻은 것은 '급락'이 아니므로 뺀다. 처음 관측된 칸은 이력이 없으므로 남긴다.
+    """
+    out = []
+    suppressed = {'level': 0, 'method': 0, 'window': 0, 'spike': 0, 'cap': 0}
+
+    # ① 호텔
     for h in master['hotels']:
-        series = (hist_hotels.get(h['id']) or {}).get('series') or {}
-        vals, latest, prevmap, rep = [], {}, {}, {}
-        for key, arr in series.items():
-            last = arr[-1]
+        obj = hist_hotels.get(h['id']) or {}
+        series = obj.get('series') or {}
+        if not series:
+            continue
+        latest = {k: v[-1] for k, v in series.items()}
+        prev = {k: (v[-2] if len(v) >= 2 else None) for k, v in series.items()}
+        sigs = obj.get('srcs') or {}
+        sig_now = _method_sig(h)
+        snaps = sorted(sigs)
+        method_switch = bool(snaps and snaps[-1] == snap and len(snaps) >= 2
+                             and sigs[snaps[-2]] != sigs[snaps[-1]])
+        changed = {}
+        for k, arr in series.items():
+            if len(arr) >= 2 and arr[-1][0] == snap and arr[-2][0] != snap:
+                changed[k] = (arr[-2][1], arr[-1][1])
+        level = _level_run_dates(changed)
+        vals = [a[1] for a in latest.values() if isinstance(a[1], int) and a[1] < ERROR_MIN]
+        year = _median(_trim(vals)) if len(vals) >= ALERT_MIN_HOTEL else None
+        if year and not _stable(vals):
+            year = None
+        rep = {}
+        for v in vals:
+            rep[v] = rep.get(v, 0) + 1
+        pairs = [(k, a[1]) for k, a in latest.items() if isinstance(a[1], int) and a[1] < ERROR_MIN]
+        prevpairs = [(k, p[1]) for k, p in prev.items() if p and isinstance(p[1], int) and p[1] < ERROR_MIN]
+        for key, last in latest.items():
             v = last[1]
-            if isinstance(v, int) and v < ERROR_MIN:
-                vals.append(v)
-                rep[v] = rep.get(v, 0) + 1
-            latest[key] = v
-            if len(arr) >= 2 and arr[-2][0] != snap:
-                prevmap[key] = arr[-2][1]
-        med = _median(vals) if len(vals) >= ALERT_MIN_HOTEL else None
-        for key, v in latest.items():
             if not isinstance(v, int) or v >= ERROR_MIN:
                 continue
-            prev = prevmap.get(key)
-            if isinstance(prev, int) and prev < ERROR_MIN and v <= prev * ALERT_DROP:
-                why, base = '직전 대비 50%↓', prev
+            pv = prev.get(key)
+            prevprice = pv[1] if pv and isinstance(pv[1], int) and pv[1] < ERROR_MIN else None
+            first_seen = len(series[key]) == 1
+            if method_switch:
+                suppressed['method'] += 1
+                continue
+            if key in level:
+                suppressed['level'] += 1
+                continue
+            if pv and prevprice is None and not first_seen:
+                suppressed['window'] += 1
+                continue
+            base_loc = _local_base(pairs, key, ALERT_LOCAL_SPAN_H, ALERT_LOCAL_MIN_H, same_dow=True)
+            prev_ok = True
+            if prevprice:
+                ref = _local_base(prevpairs, key, ALERT_LOCAL_SPAN_H, ALERT_LOCAL_MIN_H, same_dow=True) or year
+                if ref and prevprice > ref * ALERT_PREV_SPIKE:
+                    prev_ok = False
+                    suppressed['spike'] += 1
+            why = base = None
+            if prevprice and prev_ok and v <= prevprice * ALERT_DROP:
+                why, base = '직전 대비 50%↓', prevprice
             elif v <= ALERT_HOTEL_LOW:
                 why, base = '초저가', ALERT_HOTEL_LOW
-            elif med and v <= med * ALERT_DROP and rep.get(v, 0) < ALERT_TIER_REPEAT:
-                why, base = '기준 대비 50%↓', med
             else:
+                base = base_loc or year
+                if base and v <= base * ALERT_DROP and rep.get(v, 0) < ALERT_TIER_REPEAT \
+                        and (prevprice is not None or first_seen):
+                    why = '기준 대비 50%↓'
+            if not why:
                 continue
             out.append(_alert('hotel', h['id'], h['name'], h.get('city'), key, v, base, why,
                               tab=h.get('group'), url=hotel_url(h, key)))
 
-    # ② ⑤ 항공 — 노선·패턴·직항 여부가 같은 칸끼리 비교(직항→경유 전환으로 싸진 착시는 뺀다)
+    # ② ⑤ 항공 — 노선·패턴·직항 여부가 같은 칸끼리, 앞뒤 42일을 기준으로 비교
     for r in master['flights'].get('routes') or []:
-        series = (hist_flights.get(r['code']) or {}).get('series') or {}
+        obj = hist_flights.get(r['code']) or {}
+        series = obj.get('series') or {}
+        if not series:
+            continue
+        changed = {}
+        for key, arr in series.items():
+            if len(arr) >= 2 and arr[-1][0] == snap and arr[-2][0] != snap:
+                changed[arr[-1][1]] = (arr[-2][3], arr[-1][3])
+        level = _level_run_dates(changed)
         groups = {}
         for key, arr in series.items():
             last = arr[-1]
-            groups.setdefault((last[2], last[4]), []).append((key, last, arr))
+            groups.setdefault((last[2], last[4]), []).append((key, arr))
         backs = {}
         for d in r.get('deals') or []:
             backs[(d.get('date'), d.get('pattern'))] = d.get('back')
         for (_pat, _direct), items in groups.items():
-            vals = [x[1][3] for x in items if isinstance(x[1][3], int) and x[1][3] < ERROR_MIN]
-            if len(vals) < ALERT_MIN_FLIGHT:
+            pairs = [(a[-1][1], a[-1][3]) for _k, a in items
+                     if isinstance(a[-1][3], int) and a[-1][3] < ERROR_MIN]
+            if len(pairs) < ALERT_MIN_FLIGHT:
                 continue
-            med = _median(vals)
+            vals = [v for _d, v in pairs]
+            year = _median(_trim(vals))
+            if not _stable(vals):
+                year = None
             rep = {}
-            for x in items:
-                if isinstance(x[1][3], int):
-                    rep[x[1][3]] = rep.get(x[1][3], 0) + 1
-            for _key, last, arr in items:
-                _snap, date, pattern, price, direct, _st = last
+            for v in vals:
+                rep[v] = rep.get(v, 0) + 1
+            for _key, arr in items:
+                last = arr[-1]
+                date, pattern, price, direct = last[1], last[2], last[3], last[4]
                 if not isinstance(price, int) or price >= ERROR_MIN:
                     continue
-                prev = arr[-2] if len(arr) >= 2 and arr[-2][0] != snap else None
-                if prev and isinstance(prev[3], int) and prev[3] < ERROR_MIN \
-                        and prev[4] == direct and price <= prev[3] * ALERT_DROP:
-                    why, base = '직전 대비 50%↓', prev[3]
+                if date in level:
+                    suppressed['level'] += 1
+                    continue
+                pv = arr[-2] if len(arr) >= 2 and arr[-2][0] != snap else None
+                prevprice = pv[3] if pv and isinstance(pv[3], int) and pv[3] < ERROR_MIN else None
+                if pv and (prevprice is None or pv[4] != direct):
+                    suppressed['window'] += 1
+                    continue
+                first_seen = len(arr) == 1
+                base = _local_base(pairs, date, ALERT_LOCAL_SPAN_F, ALERT_LOCAL_MIN_F) or year
+                why = None
+                if prevprice and price <= prevprice * ALERT_DROP:
+                    why, base = '직전 대비 50%↓', prevprice
                 elif price <= ALERT_FLIGHT_LOW:
                     why, base = '초저가', ALERT_FLIGHT_LOW
-                elif med and price <= med * ALERT_DROP and rep.get(price, 0) < ALERT_TIER_REPEAT:
-                    why, base = '기준 대비 50%↓', med
-                else:
+                elif base and price <= base * ALERT_DROP and rep.get(price, 0) < ALERT_TIER_REPEAT \
+                        and (prevprice is not None or first_seen):
+                    why = '기준 대비 50%↓'
+                if not why:
                     continue
                 back = backs.get((date, pattern))
                 out.append(_alert('flight', r['code'], r.get('city'), r.get('city'), date,
@@ -4797,6 +4973,7 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
     for d in (master.get('ttang') or {}).get('deals') or []:
         by_air.setdefault(d.get('code'), []).append(d)
     for code, deals in by_air.items():
+        series = (hist_ttang.get(code) or {}).get('keys') or {}
         groups = {}
         for d in deals:
             groups.setdefault((d.get('airline') or '', d.get('times') or ''), []).append(d)
@@ -4810,7 +4987,9 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
                     and d['price'] < ERROR_MIN]
             if len(vals) < ALERT_MIN_TTANG:
                 continue
-            med = _median(vals)
+            med = _median(_trim(vals))
+            if not _stable(vals):
+                med = med if len(vals) >= ALERT_MIN_TTANG * 3 else None
             rep = {}
             for d in items:
                 if isinstance(d.get('price'), int):
@@ -4820,15 +4999,22 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
                 if not isinstance(price, int) or price >= ERROR_MIN:
                     continue
                 key = ttang_key(d)
-                arr = ((hist_ttang.get(code) or {}).get('keys') or {}).get(key) or []
-                prev = arr[-2] if len(arr) >= 2 and arr[-2][0] != snap else None
-                if prev and isinstance(prev[1], int) and price <= prev[1] * ALERT_DROP:
-                    why, base = '직전 대비 50%↓', prev[1]
+                arr = series.get(key) or []
+                pv = arr[-2] if len(arr) >= 2 and arr[-2][0] != snap else None
+                prevprice = pv[1] if pv and isinstance(pv[1], int) else None
+                if pv and prevprice is None:
+                    suppressed['window'] += 1
+                    continue
+                first_seen = len(arr) == 1
+                why = base = None
+                if prevprice and price <= prevprice * ALERT_DROP:
+                    why, base = '직전 대비 50%↓', prevprice
                 elif price <= ALERT_FLIGHT_LOW:
                     why, base = '초저가', ALERT_FLIGHT_LOW
-                elif med and price <= med * ALERT_DROP and rep.get(price, 0) < ALERT_TIER_REPEAT:
+                elif med and price <= med * ALERT_DROP and rep.get(price, 0) < ALERT_TIER_REPEAT \
+                        and (prevprice is not None or first_seen):
                     why, base = '기준 대비 50%↓', med
-                else:
+                if not why:
                     continue
                 out.append(_alert('ttang', code, d.get('city'), d.get('city'), d.get('out'),
                                   price, base, why, back=d.get('back'),
@@ -4845,7 +5031,16 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
         seen[k] = a
     alerts = list(seen.values())
     alerts.sort(key=lambda a: (-a['drop'], a['price'] or 0, a['date']))
-    return alerts
+    # 한 호텔·노선이 목록을 독차지하지 않게 급락 폭이 큰 것부터 ALERT_PER_ID 건만 남긴다
+    capped, per = [], {}
+    for a in alerts:
+        k = (a['k'], a['id'])
+        if per.get(k, 0) >= ALERT_PER_ID:
+            suppressed['cap'] += 1
+            continue
+        per[k] = per.get(k, 0) + 1
+        capped.append(a)
+    return capped, suppressed
 
 
 def snapshot_run(master, args, verbose=True):
@@ -4866,9 +5061,17 @@ def snapshot_run(master, args, verbose=True):
         series = obj['series']
         a, c = merge_series(series, cur_h.get(h['id']) or {}, snap,
                             lambda key: (None, None, 'X'))
+        # 요금 출처·산식 표지 — 다음 스냅샷에서 '출처가 바뀐 급락'을 가려내는 데 쓴다(최근 6회만)
+        sig = _method_sig(h)
+        srcs = obj.get('srcs') if isinstance(obj.get('srcs'), dict) else {}
+        sig_changed = srcs.get(snap) != sig
+        srcs[snap] = sig
+        for old_snap in sorted(srcs)[:-6]:
+            srcs.pop(old_snap, None)
+        obj['srcs'] = srcs
         obj.update({'name': h['name'], 'group': h.get('group'), 'city': h.get('city'),
                     'updated': snap})
-        if a or c or not os.path.exists(path):
+        if a or c or sig_changed or not os.path.exists(path):
             _write_json(path, obj)
             files += 1
         added += a
@@ -4910,20 +5113,25 @@ def snapshot_run(master, args, verbose=True):
         changed += c
         hist_ttang[code] = obj
 
-    alerts = build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap)
+    alerts, suppressed = build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap)
     total = len(alerts)
     kept = alerts[:ALERT_CAP]
     counts = {'total': total, 'hotel': 0, 'flight': 0, 'ttang': 0}
     for a in alerts:
         counts[a['k']] = counts.get(a['k'], 0) + 1
+    counts['suppressed'] = dict(suppressed)
     _write_json(HIST_ALERTS, {
         'schema': SCHEMA_ALERTS,
         'generated': snap,
         'rules': {'dropPct': int(ALERT_DROP * 100), 'hotelLow': ALERT_HOTEL_LOW,
                   'flightLow': ALERT_FLIGHT_LOW, 'excludeAt': ERROR_MIN,
                   'tierRepeat': ALERT_TIER_REPEAT,
-                  'basis': '같은 호텔(노선·패턴·직항 여부) 안에서 1년 중앙값 대비 50%↓ 또는 '
-                           '직전 스냅샷 대비 50%↓ 또는 절대 초저가'},
+                  'localSpan': {'hotel': ALERT_LOCAL_SPAN_H, 'flight': ALERT_LOCAL_SPAN_F},
+                  'levelRun': ALERT_LEVEL_RUN, 'levelRatio': int(ALERT_LEVEL_RATIO * 100),
+                  'prevSpike': ALERT_PREV_SPIKE, 'perId': ALERT_PER_ID,
+                  'basis': '같은 호텔(노선·패턴·직항 여부) 안에서 앞뒤 35·42일 기준 50%↓ 또는 '
+                           '직전 스냅샷 대비 50%↓ 또는 절대 초저가. 출처·산식 전환, 연속 5일 '
+                           '이상 동시 이동, 요금 없던 칸이 열린 경우는 뺀다'},
         'counts': counts,
         'shown': len(kept),
         'alerts': kept,
@@ -4938,6 +5146,11 @@ def snapshot_run(master, args, verbose=True):
               % (len(hist_hotels), len(hist_flights), len(hist_ttang)))
         print('  🚨 에러가 의심 %d건 (호텔 %d · 항공 %d · ⑥ %d)'
               % (total, counts.get('hotel', 0), counts.get('flight', 0), counts.get('ttang', 0)))
+        if suppressed:
+            print('  오탐 차단 — 출처·산식 전환 %d · 연속 동시 이동 %d · 예약창 열림 %d · 직전 스파이크 %d · 건수 상한 %d'
+                  % (suppressed.get('method', 0), suppressed.get('level', 0),
+                     suppressed.get('window', 0), suppressed.get('spike', 0),
+                     suppressed.get('cap', 0)))
     return hist
 
 

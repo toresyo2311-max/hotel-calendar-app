@@ -821,26 +821,52 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
 .chart-legend i.dash{border-top-style:dashed}
 .chart-legend i.orange{border-color:#c2410c}
 .chart-legend i.teal{border-color:#0f766e}
-.al-tags{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
-.al-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:9px;align-items:center;border-top:1px solid var(--line2);padding:9px 0}
-.al-row:first-of-type{border-top:0}
-.al-k{font-size:9px;font-weight:800;border-radius:6px;padding:2px 5px;background:var(--lav);color:var(--violet-d);white-space:nowrap}
+/* ── 🚨 에러가 의심 모달 — 카드형 (2026-11-20 모바일 가독성 개편) ─────────
+   한 줄 그리드 + 말줄임 → 카드 3단(이름/값 · 정보 배지 · 터치 버튼).
+   `.al-n span` 셀렉터가 .al-why까지 잡아 배지가 블록으로 늘어나던 문제도 함께 정리. */
+.seg{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:9px;font-size:12px;font-weight:800;padding:8px 12px;line-height:1.2;letter-spacing:-.02em;white-space:nowrap;cursor:pointer;transition:background .12s,border-color .12s,color .12s}
+.seg:hover{border-color:var(--lav2)}
+.seg.on{background:var(--lav);border-color:var(--lav2);color:var(--violet-d)}
+#alertSub{font-size:11.5px;line-height:1.6}
+.al-tags{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.al-tags .seg{display:inline-flex;align-items:center;justify-content:center;min-height:38px}
+.al-row{display:flex;flex-direction:column;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 12px 12px;margin:0 0 9px;box-shadow:0 1px 2px rgba(27,18,43,.04)}
+.al-top{display:flex;align-items:flex-start;gap:8px}
+.al-k{flex:none;margin-top:2px;font-size:10.5px;font-weight:800;border-radius:6px;padding:3px 6px;line-height:1.3;background:var(--lav);color:var(--violet-d);white-space:nowrap}
 .al-k.flight{background:#fdeee3;color:#9a3b0c}
 .al-k.ttang{background:#fde8ef;color:#8d1c46}
-.al-n{min-width:0}
-.al-n b{display:block;font-size:11.5px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.al-n span{display:block;font-size:9.5px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.al-p{text-align:right;white-space:nowrap}
-.al-p b{display:block;font-size:12.5px;font-weight:900;letter-spacing:-.03em;color:#7b1f5e}
-.al-p span{display:block;font-size:9px;color:var(--muted2)}
-.al-go{font-size:10px;font-weight:800;color:var(--violet-d);border:1px solid var(--lav3);background:var(--lav);border-radius:7px;padding:5px 7px;white-space:nowrap;text-decoration:none}
-.al-why{font-size:9px;font-weight:800;border-radius:6px;padding:2px 5px;background:#fdeef5;color:#8d1c46;white-space:nowrap}
-.al-rule{border-top:1px solid var(--line2);margin-top:10px;padding-top:10px;font-size:10px;color:var(--muted);line-height:1.65}
+.al-n{flex:1 1 auto;min-width:0}
+.al-n b{display:block;font-size:13.5px;font-weight:800;line-height:1.34;letter-spacing:-.02em;white-space:normal;overflow-wrap:anywhere;color:var(--ink)}
+.al-n i{display:block;margin-top:2px;font-style:normal;font-size:11px;font-weight:600;color:var(--muted2);white-space:normal;overflow-wrap:anywhere}
+.al-p{flex:none;margin-left:auto;padding-left:2px;text-align:right}
+.al-p b{display:block;font-size:16.5px;font-weight:900;letter-spacing:-.04em;line-height:1.2;color:#7b1f5e;white-space:nowrap}
+.al-p span{display:block;margin-top:2px;font-size:11px;font-weight:600;color:var(--muted2);white-space:nowrap}
+.al-p em{font-style:normal;font-weight:900;color:#b3245f}
+.al-meta{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.al-chip{font-size:11px;font-weight:700;line-height:1.4;color:var(--ink2);background:#f6f4fb;border:1px solid var(--line2);border-radius:7px;padding:3px 7px;max-width:100%}
+.al-why{font-size:11px;font-weight:800;line-height:1.4;border-radius:7px;padding:3px 7px;background:#fdeef5;color:#8d1c46;white-space:nowrap}
+.al-acts{display:flex;align-items:stretch;gap:7px}
+.al-btn{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:42px;padding:9px 8px;border-radius:10px;border:1px solid var(--line);background:#fbfaff;color:var(--ink2);font-size:13px;font-weight:800;line-height:1.2;letter-spacing:-.02em;text-align:center;text-decoration:none;cursor:pointer}
+.al-btn.chart{color:var(--violet-d);border-color:var(--lav3);background:#f7f3ff}
+.al-btn.chart:hover{background:var(--lav)}
+.al-btn.go{color:#fff;border-color:#5b21b6;background:linear-gradient(160deg,#7c3aed,#6d28d9)}
+.al-btn.go:hover{background:#5b21b6}
+.al-btn.go.off{color:var(--muted2);border:1px dashed var(--line);background:#fbfaff;cursor:default}
+.al-rule{border-top:1px solid var(--line2);margin-top:12px;padding-top:11px;font-size:11.5px;color:var(--muted);line-height:1.75}
 @media(max-width:430px){
   .alertbtn{font-size:11px;padding:7px 10px}
-  .al-row{grid-template-columns:auto minmax(0,1fr) auto;row-gap:4px}
-  .al-go{grid-column:2/-1;justify-self:start}
+  .al-rule{font-size:11px;line-height:1.7}
   .chart-legend{font-size:9.5px}
+}
+@media(min-width:641px){
+  .al-row{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"top top" "meta acts";align-items:center;gap:8px 14px}
+  .al-top{grid-area:top;align-items:center}
+  .al-meta{grid-area:meta}
+  .al-acts{grid-area:acts;justify-content:flex-end;gap:8px}
+  .al-n b{font-size:14px}
+  .al-p b{font-size:18px}
+  .al-p span{font-size:11.5px}
+  .al-btn{flex:0 0 auto;min-width:124px;min-height:38px;padding:8px 14px}
 }
 /* ── 5단계 — 35k 숙박권 · 연박 · 딥링크 · 비교함 · PWA ─────────────── */
 .intro-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
@@ -3880,14 +3906,30 @@ function alertClose(){
 }
 function alertRow(a){
   const kindTxt=a.k==='hotel'?'호텔':(a.k==='flight'?'항공':'⑥');
-  const sub=[a.date&&fullDate(a.date),a.pattern,a.back?'귀국 '+dateLabel(a.back):'',a.airline].filter(Boolean).join(' · ');
+  const WD=['일','월','화','수','목','금','토'];
+  const dTxt=function(iso){if(!iso)return '';const d=new Date(iso+'T00:00:00');
+    if(isNaN(d.getTime()))return iso;
+    return d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate()+'('+WD[d.getDay()]+')'};
+  const chips=[];
+  if(a.date)chips.push('<span class="al-chip">'+esc(dTxt(a.date))+'</span>');
+  if(a.pattern)chips.push('<span class="al-chip">'+esc(a.pattern)+'</span>');
+  if(a.back)chips.push('<span class="al-chip">귀국 '+esc(dTxt(a.back))+'</span>');
+  if(a.airline)chips.push('<span class="al-chip">'+esc(a.airline)+'</span>');
+  if(a.why)chips.push('<span class="al-why">'+esc(a.why)+'</span>');
+  const city=(a.city&&a.city!==a.name)?'<i>'+esc(a.city)+'</i>':'';
   const base=a.base?shortWon(a.base):'—';
-  const url=a.url?'<a class="al-go" href="'+esc(a.url)+'" target="_blank" rel="noopener">예약 ↗</a>':'<span class="al-go" style="opacity:.45">링크 없음</span>';
-  const chart='<button type="button" class="hchart" data-hist="'+a.k+(a.k==='hotel'?'s':a.k==='flight'?'s':'')+'" data-hid="'+esc(a.id)+'" data-date="'+esc(a.date||'')+'" data-pattern="'+esc(a.pattern||'')+'" data-key="'+esc(a.key||'')+'" title="가격 추이">📈</button>';
-  return '<div class="al-row"><span class="al-k '+(a.k==='hotel'?'':a.k)+'">'+kindTxt+'</span>'
-    +'<div class="al-n"><b>'+esc(a.name||a.id)+'</b><span>'+esc(sub)+' · <span class="al-why">'+esc(a.why||'')+'</span></span></div>'
-    +'<div class="al-p"><b>'+shortWon(a.price)+'</b><span>평소 '+base+' · '+(a.drop||0)+'%↓</span></div>'
-    +chart+url+'</div>';
+  const drop=Number(a.drop||0);
+  const book=a.url
+    ?'<a class="al-btn go" href="'+esc(a.url)+'" target="_blank" rel="noopener">예약 페이지 ↗</a>'
+    :'<span class="al-btn go off">링크 없음</span>';
+  const chart='<button type="button" class="al-btn chart" data-hist="'+a.k+(a.k==='hotel'?'s':a.k==='flight'?'s':'')+'" data-hid="'+esc(a.id)+'" data-date="'+esc(a.date||'')+'" data-pattern="'+esc(a.pattern||'')+'" data-key="'+esc(a.key||'')+'" title="'+esc((a.name||a.id)+' 가격 추이')+'">📈 추이 보기</button>';
+  return '<div class="al-row">'
+    +'<div class="al-top"><span class="al-k'+(a.k==='hotel'?'':' '+a.k)+'">'+kindTxt+'</span>'
+    +'<div class="al-n"><b>'+esc(a.name||a.id)+'</b>'+city+'</div>'
+    +'<div class="al-p"><b>'+shortWon(a.price)+'</b><span>평소 '+base+(drop?' · <em>'+drop+'%↓</em>':'')+'</span></div></div>'
+    +'<div class="al-meta">'+chips.join('')+'</div>'
+    +'<div class="al-acts">'+chart+book+'</div>'
+    +'</div>';
 }
 function renderAlertList(){
   const a=ALERTS||{alerts:[],counts:{}},all=a.alerts||[],c=a.counts||{};

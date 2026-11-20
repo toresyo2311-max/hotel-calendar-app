@@ -5075,7 +5075,18 @@ function pwaInit(){
   if(!('serviceWorker' in navigator))return;
   const local=['localhost','127.0.0.1'].indexOf(location.hostname)>=0;
   if(location.protocol!=='https:'&&!local)return;
-  navigator.serviceWorker.register('sw.js',{scope:'./'}).catch(function(){});
+  /* 이미 서비스 워커가 이 페이지를 제어하고 있었는지 — 첫 방문자는 false 라 새로고침하지 않는다 */
+  const hadController=!!navigator.serviceWorker.controller;
+  let swReloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',function(){
+    if(!hadController||swReloaded)return;
+    swReloaded=true;
+    location.reload();
+  });
+  navigator.serviceWorker.register('sw.js',{scope:'./',updateViaCache:'none'}).then(function(reg){
+    /* updateViaCache:'none' 은 등록 시점 검사에만 적용되므로 매 실행마다 새 sw.js 를 직접 확인한다 */
+    reg.update().catch(function(){});
+  }).catch(function(){});
 }
 
 /* ── 이벤트 ───────────────────────────────────────────────── */

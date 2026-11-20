@@ -1532,11 +1532,11 @@ body.cmp-on{padding-bottom:66px}
     <section class="notice"><h3>예약 전에 꼭 확인하세요</h3><div id="caution"></div></section>
   </div>
   <section class="snapshot" id="snapshotBox" aria-label="데이터 스냅샷 기준과 조회 조건">
-    <div><b>스냅샷 기준</b>① VIP·FHR 2026-11-17 01:13 (일본 6·방콕 5·다낭·나트랑 6 = 17곳은 2026-11-19 21:13~23:30 재실측) · ② APC 관측 2026-11-16 / 현금 2026-11-17 · ③ 2026-11-16~17 · ④ 현금·포인트 2026-11-17 · ⑤ 항공 2026-11-17~20 · ⑥ 땡처리 2026-11-20 04:49 KST</div>
+    <div><b>스냅샷 기준</b>① VIP·FHR 2026-11-17 01:13(140곳) + 2026-11-20 07:30~10:15(예약 사이트 직접 조회 4곳 · 2026-12-01~2027-02-28) · ② APC 관측 2026-11-16 / 현금 2026-11-17 · ③ 2026-11-16~17 · ④ 현금·포인트 2026-11-17 · ⑤ 항공 2026-11-17~20 · ⑥ 땡처리 2026-11-20 04:49 KST</div>
     <div><b>호텔 조회 조건</b>성인 2인 1실 · 1박 · <em>세금·수수료 포함</em> 표시가. ④ 중국 40곳은 <em>무료취소</em>를 켠 최저 총액, 한·일 22곳은 검색 최저가입니다. ③ 서울 Stay Plus 결제액은 세전입니다.</div>
     <div><b>항공 조회 조건</b>성인 <em>1인 왕복 총액</em> · 유류할증료·공항시설사용료·세금 포함 표시가(KRW). ⑤는 출발일·귀국일·패턴별 실측값, ⑥은 상품에 적힌 날짜 그대로입니다.</div>
     <div><b>환율·반올림</b>① 해외 요금은 <em>USD 1 = ₩1,336.02</em>(2026-11-17) 고정 환산 후 100원 단위, ③ 페어몬트·소피텔은 만 원 단위, ④는 K/M 표시입니다. ①~④ 해외 호텔 상세 카드에는 <em>2026-11-19 참고 환율</em>로 환산한 현지 통화(약 ¥34,692)를 함께 적습니다 — JPY 100 = ₩835.92 · HK$1 = ₩169.75 · MOP 1 = ₩164.80 · CN¥1 = ₩199.56 · ฿1 = ₩39.22 · ₫1 = ₩0.0518 · S$1 = ₩1,033.06 · US$1 = ₩1,331.56 · A$1 = ₩895.46.</div>
-    <div><b>값이 없는 칸</b>—(NA)는 요금 미공개이며 매진·미오픈과 구분하지 않습니다. ⑤는 판매편 0건 · 요금 미공개 · 미오픈 · 미조회(—)를 나눠 적었고, <em>⚠ 이상치</em>는 1박 1천만 원 이상으로 시스템 오류가 의심되는 값입니다(0원·무료 아님).</div>
+    <div><b>값이 없는 칸</b>—(NA)는 요금 미공개이며 매진·미오픈과 구분하지 않습니다(① 은 아직 재지 않은 날짜·호텔도 —). ⑤는 판매편 0건 · 요금 미공개 · 미오픈 · 미조회(—)를 나눠 적었고, <em>⚠ 이상치</em>는 1박 1천만 원 이상으로 시스템 오류가 의심되는 값입니다(0원·무료 아님).</div>
   </section>
   <footer class="smallfooter"><strong>OFFLINE FILE / 2026-11-19 통합판</strong><br>실시간 가격 연결 없음 · 약관 또는 재고 실시간 확인 불가 · 자료 내 날짜별 숫자와 미표시 상태를 그대로 보존. 개인 로그인 정보는 이 파일에 저장하지 않았습니다.<details><summary>통합한 원본 자료 <span id="sourceCount">26</span>개 보기</summary><div class="source-list" id="sources"></div></details></footer>
 </div>
@@ -2735,7 +2735,8 @@ function heroGrade(h){
   if(st.tab==='marriott')return h.brand||'메리어트';
   if(st.tab==='domestic')return h.program?(h.program.stayplus?'아코르 Stay Plus 참여':'아코르 회원가'):'아코르';
   if(st.tab==='china')return h.accor?(h.accor.participation==='participating'?'중올플 참여':'중올플 미참여'):'중올플';
-  return h.vip?'VIP 요금 공개':'검색 최저가';
+  if(h.vip)return 'VIP 요금 공개';
+  return Object.keys(h.rates||{}).length?'예약처 공개 요금':'요금 실측 대기';
 }
 function heroPromoRows(h){
   const rows=[];
@@ -2758,7 +2759,7 @@ function heroBenefitsHtml(h,cur){
     else {rows.push('<b>'+KR(n)+'곳</b>의 현금가와 아워드 포인트를 함께 표시'+(N0>1?' · '+N0+'박 합계 기준':''));rows.push('세금·수수료 포함 검색가 · 포인트는 원 단위');}
   }else{
     if(st.tab==='lux'){
-      rows.push(h.vip?'<b>VIP 요금</b> 공개 호텔 · 세금 포함 표시가':'<b>검색 최저가</b> 기준 · 세금 포함');
+      rows.push(h.vip?'<b>VIP 요금</b> 공개 호텔 · 세금 포함 표시가':(Object.keys(h.rates||{}).length?'<b>예약 사이트 직접 조회</b> 요금 · 세금 포함':'<b>요금 실측 대기</b> — 아직 잰 요금이 없습니다'));
       heroPromoRows(h).forEach(r=>rows.push(r));
       const lc=currencyOf(h);
       if(fxRow)rows.push(fxRow);

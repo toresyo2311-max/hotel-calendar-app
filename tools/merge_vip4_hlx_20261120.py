@@ -39,7 +39,13 @@ TARGETS = {
     'h05': ('푸동 샹그릴라 상하이', '5b5078036a8860a3024e0fd3'),
 }
 
-SRC = ('공개 요금 실측 · 2026-11-20 07:30~ KST 예약 사이트 호텔 상세 페이지 직접 조회'
+SRC_TIME = {
+    'h12': '2026-11-20 07:30~ KST',
+    'h13': '2026-11-20 07:30~ KST',
+    'h04': '2026-11-20 07:30~ KST',
+    'h05': '2026-11-20 09:38~10:15 KST',
+}
+SRC = ('공개 요금 실측 · %s 예약 사이트 호텔 상세 페이지 직접 조회'
        '(비로그인 · 성인 2인·1실·1박·세금 포함 표시가 "including tax & fees", '
        '%s %d일 전수. 객실 목록이 다 불러온 뒤 값이 안정될 때까지 확인). '
        '표시 통화 USD를 USD 1 = ₩1,331.56(2026-11-19 기준)로 환산해 100원 단위로 적었습니다. '
@@ -49,7 +55,8 @@ SRC_EXTRA = {
     'h13': ' 최저가 객실 일부는 아코르 멤버십(로열티) 번호가 필요한 요금이고, 각 객실의 최저 요금제'
            '(세이버·회원 요율)를 기준으로 그날 최저값을 적었습니다.',
     'h04': '',
-    'h05': '',
+    'h05': ' 2027-01-11~01-14·01-17~01-19 는 기본 객실(리버윙 디럭스)이 매진되어 상위 등급부터'
+           ' 최저가가 잡혀 300달러대까지 올라갑니다(그 날짜들만 객실 종류가 15~16종).',
 }
 SOURCES_ADD = ['2026-11-20_vip4-예약사이트-직접조회-실측.json']
 
@@ -116,7 +123,7 @@ def main(argv=None):
         h['rates'] = dict(sorted(old.items()))
         if len(h['rates']) != 365:
             raise SystemExit('%s %s 칸이 %d개입니다 (365 여야 함)' % (hid, h['name'], len(h['rates'])))
-        h['source'] = (SRC % ('%s~%s' % (w_start, w_end), len(need_h),
+        h['source'] = (SRC % (SRC_TIME.get(hid, '2026-11-20 07:30~ KST'), '%s~%s' % (w_start, w_end), len(need_h),
                               (datetime.date.fromisoformat(w_end)
                                + datetime.timedelta(days=1)).isoformat())
                        + SRC_EXTRA.get(hid, ''))

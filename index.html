@@ -260,6 +260,11 @@ button:disabled{cursor:not-allowed;opacity:.3}
 .cal-actions{display:inline-flex;gap:8px;flex-wrap:wrap}
 .deal-book{flex:none;align-self:center;margin-left:10px;border:1px solid var(--lav2);border-radius:7px;padding:5px 8px;background:var(--lav);color:var(--violet-d);font-weight:800;font-size:10px;text-decoration:none;white-space:nowrap}
 .deal-book:hover{background:var(--lav3)}
+/* 이중 예약 링크 — 「💎 호텔럭스」와 「🏨 메리어트 공홈」을 나란히 (2026-11-20) */
+.deal-book.bk2{margin-left:0}
+.deal-book.bkx{background:#fff;color:var(--violet-d)}
+.deal-book.bkx:hover{background:var(--lav)}
+.hero-acts .deal-book{margin-left:0;padding:6px 9px;font-size:10.5px}
 .action-btn:hover{background:var(--lav);border-color:var(--lav2)}
 .footlegend{font-size:10px;color:var(--muted2)}
 
@@ -939,7 +944,7 @@ button.wx-cell{font:inherit;color:inherit;cursor:pointer}
 .deal-acts{display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex:none}
 .fl-rowacts{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
 .fl-rowacts .minibtn,.fl-rowacts .cmp-add{font-size:9.5px;padding:3px 6px}
-@media(max-width:430px){.deal{flex-wrap:wrap;gap:6px}.deal>div:first-child{flex:1 1 100%;min-width:0}.dealprice{margin-left:auto}.deal-acts{flex-direction:row;align-items:center}.deal-acts .deal-book{order:0}.fl-rowacts .minibtn,.fl-rowacts .cmp-add{font-size:9px;padding:3px 5px}}
+@media(max-width:430px){.deal{flex-wrap:wrap;gap:6px}.deal>div:first-child{flex:1 1 100%;min-width:0}.dealprice{margin-left:auto}.deal-acts{flex-direction:row;flex-wrap:wrap;justify-content:flex-end;align-items:center}.deal-acts .deal-book{order:0}.fl-rowacts .minibtn,.fl-rowacts .cmp-add{font-size:9px;padding:3px 5px}}
 .minibtn{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:7px;padding:4px 6px;font-size:10px;font-weight:700;white-space:nowrap;line-height:1.1}
 .minibtn:hover{border-color:var(--lav2);color:var(--violet-d)}
 .minibtn.on{border-color:var(--lav2);background:var(--lav);color:var(--violet-d)}
@@ -2324,7 +2329,7 @@ function renderNotes(){if(st.tab==='lux'){
  $('basis').innerHTML=(st.cur==='usd'?'<div class="note-row"><span class="note-mark">$</span><span class="note-text"><strong>지금은 USD 로 보고 있습니다.</strong> ① 자료는 조사 때 USD 표시가를 원화로 환산해 담았습니다 — 화면의 USD는 그 환산값을 <strong>조사 때 쓴 환율</strong>(140곳 '+usdRateTxt(null)+' · 2026-11-17 / 21곳 USD 1 = ₩1,331.56 · 2026-11-19)로 되돌린 표시입니다. 새 환율을 곱한 값이 아니므로 실제 결제 금액과는 다릅니다(카드 환율·수수료 반영 안 됨). 복사·CSV는 원화로 나갑니다.</span></div>':'')
   +'<div class="note-row"><span class="note-mark">✕</span><span class="note-text"><strong>취소 조건은 호텔 단위 표기</strong>입니다 — 자료에 적힌 문구만 읽어 <strong>무료 취소 · 환불 가능 · 환불 불가 · 취소조건 미확인</strong>으로 나눕니다. 요금(날짜)별 취소 조건은 ① 자료에 없어서 날짜 칸에는 붙이지 않았습니다. <strong>「취소조건 미확인」은 무료 취소가 아니라는 뜻이 아니라, 자료에 조건이 적혀 있지 않다는 뜻</strong>입니다. 「무료취소 확인」 필터는 그 문구가 있는 호텔만 남깁니다.</span></div>'
   +'<div class="note-row"><span class="note-mark">◌</span><span class="note-text"><strong>빈칸(—)의 상태</strong> — 호텔을 하나 고르면 칸에 <strong>예약창 미개시 / 매진·판매중지 / 최소 N박</strong>을 적습니다. 요금이 열린 기간 밖이거나 20일 넘게 끊긴 구간은 <strong>예약창 미개시</strong>, 같은 요일(2~3요일)만 반복해서 비면 <strong>최소 N박</strong>, 그 밖의 안쪽 결번은 <strong>매진·판매중지</strong>로 봅니다. ① 자료에는 사유 문구가 없어 <strong>앞뒤 날짜의 요금 유무로 가른 추정</strong>입니다 — 실제 사유는 예약 화면에서 확인하세요.</span></div>'
-  +'<div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>VIP 요금 날짜별 최저 1박가</strong> · 성인 2인 1실, 세금 포함 표시가. 해외 호텔은 사이트 USD 표시가를 <strong>USD 1 = ₩1,336.02</strong>(2026-11-17)로 환산해 100원 단위 반올림했습니다. 2026-11-20에 예약 사이트에서 직접 조회한 <strong>21곳</strong>은 <strong>USD 1 = ₩1,331.56</strong>(2026-11-19)로 환산했습니다. 상세 카드에는 2026-11-19 참고 환율로 환산한 현지 통화(엔화 약 ¥34,692 등)를 함께 적었습니다.</span></div><div class="note-row"><span class="note-mark">◷</span><span class="note-text">수집 <strong>2026-11-17 01:13 KST</strong> VIP 요금 조사 140곳(365일) + <strong>2026-11-20 07:30~13:55 · 14:10~14:45 · 14:49~16:05 · 15:51~16:23 · 16:31~17:09 · 17:15~17:53 · 17:58~18:33 · 18:41~19:24 · 19:34~20:13 KST</strong> 예약 사이트 직접 조회 21곳(<strong>21곳 모두 2026-12-01~2027-11-30</strong> 365칸). 그중 만다린 오리엔탈·카펠라 방콕·하얏트 리젠시 다낭·인터컨티넨탈 다낭은 <strong>2027-03-31</strong>까지, 월도프 아스토리아 방콕은 <strong>2027-04-11</strong>까지 실측했고 그 이후는 <strong>미실측</strong>이라 —입니다. 판매 객실이 없던 날(최소 숙박 조건·예약 창 미개시 등)도 —입니다.</span></div><div class="note-row"><span class="note-mark">↔</span><span class="note-text">2026-11-20 정리 — 검색 화면·PDF 에서 모은 요금 <strong>17곳</strong>은 ① 탭에서 모두 빼고, 그 17곳을 예약 사이트에서 직접 다시 실측해 채웠습니다. 이제 ① 탭 <strong>161곳 모두 달력</strong>이 있고 <strong>요금이 아예 없는 호텔은 0곳</strong>입니다(5곳은 2027-03-31까지 · 월도프 아스토리아 방콕은 2027-04-11까지 실측해 그 이후가 —).</span></div><div class="note-row"><span class="note-mark">✓</span><span class="note-text"><strong>예약 사이트 직접 조회 21곳</strong>은 2026-11-20에 예약 사이트 호텔 상세 페이지를 비로그인으로 조회한 <strong>공개 요금</strong>입니다 — 21곳 모두 <strong>2026-12-01~2027-11-30(365칸)</strong>이고, 성인 2인·1실·1박 세금·수수료 포함 USD 총액을 <strong>USD 1 = ₩1,331.56</strong>(2026-11-19)로 환산해 정수로 적었습니다. 콘래드 도쿄의 2027-10~11월 61일과 페어몬트 도쿄의 2027-10-18~11-30 44일은 <strong>판매 객실 없음</strong>(예약 창 미개시 가능성 · 추후 재조회 대상)이라 —이고, 그 밖에 판매 객실이 없던 날도 —입니다. 푸동 샹그릴라는 2027-03-01~05-31 92일 · 2027-06-01~08-31 92일 · 2027-09-01~10-17 47일 <strong>모두 판매 요금</strong>이 있었고(객실 21종 · 3~5월 USD 168~260 · 6~8월 USD 185~248 · 9~10월 USD 157~220), 2027-10-18~11-30 <strong>44일은 판매 객실 없음</strong>(10-18 이후 판매 객실 없음 · 예약 창 미개시 가능성 · 추후 재조회 대상)이라 <strong>2026-12-01~2027-11-30 365일 실측을 마쳤습니다</strong>. 페어몬트 피스는 2027-03-01~05-31 92일과 2027-06-01~08-20 81일 <strong>모두 판매 요금</strong>이 있었고, 2027-08-21~11-30 <strong>102일은 판매 객실 없음</strong>(08-21 이후 판매 객실 없음 · 예약 창 미개시 가능성 · 추후 재조회 대상)이라 <strong>2026-12-01~2027-11-30 365일 실측을 마쳤습니다</strong>.</span></div>'+hlxLinkNoteRow()+'<details><summary>소스 설명 더 보기</summary><p>① 탭 161곳 = <strong>VIP 요금 조사 140곳</strong>(2026-11-17 · 365일) + <strong>예약 사이트 직접 조회 21곳</strong>(2026-11-20), 요금 자료가 아예 없는 호텔은 0곳입니다. 칸 수는 140곳 × 365일 + 21곳 × 365일 = <strong>58,765칸</strong>이며, <strong>—는 요금 미표시(NA)</strong>로 0원·무료 숙박이 아닙니다. 실측이 창 끝까지 닿지 않은 호텔(만다린 오리엔탈·카펠라 방콕·하얏트 리젠시 다낭·인터컨티넨탈 다낭은 2027-03-31까지, 월도프 아스토리아 방콕은 2027-04-11까지)은 그 이후가 —입니다.</p></details>';
+  +'<div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>VIP 요금 날짜별 최저 1박가</strong> · 성인 2인 1실, 세금 포함 표시가. 해외 호텔은 사이트 USD 표시가를 <strong>USD 1 = ₩1,336.02</strong>(2026-11-17)로 환산해 100원 단위 반올림했습니다. 2026-11-20에 예약 사이트에서 직접 조회한 <strong>21곳</strong>은 <strong>USD 1 = ₩1,331.56</strong>(2026-11-19)로 환산했습니다. 상세 카드에는 2026-11-19 참고 환율로 환산한 현지 통화(엔화 약 ¥34,692 등)를 함께 적었습니다.</span></div><div class="note-row"><span class="note-mark">◷</span><span class="note-text">수집 <strong>2026-11-17 01:13 KST</strong> VIP 요금 조사 140곳(365일) + <strong>2026-11-20 07:30~13:55 · 14:10~14:45 · 14:49~16:05 · 15:51~16:23 · 16:31~17:09 · 17:15~17:53 · 17:58~18:33 · 18:41~19:24 · 19:34~20:13 KST</strong> 예약 사이트 직접 조회 21곳(<strong>21곳 모두 2026-12-01~2027-11-30</strong> 365칸). 그중 만다린 오리엔탈·카펠라 방콕·하얏트 리젠시 다낭·인터컨티넨탈 다낭은 <strong>2027-03-31</strong>까지, 월도프 아스토리아 방콕은 <strong>2027-04-11</strong>까지 실측했고 그 이후는 <strong>미실측</strong>이라 —입니다. 판매 객실이 없던 날(최소 숙박 조건·예약 창 미개시 등)도 —입니다.</span></div><div class="note-row"><span class="note-mark">↔</span><span class="note-text">2026-11-20 정리 — 검색 화면·PDF 에서 모은 요금 <strong>17곳</strong>은 ① 탭에서 모두 빼고, 그 17곳을 예약 사이트에서 직접 다시 실측해 채웠습니다. 이제 ① 탭 <strong>161곳 모두 달력</strong>이 있고 <strong>요금이 아예 없는 호텔은 0곳</strong>입니다(5곳은 2027-03-31까지 · 월도프 아스토리아 방콕은 2027-04-11까지 실측해 그 이후가 —).</span></div><div class="note-row"><span class="note-mark">✓</span><span class="note-text"><strong>예약 사이트 직접 조회 21곳</strong>은 2026-11-20에 예약 사이트 호텔 상세 페이지를 비로그인으로 조회한 <strong>공개 요금</strong>입니다 — 21곳 모두 <strong>2026-12-01~2027-11-30(365칸)</strong>이고, 성인 2인·1실·1박 세금·수수료 포함 USD 총액을 <strong>USD 1 = ₩1,331.56</strong>(2026-11-19)로 환산해 정수로 적었습니다. 콘래드 도쿄의 2027-10~11월 61일과 페어몬트 도쿄의 2027-10-18~11-30 44일은 <strong>판매 객실 없음</strong>(예약 창 미개시 가능성 · 추후 재조회 대상)이라 —이고, 그 밖에 판매 객실이 없던 날도 —입니다. 푸동 샹그릴라는 2027-03-01~05-31 92일 · 2027-06-01~08-31 92일 · 2027-09-01~10-17 47일 <strong>모두 판매 요금</strong>이 있었고(객실 21종 · 3~5월 USD 168~260 · 6~8월 USD 185~248 · 9~10월 USD 157~220), 2027-10-18~11-30 <strong>44일은 판매 객실 없음</strong>(10-18 이후 판매 객실 없음 · 예약 창 미개시 가능성 · 추후 재조회 대상)이라 <strong>2026-12-01~2027-11-30 365일 실측을 마쳤습니다</strong>. 페어몬트 피스는 2027-03-01~05-31 92일과 2027-06-01~08-20 81일 <strong>모두 판매 요금</strong>이 있었고, 2027-08-21~11-30 <strong>102일은 판매 객실 없음</strong>(08-21 이후 판매 객실 없음 · 예약 창 미개시 가능성 · 추후 재조회 대상)이라 <strong>2026-12-01~2027-11-30 365일 실측을 마쳤습니다</strong>.</span></div>'+'<div class="note-row"><span class="note-mark">🔀</span><span class="note-text"><strong>메리어트 계열 호텔은 예약처가 둘</strong>입니다 — 날짜를 눌러 연 상세 카드에 <strong>💎 호텔럭스</strong>(VIP 요금)와 <strong>🏨 메리어트 공홈</strong> 버튼이 나란히 나오고, 두 버튼 모두 고른 체크인·체크아웃이 들어간 페이지로 열립니다. 공홈 주소는 그 호텔의 메리어트 코드가 확인된 9곳만 호텔 페이지로 가고, 나머지는 그 도시의 메리어트 호텔 목록(고른 체크인·체크아웃 포함)으로 갑니다(코드를 추정해 만들지 않았습니다).</span></div>'+hlxLinkNoteRow()+'<details><summary>소스 설명 더 보기</summary><p>① 탭 161곳 = <strong>VIP 요금 조사 140곳</strong>(2026-11-17 · 365일) + <strong>예약 사이트 직접 조회 21곳</strong>(2026-11-20), 요금 자료가 아예 없는 호텔은 0곳입니다. 칸 수는 140곳 × 365일 + 21곳 × 365일 = <strong>58,765칸</strong>이며, <strong>—는 요금 미표시(NA)</strong>로 0원·무료 숙박이 아닙니다. 실측이 창 끝까지 닿지 않은 호텔(만다린 오리엔탈·카펠라 방콕·하얏트 리젠시 다낭·인터컨티넨탈 다낭은 2027-03-31까지, 월도프 아스토리아 방콕은 2027-04-11까지)은 그 이후가 —입니다.</p></details>';
  $('caution').innerHTML='<ul><li><strong class="alert">표시가는 VIP(및 파트너 요율) 또는 예약 사이트에서 직접 조회한 공개 요금</strong>입니다. 실제 예약 화면 금액·적용 혜택과 다를 수 있고, 회원 등급·결제 통화에 따라 달라집니다.</li><li><strong>프로모션(15% OFF, 2+1, Stay 4 Pay 3 등)은 예약 기간·숙박 기간·최소 박수 조건</strong>이 있어 달력 1박가에 자동 반영되지 않습니다. 호텔을 선택하면 그 호텔의 조건이 상세에 나옵니다.</li><li><strong>NA(—)는 「요금 미표시」</strong>입니다 — 요금 미공개·만실·판매 중지·미오픈을 구분하지 않고, <strong>아직 재지 않은 날짜</strong>도 —입니다(① 은 실측한 칸만 실어서, 실측이 끝나지 않은 기간도 —).</li><li>조식 포함·환불 가능 여부는 사이트가 실시간 조회한 날짜에만 표시되고, 대부분의 날짜는 확인되지 않았습니다.</li><li>환율은 수집 시점 고정값(2026-11-17 · 예약 사이트 직접 조회 21곳은 2026-11-19)이라 이후 환율 변동은 반영되지 않습니다. 상세 카드의 현지 통화 환산은 2026-11-19 참고 환율이며 실제 결제 금액과 다를 수 있습니다.</li></ul><details><summary>자세한 혜택·특이사항 확인</summary><div id="promoNotes"></div></details>';
  $('promoNotes').innerHTML=filteredHotels().filter(h=>h.promotion&& !h.promotion.includes('확인된 프로모션 없음')).map(h=>'<p><strong>'+esc(h.name)+'</strong>: '+esc(h.promotion)+'</p>').join('')||'<p>선택된 호텔에 기재된 체인 프로모션이 없습니다.</p>';
  }else if(st.tab==='china'){
@@ -2335,7 +2340,8 @@ function renderNotes(){if(st.tab==='lux'){
  $('caution').innerHTML='<ul><li><strong class="alert">미확인은 불가가 아닙니다.</strong> 관측 창(12/18) 밖 날짜와, 관측 기록이 아예 없는 호텔 '+groupHotels().filter(h=>h.accor&&!Object.keys(h.accor_apc||{}).length).length+'곳은 조회 기록 자체가 없습니다.</li><li><strong class="alert">AKI 홍콩 · 뫼벤픽 칭다오는 관측 기준 APC 미참여</strong>입니다. 날짜와 무관하게 무료숙박 대상이 아니라고 보는 것이 안전합니다.</li><li><strong class="alert">권역(tier)은 부산 접근성</strong>입니다 — 직항 / 환승·고속철 연계 / 국내선 환승 필요. 실제 항공편과 가격은 ⑤ 항공 탭을 함께 보세요.</li><li><strong>72시간 규칙</strong>: 사이트는 마지막 확인이 72시간을 넘은 값을 「미확인」으로 내립니다. 이 파일은 <strong>관측 시점 스냅샷</strong>이라 마지막 관측 시각을 기준으로 72시간을 적용하고, 화면에 그 기준 시각을 적습니다. 새 값이 필요하면 예약 캘린더를 다시 수집해 파일을 갱신해야 합니다.</li><li><strong>재고 없음과 블랙아웃을 구분하지 않습니다</strong>(관측에 제외일 달력이 없음). APC는 1박 기준이고 0 CNY로 표시됩니다.</li><li><strong>무료숙박권 실제 쿼터는 확인 불가.</strong> 객실의 약 10% 한도이며 위챗 雅高心悦界·플리기에서 최소 1일 전 확인해야 합니다. 이 달력은 「그날 1박의 무료숙박 재고」입니다.</li><li><strong>(개관 예정)</strong> 표기가 붙은 호텔은 아직 문을 열지 않았습니다(푸시안·모간산·타이저우 화홍). 청두 파이낸셜 시티는 이번 조회에서 365일 요금이 확인돼 표기에서 뺐습니다(판매 중).</li><li><strong>약관 제외일</strong>은 기존 10곳에만 표시합니다(중국 본토 5/1~3·10/1~7, 홍콩 4/29~5/2·9/29~10/5·11/14~17, 마카오 4/29~5/2·9/29~10/5 + 2026-12~2027-02 기존 표시일).</li><li>중올플 카드는 활성화일부터 365일 유효하고 <strong>체크아웃 날짜가 유효기간 안</strong>이어야 합니다. ③ 아코르 탭의 Stay Plus 값은 Accor 공홈 직접 조회값을 그대로 두었습니다.</li></ul>';
 
  }else if(st.tab==='marriott'){
- $('basis').innerHTML='<div class="note-row"><span class="note-mark">₩</span><span class="note-text">현금 = <strong>검색 호텔(세금 포함 1박 최저)</strong> · 성인 2인 1실 · KRW. 달력은 만원 단위로 줄여 표시합니다.</span></div><div class="note-row"><span class="note-mark">P</span><span class="note-text">포인트 = <strong>아워드 포인트 캘린더(2026-11-17 기준)</strong>의 그날 최저 아워드 포인트(원 단위 정확값). 달력에는 <strong>6.7만P</strong>, 상세에는 <strong>67,000P</strong>로 표시합니다. 전체 호텔 보기에서 초록 <strong>6.7만P</strong>는 <strong>그날 아워드 포인트가 가장 낮은 지점</strong>의 값이고, 호텔을 하나 고르면 그 호텔의 포인트가 나옵니다.</span></div><div class="note-row"><span class="note-mark">◷</span><span class="note-text">조회 <strong>2026-11-17 KST</strong> · 중국 40 + 한국 10 + 일본 12 = <strong>62곳 × 365일 = 22,630칸</strong> · 현금 17,531칸 · 포인트 6,629칸(한·일 22곳, 날짜별).</span></div><p>위 「표시 방식」에서 <strong>현금+포인트 병기 / 현금만 / 아워드 포인트</strong>를 고를 수 있습니다. 아워드 포인트를 고르면 달력의 주 표시가 포인트로 바뀌고 현금이 작게 함께 나옵니다. 같은 날짜에 현금과 포인트가 모두 있으면 <strong>1P≈원</strong>(현금 최저가 ÷ 아워드 포인트)을 함께 계산해 상세·호텔 요약에 표시합니다 — 포인트를 쓸지 판단하는 참고값입니다.</p>';
+ $('basis').innerHTML='<div class="note-row"><span class="note-mark">₩</span><span class="note-text">현금 = <strong>검색 호텔(세금 포함 1박 최저)</strong> · 성인 2인 1실 · KRW. 달력은 만원 단위로 줄여 표시합니다.</span></div><div class="note-row"><span class="note-mark">P</span><span class="note-text">포인트 = <strong>아워드 포인트 캘린더(2026-11-17 기준)</strong>의 그날 최저 아워드 포인트(원 단위 정확값). 달력에는 <strong>6.7만P</strong>, 상세에는 <strong>67,000P</strong>로 표시합니다. 전체 호텔 보기에서 초록 <strong>6.7만P</strong>는 <strong>그날 아워드 포인트가 가장 낮은 지점</strong>의 값이고, 호텔을 하나 고르면 그 호텔의 포인트가 나옵니다.</span></div><div class="note-row"><span class="note-mark">◷</span><span class="note-text">조회 <strong>2026-11-17 KST</strong> · 중국 40 + 한국 10 + 일본 12 = <strong>62곳 × 365일 = 22,630칸</strong> · 현금 17,531칸 · 포인트 6,629칸(한·일 22곳, 날짜별).</span></div><p>위 「표시 방식」에서 <strong>현금+포인트 병기 / 현금만 / 아워드 포인트</strong>를 고를 수 있습니다. 아워드 포인트를 고르면 달력의 주 표시가 포인트로 바뀌고 현금이 작게 함께 나옵니다. 같은 날짜에 현금과 포인트가 모두 있으면 <strong>1P≈원</strong>(현금 최저가 ÷ 아워드 포인트)을 함께 계산해 상세·호텔 요약에 표시합니다 — 포인트를 쓸지 판단하는 참고값입니다.</p>'
+  +'<div class="note-row"><span class="note-mark">🔀</span><span class="note-text"><strong>① 호텔럭스에도 있는 9곳</strong>(JW 서울·동대문, 웨스틴 조선 서울, 조선 팰리스, 리츠칼튼 도쿄·후쿠오카, 도쿄 에디션 2곳, 프린스 갤러리)은 날짜를 눌러 연 상세 카드에 <strong>🏨 메리어트 공홈</strong>과 <strong>💎 호텔럭스</strong> 버튼이 함께 나옵니다 — 같은 호텔·같은 날짜의 두 예약처를 바로 견줄 수 있습니다.</span></div>';
  $('caution').innerHTML='<ul><li><strong class="alert">—는 요금·포인트 미공개(NA)</strong>입니다. 매진·예약창 미오픈·재고 없음·미등재를 구분하지 않으며 0이 아닙니다.</li><li>한·일 22곳의 <strong>포인트 캘린더는 지점별 마지막 날짜가 다릅니다</strong>(최대 2027-11-06). 그 뒤는 포인트 조사 기록에 없어 <strong>포인트 —</strong>입니다.</li><li><strong>여의도 파크 센터 MEA는 아워드 포인트 데이터 0건</strong>(0% Available)이라 365일 포인트 — 입니다.</li><li>포인트 최저값은 <strong>그날 남은 가장 싼 객실</strong> 기준입니다. 표준룸이 아워드로 풀리지 않고 스위트만 남은 날(JW 제주·W 오사카 등)은 스위트 포인트가 최저값이 됩니다.</li><li>달력 예약 상한(조회일+330일 ≈ <strong>2027-10-13</strong>) 때문에 대부분 2027-10 중순 이후 — 입니다. 조선 팰리스 2027-09-10, 세인트레지스 주하이 2027-09-06처럼 더 일찍 끊기는 곳도 있습니다.</li><li>표시가는 K/M 반올림(±500~5,000원)이고, 같은 값이 여러 날 반복되면 <strong>하한선(floor)</strong>으로 읽어야 합니다.</li><li><strong>① VIP 요금 탭과 겹치는 9곳</strong>(JW 서울·JW 동대문·웨스틴 조선 서울·조선 팰리스 / 리츠칼튼 도쿄·후쿠오카, 도쿄 에디션 2곳, 프린스 갤러리)은 ① 탭에 VIP 요금, 여기엔 검색 현금 + 아워드 포인트가 있습니다. 같은 호텔·다른 요금 출처입니다(상세에 「① VIP 탭에도」 표시).</li><li>리츠칼튼 마카오·하이커우는 전 구간 NA, 세인트레지스 라싸는 공홈 월별 15일 실측만 수록입니다.</li></ul><details><summary>호텔별 특이사항 · 포인트 요율 보기</summary><div id="marriottNotes"></div></details>';
  $('marriottNotes').innerHTML=filteredHotels().map(h=>'<p><strong>'+esc(h.brand)+' · '+esc(h.name)+'</strong>'+(h.alsoIn?' <span class="apc none">① 탭 중복</span>':'')+': '+esc(h.promotion||'')+(h.note?'<br><span style="color:#6b6484">'+esc(h.note)+'</span>':'')+'</p>').join('');
  }else{
@@ -2573,7 +2579,7 @@ function openDetail(dt){
     const acts='<div class="deal-acts">'
       +(v!=null?(h.group==='china'
         ?'<button type="button" class="deal-book" data-wx-hotel="'+h.id+'" data-wx-date="'+dt+'" data-wx-nights="'+N+'" title="'+esc(h.name+' · '+fullDate(dt)+' 체크인 위챗 예약')+'">예약 ↗</button>'
-        :(url?'<a class="deal-book" href="'+esc(url)+'" target="_blank" rel="noopener" title="'+esc(h.name+' · '+fullDate(dt)+' 체크인 예약 페이지')+'">예약 ↗</a>':''))
+        :bkBookHtml(h,dt,N,'deal-book'))
         :'')
       +planBtn('h|'+h.id+'|'+dt+'|'+N,planHotelText(h,dt,N))
       +cmpBtn(cmpHotelItem(h,dt,N))
@@ -2670,6 +2676,114 @@ function bkMarriottSearchUrl(h,ci,co){const q=encodeURIComponent(((h&&(h.english
 /* ① VIP 요금 — 호텔 페이지(체크인·체크아웃·성인 2인·1실) */
 const HLX_HOME='https://hotel.hotelux.com/#/index';
 function hlxUrl(id,ci,co){return 'https://hotel.hotelux.com/#/hotel/detail?hotelId='+encodeURIComponent(id)+'&checkIn='+ci+'&checkOut='+co+'&numberOfAdults=2&numberOfChildren=0&numberOfRooms=1'}
+/* ── 메리어트 계열 호텔의 이중 예약 링크 (2026-11-20) ─────────────────────────
+   ① 호텔럭스에 실린 메리어트 계열 호텔은 「💎 호텔럭스」 VIP 요금과 「🏨 메리어트 공홈」 요금을
+     나란히 연다. ④ 메리어트 탭 호텔 중 ① 에도 있는 곳(자료의 alsoIn)은 「🏨 메리어트 공홈」과
+     「💎 호텔럭스」를 함께 연다. 두 링크 모두 달력에서 고른 체크인·체크아웃이 그대로 들어간다.
+   · 메리어트 공홈 주소는 그 호텔의 propertyCode 가 확인된 경우에만 호텔 페이지로 가고,
+     확인되지 않으면 그 도시의 메리어트 호텔 목록(고른 체크인·체크아웃 포함)으로 보낸다
+     (코드를 추정해 만들지 않는다. 2026-11-20 공홈에 호텔 이름으로 검색하면 결과 0건이라 도시로 보낸다).
+   · MAR_CROSS 는 data/app/tab1_vip.json·tab4_marriott.json 의 alsoIn 연결 9쌍을 그대로 옮긴 표다.
+     탭 자료는 그 탭에 들어갈 때만 받으므로, 다른 탭 자료 없이도 짝과 코드를 알 수 있게 여기에 둔다.
+     두 탭 자료가 메모리에 있으면 alsoIn 으로 다시 찾아 표보다 실제 자료를 앞세운다. */
+const MAR_CROSS=[
+  ['h09','j04','FUKRZ','645db4be4c08f00a4ea90a1c'],  /* 더 리츠칼튼 후쿠오카 */
+  ['h25','k02','SELDP','5b5964338885d57e94df4cec'],  /* JW 메리어트 동대문 스퀘어 서울 */
+  ['h26','k01','SELJW','5b5963f48885d57e94df4a69'],  /* JW 메리어트 호텔 서울 */
+  ['h35','k05','SELWI','5b59645a8885d57e94df4ec'],   /* 웨스틴 조선 서울 */
+  ['h36','k04','SELLC','6163c7cc1668d4100f4958f3'],  /* 조선 팰리스 서울 강남, 럭셔리 컬렉션 */
+  ['h45','j12','TYOLC','5b1ead5566437f1e3cafd976'],  /* 더 프린스 갤러리 도쿄 기오이초 */
+  ['h48','j11','TYOEB','655f167990487e2b163945a5'],  /* 더 도쿄 에디션 긴자 */
+  ['h49','j10','TYOET','5e5e9c38a4a3e77950f3f7bc'],  /* 더 도쿄 에디션 도라노몬 */
+  ['h51','j01','TYORZ','5b35e54d74b5e5b4a112b33c']   /* 더 리츠칼튼 도쿄 */
+];
+/* 브랜드 이름으로 메리어트 계열을 가른다 — ① 자료에는 브랜드 필드가 없어 이름·영문명으로 본다.
+   위에서부터 먼저 맞는 것을 쓴다(JW 메리어트를 메리어트보다 먼저, 럭셔리 컬렉션을 컬렉션보다 먼저). */
+const MAR_BRANDS=[
+  ['리츠칼튼',/리츠칼튼|ritz[- ]?carlton/i],
+  ['세인트 레지스',/세인트\s*레지스|st\.?\s*regis/i],
+  ['JW 메리어트',/jw\s*메리어트|jw\s*marriott/i],
+  ['에디션',/에디션|edition/i],
+  ['W 호텔',/(^|\s)w(\s|$)|\bw\s+hotel/i],
+  ['럭셔리 컬렉션',/럭셔리\s*컬렉션|luxury\s*collection/i],
+  ['오토그래프 컬렉션',/오토그래프|autograph/i],
+  ['트리뷰트 포트폴리오',/트리뷰트|tribute/i],
+  ['웨스틴',/웨스틴|westin/i],
+  ['쉐라톤',/쉐라톤|sheraton/i],
+  ['르메르디앙',/르\s*메르디앙|le\s*m[eé]ridien/i],
+  ['불가리',/불가리|bvlgari|bulgari/i],
+  ['메리어트',/메리어트|marriott/i],
+  ['코트야드',/코트야드|courtyard/i],
+  ['포포인츠',/포\s*포인츠|four\s*points/i],
+  ['페어필드',/페어필드|fairfield/i],
+  ['알로프트',/알로프트|aloft/i],
+  ['목시',/목시|moxy/i],
+  ['르네상스',/르네상스|renaissance/i]
+];
+function marriottBrandName(h){
+  if(!h)return '';
+  if(h.group==='marriott')return String(h.brand||'메리어트');
+  const t=(h.name||'')+' · '+(h.english||'');
+  for(const b of MAR_BRANDS)if(b[1].test(t))return b[0];
+  return '';
+}
+/* ① 호텔 → ④ 메리어트 짝(propertyCode·① 호텔럭스 ID) */
+function marTwinOfLux(h){
+  if(!h)return null;
+  const row=MAR_CROSS.filter(x=>x[0]===h.id)[0];
+  if(row)return {marId:row[1],code:row[2],ref:row[3]};
+  const m=((DB&&DB.hotels)||[]).filter(x=>x.group==='marriott'&&x.alsoIn===h.id&&String(x.code||'').trim())[0];
+  if(m)return {marId:m.id,code:String(m.code).trim(),ref:String(h.ref_id||'').trim()};
+  return null;
+}
+/* ④ 메리어트 호텔 → ① 호텔럭스 짝 */
+function luxTwinOfMar(h){
+  if(!h)return null;
+  const row=MAR_CROSS.filter(x=>x[1]===h.id)[0];
+  if(row)return {luxId:row[0],code:row[2],ref:row[3]};
+  const l=((DB&&DB.hotels)||[]).filter(x=>x.group==='lux'&&x.id===h.alsoIn&&String(x.ref_id||'').trim())[0];
+  if(l)return {luxId:l.id,code:String(h.code||'').trim(),ref:String(l.ref_id).trim()};
+  return null;
+}
+/* ① 호텔의 메리어트 공홈 검색 주소 — 코드를 모르는 호텔은 그 도시의 호텔 목록(체크인·체크아웃 포함)으로 보낸다.
+   호텔 이름을 검색어로 넣으면 공홈이 결과 0건을 내기 때문에(2026-11-20 확인) 영문 도시만 넘긴다. */
+const MAR_CITY_EN={'서울':'Seoul','부산':'Busan','대구':'Daegu','제주':'Jeju','도쿄':'Tokyo','오사카':'Osaka','후쿠오카':'Fukuoka','교토':'Kyoto','오키나와':'Okinawa','나라':'Nara', '상하이':'Shanghai','베이징':'Beijing','광저우':'Guangzhou','선전':'Shenzhen','청두':'Chengdu','시안':"Xi'an",'톈진':'Tianjin','하이커우':'Haikou','싼야':'Sanya','하얼빈':'Harbin',
+ '난징':'Nanjing','쑤저우':'Suzhou','우한':'Wuhan','홍콩':'Hong Kong','마카오':'Macau','싱가포르':'Singapore','시드니':'Sydney','뉴욕':'New York','방콕':'Bangkok','다낭':'Da Nang','나트랑':'Nha Trang'};
+/* ④ 자료는 미국 호텔 몇 곳을 '뉴욕' 묶음에 넣어 두어(예: h144 리츠칼튼 댈러스), 이 호텔만 실제 도시로 검색되게 따로 적는다. */
+const MAR_CITY_OVERRIDE={h144:'Dallas'};
+function marSearchUrlFor(h,ci,co){
+  const city=MAR_CITY_OVERRIDE[h.id]||MAR_CITY_EN[h.city]||h.city||'';
+  return bkMarriottSearchUrl({english:'',name:city,city:''},ci,co);
+}
+/* 예약 버튼의 주(主) 링크 이름 — 두 링크가 함께 나올 때만 라벨을 붙인다 */
+function bkPrimName(h){return h&&h.group==='lux'?'💎 호텔럭스':(h&&h.group==='marriott'?'🏨 메리어트 공홈':'예약')}
+/* 두 번째 링크 — 없으면 null(단일 예약 링크 호텔은 지금처럼 「예약 ↗」 하나) */
+function bkAltLinkOf(h,ci,nights){
+  if(!h||!ci||h.fhr)return null;
+  const n=nights?Number(nights):bkNights(),co=bkAdd(ci,n);
+  if(h.group==='lux'){
+    if(!marriottBrandName(h))return null;
+    const t=marTwinOfLux(h);
+    return {label:'🏨 메리어트 공홈',short:'메리어트 공홈',kind:t?'hotel':'search',
+            url:t?bkMarriottUrl(t.code,ci,co):marSearchUrlFor(h,ci,co),brand:marriottBrandName(h)};
+  }
+  if(h.group==='marriott'){
+    const t=luxTwinOfMar(h);
+    if(!t)return null;
+    return {label:'💎 호텔럭스',short:'① 호텔럭스',kind:'lux',url:hlxUrl(t.ref,ci,co)};
+  }
+  return null;
+}
+/* 호텔 카드·요약의 예약 버튼 — 이중 링크가 있으면 라벨을 붙여 둘을 나란히 낸다 */
+function bkBookHtml(h,ci,nights,cls){
+  const url=bookUrlOf(h,ci,nights);
+  if(!url)return '';
+  const alt=bkAltLinkOf(h,ci,nights),c=cls||'deal-book';
+  const when=ci?(' · '+fullDate(ci)+' 체크인'):'';
+  let out='<a class="'+c+(alt?' bk2':'')+'" href="'+esc(url)+'" target="_blank" rel="noopener" title="'+esc((h.name||'')+when+' · '+bkPrimName(h)+' 예약 페이지')+'">'+(alt?bkPrimName(h)+' ↗':'예약 ↗')+'</a>';
+  if(alt)out+='<a class="'+c+' bk2 bkx" href="'+esc(alt.url)+'" target="_blank" rel="noopener" title="'+esc((h.name||'')+when+' · 메리어트 공홈'+(alt.kind==='search'?(' — '+(MAR_CITY_EN[h.city]||h.city||'')+' 호텔 목록(이 호텔의 공홈 코드 미확인)'):' 해당 호텔 페이지'))+'">'+alt.label+' ↗</a>';
+  return out;
+}
 /* ── ① VIP 예약 링크 — 고른 날짜가 들어간 예약 웹페이지로 바로 연다 (2026-11-20 · 앱 링크 제거) ──
    · 앱 링크로는 날짜를 넘길 수 없다 — 안드로이드 앱 5.6.2 번들을 뜯어 확인한 결과
      앱이 받는 호텔 주소는 `/app/hotel/<호텔 ID>` 하나뿐이고, 그 ID 뒤에 `?checkIn=…` 을 붙이면
@@ -3179,7 +3293,7 @@ function renderHero(S){
     +'<div class="hero-price"><span class="p">'+bigTxt+(meta.apc?'':(usdNow?'<small>USD · '+usdRateTxt(h)+'</small>':'<small>원</small>'))+'</span><span class="u">'+esc(secLine)+'</span></div>'
     +(h&&!meta.apc&&!(st.tab==='marriott'&&pointsMode())?heroFxLine(cur.p,h):'')
     +'<div class="hero-chips">'+chips+(st.tab==='marriott'&&h?ticketBadge(h,cur.d):'')+'</div>'
-    +(h?'<div class="hero-acts"><button type="button" class="histbtn" data-hist="hotels" data-hid="'+h.id+'" data-date="'+cur.d+'">📈 가격 추이 차트</button>'+planBtn('hero|'+h.id+'|'+cur.d+'|'+N,planHotelText(h,cur.d,N))+cmpBtn(cmpHotelItem(h,cur.d,N))+'</div>':'');
+    +(h?'<div class="hero-acts">'+bkBookHtml(h,cur.d,N,'deal-book')+'<button type="button" class="histbtn" data-hist="hotels" data-hid="'+h.id+'" data-date="'+cur.d+'">📈 가격 추이 차트</button>'+planBtn('hero|'+h.id+'|'+cur.d+'|'+N,planHotelText(h,cur.d,N))+cmpBtn(cmpHotelItem(h,cur.d,N))+'</div>':'');
   $('heroBenefits').innerHTML=heroBenefitsHtml(h,meta.apc?null:cur);
 }
 
@@ -3738,6 +3852,12 @@ function cbCitiesAll(){
 }
 function cbNightsOf(ci,co){const out=[];let cur=ci,g=0;while(cur<co&&g<9){out.push(cur);cur=flAddDays(cur,1);g++}return out}
 function cbHotelSum(h,nights){let s=0;for(const n of nights){const v=cashOf(h,n);if(v==null||v>=CB_OUT)return null;s+=v}return s}
+/* 메리어트 계열 호텔의 둘째 예약 링크(① 호텔럭스 ↔ 메리어트 공홈) — 콤보 카드의 호텔 링크 옆에 붙인다 */
+function cbAltLink(h,ci,n){
+  const alt=bkAltLinkOf(h,ci,n);
+  if(!alt)return '';
+  return '<a href="'+esc(alt.url)+'" target="_blank" rel="noopener" title="'+esc((h.name||'')+' · 메리어트 공홈'+(alt.kind==='search'?(' — '+(MAR_CITY_EN[h.city]||h.city||'')+' 호텔 목록(공홈 코드 미확인)'):' 해당 호텔 페이지'))+'">'+alt.label+' ↗</a>';
+}
 function cbHotelUrl(h,ci,n){
   const co=flAddDays(ci,n);
   if(h.fhr)return h.fhr;
@@ -3899,7 +4019,7 @@ function renderCombo(){
     const airUrl=r.url||flLink({code:r.code,date:r.date,back:r.back});
     const links='<div class="cb-links"><a href="'+esc(airUrl)+'" target="_blank" rel="noopener">'+(r.src==='t'?'항공 예약 ↗':'항공 검색 ↗')+'</a>'
       +(r.h.group==='china'?'<button type="button" class="cb-wx" data-wx-hotel="'+r.h.id+'" data-wx-date="'+r.date+'" data-wx-nights="'+r.nights.length+'">위챗 예약</button>'
-        :(hUrl?'<a href="'+esc(hUrl)+'" target="_blank" rel="noopener">호텔 예약 ↗</a>':''))
+        :(hUrl?'<a href="'+esc(hUrl)+'" target="_blank" rel="noopener">호텔 예약 ↗</a>':'')+cbAltLink(r.h,r.date,r.nights.length))
       +planBtn('c|'+r.code+'|'+r.h.id+'|'+r.date,planComboText(r))+cmpBtn(cmpComboItem(r))
       +'</div>';
     const tag=cb.src==='all'?'<span class="cb-tag'+(r.src==='t'?' t':'')+'">'+(r.src==='t'?'⑥ 땡처리':'⑤ 정규')+'</span>':'';
@@ -4583,6 +4703,8 @@ function planHotelText(h,dt,n){
   const url=bookUrlOf(h,dt,n);
   if(url)L.push('예약: '+url);
   else if(h.group==='china')L.push('예약: 위챗 雅高心悦界 미니프로그램에서 호텔명·날짜로 조회');
+  const alt=bkAltLinkOf(h,dt,n);
+  if(alt)L.push(alt.label+': '+alt.url);
   return L.join('\n');
 }
 function planFlightText(d){
@@ -4707,6 +4829,7 @@ function cmpHotelItem(h,dt,n){
     const info=ticketInfo(h,dt);
     if(info)cond.push(info.topup?'35k+'+KR(info.topup)+'P 탑업':'🎟️ 35k 적용');
   }
+  const alt=bkAltLinkOf(h,dt,n);
   return {
     kind:'hotel',id:h.id,name:h.name,city:(h.region&&h.region!==h.city?h.region+' · '+h.city:h.city),
     date:dt,back:co,nights:n,
@@ -4717,6 +4840,7 @@ function cmpHotelItem(h,dt,n){
     fxTxt:(tot!=null&&!pm)?(fxShort(h,tot)||'—'):'—',
     cond:cond.filter(Boolean),
     url:bookUrlOf(h,dt,n)||'',urlLabel:'호텔 예약',
+    url2:alt?alt.url:'',url2Label:alt?alt.label:'',
     plan:planHotelText(h,dt,n)
   };
 }

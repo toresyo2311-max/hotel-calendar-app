@@ -3175,7 +3175,7 @@ function renderHero(S){
   $('heroMain').innerHTML='<div class="hero-eyebrow">'+eyebrow+' · '+dateLabel(cur.d)+' ('+weekday(cur.d)+')</div>'
     +'<div class="hero-hotel">'+esc(name)+'</div>'
     +'<div class="hero-meta">'+esc(cityLine)+' · <b>'+fullDate(cur.d)+'</b>'+(meta.apc?'':' 체크인')+' · '+esc(priceUnit)+'</div>'
-    +'<div class="hero-price"><span class="p">'+bigTxt(meta.apc?'':(usdNow?'<small>USD · '+usdRateTxt(h)+'</small>':'<small>원</small>'))+'</span><span class="u">'+esc(secLine)+'</span></div>'
+    +'<div class="hero-price"><span class="p">'+bigTxt+(meta.apc?'':(usdNow?'<small>USD · '+usdRateTxt(h)+'</small>':'<small>원</small>'))+'</span><span class="u">'+esc(secLine)+'</span></div>'
     +(h&&!meta.apc&&!(st.tab==='marriott'&&pointsMode())?heroFxLine(cur.p,h):'')
     +'<div class="hero-chips">'+chips+(st.tab==='marriott'&&h?ticketBadge(h,cur.d):'')+'</div>'
     +(h?'<div class="hero-acts"><button type="button" class="histbtn" data-hist="hotels" data-hid="'+h.id+'" data-date="'+cur.d+'">📈 가격 추이 차트</button>'+planBtn('hero|'+h.id+'|'+cur.d+'|'+N,planHotelText(h,cur.d,N))+cmpBtn(cmpHotelItem(h,cur.d,N))+'</div>':'');

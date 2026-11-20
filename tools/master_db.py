@@ -4074,9 +4074,19 @@ def cmd_verify(args, quiet=False):
             problems.append('counts.%s 불일치: master=%s index=%s' % (k, expect[k], st[k]))
     if st['date_min'] != WINDOW_START or st['date_max'] != WINDOW_END or st['dates'] != 365:
         problems.append('날짜 창 이상: %s ~ %s (%d일)' % (st['date_min'], st['date_max'], st['dates']))
+    # 날짜 칸 — ① 은 실측분만 싣으므로 호텔마다 칸 수가 다르다(2026-11-20 검색 요금 제거).
+    # ①은 0~365칸(창 안의 날짜만), ②~④는 365칸을 그대로 요구한다.
+    by_id = {h.get('id'): h for h in hotels}
     for hid, n in st['cells_per_hotel'].items():
-        if n != 365:
+        grp = (by_id.get(hid) or {}).get('group')
+        if n > 365:
+            problems.append('%s 날짜 칸 %d개 (창 365일 초과)' % (hid, n))
+        elif grp != 'lux' and n != 365:
             problems.append('%s 날짜 칸 %d개 (365 이어야 함)' % (hid, n))
+        for d in ((by_id.get(hid) or {}).get('rates') or {}):
+            if not (WINDOW_START <= d <= WINDOW_END):
+                problems.append('%s 날짜 %s 가 창(%s~%s) 밖' % (hid, d, WINDOW_START, WINDOW_END))
+                break
 
     # 탭 구성 검사 (①~④ 기존 데이터가 손상되지 않았는지 포함)
     problems.extend(check_tabs(mdb))

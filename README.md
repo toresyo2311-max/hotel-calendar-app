@@ -25,7 +25,7 @@
 
 | 탭 | 파일 | 내용 | 크기 |
 | --- | --- | --- | --- |
-| ① VIP 요금 · FHR | `data/app/tab1_vip.json` | 호텔 162곳 | 0.46 MB |
+| ① VIP 요금 · FHR | `data/app/tab1_vip.json` | 호텔 161곳 | 0.45 MB |
 | ② 중올플 | `data/app/tab2_china.json` | 호텔 289곳 + APC | 0.93 MB |
 | ③ 아코르 | `data/app/tab3_accor.json` | 호텔 25곳 + SNU 43줄(`accor`) | 0.08 MB |
 | ④ 메리어트 | `data/app/tab4_marriott.json` | 호텔 62곳(현금·포인트) | 0.23 MB |
@@ -54,7 +54,7 @@
 
 | 탭 | 이름 | 내용 | 건수 |
 | --- | --- | --- | --- |
-| ① | VIP 요금 · FHR | VIP 요금 138곳 신규 + 기존 24곳 (서울·부산·도쿄·싱가포르·시드니·뉴욕·상하이·후쿠오카·오사카·방콕·다낭·나트랑) | 162곳 |
+| ① | VIP 요금 · FHR | VIP 요금 138곳 신규 + 기존 23곳 (서울·부산·도쿄·싱가포르·시드니·뉴욕·상하이·후쿠오카·오사카·방콕·다낭·나트랑) | 161곳 |
 | ② | 중올플 · ALL PLUS China | 중국·홍콩·마카오 99개 도시 APC 참여 **287곳** + 기존 2곳(AKI 홍콩·뫼벤픽 칭다오) + 이번 조사 신규 5곳 / 호텔별 **APC 무료숙박 가능일**(예약 캘린더) · **권역(직항/연계/국내선)** 필터 · **30곳은 365일 현금 요금** | 289곳 |
 | ③ | 아코르 · Stay Plus & SNU | 국내 아코르 4곳(울산·전주·서울 2) + **한·중·일 페어몬트·소피텔 21곳 365일** + **SNU·Stay Plus 2박 후보 43줄** | 25곳 |
 | ④ | 메리어트 · 중국/한·일 | 중국 본토·홍콩·마카오 40 + **한국 10 + 일본 12** / 현금 + 아워드 포인트 | 62곳 |
@@ -397,13 +397,10 @@
   대표 요율명, 조식·환불 여부(라이브 조회분만)를 요약해 넣었습니다.
 - 등록 191곳 중 요금 미공개 49곳은 앱에 넣지 않았습니다(원본 JSON의 `not_priced_hotels` 참고).
 
-**① 탭 예약 링크**(2026-11-19) — 날짜 칸·`예약 ↗`은 호텔별 예약처로 열립니다. 161곳은 HoteLux
-호텔 페이지(호텔 id + 체크인·체크아웃)이고, **파라다이스 호텔 부산만 아멕스 FHR 호텔 페이지**로
-연결합니다: `https://www.americanexpress.com/en-us/travel/discover/property/paradise-hotel-busan`
-(호텔별 `fhr` 값 — `bookUrlOf()`가 이 값이 있으면 그 주소를 씀). 이 페이지는 FHR 참여와 혜택
-(12시 체크인·조식 2인·$100 크레딧·16시 체크아웃)을 보여 주고 `Book Now`로 요금 조회로 넘어갑니다.
-요금 조회·예약은 아멕스 회원 로그인이 필요하고(한국 발급 카드는 카드사 FHR 상담센터 전화 예약),
-FHR 주소에는 체크인·체크아웃 날짜를 넘길 수 없어 날짜는 페이지 안에서 고릅니다.
+**① 탭 예약 링크**(2026-11-19, 2026-11-20 갱신) — 날짜 칸·`예약 ↗`은 호텔별 예약처로 열립니다. ① 탭 161곳은 모두
+예약처 호텔 페이지(호텔 `ref_id` + 체크인·체크아웃)로 연결합니다. 2026-11-20에 파라다이스 호텔 부산(h01)을
+목록에서 빼면서 아멕스 FHR 호텔 페이지로 보내던 유일한 호텔이 없어졌습니다(`fhr` 값이 있으면 그 주소를
+쓰는 `bookUrlOf()` 분기는 그대로 두었습니다 — 지금 `fhr`가 있는 호텔은 0곳).
 
 ③ 국내 아코르에는 Stay Plus 무료숙박권 사용 가능일(`stayplus2` = 2박, `stayplus3` = 3박)이
 호텔별로 함께 들어 있습니다: **총 142건** (소피텔 서울 12건, 페어몬트 서울 130건).
@@ -985,7 +982,7 @@ python3 tools/merge_pus_deals.py ../../data-sources/flights-ttang/2026-11-20/nor
 
 ```
 index.html              앱 본체. 화면 코드 + 집계값(const DB 의 counts·sources)만. 호텔·항공·땡처리 데이터는 없습니다(340 KB).
-data/app/tab1_vip.json  ① VIP 요금 · FHR 호텔 162곳 (탭 진입 시 fetch)
+data/app/tab1_vip.json  ① VIP 요금 · FHR 호텔 161곳 (탭 진입 시 fetch)
 data/app/tab2_china.json  ② 중올플 289곳 + APC 무료숙박 가능일
 data/app/tab3_accor.json  ③ 아코르 25곳 + SNU·Stay Plus 43줄(accor)
 data/app/tab4_marriott.json  ④ 메리어트 62곳 (현금 + 아워드 포인트)
@@ -1096,8 +1093,8 @@ netlify.toml            (구) Netlify 배포 설정 — GitHub Pages로 이전�
   "sources":  ["…조사 원문 파일명…"],
   "hotels":   [ // 탭별 JSON(tab1~tab4)을 이어 붙인 순서 — 각 탭 안의 순서는 화면 목록 순서와 같다
     {
-      "id": "h01", "group": "lux", "city": "부산", "region": "부산",
-      "name": "파라다이스 호텔 부산", "english": "Paradise Hotel Busan",
+      "id": "h02", "group": "lux", "city": "부산", "region": "부산",
+      "name": "파크 하얏트 부산", "english": "Park Hyatt Busan",
       "promotion": "…", "source": "…", "vip": 1, "ref_id": "…",
       "rates": { "2026-12-01": 240000, "2026-12-02": 236000, "…": null },
       "stayplus2": { "…": 0 },   // ③ 국내 아코르 일부만

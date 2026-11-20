@@ -50,8 +50,9 @@ PART_ADDRESS = dict(PART_TABS)
 WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 
-# 탭별 기대 호텔 수 — ② 중올플 289곳(참여 287 + 기존 미참여·자격없음 2) · ③ 아코르 25곳 · 총 538곳
-EXPECT_TABS = {'lux': 162, 'china': 289, 'domestic': 51, 'marriott': 62}
+# 탭별 기대 호텔 수 — ① 호텔럭스 161곳(2026-11-20 파라다이스 호텔 부산 제외) · ② 중올플 289곳
+# (참여 287 + 기존 미참여·자격없음 2) · ③ 아코르 51곳 · ④ 메리어트 62곳 · 총 563곳
+EXPECT_TABS = {'lux': 161, 'china': 289, 'domestic': 51, 'marriott': 62}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 중올플 APC — 참여 282 + 기존 2 = 284곳 · 12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715
 EXPECT_APC = {'hotels': 289, 'participating': 287, 'dec_available': 210,
@@ -3971,7 +3972,9 @@ def check_tabs(db):
     if extra:
         problems.append('알 수 없는 탭: %s' % extra)
     if len(db['hotels']) != EXPECT_HOTELS:
-        problems.append('호텔 합계 %d곳 (기대 %d곳 = 162 + 284 + 4 + 62)' % (len(db['hotels']), EXPECT_HOTELS))
+        problems.append('호텔 합계 %d곳 (기대 %d곳 = %s)' % (
+            len(db['hotels']), EXPECT_HOTELS,
+            ' + '.join(str(EXPECT_TABS[t]) for t in ('lux', 'china', 'domestic', 'marriott'))))
     brands = {}
     ids = set()
     for h in db['hotels']:

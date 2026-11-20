@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#1b122b">
 <meta name="color-scheme" content="light">
 <link rel="manifest" href="manifest.json">
@@ -12,6 +13,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TEAM-부산">
 <title>TEAM-부산 · 호텔·항공 요금 달력</title>
+<script>
+/* 🔒 잠금 게이트 — 본문을 그리기 전에 브라우저에 남은 인증 토큰만 본다(해시 검증은 아래 본 스크립트).
+   토큰이 없거나 형식이 다르면 html.locked 를 붙여 본문을 숨기고, 잠금 화면만 먼저 띄운다. */
+(function(){try{
+  var t=window.localStorage.getItem('teambusan.lock.v1')||'';
+  if(!/^ok:[0-9a-f]{64}$/.test(t))document.documentElement.className+=' locked';
+}catch(e){document.documentElement.className+=' locked'}})();
+</script>
 <style>
 :root{
   --plum:#1b122b;--plum2:#24173b;--plum3:#2f1f4a;
@@ -1038,9 +1047,84 @@ body.cmp-on{padding-bottom:66px}
  .vt-off{grid-template-columns:1fr}
  .vt-off .r{text-align:left}
 }
+
+/* ── 🔒 잠금 화면(PIN 게이트) ─────────────────────────────────
+   인증 전에는 body 의 다른 요소를 아예 그리지 않고(display:none),
+   데이터 요청·렌더링도 아래 스크립트에서 인증 뒤에 시작한다. */
+html.locked,html.locked body{overflow:hidden;height:100%}
+html.locked body>*:not(#lockGate){display:none!important}
+#lockGate{display:none}
+html.locked #lockGate{display:flex}
+.lockgate{position:fixed;inset:0;z-index:40000;align-items:center;justify-content:center;padding:26px 18px;overflow-y:auto;
+  background:radial-gradient(115% 85% at 50% -10%,#3b2560 0%,#24173b 46%,#170f26 100%);color:#fff}
+.lockgate:before{content:"";position:fixed;right:-140px;top:-180px;width:420px;height:420px;border-radius:50%;border:1px solid rgba(196,181,253,.16);box-shadow:0 0 0 70px rgba(196,181,253,.045),0 0 0 150px rgba(196,181,253,.028);pointer-events:none}
+.lockgate:after{content:"";position:fixed;left:-130px;bottom:-170px;width:360px;height:360px;border-radius:50%;border:1px solid rgba(196,181,253,.1);box-shadow:0 0 0 60px rgba(196,181,253,.025);pointer-events:none}
+.lockcard{position:relative;z-index:1;width:100%;max-width:348px;text-align:center}
+.lockbrand{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 8px;border:1px solid rgba(196,181,253,.3);border-radius:999px;background:rgba(255,255,255,.05);font-size:11.5px;font-weight:800;letter-spacing:-.01em}
+.lockmark{width:23px;height:23px;flex:none;border-radius:7px;display:grid;place-items:center;background:linear-gradient(150deg,#7c3aed,#4c1d95);font-size:12px;box-shadow:0 6px 14px rgba(76,29,149,.5)}
+.lockeyebrow{margin:18px 0 6px;font-size:9px;font-weight:800;letter-spacing:.26em;color:#a99bc7}
+.locktitle{margin:0;font-size:21px;font-weight:800;letter-spacing:-.05em;line-height:1.3}
+.lockdesc{margin:8px 0 20px;font-size:11.5px;line-height:1.7;color:#c4b5fd}
+.lockform{margin:0}
+.locksr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.lockpin{display:block;width:100%;height:54px;text-align:center;letter-spacing:.55em;text-indent:.55em;font-size:21px;font-weight:800;color:#fff;
+  background:rgba(255,255,255,.07);border:1px solid rgba(196,181,253,.3);border-radius:13px;outline:none;transition:border-color .15s,background .15s,box-shadow .15s}
+.lockpin::placeholder{color:#6f6390;letter-spacing:.4em;font-size:17px}
+.lockpin:focus{border-color:#a78bfa;background:rgba(255,255,255,.11);box-shadow:0 0 0 3px rgba(124,58,237,.3)}
+.lockpin.bad{border-color:#f9a8d4;background:rgba(249,168,212,.1)}
+.lockerr{min-height:17px;margin:8px 0 0;font-size:10.5px;font-weight:700;line-height:1.5;color:#fbcfe8}
+.lockpad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 0}
+.lockpad button{height:46px;border:1px solid rgba(196,181,253,.22);border-radius:11px;background:rgba(255,255,255,.055);color:#efeaff;font-size:16px;font-weight:800;transition:background .12s,transform .1s}
+.lockpad button:hover{background:rgba(196,181,253,.16)}
+.lockpad button:active{transform:scale(.97);background:rgba(196,181,253,.25)}
+.lockpad button.lpk-alt{font-size:10.5px;letter-spacing:-.01em;color:#c4b5fd}
+.lockgo{width:100%;height:48px;margin:12px 0 0;border:0;border-radius:12px;background:linear-gradient(150deg,#7c3aed,#5b21b6);color:#fff;font-size:13px;font-weight:800;letter-spacing:-.01em;box-shadow:0 10px 24px rgba(76,29,149,.45);transition:opacity .15s,transform .1s}
+.lockgo:active{transform:scale(.985)}
+.lockgo:disabled{opacity:.5}
+.lockfoot{margin:15px 0 0;font-size:9.5px;line-height:1.65;color:#8b86a3}
+.lockgate.shake .lockcard{animation:lockShake .34s ease-in-out}
+@keyframes lockShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+/* 헤더·푸터의 '다시 잠그기' */
+.lockagain{border:1px solid rgba(196,181,253,.3);background:rgba(124,58,237,.22);color:#e3dbff;font-size:10.5px;font-weight:700;padding:6px 10px;border-radius:20px;white-space:nowrap;transition:background .15s}
+.lockagain:hover{background:rgba(124,58,237,.36)}
+.lock-again-link{background:none;border:0;padding:0;margin:0;color:var(--violet-d);font:inherit;font-weight:800;text-decoration:underline;cursor:pointer}
+@media (max-width:420px){
+ .lockpin{height:50px;font-size:19px}
+ .lockpad button{height:44px}
+ .locktitle{font-size:19px}
+}
+@media (max-height:660px){
+ .lockgate{align-items:flex-start;padding-top:20px}
+ .lockeyebrow{margin-top:12px}
+ .lockdesc{margin-bottom:14px}
+}
+@media (prefers-reduced-motion:reduce){
+ .lockgate.shake .lockcard{animation:none}
+}
 </style>
 </head>
 <body>
+<div id="lockGate" class="lockgate" role="dialog" aria-modal="true" aria-labelledby="lockTitle" aria-describedby="lockDesc" aria-hidden="true">
+  <div class="lockcard">
+    <div class="lockbrand"><span class="lockmark" aria-hidden="true">◈</span><span>TEAM-부산</span></div>
+    <p class="lockeyebrow">PRIVATE NOTES · 개인 참고용</p>
+    <h1 class="locktitle" id="lockTitle">잠금</h1>
+    <p class="lockdesc" id="lockDesc">개인용 요금 정리 노트입니다.<br>PIN 번호를 입력하면 열립니다.</p>
+    <form class="lockform" id="lockForm" autocomplete="off" novalidate>
+      <label class="locksr" for="lockPin">PIN 번호</label>
+      <input class="lockpin" id="lockPin" name="lockpin" type="password" inputmode="numeric" maxlength="8" enterkeyhint="go" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="lockErr" placeholder="••••">
+      <p class="lockerr" id="lockErr" role="alert"></p>
+      <div class="lockpad" id="lockPad" aria-label="숫자 키패드">
+        <button type="button" data-lp="1">1</button><button type="button" data-lp="2">2</button><button type="button" data-lp="3">3</button>
+        <button type="button" data-lp="4">4</button><button type="button" data-lp="5">5</button><button type="button" data-lp="6">6</button>
+        <button type="button" data-lp="7">7</button><button type="button" data-lp="8">8</button><button type="button" data-lp="9">9</button>
+        <button type="button" data-lp="clear" class="lpk-alt">지움</button><button type="button" data-lp="0">0</button><button type="button" data-lp="back" class="lpk-alt" aria-label="한 자리 지우기">⌫</button>
+      </div>
+      <button type="submit" class="lockgo" id="lockGo">열기</button>
+    </form>
+    <p class="lockfoot">PIN은 이 기기의 브라우저에만 기억되고 어디로도 전송되지 않습니다.<br>비공식 개인 참고용 정리 · 상업적 목적 없음</p>
+  </div>
+</div>
 <div id="dataLoading" class="dataloading" hidden role="status" aria-live="polite">
   <div class="dl-box" id="dlBox"><span class="dl-spin" id="dlSpin" aria-hidden="true"></span><b id="dlTitle">데이터 불러오는 중…</b><span id="dlSub"></span></div>
 </div>
@@ -1058,6 +1142,7 @@ body.cmp-on{padding-bottom:66px}
       <div><b id="statDates">196,370</b><span>달력 요금·상태</span></div>
       <div><b id="statVoucher">142</b><span>바우처 가능 요금</span></div>
       <span class="offline">● 정적 파일 · 탭별 JSON 지연 로딩</span>
+      <button type="button" class="lockagain" id="lockAgain" title="이 브라우저를 다시 잠급니다 — 다음에 열 때 PIN을 다시 묻습니다">🔒 잠금</button>
     </div>
   </div>
   <nav class="tabs" aria-label="호텔 · 항공 프로그램" id="tabs">
@@ -1566,7 +1651,7 @@ body.cmp-on{padding-bottom:66px}
     <div><b>환율·반올림</b>① 해외 요금은 <em>USD 1 = ₩1,336.02</em>(2026-11-17) 고정 환산 후 100원 단위, ③ 페어몬트·소피텔은 만 원 단위, ④는 K/M 표시입니다. ①~④ 해외 호텔 상세 카드에는 <em>2026-11-19 참고 환율</em>로 환산한 현지 통화(약 ¥34,692)를 함께 적습니다 — JPY 100 = ₩835.92 · HK$1 = ₩169.75 · MOP 1 = ₩164.80 · CN¥1 = ₩199.56 · ฿1 = ₩39.22 · ₫1 = ₩0.0518 · S$1 = ₩1,033.06 · US$1 = ₩1,331.56 · A$1 = ₩895.46.</div>
     <div><b>값이 없는 칸</b>—(NA)는 요금 미공개이며 매진·미오픈과 구분하지 않습니다(① 은 아직 재지 않은 날짜·호텔도 —). ⑤는 판매편 0건 · 요금 미공개 · 미오픈 · 미조회(—)를 나눠 적었고, <em>⚠ 이상치</em>는 1박 1천만 원 이상으로 시스템 오류가 의심되는 값입니다(0원·무료 아님).</div>
   </section>
-  <footer class="smallfooter"><strong>OFFLINE FILE / 2026-11-19 통합판</strong><br>실시간 가격 연결 없음 · 약관 또는 재고 실시간 확인 불가 · 자료 내 날짜별 숫자와 미표시 상태를 그대로 보존. 개인 로그인 정보는 이 파일에 저장하지 않았습니다.<details><summary>통합한 원본 자료 <span id="sourceCount">26</span>개 보기</summary><div class="source-list" id="sources"></div></details></footer>
+  <footer class="smallfooter"><strong>OFFLINE FILE / 2026-11-19 통합판</strong><br>실시간 가격 연결 없음 · 약관 또는 재고 실시간 확인 불가 · 자료 내 날짜별 숫자와 미표시 상태를 그대로 보존. 개인 로그인 정보는 이 파일에 저장하지 않았습니다.<br><strong>본 페이지는 비공식 개인 참고용 정리이며 상업적 목적이 없습니다. 표기된 브랜드·호텔·항공사·예약처와 공식 제휴나 관련이 없습니다.</strong> · <button type="button" class="lock-again-link" id="lockAgainFoot">다시 잠그기</button><details><summary>통합한 원본 자료 <span id="sourceCount">26</span>개 보기</summary><div class="source-list" id="sources"></div></details></footer>
 </div>
 <div class="modal" id="modal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="modal-head"><div><h3 id="dialogTitle"></h3><p id="dialogSub"></p></div><button type="button" class="close" aria-label="닫기" id="modalClose">×</button></div><div class="modal-body" id="dialogBody"></div></div></div>
 <div class="modal" id="chartModal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="chartTitle"><div class="modal-head"><div><h3 id="chartTitle">📈 가격 추이</h3><p id="chartSub"></p></div><button type="button" class="close" aria-label="닫기" id="chartClose">×</button></div><div class="modal-body">
@@ -5203,15 +5288,139 @@ document.getElementById('valetPanel').addEventListener('click',vtOnClick);
 document.getElementById('valetPanel').addEventListener('change',vtOnChange);
 document.getElementById('valetPanel').addEventListener('input',function(e){if(e.target.id==='vtSearch'||e.target.id==='lgSearch')vtOnChange(e)});
 
-/* 첫 화면 — 저장해 둔 즐겨찾기를 먼저 읽고 ① VIP 탭 JSON 만 받아 그린다 */
-favLoad();
-cmpLoad();
-const __hp=hashParams();
-if(!(__hp&&applyHashState(__hp)))resetStateFor('lux');
-activate(st.tab);
-renderPromos();
-alertLoad();
-pwaInit();
+/* ══ 🔒 잠금 게이트 — PIN 검증 (SHA-256 + 고정 salt) ═════════════════════
+   · PIN 자체는 파일에 남기지 않는다. tools/set_pin.py 가 만든 해시만 여기에 심는다.
+   · 한 번 통과하면 localStorage('teambusan.lock.v1') 에 'ok:<해시>' 토큰을 남겨
+     같은 브라우저에서는 다시 묻지 않는다. '잠금' 버튼은 토큰을 지우고 새로고침한다.
+   · 인증 전에는 이 스크립트 아래 bootApp 이 돌지 않으므로 data/app/*.json 요청도,
+     화면 렌더링도 시작되지 않는다(본문은 html.locked 로 숨김).
+   · 이 잠금은 화면 접근을 막는 장치이지 서버 접근 제어는 아니다 — 파일 자체는 공개 주소다. */
+const LOCK_KEY='teambusan.lock.v1';
+const LOCK_SALT='teambusan|lock|v1|';
+const LOCK_HASH='fcb1069a3566695c80ad41481c51d1075f92e22d410e844f0cec15833c1d58e2';
+const LOCK_MAX=8;
+let LOCK_BOOTED=false;
+function lockToken(){try{return window.localStorage.getItem(LOCK_KEY)||''}catch(e){return ''}}
+function lockSetToken(v){try{if(v)window.localStorage.setItem(LOCK_KEY,v);else window.localStorage.removeItem(LOCK_KEY)}catch(e){}}
+/* crypto.subtle 이 없는 곳(file:// · 구형 브라우저)에서만 쓰는 SHA-256 — salt+PN 이라 입력이 짧고 ASCII 다 */
+function lockSha256Fallback(msg){
+  function rotr(x,n){return (x>>>n)|(x<<(32-n))}
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const bytes=[];
+  for(let i=0;i<msg.length;i++){
+    let c=msg.charCodeAt(i);
+    if(c<128)bytes.push(c);
+    else if(c<2048)bytes.push(192|(c>>6),128|(c&63));
+    else bytes.push(224|(c>>12),128|((c>>6)&63),128|(c&63));
+  }
+  const bitLen=bytes.length*8;
+  bytes.push(0x80);
+  while(bytes.length%64!==56)bytes.push(0);
+  const hi=Math.floor(bitLen/4294967296),lo=bitLen>>>0;
+  bytes.push((hi>>>24)&255,(hi>>>16)&255,(hi>>>8)&255,hi&255,(lo>>>24)&255,(lo>>>16)&255,(lo>>>8)&255,lo&255);
+  const w=new Array(64);
+  for(let off=0;off<bytes.length;off+=64){
+    for(let i=0;i<16;i++)w[i]=(bytes[off+i*4]<<24)|(bytes[off+i*4+1]<<16)|(bytes[off+i*4+2]<<8)|bytes[off+i*4+3];
+    for(let i=16;i<64;i++){
+      const s0=rotr(w[i-15],7)^rotr(w[i-15],18)^(w[i-15]>>>3);
+      const s1=rotr(w[i-2],17)^rotr(w[i-2],19)^(w[i-2]>>>10);
+      w[i]=(w[i-16]+s0+w[i-7]+s1)|0;
+    }
+    let a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+    for(let i=0;i<64;i++){
+      const S1=rotr(e,6)^rotr(e,11)^rotr(e,25),ch=(e&f)^((~e)&g);
+      const t1=(h+S1+ch+K[i]+w[i])|0;
+      const S0=rotr(a,2)^rotr(a,13)^rotr(a,22),maj=(a&b)^(a&c)^(b&c);
+      const t2=(S0+maj)|0;
+      h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;
+    }
+    H[0]=(H[0]+a)|0;H[1]=(H[1]+b)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;
+    H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0;
+  }
+  let out='';
+  for(let i=0;i<8;i++)out+=('00000000'+(H[i]>>>0).toString(16)).slice(-8);
+  return out;
+}
+function lockDigest(pin){
+  const s=LOCK_SALT+pin;
+  if(window.crypto&&window.crypto.subtle&&window.crypto.subtle.digest&&typeof TextEncoder!=='undefined'){
+    return window.crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(d){
+      const b=new Uint8Array(d);let out='';
+      for(let i=0;i<b.length;i++)out+=(b[i]<16?'0':'')+b[i].toString(16);
+      return out;
+    });
+  }
+  return Promise.resolve(lockSha256Fallback(s));
+}
+function lockUnlocked(){return LOCK_HASH.indexOf('0000000000000000')!==0&&lockToken()==='ok:'+LOCK_HASH}
+function lockBoot(){
+  if(LOCK_BOOTED)return;LOCK_BOOTED=true;
+  document.documentElement.classList.remove('locked');
+  const g=$('lockGate');if(g)g.setAttribute('aria-hidden','true');
+  /* 첫 화면 — 저장해 둔 즐겨찾기를 먼저 읽고 ① VIP 탭 JSON 만 받아 그린다 */
+  favLoad();
+  cmpLoad();
+  const hp=hashParams();
+  if(!(hp&&applyHashState(hp)))resetStateFor('lux');
+  activate(st.tab);
+  renderPromos();
+  alertLoad();
+  pwaInit();
+}
+function lockAgain(){lockSetToken(null);location.reload()}
+if($('lockAgain'))$('lockAgain').addEventListener('click',lockAgain);
+if($('lockAgainFoot'))$('lockAgainFoot').addEventListener('click',lockAgain);
+(function lockGateInit(){
+  const gate=$('lockGate');
+  if(!gate){lockBoot();return}
+  if(lockUnlocked()){lockBoot();return}
+  lockSetToken(null);            /* 다른 PIN·손상된 토큰은 지운다 */
+  document.documentElement.classList.add('locked');
+  gate.setAttribute('aria-hidden','false');
+  const form=$('lockForm'),inp=$('lockPin'),err=$('lockErr'),pad=$('lockPad'),go=$('lockGo');
+  let busy=false;
+  setTimeout(function(){try{inp.focus({preventScroll:true})}catch(e){inp.focus()}},80);
+  function clearErr(){err.textContent='';inp.classList.remove('bad')}
+  function showErr(msg){
+    err.textContent=msg;inp.classList.add('bad');
+    gate.classList.remove('shake');void gate.offsetWidth;gate.classList.add('shake');
+  }
+  function submit(){
+    if(busy)return;
+    const pin=(inp.value||'').replace(/\D/g,'');
+    if(!pin){showErr('PIN 번호를 입력해 주세요.');inp.focus();return}
+    busy=true;go.disabled=true;
+    lockDigest(pin).then(function(h){
+      if(h===LOCK_HASH){lockSetToken('ok:'+h);clearErr();lockBoot();return}
+      showErr('PIN이 맞지 않습니다. 다시 입력해 주세요.');
+      inp.value='';try{inp.focus()}catch(e){}
+    }).catch(function(e){
+      showErr((e&&e.message)||'잠금을 확인하지 못했습니다. 잠시 뒤 다시 시도해 주세요.');
+    }).then(function(){busy=false;if(go)go.disabled=false});
+  }
+  form.addEventListener('submit',function(e){e.preventDefault();submit()});
+  inp.addEventListener('input',function(){
+    const v=inp.value.replace(/\D/g,'').slice(0,LOCK_MAX);
+    if(v!==inp.value)inp.value=v;
+    clearErr();
+  });
+  pad.addEventListener('click',function(e){
+    const b=e.target.closest('[data-lp]');if(!b)return;
+    const k=b.getAttribute('data-lp');
+    if(k==='clear')inp.value='';
+    else if(k==='back')inp.value=inp.value.slice(0,-1);
+    else if(inp.value.length<LOCK_MAX)inp.value+=k;
+    clearErr();try{inp.focus({preventScroll:true})}catch(e2){}
+  });
+})();
 </script>
 </body>
 </html>

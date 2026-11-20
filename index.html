@@ -2811,7 +2811,7 @@ function flEff(d){const a=(fl.sort==='fast')?flAltInfo(d):null;return a?a.price:
 function flAltBadge(d,compact){
   const a=flAltInfo(d);if(!a)return '';
   const cls='fl-alt'+(a.near?'':' far');
-  const t='같은 날 직항 '+(a.price?('₩'+KR(a.price)):'')+' — 경유 대신 직항으로 가면 '+(a.mins?flDur2(a.mins)+' 줄어듭니다(자료에 적힌 환승 대기 기준)':'직항으로 갑니다');
+  const t='같은 날 직항 '+(a.price?('₩'+KR(a.price)):'')+' — 경유 대신 이 직항으로 바꾸면 '+(a.mins?flDur2(a.mins)+' 줄어듭니다(자료에 적힌 환승 대기 기준)':'항공 시간은 자료에 없고 차액만 확인됩니다');
   if(compact)return a.near?'<span class="'+cls+'" title="'+esc(t)+'">직항 ＋'+shortWon(a.delta)+'</span>':'';   /* 표 안에서는 차액이 작은 칸만 표시 */
   return '<span class="'+cls+'" title="'+esc(t)+'">＋'+shortWon(a.delta)+'으로 직항'+(a.mins?' · '+flDur2(a.mins)+' 단축':'')+'</span>';
 }

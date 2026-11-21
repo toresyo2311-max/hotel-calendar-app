@@ -2173,6 +2173,11 @@ const LUX_NA_KIND={
   min:{label:'최소 숙박',cls:'na-min',why:'같은 요일만 반복해서 비어 1박 예약이 막힌 것으로 봅니다'},
   unknown:{label:'요금 미수집',cls:'na-unknown',why:'이 호텔은 요금 계열이 비어 있습니다'}
 };
+/* 실측으로 사유가 확인된 구간 — 앞뒤 창 추정보다 우선한다(2026-11-21 h20 실측: 1박 0실 · 2박·3박 정상 판매). */
+const LUX_NA_KNOWN=[
+  {id:'h20',from:'2027-07-01',to:'2027-08-31',n:2,
+   why:'2박 이상만 받는 구간입니다 — 1박 조회에서는 객실이 나오지 않고 2박·3박 조회에서는 판매됩니다(최소숙박 제한, 만실 아님)'}
+];
 function luxNaMap(h){
   if(!h)return null;
   if(h.__lna)return h.__lna;
@@ -2216,6 +2221,10 @@ function luxNaMap(h){
     else if(minDows&&minDows.indexOf(dayNo(d))>=0)map[d]={k:'min',n:minDows.length,dows:minDows};
     else map[d]={k:'sold'};
   }
+  for(const o of LUX_NA_KNOWN){
+    if(o.id!==h.id)continue;
+    for(const d of keys){if(d>=o.from&&d<=o.to)map[d]={k:'min',n:o.n,whyText:o.why}}
+  }
   h.__lna=map;return map;
 }
 function luxNaOf(h,date){
@@ -2223,9 +2232,10 @@ function luxNaOf(h,date){
   const e=m[date];if(!e)return null;
   const K=LUX_NA_KIND[e.k]||LUX_NA_KIND.unknown;
   let label=K.label,why=K.why;
+  if(e.whyText)why=e.whyText;
   if(e.k==='min'){
     label='최소 '+e.n+'박';
-    why=e.dows.map(function(w){return '일월화수목금토'[w]}).join('·')+'요일만 반복해서 비어 있어 최소 '+e.n+'박 조건으로 봅니다';
+    if(!e.whyText)why=e.dows.map(function(w){return '일월화수목금토'[w]}).join('·')+'요일만 반복해서 비어 있어 최소 '+e.n+'박 조건으로 봅니다';
   }
   return {label:label,cls:K.cls,title:why};
 }
@@ -2338,7 +2348,7 @@ function renderCalendar(S){
 function renderNotes(){if(st.tab==='lux'){
  $('basis').innerHTML=(st.cur==='usd'?'<div class="note-row"><span class="note-mark">$</span><span class="note-text"><strong>지금은 USD 로 보고 있습니다.</strong> ① 자료는 조사 때 USD 표시가를 원화로 환산해 담았습니다 — 화면의 USD는 그 환산값을 <strong>조사 때 쓴 환율</strong>(140곳 '+usdRateTxt(null)+' · 2026-11-17 / 21곳 USD 1 = ₩1,331.56 · 2026-11-19)로 되돌린 표시입니다. 새 환율을 곱한 값이 아니므로 실제 결제 금액과는 다릅니다(카드 환율·수수료 반영 안 됨). 복사·CSV는 원화로 나갑니다.</span></div>':'')
   +'<div class="note-row"><span class="note-mark">✕</span><span class="note-text"><strong>취소 조건은 호텔 단위 표기</strong>입니다 — 자료에 적힌 문구만 읽어 <strong>무료 취소 · 환불 가능 · 환불 불가 · 취소조건 미확인</strong>으로 나눕니다. 요금(날짜)별 취소 조건은 ① 자료에 없어서 날짜 칸에는 붙이지 않았습니다. <strong>「취소조건 미확인」은 무료 취소가 아니라는 뜻이 아니라, 자료에 조건이 적혀 있지 않다는 뜻</strong>입니다. 「무료취소 확인」 필터는 그 문구가 있는 호텔만 남깁니다.</span></div>'
-  +'<div class="note-row"><span class="note-mark">◌</span><span class="note-text"><strong>빈칸(—)의 상태</strong> — 호텔을 하나 고르면 칸에 <strong>예약창 미개시 / 매진·판매중지 / 최소 N박</strong>을 적습니다. 요금이 열린 기간 밖이거나 20일 넘게 끊긴 구간은 <strong>예약창 미개시</strong>, 같은 요일(2~3요일)만 반복해서 비면 <strong>최소 N박</strong>, 그 밖의 안쪽 결번은 <strong>매진·판매중지</strong>로 봅니다. ① 자료에는 사유 문구가 없어 <strong>앞뒤 날짜의 요금 유무로 가른 추정</strong>입니다 — 실제 사유는 예약 화면에서 확인하세요.</span></div>'
+  +'<div class="note-row"><span class="note-mark">◌</span><span class="note-text"><strong>빈칸(—)의 상태</strong> — 호텔을 하나 고르면 칸에 <strong>예약창 미개시 / 매진·판매중지 / 최소 N박</strong>을 적습니다. 요금이 열린 기간 밖이거나 20일 넘게 끊긴 구간은 <strong>예약창 미개시</strong>, 같은 요일(2~3요일)만 반복해서 비면 <strong>최소 N박</strong>, 그 밖의 안쪽 결번은 <strong>매진·판매중지</strong>로 봅니다. ① 자료에는 사유 문구가 없어 <strong>앞뒤 날짜의 요금 유무로 가른 추정</strong>입니다 — 실제 사유는 예약 화면에서 확인하세요. 인터컨티넨탈 다낭의 2027-07-01~08-31 62일은 실측으로 확인된 <strong>2박 이상 최소숙박</strong> 구간이라 <strong>최소 2박</strong>으로 적습니다(만실 아님).</span></div>'
   +'<div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>VIP 요금 날짜별 최저 1박가</strong> · 성인 2인 1실, 세금 포함 표시가. 해외 호텔은 사이트 USD 표시가를 <strong>USD 1 = ₩1,336.02</strong>(2026-11-17)로 환산해 100원 단위 반올림했습니다. 2026-11-20~21에 예약 사이트에서 직접 조회한 <strong>21곳</strong>은 <strong>USD 1 = ₩1,331.56</strong>(2026-11-19)로 환산했습니다. 상세 카드에는 2026-11-19 참고 환율로 환산한 현지 통화(엔화 약 ¥34,692 등)를 함께 적었습니다.</span></div><div class="note-row"><span class="note-mark">◷</span><span class="note-text">수집 <strong>2026-11-17 01:13 KST</strong> VIP 요금 조사 140곳(365일) + <strong>2026-11-20 07:30~13:55 · 14:10~14:45 · 14:49~16:05 · 15:51~16:23 · 16:31~17:09 · 17:15~17:53 · 17:58~18:33 · 18:41~19:24 · 19:34~20:13 KST</strong> 예약 사이트 직접 조회 21곳(<strong>21곳 모두 2026-12-01~2027-11-30</strong> 365칸). 다섯 곳(방콕 3곳 월도프 아스토리아·만다린 오리엔탈·카펠라, 다낭 2곳 하얏트 리젠시·인터컨티넨탈)은 2026-11-21에 <strong>2026-12-01~2027-11-30 365일을 전부 쟀고</strong>(요금 없음 44일·46일·49일·43일·150일은 —), 2027-10-18·10-19 이후는 사이트가 1박 판매를 열지 않아 —입니다. 인터컨티넨탈 다낭의 2027-07-01~08-31 62일은 만실이 아니라 <strong>2박 이상 최소숙박 제한</strong>이라 1박 기준으로 —입니다. 판매 객실이 없던 날(최소 숙박 조건·예약 창 미개시 등)도 —입니다.</span></div><div class="note-row"><span class="note-mark">↔</span><span class="note-text">2026-11-20 정리 — 검색 화면·PDF 에서 모은 요금 <strong>17곳</strong>은 ① 탭에서 모두 빼고, 그 17곳을 예약 사이트에서 직접 다시 실측해 채웠습니다. 이제 ① 탭 <strong>161곳 모두 달력</strong>이 있고 <strong>요금이 아예 없는 호텔은 0곳</strong>입니다(2026-11-21에 다섯 곳까지 2027-11-30까지 다 쟀습니다 — 직접 조회 21곳 모두 365일 완결).</span></div><div class="note-row"><span class="note-mark">✓</span><span class="note-text"><strong>예약 사이트 직접 조회 21곳</strong>은 2026-11-20~21에 예약 사이트 호텔 상세 페이지를 비로그인으로 조회한 <strong>공개 요금</strong>입니다 — 21곳 모두 <strong>2026-12-01~2027-11-30(365칸)</strong>이고(21곳 모두 11-30까지 실측), 성인 2인·1실·1박 세금·수수료 포함 USD 총액을 <strong>USD 1 = ₩1,331.56</strong>(2026-11-19)로 환산해 정수로 적었습니다. 콘래드 도쿄의 2027-10~11월 61일과 페어몬트 도쿄의 2027-10-18~11-30 44일은 <strong>판매 객실 없음</strong>(예약 창 미개시 가능성 · 추후 재조회 대상)이라 —이고, 그 밖에 판매 객실이 없던 날도 —입니다. 푸동 샹그릴라는 2027-03-01~05-31 92일 · 2027-06-01~08-31 92일 · 2027-09-01~10-17 47일 <strong>모두 판매 요금</strong>이 있었고(객실 21종 · 3~5월 USD 168~260 · 6~8월 USD 185~248 · 9~10월 USD 157~220), 2027-10-18~11-30 <strong>44일은 판매 객실 없음</strong>(10-18 이후 판매 객실 없음 · 예약 창 미개시 가능성 · 추후 재조회 대상)이라 <strong>2026-12-01~2027-11-30 365일 실측을 마쳤습니다</strong>. 페어몬트 피스는 2027-03-01~05-31 92일과 2027-06-01~08-20 81일 <strong>모두 판매 요금</strong>이 있었고, 2027-08-21~11-30 <strong>102일은 판매 객실 없음</strong>(08-21 이후 판매 객실 없음 · 예약 창 미개시 가능성 · 추후 재조회 대상)이라 <strong>2026-12-01~2027-11-30 365일 실측을 마쳤습니다</strong>.</span></div>'+'<div class="note-row"><span class="note-mark">🔀</span><span class="note-text"><strong>예약처가 둘인 호텔 79곳</strong>입니다 — 날짜를 눌러 연 상세 카드·선택 호텔 요약·후보 비교·일정 복사에 <strong>💎 호텔럭스</strong>(VIP 요금)와 공홈 버튼이 나란히 나오고, 두 버튼 모두 고른 체크인·체크아웃이 들어간 페이지로 열립니다. 메리어트 계열 44곳은 <strong>🏨 메리어트 공홈</strong>, 아코르 계열 15곳(페어몬트·소피텔·래플스·반얀트리·파에나)은 <strong>🏨 아코르 공홈</strong>, 하얏트 계열 20곳(파크·그랜드 하얏트·안다즈·톰슨·하얏트 리젠시·하얏트 센트릭·언바운드)은 <strong>🏨 하얏트 공홈</strong>입니다. 호텔 코드가 확인된 곳만 그 호텔 페이지로 가고, 나머지는 그 도시의 공홈 호텔 목록(고른 체크인·체크아웃 포함)으로 갑니다(코드를 추정해 만들지 않았습니다).</span></div>'+hlxLinkNoteRow()+'<details><summary>소스 설명 더 보기</summary><p>① 탭 161곳 = <strong>VIP 요금 조사 140곳</strong>(2026-11-17 · 365일) + <strong>예약 사이트 직접 조회 21곳</strong>(2026-11-20), 요금 자료가 아예 없는 호텔은 0곳입니다. 칸 수는 140곳 × 365일 + 21곳 × 365일 = <strong>58,765칸</strong>이며, <strong>—는 요금 미표시(NA)</strong>로 0원·무료 숙박이 아닙니다. 실측이 창 끝까지 닿지 않은 호텔은 없습니다 — 2026-11-21에 방콕 3곳(월도프 아스토리아·만다린 오리엔탈·카펠라)과 다낭 2곳(하얏트 리젠시·인터컨티넨탈)까지 창 끝(2027-11-30)까지 쟀고, 2027-10-18·10-19 이후는 사이트가 1박 판매를 열지 않아 —입니다. 인터컨티넨탈 다낭의 2027-07-01~08-31 62일은 2박 이상 최소숙박 제한이라 1박 기준으로 —입니다.</p></details>';
  $('caution').innerHTML='<ul><li><strong class="alert">표시가는 VIP(및 파트너 요율) 또는 예약 사이트에서 직접 조회한 공개 요금</strong>입니다. 실제 예약 화면 금액·적용 혜택과 다를 수 있고, 회원 등급·결제 통화에 따라 달라집니다.</li><li><strong>프로모션(15% OFF, 2+1, Stay 4 Pay 3 등)은 예약 기간·숙박 기간·최소 박수 조건</strong>이 있어 달력 1박가에 자동 반영되지 않습니다. 호텔을 선택하면 그 호텔의 조건이 상세에 나옵니다.</li><li><strong>NA(—)는 「요금 미표시」</strong>입니다 — 요금 미공개·만실·판매 중지·미오픈을 구분하지 않고, <strong>아직 재지 않은 날짜</strong>도 —입니다(① 은 실측한 칸만 실어서, 실측이 끝나지 않은 기간도 —).</li><li>조식 포함·환불 가능 여부는 사이트가 실시간 조회한 날짜에만 표시되고, 대부분의 날짜는 확인되지 않았습니다.</li><li>환율은 수집 시점 고정값(2026-11-17 · 예약 사이트 직접 조회 21곳은 2026-11-19)이라 이후 환율 변동은 반영되지 않습니다. 상세 카드의 현지 통화 환산은 2026-11-19 참고 환율이며 실제 결제 금액과 다를 수 있습니다.</li></ul><details><summary>자세한 혜택·특이사항 확인</summary><div id="promoNotes"></div></details>';
  $('promoNotes').innerHTML=filteredHotels().filter(h=>h.promotion&& !h.promotion.includes('확인된 프로모션 없음')).map(h=>'<p><strong>'+esc(h.name)+'</strong>: '+esc(h.promotion)+'</p>').join('')||'<p>선택된 호텔에 기재된 체인 프로모션이 없습니다.</p>';

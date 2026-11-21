@@ -7379,7 +7379,7 @@ function renderMileage(){
       +(noSvc||summer?' '+(noSvc?'<b class="mg-tag no">미운항</b> '+noSvc+'개 노선':'')
         +(noSvc&&summer?' · ':'')+(summer?'<b class="mg-tag sum">하계 미개시</b> '+summer+'개 노선':'')
         +'은 값이 아니라 원천이 조회 불가로 답한 구간이라 <b>미수집과 구분</b>해 표시합니다.':'')
-      +(cov?' · <b>초기 수집</b> '+esc(cov):'')
+      +(cov?' · <b>수집 현황</b> '+esc(cov):'')
       +(miss?' · 받지 못한 칸 '+KR(miss)+'개는 <b>미수집</b> 점선으로 남겼습니다(값을 채우지 않음).':'')
       +'</span>';
   }
@@ -7415,7 +7415,7 @@ function mgCoverageText(){
 }
 function mgOpenDayCount(){
   let n=0;
-  (MGD.cells||[]).forEach(function(c){if(c[3])n++});
+  (MGD.cells||[]).forEach(function(c){if(c[3]&&(c[3]&7))n++});   /* 운항편 없음(16)은 좌석이 아니다 */
   return n;
 }
 

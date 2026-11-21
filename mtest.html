@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex, nofollow">
+<title>390px 확인</title>
+<style>body{margin:0;background:#ddd;font:12px/1.5 sans-serif}#f{width:390px;height:844px;border:0;background:#fff;display:block}#r{padding:6px;font:11px monospace;white-space:pre-wrap}</style>
+</head><body>
+<iframe id="f" src="./?diag=1#tab=forest" title="390px"></iframe>
+<div id="r">측정 중…</div>
+<script>
+var f=document.getElementById('f'),r=document.getElementById('r');
+function look(){
+  try{
+    var d=f.contentDocument, w=f.contentWindow;
+    var de=d.documentElement;
+    var out={innerW:w.innerWidth, innerH:w.innerHeight,
+             scrollW:de.scrollWidth, clientW:de.clientWidth,
+             bodyScrollW:d.body.scrollWidth,
+             errs:(w.__ERRS||[]).length, err0:(w.__ERRS||[])[0]||null,
+             tab:(w.location.hash||''),
+             over:[]};
+    var vw=w.innerWidth;
+    d.querySelectorAll('#frPanel *').forEach(function(el){
+      var b=el.getBoundingClientRect();
+      if(b.width>0&&(b.right>vw+1||b.left<-1))out.over.push((el.id||el.className||el.tagName)+'@'+Math.round(b.left)+'..'+Math.round(b.right));
+    });
+    out.over=out.over.slice(0,8);
+    r.textContent=JSON.stringify(out,null,1);
+    document.title='W'+de.scrollWidth+'/'+vw+' E'+out.errs;
+  }catch(e){r.textContent='ERR '+e.message}
+}
+f.addEventListener('load',function(){setTimeout(look,2500)});
+setTimeout(look,4000);
+setInterval(look,3000);
+</script>
+</body></html>

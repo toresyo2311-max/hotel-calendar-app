@@ -4775,6 +4775,10 @@ function cbBasisShort(){
   parts.push('①~④ '+hTxt);
   return parts.join(' · ');
 }
+function hotelBasisTxt(){
+  const hr=hotelFreshRange();
+  return hr.min?(hr.min===hr.max?dateLabel(hr.min):dateLabel(hr.min)+'~'+dateLabel(hr.max)):'—';
+}
 function cbNotesHtml(pat){
   const cities=cbCitiesAll(),ttc=cbTtCities();
   const ttRoutes=Object.keys(ttAll().reduce(function(m,d){m[d.code]=1;return m},{})).length;
@@ -4790,7 +4794,7 @@ function cbNotesHtml(pat){
    +'<div class="note-row"><span class="note-mark">S+</span><span class="note-text"><strong>Stay Plus · SNU</strong> 배지는 ③ 아코르 호텔의 프로그램 참여 표시입니다. Stay Plus 2박 결제액이 조사된 날짜(서울 2곳)는 그 금액을 배지에 함께 적었지만, 총액에는 <strong>일반 1박 회원가</strong>를 썼습니다(2박·토 3박 조건과 숙박일이 다를 수 있음).</span></div>'
    +'<div class="note-row"><span class="note-mark">🎟</span><span class="note-text"><strong>메리어트 숙박권 · FHR</strong> — ④ 탭에 그 호텔의 아워드 포인트가 있으면 그 달 최저 포인트를 보고 <strong>🎫 35k 숙박권</strong>(그 달 최저가 35,000P 이하일 때) 또는 <strong>아워드 ○k~</strong>(그 달 최저 포인트) 배지를 붙입니다. 원문 요약에 아멕스 FHR이 적힌 호텔은 <strong>FHR</strong> 배지를 붙입니다. 배지가 있어도 총액은 일반 현금가 그대로이며, 숙박권·FHR 적용 조건은 예약 화면·카드 안내장에서 확인해야 합니다.</span></div>'
    +ttNote
-   +'<div class="note-row"><span class="note-mark">!</span><span class="note-text">항공은 좌석·요금이 수시로 바뀌고 호텔 요금은 <strong>'+esc(cbBasisText())+'</strong> 값입니다. 「항공 예약」·「항공 검색」·「호텔 예약」은 각각의 화면으로 열리며 실제 결제 금액은 그 화면에서 확인하세요.</span></div>'+hlxLinkNoteRow();
+   +'<div class="note-row"><span class="note-mark">!</span><span class="note-text">항공은 좌석·요금이 수시로 바뀌고 호텔 요금은 <strong>①~④ 호텔 기준일 '+esc(hotelBasisTxt())+'</strong> 값입니다. 「항공 예약」·「항공 검색」·「호텔 예약」은 각각의 화면으로 열리며 실제 결제 금액은 그 화면에서 확인하세요.</span></div>'+hlxLinkNoteRow();
 }
 function renderCombo(){
   setDealPanels('combo');
@@ -4810,7 +4814,7 @@ function renderCombo(){
     ?('⑥ 땡처리 특가 · '+(cb.ttMonth==='all'?'전체 출발 월':monlabel(cb.ttMonth))+' · '+tscope+' · 상품의 출발~귀국 날짜 그대로')
     :('⑤+⑥ 통합 · ⑤ '+scope+' / ⑥ '+tscope);
   $('cbSub').textContent=srcTxt+' · 항공 1인 왕복 + 숙박 1실(성인 2인) 합계';
-  $('cbBasis').textContent=cbBasisText();
+  $('cbBasis').textContent='각 요금 값의 기준일 — '+cbBasisText();
   const dates=new Set(rows.map(r=>r.date)),hset=new Set(rows.map(r=>r.h.id)),cset=new Set(rows.map(r=>r.city));
   $('cbCount').textContent='계산된 조합 '+KR(rows.length)+'개 · 출발일 '+dates.size+'일 · 호텔 '+hset.size+'곳 · 도시 '+cset.size+'곳'
     +(CB_SKIP.stay?' · 숙박 요금이 비어 제외 '+KR(CB_SKIP.stay)+'개'+(CB_SKIP.minstay?'(그중 최소숙박 구간 '+KR(CB_SKIP.minstay)+'개)':''):'');

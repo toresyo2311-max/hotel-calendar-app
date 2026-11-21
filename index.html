@@ -3097,7 +3097,15 @@ document.addEventListener('click',e=>{
   const b=e.target.closest?e.target.closest('[data-dual-hotel]'):null;
   if(b){e.preventDefault();st.selectedDay=b.getAttribute('data-dual-date');openBkSheet(b.getAttribute('data-dual-hotel'),b.getAttribute('data-dual-date'),b.getAttribute('data-dual-nights'));return}
   const el=bkSheetEl();if(!el||!el.classList.contains('show'))return;
-  if(e.target.id==='bkClose'||e.target===el||(e.target.closest&&e.target.closest('a.bkgo')))closeBkSheet();
+  if(e.target.id==='bkClose'||e.target===el){closeBkSheet();return}
+  /* a.bkgo — 예약처 버튼은 새 탭 이동이 끝난 뒤에 닫는다. 누르자마자 시트를 display:none 으로
+     닫으면 브라우저가 <a target="_blank"> 기본 이동을 취소한다(모바일·일부 데스크톱).
+     같은 날짜의 창이 아직 열려 있을 때만 닫아, 그 사이 다른 날짜를 눌러 새로 연 창은 건드리지 않는다. */
+  if(e.target.closest&&e.target.closest('a.bkgo')){
+    const dt=el.dataset.date;
+    setTimeout(()=>{const cur=bkSheetEl();
+      if(cur&&cur.classList.contains('show')&&cur.dataset.date===dt)closeBkSheet();},350);
+  }
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeBkSheet()});
 /* ★ 토글 — 별을 누르면 localStorage 에 저장하고 화면을 다시 그린다 */

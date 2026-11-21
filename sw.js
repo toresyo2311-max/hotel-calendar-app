@@ -1,8 +1,8 @@
-/* TEAM-부산 호텔·항공 요금 달력 — 서비스 워커 (2026-11-21 z20 · 팀원 교차검수 버그 일괄 수정 — ⑤ 매트릭스 직항/장시간 경유, ② 위챗 창 닫기, 🚨 추이 창, 콤보 배지·기준일, ⑥ 배너 출발일·더 보기, 에러가 오탐 필터)
+/* TEAM-부산 호텔·항공 요금 달력 — 서비스 워커 (2026-11-21 z21 · 콤보 🎫 35k 배지에 35k+탑업(최대 15,000P·총 50,000P) 기준 적용, 모바일 390×844 🚨 에러가 의심 모달 안쪽 스크롤 제거)
    · 앱 셸(index.html·manifest·아이콘)은 미리 저장
    · data/app/*.json · data/history/*.json 은 네트워크 우선(항상 새 값 시도) → 실패하면 저장본
    · 오프라인에서도 마지막으로 본 탭·달력이 열리고, 저장본이 없으면 안내 문구를 보여 준다 */
-const VERSION = 'teambusan-v5-2026-11-21z20';
+const VERSION = 'teambusan-v5-2026-11-21z21';
 const SHELL = ['./', './index.html', './manifest.json',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 /* 오프라인 폴백은 캐시에 마지막으로 저장된 응답을 그대로 쓴다 */

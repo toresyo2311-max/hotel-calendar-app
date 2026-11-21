@@ -633,6 +633,8 @@ button.fl-plink{font-family:inherit;line-height:1.35;cursor:pointer}
 .bkgo .bkbenefit{display:block;margin-top:2px;font-size:8.5px;font-weight:800;color:#5b21b6;letter-spacing:-.01em}
 .bkgo.lux .bkbenefit{color:#8a2b5f}
 .cb-badge.ticket{background:#fdf3e7;color:#8a5a2b;border-color:#f2e2cc}
+/* 35k 숙박권에 보유 포인트를 보태는 값(+○k) — 그대로 쓰는 35k 배지와 눈으로 구분되게 */
+.cb-badge.ticket.up{background:#fdeee3;color:#9a3b0c;border-color:#f3d7bf}
 .cb-badge.minstay{background:#fdf3e7;color:#8a5a2b;border-color:#f2e2cc}
 .cb-badge.fresh{background:#f6f4fb;color:var(--muted);border-color:var(--line);font-weight:700}
 .cb-air{margin:0;display:flex;flex:1 1 100%;padding:3px}
@@ -759,9 +761,15 @@ button.fl-plink{font-family:inherit;line-height:1.35;cursor:pointer}
   .insight-card{padding:11px 12px}
   .insights{grid-template-columns:1fr}
   .modal{padding:0;align-items:flex-end}
-  .dialog{max-height:88dvh;border-radius:16px 16px 0 0;width:100%}
+  .dialog{max-height:92dvh;border-radius:16px 16px 0 0;width:100%}
   .modal-head{padding:14px 15px}
   .modal-body{padding:4px 15px 20px}
+  /* 🚨 에러가 의심 모달 — 390×844에서 내용이 88dvh(742.7px)를 넘어 안쪽 스크롤이 생기던 문제.
+     .dialog 상한을 92dvh로 올리고, 이 모달만 머리·규칙 문구의 위아래 여백을 조금 줄인다. */
+  #alertModal .modal-head{padding:11px 15px}
+  #alertModal #alertSub{line-height:1.5}
+  #alertModal .al-tags{margin-bottom:10px}
+  #alertModal .al-rule{margin-top:9px;padding-top:9px}
   .snu-row{grid-template-columns:58px minmax(0,1fr) auto;gap:6px}
   .fl-days{gap:1px}
   .fl-day{min-height:48px;padding:3px 2px}
@@ -4709,9 +4717,15 @@ function cbBadges(r){
     }
   }
   if(mr){
+    /* 35k 숙박권은 1장 = 1박이고, 모자란 포인트는 보유 포인트에서 최대 15,000P까지 보탤 수 있다
+       (35,000P + 15,000P = 50,000P). ④ 탭의 「35k+15k 탑업」 필터와 같은 선을 콤보 배지에도 쓴다 —
+       예전에는 35,000P 이하만 배지로 만들어, 콤보 도시의 아워드가 모두 그 위라 배지가 한 번도 뜨지 않았다. */
     const pv=ptsOf(mr,r.date),mn=(pv!=null?pv:cbPtsMin(mr,r.date.slice(0,7)));
+    /* 탑업은 1,000P 단위 올림 — 모자란 포인트를 낮춰 적지 않는다(37,000P → +2k). */
+    const up=(mn!=null&&mn>35000&&mn<=50000)?Math.ceil((mn-35000)/1000):0;
     if(mn!=null&&mn<=35000)out.push('<span class="cb-badge ticket" title="'+esc('그 날짜 아워드 '+KR(mn)+"P — 35k 숙박권(1박)으로 결제할 수 있는 값입니다. 숙박권 1장 = 1박이고, 콤보 총액은 일반 현금가 그대로입니다. 잔여 숙박권·적용 조건은 예약 화면에서 확인하세요.")+'">🎫 35k 숙박권('+Math.round(mn/1000)+'k)</span>');
-    else if(mn!=null)out.push('<span class="cb-badge ticket" title="'+esc('아워드 최저 '+KR(mn)+"P — 35k 숙박권으로는 부족합니다(콤보 총액은 일반 현금가입니다).")+'">아워드 '+Math.round(mn/1000)+'k~</span>');
+    else if(up)out.push('<span class="cb-badge ticket up" title="'+esc('아워드 '+KR(mn)+'P — 35k 숙박권 1장에 보유 포인트 '+KR(mn-35000)+'P를 보태면 1박이 됩니다(탑업은 최대 15,000P, 총 50,000P까지). 콤보 총액은 일반 현금가 그대로이고, 잔여 포인트·숙박권 조건은 예약 화면에서 확인하세요.')+'">🎫 35k(+'+up+'k)</span>');
+    else if(mn!=null)out.push('<span class="cb-badge ticket" title="'+esc('아워드 최저 '+KR(mn)+"P — 35k 숙박권 1장에 탑업 15,000P를 보태도 닿지 않습니다(총 50,000P 초과). 콤보 총액은 일반 현금가입니다.")+'">아워드 '+Math.round(mn/1000)+'k~</span>');
   }
   /* 아멕스 FHR·크레딧이 적힌 호텔 — 자료(원문 요약)에 있을 때만 */
   const fhr=list.find(h=>/FHR/i.test(String((h.promotion||'')+' '+(h.note||''))));
@@ -4850,7 +4864,7 @@ function cbNotesHtml(pat){
    +'<div class="note-row"><span class="note-mark">◇</span><span class="note-text">도시는 ⑤ 노선과 ①~④ 호텔이 <strong>같은 이름으로 있는 '+cities.length+'곳</strong>만 계산합니다(괌·발리처럼 항공만 있는 노선은 뺐습니다). 숙박일 1박이라도 요금이 없는 호텔, 1박 1,000만 원 이상 이상치 값은 그 조합에서 제외했습니다 — 빈 값을 추정해 채우지 않았습니다.</span></div>'
    +'<div class="note-row"><span class="note-mark">🎫</span><span class="note-text"><strong>APC 무료숙박</strong> 배지는 ② 중올플 무료숙박 재고가 <strong>모든 숙박일에 확인된</strong> 경우에만 붙습니다(관측 창 2026-12-01~12-18, 그 밖은 <strong>미확인</strong>). 배지가 있어도 총액을 0원으로 바꾸지 않고, 참고로 <strong>APC 적용 시(항공만)</strong> 금액을 함께 적었습니다 — 실제 쿼터·재고는 예약 화면/위챗에서 확인해야 합니다.</span></div>'
    +'<div class="note-row"><span class="note-mark">S+</span><span class="note-text"><strong>Stay Plus · SNU</strong> 배지는 ③ 아코르 호텔의 프로그램 참여 표시입니다. Stay Plus 2박 결제액이 조사된 날짜(서울 2곳)는 그 금액을 배지에 함께 적었지만, 총액에는 <strong>일반 1박 회원가</strong>를 썼습니다(2박·토 3박 조건과 숙박일이 다를 수 있음).</span></div>'
-   +'<div class="note-row"><span class="note-mark">🎟</span><span class="note-text"><strong>메리어트 숙박권 · FHR</strong> — ④ 탭에 그 호텔의 아워드 포인트가 있으면 그 달 최저 포인트를 보고 <strong>🎫 35k 숙박권</strong>(그 달 최저가 35,000P 이하일 때) 또는 <strong>아워드 ○k~</strong>(그 달 최저 포인트) 배지를 붙입니다. 원문 요약에 아멕스 FHR이 적힌 호텔은 <strong>FHR</strong> 배지를 붙입니다. 배지가 있어도 총액은 일반 현금가 그대로이며, 숙박권·FHR 적용 조건은 예약 화면·카드 안내장에서 확인해야 합니다.</span></div>'
+   +'<div class="note-row"><span class="note-mark">🎟</span><span class="note-text"><strong>메리어트 숙박권 · FHR</strong> — ④ 탭에 그 호텔의 아워드 포인트가 있으면 그 날짜(그 날짜 값이 없으면 그 달 최저) 포인트를 보고 <strong>🎫 35k 숙박권(○○k)</strong>(35,000P 이하), <strong>🎫 35k(+○k)</strong>(35,001~50,000P — 숙박권 1장에 보유 포인트를 보태는 값, 1,000P 올림, 탑업 최대 15,000P), <strong>아워드 ○k~</strong>(50,000P 초과 — 숙박권으로 닿지 않는 값) 배지를 붙입니다. 원문 요약에 아멕스 FHR이 적힌 호텔은 <strong>FHR</strong> 배지를 붙입니다. 배지가 있어도 총액은 일반 현금가 그대로이며, 숙박권·FHR 적용 조건은 예약 화면·카드 안내장에서 확인해야 합니다.</span></div>'
    +ttNote
    +'<div class="note-row"><span class="note-mark">!</span><span class="note-text">항공은 좌석·요금이 수시로 바뀌고 호텔 요금은 <strong>①~④ 호텔 기준일 '+esc(hotelBasisTxt())+'</strong> 값입니다. 「항공 예약」·「항공 검색」·「호텔 예약」은 각각의 화면으로 열리며 실제 결제 금액은 그 화면에서 확인하세요.</span></div>'+hlxLinkNoteRow();
 }

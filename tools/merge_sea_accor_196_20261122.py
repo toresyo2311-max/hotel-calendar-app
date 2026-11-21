@@ -216,8 +216,8 @@ def main():
         if twin:
             name, english = twin[1], (english or meta['name'])
         basis = TEAM_BASIS[key]
-        promo = ('세금 포함 KRW 1박 최저 표시가 · ALL 회원 요금 포함'
-                 if key != 'no6' else '세금 포함 KRW 1박 최저 표시가 · 비회원 공개 요금')
+        promo = ('세금 포함 KRW 최저 표시가(ALL 회원 요금 포함)'
+                 if key != 'no6' else '세금 포함 KRW 최저 표시가(비회원 공개 요금)')
         source = ('동남아 아코르 365일 실측 2026-11-21 KST · %s 담당(%s) · 아코르 공식 예약 사이트 요금 API · '
                   '%s · 성인 2인 1실 1박 · 요금 없는 날은 빈칸(매진·미판매·미오픈)' % (TEAM[key][2], key, basis))
         note_bits = []

@@ -7,16 +7,13 @@
 <div id="r">측정 중…</div>
 <script>
 var f=document.getElementById('f'),r=document.getElementById('r');
+var q=new URLSearchParams(location.search),y=Number(q.get('y')||0),vs=q.get('v')||'list';
 function look(){
   try{
-    var d=f.contentDocument, w=f.contentWindow;
-    var de=d.documentElement;
-    var out={innerW:w.innerWidth, innerH:w.innerHeight,
-             scrollW:de.scrollWidth, clientW:de.clientWidth,
-             bodyScrollW:d.body.scrollWidth,
+    var d=f.contentDocument, w=f.contentWindow, de=d.documentElement;
+    var out={innerW:w.innerWidth, scrollW:de.scrollWidth, clientW:de.clientWidth,
              errs:(w.__ERRS||[]).length, err0:(w.__ERRS||[])[0]||null,
-             tab:(w.location.hash||''),
-             over:[]};
+             tab:(w.location.hash||''), over:[]};
     var vw=w.innerWidth;
     d.querySelectorAll('#frPanel *').forEach(function(el){
       var b=el.getBoundingClientRect();
@@ -27,8 +24,14 @@ function look(){
     document.title='W'+de.scrollWidth+'/'+vw+' E'+out.errs;
   }catch(e){r.textContent='ERR '+e.message}
 }
-f.addEventListener('load',function(){setTimeout(look,2500)});
-setTimeout(look,4000);
-setInterval(look,3000);
+f.addEventListener('load',function(){
+  setTimeout(function(){
+    try{
+      var w=f.contentWindow;
+      if(vs==='cal'||vs==='grid'){var b=w.document.querySelector('[data-fr-view="'+vs+'"]');if(b)b.click();}
+      setTimeout(function(){ w.scrollTo(0,y); look(); },900);
+    }catch(e){r.textContent='ERR2 '+e.message}
+  },1800);
+});
 </script>
 </body></html>

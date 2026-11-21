@@ -61,6 +61,7 @@
 .fr-day .fr-dn{font-size:10.5px;font-weight:800;letter-spacing:-.03em}
 .fr-day .fr-df{font-size:7.5px;font-weight:700;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 .fr-day.none{background:var(--h5);border-color:var(--line);cursor:default;color:var(--muted2)}
+.fr-day.out{background:transparent;border-color:transparent;cursor:default;color:#cfcadb}
 .fr-day.sel{outline:2px solid var(--violet-d);outline-offset:-2px}
 .fr-day.wk{box-shadow:inset 0 -2px 0 #e7b06a}
 .fr-detail-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}

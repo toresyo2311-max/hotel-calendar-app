@@ -175,7 +175,7 @@ function renderFrCards(list){
       +'<div class="fr-meta">객실·사이트 '+s.units+'개'+(f.op?' · 예약 '+esc(f.op):'')+(f.rw!=null?' · 주말 예약률 '+f.rw+'%':'')+'</div>'
       +'<div class="fr-chips">'+frChips(s)+'</div>'
       +'<div class="fr-acts"><button type="button" data-fr-grid="'+esc(f.id)+'">월간 그리드</button>'
-        +'<a href="'+esc(frOffUrl(f))+'" target="_blank" rel="noopener">예약 화면 열기</a></div>'
+        +'<a href="'+esc(frOffUrl(f))+'" target="_blank" rel="noopener">숲나들e 예약</a></div>'
       +'</div>';
   }).join('');
   $('frListSub').textContent=KR(list.length)+'곳'+(list.length>120?' 중 120곳 표시':'')+' · '+frs.nights+'박 기준';
@@ -205,7 +205,11 @@ function renderFrCal(list){
     const di=frDi(date);
     const dow=dayNo(date);
     const wdCls=dow===0?'sunday ':dow===6?'saturday ':'';
-    const a=di>=0&&di<=frMaxDi()?agg[String(di)]:null;
+    if(di<0||di>frMaxDi()){
+      html+='<button type="button" class="cal-day fr-day out '+wdCls+'" aria-label="'+fullDate(date)+' 조회 기간 밖">'+num+'<span class="fr-df">·</span></button>';
+      return;
+    }
+    const a=agg[String(di)];
     const num='<span class="daynum">'+Number(date.slice(-2))+'</span>';
     if(!a||!a.c){
       html+='<button type="button" class="cal-day fr-day none '+wdCls+'" aria-label="'+fullDate(date)+' 빈자리 없음">'+num+'<span class="fr-df">—</span></button>';
@@ -314,7 +318,8 @@ function renderFrGrid(list){
   goods.forEach(function(g){
     const ck=frs.nights>1?frCheckins(g,frs.nights):null;
     const pr=g.p&&g.p.length?('평일 '+KR(g.p[0])+' / 주말 '+KR(g.p[1])+'원'):'요금 미공개';
-    body+='<tr><td class="frs" title="'+esc(g.n+' · '+g.c+' · '+g.cap+'인 · '+g.ar+' · '+pr)+'"><b>'+esc(g.n)+'</b><small>'+esc(g.c)+(g.cap?' · '+g.cap+'인':'')+'</small></td>';
+    const sub=(g.n.indexOf(g.c)>=0?'':g.c+(g.cap?' · ':''))+(g.cap?g.cap+'인':'');
+    body+='<tr><td class="frs" title="'+esc(g.n+' · '+g.c+' · '+g.cap+'인 · '+g.ar+' · '+pr)+'"><b>'+esc(g.n)+'</b><small>'+esc(sub)+'</small></td>';
     dates.forEach(function(d){
       const di=frDi(d);
       const ch=g.s.charAt(di)||'.';

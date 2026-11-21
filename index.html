@@ -3174,7 +3174,7 @@ const FL_AIR_OFFICIAL=[
   {n:'스타룩스항공',k:['스타룩스','starlux'],u:'https://www.starlux-airlines.com/ko-KR',s:'스타룩스항공 한국어 사이트'},
   {n:'타이거항공 타이완',k:['타이거','tigerair'],u:'https://www.tigerairtw.com/ko-KR',s:'타이거항공 타이완 한국어 사이트'},
   {n:'룽에어',k:['룽에어','loong'],u:'https://www.loongair.cn/',s:'룽에어 공식 사이트(중국어)'},
-  {n:'춘추항공',k:['춘추','스프링','spring airlines'],u:'https://www.ch.com/',s:'춘추항공(스프링항공) 공식 사이트'},
+  {n:'춘추항공',k:['춘추','스프링','spring airlines'],u:'https://kr.ch.com/',s:'춘추항공(스프링항공) 한국어 사이트 — 조회 화면에서 밖에서 접속하면 한국어를 고르라는 안내가 뜨는 사이트라 한국어 주소로 바로 연결'},
   {n:'산동항공',k:['산동항공','산동','산둥','shandong'],u:'https://www.sda.cn/',s:'산동항공 공식 사이트(중국어)'},
   {n:'칭다오항공',k:['칭다오'],u:'https://www.qdairlines.com/',s:'칭다오항공 공식 사이트(중국어)'},
   {n:'샤먼항공',k:['샤먼','xiamen'],u:'https://www.xiamenair.com/',s:'샤먼항공 공식 사이트(중국어)'},
@@ -3241,7 +3241,9 @@ function openFlBookSheet(d){
   const p=(typeof d.price==='number')?d.price:null;
   el.dataset.flbkKey=String(d.code)+'|'+String(d.date)+'|'+String(back);
   $('flbkRoute').textContent='부산(PUS) → '+(d.city||d.code)+' ('+d.code+')';
-  $('flbkAir').textContent=flAir(d)+(d.pattern?' · '+d.pattern+'('+n+'박)':'')+' · '+flViaWord(d)+((flMemo(d)&&flMemo(d)!=='가격표')?' · '+flMemo(d):'');
+  const memo=flMemo(d);
+  /* 비고에 '직항 22:10'처럼 직항/경유가 이미 들어 있으면 앞의 직항/경유 표시와 겹치므로 비고만 쓴다 */
+  $('flbkAir').textContent=flAir(d)+(d.pattern?' · '+d.pattern+'('+n+'박)':'')+' · '+((memo&&memo!=='가격표')?memo:flViaWord(d));
   $('flbkWhen').textContent=fullDate(d.date)+'('+weekday(d.date)+') 출발 → '+fullDate(back)+'('+weekday(back)+') 귀국 · 성인 1인 왕복';
   $('flbkPrice').innerHTML=(p!=null?('<b>표시 요금 '+flMoney(p)+'</b>'+(flFastOn()?' · 직항 기준':'')):'<b>표시 요금 없음</b> — 연 페이지에서 조회하세요')
     +'<small>'+esc('앱에 모은 조회 시점 값입니다(성인 1인 왕복·세금 포함). 실제 좌석·결제 금액은 연 사이트에서 확인하세요.')+'</small>';

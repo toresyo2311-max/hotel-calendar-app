@@ -220,7 +220,7 @@ button:disabled{cursor:not-allowed;opacity:.3}
 .weekhead span{text-align:center;font-size:8.5px;font-weight:800;color:var(--muted2);padding:1px 0}
 .weekhead span:first-child{color:#a4587d}
 .weekhead span:last-child{color:var(--violet)}
-.cal-day{border:1px solid transparent;min-width:0;background:var(--h5);border-radius:5px;text-align:left;padding:4px 3px 3px;min-height:44px;position:relative;color:var(--ink);display:flex;flex-direction:column;gap:1px;transition:transform .1s,box-shadow .1s;font-variant-numeric:tabular-nums;text-decoration:none;cursor:pointer}
+.cal-day{border:1px solid transparent;min-width:0;background:var(--h5);border-radius:5px;text-align:left;padding:4px 3px 3px;min-height:44px;position:relative;color:var(--ink);display:flex;flex-direction:column;gap:1px;transition:transform .1s,box-shadow .1s;font-variant-numeric:tabular-nums;text-decoration:none;cursor:pointer;font:inherit;appearance:none}
 .cal-day:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 3px 9px rgba(27,18,43,.14)}
 .cal-day.empty{background:transparent;border-color:transparent;cursor:default;min-height:44px}
 .cal-day.hm1{background:var(--h1);border-color:var(--h1);color:#fff}
@@ -384,6 +384,12 @@ button.dual-cell::after{content:'⇄';position:absolute;top:2px;right:3px;font-s
 .bkgo.prim span{color:rgba(255,255,255,.8)}
 .bkgo.lux{background:#f7f0ff;border-color:#dcc9f4}
 .bknote{margin:11px 0 0;font-size:10.5px;line-height:1.7;color:var(--muted2)}
+/* ⑤ 항공 예약처 선택 창 — #bkSheet 와 같은 모양, 버튼 넷(항공사 공홈 + 써드파티 셋) */
+.flbk-go{display:block;border-radius:11px;padding:12px 13px;text-decoration:none;border:1px solid var(--lav2);background:var(--lav);color:var(--violet-d)}
+.flbk-go b{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
+.flbk-go.prim{border:0;background:var(--violet-d);color:#fff}
+.bkacts .flbk-sub{display:block;margin-top:3px;font-size:10.5px;font-weight:600;color:var(--muted2);line-height:1.55}
+.flbk-go.prim .flbk-sub{color:rgba(255,255,255,.82)}
 
 /* ── ③ 아코르 SNU 패널 ───────────────────────────────── */
 #snuPanel[hidden]{display:none}
@@ -474,6 +480,7 @@ button.dual-cell::after{content:'⇄';position:absolute;top:2px;right:3px;font-s
 .fl-pprice.is-min{color:var(--violet-d)}
 .fl-plink{font-size:9px;font-weight:800;color:var(--violet-d);text-decoration:none;border:1px solid var(--lav2);border-radius:5px;padding:2px 5px;white-space:nowrap;background:var(--card)}
 .fl-plink:hover{background:var(--lav)}
+button.fl-plink{font-family:inherit;line-height:1.35;cursor:pointer}
 .fl-empty{margin:0;font-size:10.5px;color:var(--muted2);line-height:1.6}
 .fl-matrix-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:9px;border:1px solid var(--line)}
 .fl-matrix{border-collapse:separate;border-spacing:0;width:100%;min-width:660px;font-size:10.5px}
@@ -751,7 +758,7 @@ button.dual-cell::after{content:'⇄';position:absolute;top:2px;right:3px;font-s
 .cb-total{font-size:15px;font-weight:800;letter-spacing:-.04em}
 .cb-total-unit{display:block;font-size:8.5px;color:var(--muted2);font-weight:700;text-align:right}
 .cb-links{margin-top:3px;display:flex;gap:9px;flex-wrap:wrap;font-size:9.5px;font-weight:700;align-items:center}
-.cb-links a{color:var(--violet-d);text-decoration:none;border-bottom:1px dotted var(--lav2)}
+.cb-links a,.cb-links button{color:var(--violet-d);text-decoration:none;border:0;border-bottom:1px dotted var(--lav2);background:none;font:inherit;padding:0;cursor:pointer}
 .cb-wx{border:1px solid var(--lav3);background:var(--lav);color:var(--violet-d);border-radius:5px;font:inherit;font-size:9px;font-weight:800;padding:1px 6px}
 .cb-citygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(154px,1fr));gap:6px}
 .cb-city{display:block;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:9px;padding:7px 9px;cursor:pointer;font:inherit;min-width:0}
@@ -1523,7 +1530,7 @@ html.locked #lockGate{display:flex}
         <div class="note-row"><span class="note-mark">▦</span><span class="note-text">주말형·당일치기를 합쳐 <strong>10,857건</strong>(주말형 <strong>10,539</strong> · 당일치기 318)입니다 — 2026.12~2027.01 <strong>2,272건</strong>(기존 24개 노선 12·1월 전수 + 중국·필리핀·동남아·일본 신규 노선의 12~1월), 2027.02~05 <strong>3,825건</strong>(기존 24개 노선 2·3월 960칸 + 2027년 4월 1~4주차 480칸 + 2027년 5월 1주차(4/29~5/3) 120칸 + 2027년 5월 2주차(5/6~10) 120칸 + 2027년 5월 3~4주차 240칸 + 2027년 5월 5주차(5/27~31) 120칸, 중국 8개 노선 2~6월 840칸, 필리핀 4개 노선 2~6월 420칸, 동남아 4개 노선 2~6월 420칸, 일본 7개 노선 2~6월 440칸), 2027.06~11 <strong>4,760건</strong>(기존 24개 노선 6월 1~2주차(6/3~7 · 6/10~14) 163칸 + 6월 3주차(6/17~21) 92칸 + 4주차(6/24~28) 101칸 + 7월 1주차(7/1~5) 92칸 + 7월 2주차(7/8~12) 102칸 + 7월 3~5주차(7/15~8/2) A조 134칸 + B조 147칸 + 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) A조 205칸 + B조 228칸 + 9월 5주(9/2~6 · 9/9~13 · 9/16~20 · 9/23~27 · 9/30~10/4) A조 245칸 + B조 288칸 + 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) A조 231칸 + B조 240칸 + 11월 2주(11/4~8 · 11/11~15) A조 109칸 + B조 120칸 · 중국 8개 노선 7~11월 465칸 · 동남아 4개 노선 7~9월 220칸 · 필리핀 4개 노선 7~10월 300칸 · 일본 7개 노선 6월 83칸 + 7월 150칸 + 8월 120칸 + 9~10월 190칸 + 11월 33칸 포함)입니다. 값이 없는 칸은 셋으로 나눠 적었습니다 — <strong>판매편 0건 549칸</strong>(조회 결과 항공편이 없음 — 일본 7노선 1월 2칸 + 2027년 2~6월 296칸 + 2027년 9~10월 34칸 + 2027년 11월 20칸 + 마카오·나트랑 11월 8칸 포함), <strong>요금 미공개 357칸</strong>(운항편은 표시되나 요금이 게시되지 않아 예약 불가 — 일본 7노선 2~6월 98칸 + 2027년 9~10월 4칸(화면 미표시·응답 정지로 확인 못 한 칸) 포함), <strong>미오픈 595칸</strong>(중국 8개 노선 예약창 2027-10-13 밖 16칸 + 동남아 4개 노선 예약창 2027-09-14 밖 220칸 + 필리핀 4개 노선 예약창 2027-10-14 밖 140칸 + 일본 시즈오카 2027년 7월 25칸 + 일본 7개 노선 2027년 8월 20칸 · 9~10월 87칸 · 11월 87칸). 빈칸(<strong>—</strong>)은 추정하지 않은 미조회 칸이고, '당일 왕복 불가'는 운항 스케줄상 성립하지 않는 노선입니다.</span></div>
         </div></details>
         <div class="note-row"><span class="note-mark">↺</span><span class="note-text">목록에 '위탁 수하물 포함' 배지가 붙은 운임 기준이며, LCC 위탁 중량·개수는 결제 화면에서 확정됩니다(15kg/20kg 확인).</span></div>
-        <div class="note-row"><span class="note-mark">🔎</span><span class="note-text">달력·도표의 날짜 칸을 누르면 그 출발·귀국 날짜(부산 PUS → 해당 공항)로 예약 검색이 새 탭에서 열립니다. 상세 행의 '예약 검색' 버튼도 같은 주소입니다. 항공사 직판(제주항공·에어부산·진에어)과 금액을 함께 비교하세요.</span></div>
+        <div class="note-row"><span class="note-mark">🔎</span><span class="note-text">달력·도표의 날짜 칸을 누르면 그 출발·귀국 날짜(부산 PUS → 해당 공항)로 <b>어디서 예약할지 고르는 창</b>이 열립니다 — <b>항공사 공식 홈페이지</b>(에어부산·대한항공·진에어·제주항공·이스타항공·트리니티항공 등 국내사와 외항사 40여 곳)와 <b>트립닷컴·스카이스캐너·구글 플라이트</b> 중 골라 새 탭에서 엽니다. 상세 행의 '예약 검색' 버튼도 같은 창을 엽니다. 항공사 직판과 써드파티 금액을 함께 비교하세요.</span></div>
       
       </section>
       <section class="notice"><h3>예약 전에 꼭 확인하세요</h3>
@@ -1771,6 +1778,24 @@ html.locked #lockGate{display:flex}
   <div class="bkacts"><a class="bkgo prim" id="bkPrim" href="#" target="_blank" rel="noopener"></a><a class="bkgo" id="bkAlt" href="#" target="_blank" rel="noopener"></a></div>
   <p class="bknote" id="bkNote"></p>
   <button type="button" class="wxclose" id="bkClose">닫기</button>
+</div></div>
+<!-- ⑤ 항공 예약처 선택 창 — 달력·매트릭스·상세·콤보의 항공 링크를 누르면 열린다.
+     ⚠ 이 시트 안에는 data-date · data-nights · data-hotel 같은 문서 위임 핸들러용 속성을 쓰지 않는다 -->
+<div class="wxsheet" id="flBookSheet" aria-hidden="true"><div class="wxcard" role="dialog" aria-modal="true" aria-labelledby="flbkTitle">
+  <h3 id="flbkTitle">어디서 예약할까요?</h3>
+  <p class="wxsub">항공사 공식 홈페이지와 써드파티를 골라 새 탭에서 엽니다 — 같은 날짜·노선으로 가격을 나란히 볼 수 있습니다.</p>
+  <p class="wxhotel" id="flbkRoute"></p>
+  <p class="wxwhen" id="flbkAir"></p>
+  <p class="wxwhen" id="flbkWhen"></p>
+  <p class="bkprice" id="flbkPrice"></p>
+  <div class="bkacts">
+    <a class="flbk-go" id="flbkOff" href="#" target="_blank" rel="noopener"></a>
+    <a class="flbk-go" id="flbkTrip" href="#" target="_blank" rel="noopener"></a>
+    <a class="flbk-go" id="flbkSky" href="#" target="_blank" rel="noopener"></a>
+    <a class="flbk-go" id="flbkGoogle" href="#" target="_blank" rel="noopener"></a>
+  </div>
+  <p class="bknote" id="flbkNote"></p>
+  <button type="button" class="wxclose" id="flbkClose">닫기</button>
 </div></div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -3110,6 +3135,156 @@ document.addEventListener('click',e=>{
   }
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeBkSheet()});
+/* ══ ⑤ 항공 — 「항공사 공홈 / 써드파티」 선택 창 ══════════════════════════
+   2026-11-21 한진님 요청: 항공 링크를 누르면 써드파티 한 곳으로 곧장 가지 말고
+   항공사 공식 홈페이지와 써드파티 셋 중 골라 새 탭에서 연다.
+   ⚠ 이 창 안에는 data-date·data-nights·data-hotel 처럼 문서 전체 위임 핸들러가 쓰는 속성명을 쓰지 않는다
+     (#bkSheet 때 같은 이름을 써서 시트 안 클릭이 preventDefault 된 일이 있었다). */
+const FL_AIR_OFFICIAL=[
+  /* 국내 항공사 — 한국어 공홈 */
+  {n:'대한항공',k:['대한항공'],u:'https://www.koreanair.com/',s:'대한항공 공식 사이트(koreanair.com)'},
+  {n:'아시아나항공',k:['아시아나'],u:'https://www.flyasiana.com/',s:'아시아나항공 공식 사이트(flyasiana.com)'},
+  {n:'에어부산',k:['에어부산'],u:'https://www.airbusan.com/',s:'에어부산 공식 사이트(airbusan.com)'},
+  {n:'진에어',k:['진에어'],u:'https://www.jinair.com/',s:'진에어 공식 사이트(jinair.com)'},
+  {n:'제주항공',k:['제주항공'],u:'https://www.jejuair.net/',s:'제주항공 공식 사이트(jejuair.net)'},
+  {n:'이스타항공',k:['이스타'],u:'https://www.eastarjet.com/',s:'이스타항공 공식 사이트(eastarjet.com)'},
+  {n:'트리니티항공',k:['트리니티','trinity'],u:'https://www.trinityairways.com/',s:'트리니티항공 공식 사이트 — 티웨이항공에서 사명 변경(2026-09-10)'},
+  {n:'에어서울',k:['에어서울'],u:'https://flyairseoul.com/',s:'에어서울 공식 사이트'},
+  {n:'에어프레미아',k:['에어프레미아'],u:'https://www.airpremia.com/',s:'에어프레미아 공식 사이트'},
+  /* 일본 항공사 */
+  {n:'일본항공(JAL)',k:['일본항공','jal'],u:'https://www.jal.co.kr/',s:'JAL 한국 사이트(jal.co.kr)'},
+  {n:'전일본공수(ANA)',k:['전일본공수','ana'],u:'https://www.ana.co.kr/',s:'ANA 한국 사이트(ana.co.kr)'},
+  {n:'피치항공',k:['피치'],u:'https://www.flypeach.com/kr',s:'피치항공 한국어 사이트'},
+  {n:'젯스타',k:['젯스타','jetstar'],u:'https://www.jetstar.com/kr/ko/home',s:'젯스타 한국어 사이트'},
+  {n:'일본 트랜스오션항공',k:['트랜스오션','transocean'],u:'https://www.jta.co.jp/',s:'일본 트랜스오션항공 공식 사이트(일본어)'},
+  {n:'스카이마크항공',k:['스카이마크'],u:'https://www.skymark.co.jp/',s:'스카이마크항공 공식 사이트(일본어)'},
+  {n:'후지드림항공',k:['후지드림'],u:'https://www.fujidream.co.jp/',s:'후지드림항공 공식 사이트(일본어)'},
+  {n:'에어두',k:['에어두'],u:'https://www.airdo.jp/',s:'AIRDO 공식 사이트(일본어)'},
+  {n:'솔라시드항공',k:['솔라시드'],u:'https://www.solaseedair.jp/',s:'솔라시드항공 공식 사이트(일본어)'},
+  {n:'스타플라이어',k:['스타플라이어'],u:'https://www.starflyer.jp/',s:'스타플라이어 공식 사이트(일본어)'},
+  /* 중화권 항공사 */
+  {n:'캐세이퍼시픽',k:['캐세이퍼시픽','캐세이패시픽','cathay'],u:'https://www.cathaypacific.com/cx/ko_KR.html',s:'캐세이퍼시픽 한국어 사이트'},
+  {n:'홍콩 익스프레스',k:['홍콩 익스프레스','홍콩익스프레스','hk express'],u:'https://www.hkexpress.com/ko',s:'홍콩익스프레스 한국어 사이트'},
+  {n:'중국동방항공',k:['중국동방','동방항공','china eastern'],u:'https://kr.ceair.com/ko/',s:'중국동방항공 한국어 사이트'},
+  {n:'상하이항공',k:['상하이항공','상하이 항공'],u:'https://kr.ceair.com/ko/',s:'중국동방항공 한국어 사이트 — 상하이항공 운항편도 여기서 예약'},
+  {n:'중국남방항공',k:['중국남방','china southern'],u:'https://www.csair.com/kr/ko/',s:'중국남방항공 한국어 사이트'},
+  {n:'중국국제항공(에어차이나)',k:['중국국제','에어차이나','air china'],u:'https://www.airchina.kr/',s:'에어차이나 한국 사이트'},
+  {n:'중화항공',k:['중화항공'],u:'https://www.china-airlines.com/kr/ko',s:'중화항공 한국어 사이트'},
+  {n:'에바항공',k:['에버항공','에바항공','eva air'],u:'https://www.evaair.com/ko-kr/index.html',s:'에바항공 한국어 사이트'},
+  {n:'스타룩스항공',k:['스타룩스','starlux'],u:'https://www.starlux-airlines.com/ko-KR',s:'스타룩스항공 한국어 사이트'},
+  {n:'타이거항공 타이완',k:['타이거','tigerair'],u:'https://www.tigerairtw.com/ko-KR',s:'타이거항공 타이완 한국어 사이트'},
+  {n:'룽에어',k:['룽에어','loong'],u:'https://www.loongair.cn/',s:'룽에어 공식 사이트(중국어)'},
+  {n:'춘추항공',k:['춘추','스프링','spring airlines'],u:'https://www.ch.com/',s:'춘추항공(스프링항공) 공식 사이트'},
+  {n:'산동항공',k:['산동항공','산동','산둥','shandong'],u:'https://www.sda.cn/',s:'산동항공 공식 사이트(중국어)'},
+  {n:'칭다오항공',k:['칭다오'],u:'https://www.qdairlines.com/',s:'칭다오항공 공식 사이트(중국어)'},
+  {n:'샤먼항공',k:['샤먼','xiamen'],u:'https://www.xiamenair.com/',s:'샤먼항공 공식 사이트(중국어)'},
+  {n:'주니야오항공',k:['주니야오','준야오','juneyao'],u:'https://www.juneyaoair.com/',s:'주니야오항공 공식 사이트(중국어)'},
+  {n:'길상항공',k:['길상','lucky air'],u:'https://www.luckyair.net/',s:'길상항공 공식 사이트(중국어)'},
+  {n:'에어마카오',k:['에어마카오','air macau'],u:'https://www.airmacau.com.mo/',s:'에어마카오 공식 사이트'},
+  {n:'그레이터베이항공',k:['그레이터베이','greater bay'],u:'https://www.greaterbay-airlines.com/',s:'그레이터베이항공 공식 사이트'},
+  /* 동남아 항공사 */
+  {n:'비엣젯항공',k:['비엣젯','vietjet'],u:'https://www.vietjetair.com/',s:'비엣젯항공 공식 사이트'},
+  {n:'베트남항공',k:['베트남항공','vietnam airlines'],u:'https://www.vietnamairlines.com/kr/ko',s:'베트남항공 한국어 사이트'},
+  {n:'싱가포르항공',k:['싱가포르항공','singapore airlines'],u:'https://www.singaporeair.com/ko_KR/kr/home',s:'싱가포르항공 한국어 사이트'},
+  {n:'스쿠트항공',k:['스쿠트','scoot'],u:'https://www.flyscoot.com/ko',s:'스쿠트 한국어 사이트'},
+  {n:'필리핀항공',k:['필리핀항공','philippine airlines'],u:'https://www.philippineairlines.com/',s:'필리핀항공 공식 사이트'},
+  {n:'세부퍼시픽',k:['세부퍼시픽','cebu pacific'],u:'https://www.cebupacificair.com/ko-kr',s:'세부퍼시픽 한국어 사이트'},
+  {n:'말레이시아항공',k:['말레이시아항공','malaysia airlines'],u:'https://www.malaysiaairlines.com/kr/ko.html',s:'말레이시아항공 한국어 사이트'},
+  {n:'타이항공',k:['타이항공','thai airways'],u:'https://www.thaiairways.com/ko_KR/',s:'타이항공 한국어 사이트'},
+  {n:'방콕항공',k:['방콕항공','bangkok airways'],u:'https://www.bangkokair.com/',s:'방콕항공 공식 사이트'},
+  {n:'에어아시아',k:['에어아시아','에어 아시아','airasia'],u:'https://www.airasia.com/',s:'에어아시아 공식 사이트'}
+];
+/* 운항사 문자열 → 공홈 정보. 혼합 운항(+, ·, ,)이면 문자열에 가장 먼저 나오는 (주) 항공사를 고른다. */
+function flOfficialInfo(d){
+  const raw=(d&&d.airline)?String(d.airline).trim():'';
+  if(!raw)return null;
+  const base=raw.replace(/\([^)]*\)/g,' ').replace(/\s+/g,' ').trim();  /* (… 운항) 같은 운영사 괄호는 뺀다 */
+  if(!base)return null;
+  const low=base.toLowerCase(),hits=[];
+  for(const c of FL_AIR_OFFICIAL){
+    let at=-1,len=0;
+    for(const k of c.k){const i=low.indexOf(String(k).toLowerCase());if(i<0)continue;if(at<0||i<at||(i===at&&String(k).length>len)){at=i;len=String(k).length}}
+    if(at>=0)hits.push({c:c,at:at});
+  }
+  const mixed=(/[+,·,]/.test(base)||base.indexOf('/')>=0);
+  if(!hits.length)return {name:'',url:'',site:'',mixed:mixed,carriers:[],unknown:raw};
+  hits.sort((a,b)=>a.at-b.at);
+  const uniq=[];for(const h of hits){if(!uniq.some(x=>x.c===h.c))uniq.push(h)}
+  const main=uniq[0].c;
+  return {name:main.n,url:main.u,site:main.s||'공식 홈페이지',mixed:mixed,
+    carriers:uniq.map(h=>h.c.n),unknown:''};
+}
+/* 써드파티 — 날짜·노선이 그대로 들어가는 직행 링크 */
+const flSkyUrl=d=>'https://www.skyscanner.co.kr/transport/flights/pus/'+String(d.code).toLowerCase()+'/'+String(d.date).replace(/-/g,'').slice(2)+'/'+String(d.back||d.date).replace(/-/g,'').slice(2)+'/';
+const flGoogleUrl=d=>'https://www.google.com/travel/flights?q='+encodeURIComponent('Flights to '+d.code+' from PUS on '+d.date+' through '+(d.back||d.date))+'&curr=KRW&hl=ko';
+/* 노선 코드·출발일·귀국일로 그 편을 다시 찾는다(속성에는 이 셋만 싣고, 창을 열 때 값을 만든다) */
+function flDealBy(code,date,back,pat){
+  const all=flAll();let hit=null;
+  if(pat)hit=all.find(x=>x.code===code&&x.date===date&&x.pattern===pat&&(!back||x.back===back));
+  if(!hit&&back)hit=all.find(x=>x.code===code&&x.date===date&&x.back===back);
+  if(!hit)hit=all.find(x=>x.code===code&&x.date===date&&(!pat||x.pattern===pat))||all.find(x=>x.code===code&&x.date===date);
+  if(hit)return hit;
+  const r=flRouteOf(code)||{};
+  return {code:code,city:r.city||code,date:date,back:back||date,pattern:pat||'',price:null,airline:null,via:null};
+}
+const flBookEl=()=>document.getElementById('flBookSheet');
+function flBkBtn(el,on,html,href,prim){
+  if(!el)return;
+  el.style.display=on?'block':'none';
+  el.className='flbk-go'+(prim?' prim':'');
+  if(!on){el.setAttribute('href','#');el.innerHTML='';return}
+  el.href=href;el.innerHTML=html;
+}
+function openFlBookSheet(d){
+  const el=flBookEl();if(!el||!d)return;
+  const off=flOfficialInfo(d),back=d.back||d.date,n=flNights(d.pattern||'');
+  const p=(typeof d.price==='number')?d.price:null;
+  el.dataset.flbkKey=String(d.code)+'|'+String(d.date)+'|'+String(back);
+  $('flbkRoute').textContent='부산(PUS) → '+(d.city||d.code)+' ('+d.code+')';
+  $('flbkAir').textContent=flAir(d)+(d.pattern?' · '+d.pattern+'('+n+'박)':'')+' · '+flViaWord(d)+((flMemo(d)&&flMemo(d)!=='가격표')?' · '+flMemo(d):'');
+  $('flbkWhen').textContent=fullDate(d.date)+'('+weekday(d.date)+') 출발 → '+fullDate(back)+'('+weekday(back)+') 귀국 · 성인 1인 왕복';
+  $('flbkPrice').innerHTML=(p!=null?('<b>표시 요금 '+flMoney(p)+'</b>'+(flFastOn()?' · 직항 기준':'')):'<b>표시 요금 없음</b> — 연 페이지에서 조회하세요')
+    +'<small>'+esc('앱에 모은 조회 시점 값입니다(성인 1인 왕복·세금 포함). 실제 좌석·결제 금액은 연 사이트에서 확인하세요.')+'</small>';
+  const hasOff=Boolean(off&&off.url);
+  flBkBtn($('flbkOff'),hasOff,
+    '<b>'+esc(off&&off.name?off.name:'항공사')+' 공식 홈페이지 ↗</b><span class="flbk-sub">'+esc(off&&off.site?off.site:'공식 사이트')+' · '
+      +(off&&off.mixed?'혼합 운항 편 — 공홈에는 편도·개별 노선으로만 조회될 수 있습니다':'날짜·노선은 연 사이트에서 한 번 더 입력합니다')+'</span>',
+    hasOff?off.url:'#',hasOff);
+  flBkBtn($('flbkTrip'),true,'<b>트립닷컴 ↗</b><span class="flbk-sub">날짜·노선이 그대로 들어간 검색 결과</span>',flLink(d),!hasOff);
+  flBkBtn($('flbkSky'),true,'<b>스카이스캐너 ↗</b><span class="flbk-sub">여행사·항공사 가격을 한 번에 비교</span>',flSkyUrl(d),false);
+  flBkBtn($('flbkGoogle'),true,'<b>구글 플라이트 ↗</b><span class="flbk-sub">가격 추이·대안 날짜까지 함께 보기</span>',flGoogleUrl(d),false);
+  $('flbkNote').textContent=(off&&off.mixed&&off.name)
+    ?('혼합 운항 편('+off.carriers.join(' + ')+')입니다 — 위 공홈은 첫 번째 항공사('+off.name+') 사이트라 편도·개별 노선으로만 조회될 수 있습니다. 여러 항공사가 섞인 여정은 트립닷컴·스카이스캐너에서 한 번에 조회하세요.')
+    :((!hasOff?'이 편의 항공사 공식 홈페이지 주소가 확인되지 않아 써드파티로만 연결합니다. ':'')+'공홈과 써드파티는 같은 좌석이라도 운임 조건·수수료가 다를 수 있습니다. 결제·취소 조건은 연 페이지에서 확인하세요.');
+  el.classList.add('show');el.setAttribute('aria-hidden','false');
+  const fb=$('flbkOff').style.display!=='none'?$('flbkOff'):$('flbkTrip');
+  if(fb&&fb.focus)fb.focus({preventScroll:true});
+}
+function closeFlBookSheet(){const el=flBookEl();if(!el)return;el.classList.remove('show');el.setAttribute('aria-hidden','true')}
+/* 날짜·매트릭스·상세·콤보의 항공 버튼 — 눌러도 바로 이동하지 않고 선택 창을 띄운다 */
+document.addEventListener('click',e=>{
+  const t=e.target.closest?e.target.closest('[data-flbk-code]'):null;
+  if(t){
+    e.preventDefault();
+    const code=t.getAttribute('data-flbk-code')||'',date=t.getAttribute('data-flbk-date')||'',
+      back=t.getAttribute('data-flbk-back')||'',pat=t.getAttribute('data-flbk-pat')||'',
+      from=t.getAttribute('data-flbk-from')||'';
+    if(!code||!date)return;
+    openFlBookSheet(flDealBy(code,date,back,pat));
+    /* 달력·매트릭스에서는 예전처럼 하단 상세(#flDetail)도 함께 갱신한다 */
+    if(from==='cal'||from==='matrix')flDayOpen(date,from==='matrix');
+    return;
+  }
+  const el=flBookEl();if(!el||!el.classList.contains('show'))return;
+  if(e.target.id==='flbkClose'||e.target===el){closeFlBookSheet();return}
+  /* 새 탭 이동이 끝난 뒤에 창을 닫는다 — 누르자마자 닫으면 브라우저가 target=_blank 이동을 취소한다 */
+  if(e.target.closest&&e.target.closest('a.flbk-go')){
+    const key=el.dataset.flbkKey;
+    setTimeout(()=>{const cur=flBookEl();
+      if(cur&&cur.classList.contains('show')&&cur.dataset.flbkKey===key)closeFlBookSheet();},350);
+  }
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFlBookSheet()});
 /* ★ 토글 — 별을 누르면 localStorage 에 저장하고 화면을 다시 그린다 */
 document.addEventListener('click',function(e){
   const b=e.target.closest?e.target.closest('[data-fav]'):null;if(!b)return;
@@ -3270,7 +3445,7 @@ function renderFlightCalendar(){
       const baseN=flBase().filter(x=>x.date===date).length;
       const flt=(fl.direct||fl.hideLong)&&baseN>0;
       inner+='<span class="daymiss'+(mks?' '+mks.cls:(flt?' fl-via-warn':''))+'">'+(mks?mks.short:(flt?(fl.direct?'직항 없음':'장시간 제외'):'—'))+'</span>';}
-    html+=low?('<a class="'+cls+'" data-fl-date="'+date+'" href="'+esc(flLink(low))+'" target="_blank" rel="noopener" aria-label="'+fullDate(date)+' 출발 최저 '+flMoney(flEff(low))+' · 예약 검색 열기" title="'+esc(low.city+' '+low.pattern+' '+dateLabel(low.date)+'–'+dateLabel(low.back)+(flFastOn()?' · 직항 기준 금액':'')+' · 예약 검색이 새 탭에서 열립니다')+'">'+inner+'</a>')
+    html+=low?('<button type="button" class="'+cls+'" data-flbk-code="'+esc(low.code)+'" data-flbk-date="'+date+'" data-flbk-back="'+esc(low.back||date)+'" data-flbk-pat="'+esc(low.pattern||'')+'" data-flbk-from="cal" aria-label="'+fullDate(date)+' 출발 최저 '+flMoney(flEff(low))+' · 예약처 고르기" title="'+esc(low.city+' '+low.pattern+' '+dateLabel(low.date)+'–'+dateLabel(low.back)+(flFastOn()?' · 직항 기준 금액':'')+' · 누르면 항공사 공홈·써드파티 선택 창이 열립니다')+'">'+inner+'</button>')
       :('<button type="button" class="'+cls+'" data-fl-date="'+date+'" aria-label="'+fullDate(date)+' 출발 최저 '+(flMarkOf((FLIGHTS.noSale||[]).find(n=>n.date===date))?.label||'자료 없음')+'">'+inner+'</button>');
   }
   $('flDays').innerHTML=html;
@@ -3280,7 +3455,7 @@ function renderFlightCalendar(){
 }
 function renderFlightDetail(){
   const box=$('flDetail');
-  if(!fl.day){box.innerHTML='<p class="fl-empty">달력·도표의 날짜·가격 칸을 누르면 그 출발일의 예약 검색이 새 탭에서 열리고, 이 자리에는 패턴별·노선별 금액과 항공사·직항/경유가 표시됩니다. 값이 없는 칸(—·판매편 0건·미오픈)은 링크 없이 이 상세만 갱신합니다. 당일치기(0박)는 체류시간도 함께 적습니다.</p>';return;}
+  if(!fl.day){box.innerHTML='<p class="fl-empty">달력·도표의 날짜·가격 칸을 누르면 항공사 공홈·써드파티를 고르는 창이 열리고(고른 곳이 새 탭에서 열립니다), 이 자리에는 패턴별·노선별 금액과 항공사·직항/경유가 표시됩니다. 값이 없는 칸(—·판매편 0건·미오픈)은 링크 없이 이 상세만 갱신합니다. 당일치기(0박)는 체류시간도 함께 적습니다.</p>';return;}
   const deals=flFiltered().filter(d=>d.date===fl.day).sort((a,b)=>flFastOn()?(flEff(a)-flEff(b)||(a.via===false?-1:1)-(b.via===false?-1:1)):(a.price-b.price));
   const min=deals.length?Math.min(...deals.map(d=>flEff(d))):null;
   let html='<div class="fl-detail-head"><div><h3>'+fullDate(fl.day)+' ('+weekday(fl.day)+') 출발</h3>'+(fl.route!=='all'?'<button type="button" class="hchart" data-hist="flights" data-hid="'+fl.route+'" data-date="'+fl.day+'">📈 노선 가격 추이</button>':'')+'<div class="meta">'+(deals.length?deals.length+'건 · '+(flFastOn()?'직항(최단) 기준 금액순':'최저가순')+((fl.direct||fl.hideLong)?' · 필터 적용(직항만 보기 / 장시간 경유 빼기)':''):'선택한 노선·패턴 조합에는 이 날짜 자료가 없습니다')+'</div></div><button type="button" class="fl-close" id="flClose" aria-label="상세 닫기">✕</button></div>';
@@ -3291,7 +3466,7 @@ function renderFlightDetail(){
       const isDay=p.nights===0;
       const back=flAddDays(fl.day,p.nights);
       html+='<div class="fl-pcard'+(isDay?' is-daytrip':'')+'"><div class="fl-pcard-head"><b>'+p.label+(isDay?' <span class="fl-daytag">당일</span>':'')+'</b><span>'+(isDay?dateLabel(fl.day)+' 당일(0박)':dateLabel(fl.day)+'–'+dateLabel(back)+' · '+p.nights+'박')+'</span></div>';
-      html+=rows.map(d=>{const memo=flMemo(d);const dm=isDay?flDayMeta(d.code):null;const stay=dm&&dm.stay?' · 체류 '+dm.stay:(isDay?' · 체류 미확인':'');return '<div class="fl-prow"><div class="fl-pname">'+esc(d.city)+' <span class="fl-code">'+d.code+'</span>'+flViaTag(d)+flWarnTag(d)+'<div class="fl-pair">'+esc(flAir(d))+(memo?' · '+esc(memo):'')+esc(stay)+(flDurText(d)?' · '+esc(flDurText(d)):'')+flAltBadge(d)+'</div><div class="fl-rowacts">'+planBtn('f|'+d.code+'|'+d.pattern+'|'+d.date,planFlightText(d))+cmpBtn(cmpFlightItem(d))+'</div></div><div class="fl-pprice'+(flEff(d)===min?' is-min':'')+'">'+shortWon(flEff(d))+(flFastOn()&&flAltInfo(d)?'<span class="fl-alt">직항가</span>':'')+'</div><a class="fl-plink" href="'+flLink(d)+'" target="_blank" rel="noopener">예약 검색</a></div>'}).join('');
+      html+=rows.map(d=>{const memo=flMemo(d);const dm=isDay?flDayMeta(d.code):null;const stay=dm&&dm.stay?' · 체류 '+dm.stay:(isDay?' · 체류 미확인':'');return '<div class="fl-prow"><div class="fl-pname">'+esc(d.city)+' <span class="fl-code">'+d.code+'</span>'+flViaTag(d)+flWarnTag(d)+'<div class="fl-pair">'+esc(flAir(d))+(memo?' · '+esc(memo):'')+esc(stay)+(flDurText(d)?' · '+esc(flDurText(d)):'')+flAltBadge(d)+'</div><div class="fl-rowacts">'+planBtn('f|'+d.code+'|'+d.pattern+'|'+d.date,planFlightText(d))+cmpBtn(cmpFlightItem(d))+'</div></div><div class="fl-pprice'+(flEff(d)===min?' is-min':'')+'">'+shortWon(flEff(d))+(flFastOn()&&flAltInfo(d)?'<span class="fl-alt">직항가</span>':'')+'</div><button type="button" class="fl-plink" data-flbk-code="'+esc(d.code)+'" data-flbk-date="'+d.date+'" data-flbk-back="'+esc(d.back||'')+'" data-flbk-pat="'+esc(d.pattern||'')+'" data-flbk-from="detail" title="항공사 공홈·트립닷컴·스카이스캐너·구글 플라이트 중 골라 새 탭에서 엽니다">예약 검색</button></div>'}).join('');
       html+='</div>';
     }
     html+='</div>';
@@ -3314,9 +3489,9 @@ function flCellHtml(r,p,d,cls){
   const tip=r.city+' '+p.label+' '+dateLabel(d.date)+'–'+dateLabel(d.back)+' · '+flMeta(d)
     +(flDurText(d)?' · '+flDurText(d):'')
     +(a?' · 직항 '+KR(a.price)+'원 (＋'+KR(a.delta)+'원)':'')
-    +' · 예약 검색이 새 탭에서 열립니다';
-  return '<td><a class="fl-cell '+cls.join(' ')+'" data-fl-date="'+d.date+'" href="'+esc(flLink(d))+'" target="_blank" rel="noopener" aria-label="'+esc(label)+' · 예약 검색 열기" title="'+esc(tip)+'"><b>'
-    +shortWon(flEff(d))+'</b><span>'+esc(flMeta(d))+flWarnTag(d)+'</span>'+flAltBadge(d,true)+'</a></td>';
+    +' · 누르면 항공사 공홈·써드파티 선택 창이 열립니다';
+  return '<td><button type="button" class="fl-cell '+cls.join(' ')+'" data-flbk-code="'+esc(d.code)+'" data-flbk-date="'+d.date+'" data-flbk-back="'+esc(d.back||d.date)+'" data-flbk-pat="'+esc(d.pattern||'')+'" data-flbk-from="matrix" aria-label="'+esc(label)+' · 예약처 고르기" title="'+esc(tip)+'"><b>'
+    +shortWon(flEff(d))+'</b><span>'+esc(flMeta(d))+flWarnTag(d)+'</span>'+flAltBadge(d,true)+'</button></td>';
 }
 function renderFlightMatrix(){
   const wSel=$('flWeek');
@@ -4224,7 +4399,7 @@ function cbNotesHtml(pat){
   const cities=cbCitiesAll(),ttc=cbTtCities();
   const ttRoutes=Object.keys(ttAll().reduce(function(m,d){m[d.code]=1;return m},{})).length;
   const ttNote=cb.src==='f'?'':(cb.nextDay?'<div class="note-row"><span class="note-mark">🌙</span><span class="note-text"><strong>출발+1일 체크인</strong>이 켜져 있습니다 — 밤 출발·새벽 도착 편은 출발일 밤을 호텔에서 보내지 않으므로 숙박 시작일을 <strong>출발일+1일</strong>로 잡아 계산했습니다(귀국일 체크아웃은 그대로). 그래서 같은 상품도 숙박 1박이 줄어 총액이 낮게 나옵니다.</span></div>':'')+'<div class="note-row"><span class="note-mark">🔥</span><span class="note-text"><strong>⑥ 땡처리 특가</strong>는 상품에 적힌 <strong>출발일~귀국일</strong>을 그대로 씁니다(⑤처럼 패턴을 고르지 않습니다). ⑥ '+ttRoutes+'개 노선 중 ①~④ 호텔이 같은 이름으로 있는 <strong>'+ttc.length+'개 도시</strong>만 계산하고, 도시 이름 표기가 다른 2곳(항주=항저우 · 장가계=장자제)은 같은 도시로 묶었습니다. 출발일이 여러 날인 <strong>기간형 상품</strong>은 날짜를 하나로 정할 수 없어 뺐습니다. 항공 금액은 상품 표시가(성인 1인 왕복 · 유류·세금 포함), 잔여석은 상품에 적힌 값입니다.</span></div>'
-   +'<div class="note-row"><span class="note-mark">↗</span><span class="note-text">⑥ 줄의 <strong>항공 예약 ↗</strong>은 그 상품의 예약·조회 화면으로 바로 열립니다(공동구매 상품은 구간·도시·날짜가 지정된 조회 링크).</span></div>';
+   +'<div class="note-row"><span class="note-mark">↗</span><span class="note-text"><strong>⑤ 정규</strong> 줄의 <strong>항공 검색 ↗</strong>은 항공사 공식 홈페이지·트립닷컴·스카이스캐너·구글 플라이트 중 골라 새 탭에서 엽니다 — 그 날짜·노선이 그대로 들어간 선택 창이 먼저 뜹니다. <strong>⑥ 땡처리</strong> 줄의 <strong>항공 예약 ↗</strong>은 그 상품의 예약·조회 화면으로 바로 열립니다(공동구매 상품은 구간·도시·날짜가 지정된 조회 링크).</span></div>';
   return '<h3>콤보 총액 계산 기준</h3>'
    +'<div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>항공</strong> = 부산(PUS) 출발 <strong>성인 1인 왕복</strong> 실측 표시가(⑤ 탭 '+(cb.direct?'직항만':'직항·경유')+' · '+esc(cb.pattern)+' '+pat.nights+'박). <strong>숙박</strong> = 같은 출발일~귀국 전날의 1박 요금 합계(성인 2인 1실 · 세금 포함 표시가 ①~④ 중 그 도시 호텔). 두 값을 더한 <strong>1인 항공 + 1실 숙박</strong> 총액입니다.</span></div>'
    +'<div class="note-row"><span class="note-mark">✕</span><span class="note-text"><strong>빠진 조합</strong> — 숙박일 중 하루라도 호텔 요금이 비어 있으면(<code>null</code>·매진·예약창 미개시) 그 조합은 총액을 만들 수 없어 뺐습니다. 화면 위 「숙박 요금이 비어 제외 N개」가 그 수이고, 항공 칸 자체가 비어 있는 날은 ⑤·⑥ 탭의 — 와 같은 뜻입니다. 요금이 없다고 0원으로 채우지 않았습니다.</span></div>'
@@ -4268,7 +4443,10 @@ function renderCombo(){
     const apcAll=cbApcAll(r);
     const hUrl=cbHotelUrl(r.h,r.date,r.nights.length);
     const airUrl=r.url||flLink({code:r.code,date:r.date,back:r.back});
-    const links='<div class="cb-links"><a href="'+esc(airUrl)+'" target="_blank" rel="noopener">'+(r.src==='t'?'항공 예약 ↗':'항공 검색 ↗')+'</a>'
+    const links='<div class="cb-links">'+(r.src==='t'
+      ?'<a href="'+esc(airUrl)+'" target="_blank" rel="noopener">항공 예약 ↗</a>'
+      /* ⑤ 정규 항공 — 바로 써드파티로 가지 않고 항공사 공홈·써드파티를 고르는 창을 띄운다 */
+      :'<button type="button" data-flbk-code="'+esc(r.code)+'" data-flbk-date="'+r.date+'" data-flbk-back="'+esc(r.back||'')+'" data-flbk-pat="'+esc((r.deal&&r.deal.pattern)||cb.pattern)+'" data-flbk-from="combo" title="항공사 공홈·트립닷컴·스카이스캐너·구글 플라이트 중 골라 새 탭에서 엽니다">항공 검색 ↗</button>')
       +(r.h.group==='china'?'<button type="button" class="cb-wx" data-wx-hotel="'+r.h.id+'" data-wx-date="'+r.date+'" data-wx-nights="'+r.nights.length+'">위챗 예약</button>'
         :(hUrl?'<a href="'+esc(hUrl)+'" target="_blank" rel="noopener">호텔 예약 ↗</a>':'')+cbAltLink(r.h,r.date,r.nights.length))
       +planBtn('c|'+r.code+'|'+r.h.id+'|'+r.date,planComboText(r))+cmpBtn(cmpComboItem(r))

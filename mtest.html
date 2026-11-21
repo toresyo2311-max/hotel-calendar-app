@@ -1,0 +1,35 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>layout harness</title>
+<style>
+ body{margin:0;background:#111;font:12px system-ui;color:#ddd}
+ .row{display:flex;gap:16px;align-items:flex-start;padding:12px}
+ figure{margin:0}
+ figcaption{font:11px monospace;padding:4px 0}
+ iframe{border:0;background:#fff;display:block}
+</style></head>
+<body>
+<div class="row">
+  <figure><figcaption>390×844</figcaption><iframe id="f390" src="/index.html" width="390" height="844"></iframe></figure>
+  <figure><figcaption>1440×900</figcaption><iframe id="f1440" src="/index.html" width="1440" height="900"></iframe></figure>
+</div>
+<script>
+window.MEASURE = function(id){
+  const f=document.getElementById(id), w=f.contentWindow, d=w.document;
+  const q=s=>d.querySelector(s), r=e=>{const b=e.getBoundingClientRect();return {x:Math.round(b.x),y:Math.round(b.y),w:Math.round(b.width),h:Math.round(b.height)}};
+  const tabs=[...d.querySelectorAll('.tab')].map(t=>({txt:t.innerText.replace(/\s+/g,' ').trim(),rect:r(t),
+      ovf:t.scrollWidth>t.clientWidth+1, sw:t.scrollWidth, cw:t.clientWidth}));
+  const tn=q('.tabs'), lock=q('#lockAgain'), brand=q('.brand'), met=q('.topbar-metrics');
+  return {
+    url:w.location.pathname,
+    locked: d.documentElement.classList.contains('locked'),
+    docScrollW: d.documentElement.scrollWidth, docClientW: d.documentElement.clientWidth,
+    bodyScrollW: d.body.scrollWidth,
+    tabsBox: tn?r(tn):null, tabsDisplay: tn?w.getComputedStyle(tn).display:null,
+    tabsScrollW: tn?tn.scrollWidth:null, tabsClientW: tn?tn.clientWidth:null,
+    tabs: tabs,
+    lock: lock?r(lock):null, brand: brand?r(brand):null, metrics: met?r(met):null,
+    rows: [...new Set(tabs.map(t=>t.rect.y))].length
+  };
+};
+</script>
+</body></html>

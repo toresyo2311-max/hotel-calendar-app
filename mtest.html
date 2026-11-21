@@ -7,7 +7,7 @@ html,body{margin:0;background:#dfe3ea;font:12px/1.5 system-ui,sans-serif}
 #f{border:0;background:#fff;display:block;box-shadow:0 2px 10px rgba(0,0,0,.18)}
 #r{padding:8px;font:11px/1.5 monospace;white-space:pre-wrap;color:#111;max-width:1400px}
 </style></head><body>
-<div id="wrap"><iframe id="f" title="검증 화면"></iframe><div id="r">측정 중…</div></div>
+<div id="wrap" aria-hidden="true"><iframe id="f" title="검증 화면" tabindex="-1"></iframe></div><div id="r">측정 중…</div>
 <script>
 var q=new URLSearchParams(location.search);
 var W=Number(q.get('w')||390), H=Number(q.get('h')||844);

@@ -1,0 +1,149 @@
+/* ── ⑦ 마일리지(부산) 탭 ────────────────────────────────────────
+   자료는 항공사가 공개하는 보너스 좌석 현황(하루 1회 갱신, 360일)을 옮긴 스냅샷이다.
+   좌석 '수량'과 '수수료 금액'은 원천에 없으므로 화면에서도 숫자로 만들지 않는다. */
+#mgPanel[hidden]{display:none}
+.mg-banner{margin:0 0 10px;padding:9px 11px;border-radius:9px;background:#f4f6fc;border:1px solid #dbe1f2;color:#2b3a63;font-size:10.5px;font-weight:700;line-height:1.7}
+.mg-banner b{color:#1d2b52}
+.mg-banner .mg-b2{display:block;font-weight:600;color:#5a6580;margin-top:2px}
+.mg-banner a{color:#1b4bd8;text-decoration:underline}
+
+.mg-kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.mg-kpi>div{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:linear-gradient(160deg,#f8f9fd 0%,#fff 70%);min-width:0}
+.mg-kpi span{display:block;font-size:9px;font-weight:800;color:var(--muted2);margin-bottom:4px}
+.mg-kpi b{display:block;font-size:16px;letter-spacing:-.05em;line-height:1.15;color:var(--ink);font-variant-numeric:tabular-nums}
+.mg-kpi i{display:block;font-style:normal;font-size:9.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.mg-kpi .new b{color:#c2410c}
+.mg-kpi .miss b{color:#8b8f98}
+
+.mg-views{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.mg-views button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:800;color:var(--muted);cursor:pointer}
+.mg-views button.on{background:var(--violet-d);border-color:var(--violet-d);color:#fff}
+
+.mg-block{display:block}
+.mg-block[hidden]{display:none}
+
+/* 노선 선택 */
+.mg-routes{display:flex;gap:5px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.mg-routes button{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 11px;font-size:11px;font-weight:800;color:#40474f;cursor:pointer;white-space:nowrap}
+.mg-routes button b{font-weight:900;color:#1b4bd8;margin-right:4px}
+.mg-routes button.on{background:#1b4bd8;border-color:#1b4bd8;color:#fff}
+.mg-routes button.on b{color:#dfe7ff}
+
+/* 달력 */
+.mg-calbar{display:flex;align-items:center;gap:6px;margin:0 0 8px;flex-wrap:wrap}
+.mg-calbar .mg-mon{font-size:12.5px;font-weight:900;letter-spacing:-.02em;color:var(--ink);min-width:96px;text-align:center}
+.mg-calbar button.nav{border:1px solid var(--line);background:#fff;border-radius:7px;width:28px;height:28px;font-size:13px;font-weight:900;color:#40474f;cursor:pointer;line-height:1}
+.mg-calbar button.nav[disabled]{opacity:.35;cursor:default}
+.mg-calbar .mg-sp{flex:1}
+.mg-calbar select{border:1px solid var(--line);border-radius:7px;padding:5px 6px;font-size:10.5px;font-weight:700;color:var(--ink);background:#fff}
+
+.mg-cal{width:100%;border-collapse:separate;border-spacing:2px;table-layout:fixed}
+.mg-cal th{font-size:9px;font-weight:800;color:var(--muted2);padding:2px 0 4px}
+.mg-cal th.sun{color:#c2410c}
+.mg-cal th.sat{color:#1b4bd8}
+.mg-cal td{padding:0;vertical-align:top}
+.mg-cell{display:block;width:100%;min-height:44px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:3px 3px 3px;text-align:left;cursor:pointer;position:relative;overflow:hidden}
+.mg-cell .d{display:block;font-size:9.5px;font-weight:800;color:#6b7280;line-height:1.1}
+.mg-cell .bg{display:flex;flex-wrap:wrap;gap:1px;margin-top:2px}
+.mg-cell .bd{font-size:8.5px;font-weight:900;line-height:1;border-radius:3px;padding:2px 3px;letter-spacing:-.02em}
+.mg-cell .bd.e{background:#e8f7ee;color:#127244;border:1px solid #bfe7cf}
+.mg-cell .bd.p{background:#eef0ff;color:#2a3fb8;border:1px solid #ccd3fb}
+.mg-cell .bd.u{background:#fff3e6;color:#a04a00;border:1px solid #f6d3ae}
+.mg-cell .bd.more{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb}
+.mg-cell.sat .d{color:#1b4bd8}
+.mg-cell.sun .d{color:#c2410c}
+.mg-cell.has{border-color:#cfd8ea;background:linear-gradient(180deg,#fff 0%,#fbfcff 100%)}
+.mg-cell.none{background:#fafafa;color:#9aa0a6}
+.mg-cell.none .d{color:#9aa0a6}
+.mg-cell.miss{background:repeating-linear-gradient(135deg,#fbfbfc,#fbfbfc 5px,#f2f3f5 5px,#f2f3f5 10px);border-style:dashed;border-color:#d9dce2}
+.mg-cell.miss .t,.mg-cell.out .t{font-size:8px;font-weight:800;color:#9aa0a6;display:block;margin-top:2px}
+.mg-cell.out{background:#fff;border-style:dashed;border-color:#dde0e6}
+.mg-cell.dim{opacity:.45}
+.mg-cell.sel{outline:2px solid #1b4bd8;outline-offset:-2px}
+
+.mg-legend{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:9px;font-size:10px;color:var(--muted)}
+.mg-legend .bd{font-size:9px;font-weight:900;border-radius:3px;padding:2px 4px}
+.mg-legend .bd.e{background:#e8f7ee;color:#127244;border:1px solid #bfe7cf}
+.mg-legend .bd.p{background:#eef0ff;color:#2a3fb8;border:1px solid #ccd3fb}
+.mg-legend .bd.u{background:#fff3e6;color:#a04a00;border:1px solid #f6d3ae}
+.mg-note{margin-top:7px;font-size:10px;line-height:1.65;color:#6b7280}
+.mg-note b{color:#40474f}
+
+/* 공통 카드 목록 */
+.mg-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mg-card{border:1px solid var(--line);border-radius:10px;padding:10px 11px;background:#fff;min-width:0}
+.mg-card .top{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:5px}
+.mg-card .top b{font-size:12px;font-weight:900;letter-spacing:-.02em;color:var(--ink)}
+.mg-card .top span{font-size:10px;font-weight:700;color:var(--muted)}
+.mg-leg{display:grid;grid-template-columns:auto 1fr;gap:2px 7px;font-size:10.5px;color:#40474f;align-items:baseline}
+.mg-leg .k{font-size:9px;font-weight:800;color:var(--muted2)}
+.mg-leg .v{font-weight:800;color:#1f2937;font-variant-numeric:tabular-nums}
+.mg-card .miles{margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);font-size:10.5px;color:#40474f;line-height:1.6}
+.mg-card .miles b{font-size:12.5px;font-weight:900;color:#1b4bd8;letter-spacing:-.02em}
+.mg-card .acts{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.mg-card .acts button,.mg-card .acts a{border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 9px;font-size:10px;font-weight:800;color:#3b4450;text-decoration:none;cursor:pointer}
+.mg-card .acts a.go{background:#1b4bd8;border-color:#1b4bd8;color:#fff}
+
+.mg-toolbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:9px;font-size:10.5px;color:var(--muted)}
+.mg-toolbar select,.mg-toolbar input{border:1px solid var(--line);border-radius:7px;padding:5px 7px;font-size:10.5px;font-weight:700;color:var(--ink);background:#fff}
+.mg-toolbar .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;color:var(--muted);cursor:pointer}
+.mg-toolbar .chip[aria-pressed="true"]{background:var(--violet-d);border-color:var(--violet-d);color:#fff}
+
+/* 표 */
+.mg-tbl{width:100%;border-collapse:collapse;font-size:10.5px}
+.mg-tbl th{font-size:9px;font-weight:800;color:var(--muted2);text-align:left;padding:5px 5px;border-bottom:1px solid var(--line);white-space:nowrap}
+.mg-tbl td{padding:5px 5px;border-bottom:1px solid #f0f1f4;color:#3b4450;vertical-align:middle}
+.mg-tbl tr:last-child td{border-bottom:0}
+.mg-tbl td.b{font-weight:900;color:var(--ink)}
+.mg-tbl .bd{font-size:9px;font-weight:900;border-radius:3px;padding:2px 4px;margin-right:2px}
+.mg-tbl .bd.e{background:#e8f7ee;color:#127244;border:1px solid #bfe7cf}
+.mg-tbl .bd.p{background:#eef0ff;color:#2a3fb8;border:1px solid #ccd3fb}
+.mg-tbl .bd.u{background:#fff3e6;color:#a04a00;border:1px solid #f6d3ae}
+.mg-tbl button.open{border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 7px;font-size:9.5px;font-weight:800;color:#3b4450;cursor:pointer}
+.mg-empty{padding:16px 12px;border:1px dashed var(--line);border-radius:10px;background:#fbfbfc;color:#6b7280;font-size:11px;line-height:1.7;text-align:center}
+
+/* 계산기 */
+.mg-calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.mg-calc .mg-form{border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff}
+.mg-calc .mg-form .row{display:flex;flex-direction:column;gap:3px;margin-bottom:8px}
+.mg-calc .mg-form label{font-size:9px;font-weight:800;color:var(--muted2)}
+.mg-calc .mg-form input,.mg-calc .mg-form select{width:100%;border:1px solid var(--line);border-radius:7px;padding:7px 8px;font-size:12px;font-weight:800;color:var(--ink);background:#fff}
+.mg-calc .mg-out{border:1px solid var(--line);border-radius:10px;padding:11px;background:linear-gradient(160deg,#f8f9fd 0%,#fff 70%)}
+.mg-calc .mg-out .big{font-size:22px;font-weight:900;letter-spacing:-.04em;color:#1b4bd8;font-variant-numeric:tabular-nums;line-height:1.1}
+.mg-calc .mg-out .sub{font-size:10.5px;color:#5a6580;margin-top:4px;line-height:1.6}
+.mg-calc .mg-out .rest{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:10.5px;color:#3b4450;line-height:1.7}
+.mg-calc .mg-out .rest b{color:#127244}
+.mg-calc ul.regions{margin:6px 0 0;padding:0;list-style:none;font-size:10.5px;color:#3b4450}
+.mg-calc ul.regions li{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid #f0f1f4}
+.mg-calc ul.regions li:last-child{border-bottom:0}
+.mg-calc ul.regions li.nope{opacity:.45}
+.mg-calc ul.regions b{font-variant-numeric:tabular-nums}
+
+/* 상세 시트 */
+#mgSheet{border:0;padding:0;border-radius:14px;max-width:min(520px,94vw);width:min(520px,94vw);box-shadow:0 20px 60px rgba(0,0,0,.28)}
+#mgSheet::backdrop{background:rgba(15,20,35,.45)}
+#mgSheet .mg-sh{padding:14px 15px 12px}
+#mgSheet .mg-sh h3{margin:0 0 3px;font-size:15px;font-weight:900;letter-spacing:-.02em}
+#mgSheet .mg-sh .s{font-size:10.5px;color:var(--muted);line-height:1.6}
+#mgSheet .mg-sh .line{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid #f0f1f4;font-size:11px;color:#3b4450}
+#mgSheet .mg-sh .line:last-of-type{border-bottom:0}
+#mgSheet .mg-sh .line b{font-weight:900;color:var(--ink)}
+#mgSheet .mg-sh .foot{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+#mgSheet .mg-sh .foot a,#mgSheet .mg-sh .foot button{flex:1 1 auto;text-align:center;border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 10px;font-size:11px;font-weight:800;color:#3b4450;text-decoration:none;cursor:pointer}
+#mgSheet .mg-sh .foot a.go{background:#1b4bd8;border-color:#1b4bd8;color:#fff}
+#mgSheet .mg-sh .fee{margin-top:8px;font-size:10px;color:#6b7280;line-height:1.6}
+
+@media (max-width:760px){
+  .mg-kpi{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mg-list{grid-template-columns:1fr}
+  .mg-calc{grid-template-columns:1fr}
+  .mg-cell{min-height:40px;padding:2px 2px}
+  .mg-cell .d{font-size:9px}
+  .mg-cell .bd{font-size:8px;padding:1.5px 2.5px}
+  .mg-cal th{font-size:8.5px}
+  .mg-routes button{font-size:10.5px;padding:5px 9px}
+}
+@media (max-width:400px){
+  .mg-cell{min-height:38px}
+  .mg-calbar .mg-mon{min-width:88px;font-size:12px}
+}

@@ -1,0 +1,119 @@
+  <section id="mgPanel" class="mg-panel" hidden aria-label="⑦ 마일리지(부산) — 부산 출발 보너스 좌석과 필요 마일">
+    <div class="mg-banner" id="mgBanner"></div>
+    <div class="mg-kpi" id="mgKpi"></div>
+
+    <div class="mg-views" id="mgViews" role="tablist" aria-label="마일리지 보기">
+      <button type="button" data-mg-view="cal" class="on" role="tab" aria-selected="true">📅 노선별 12개월 달력</button>
+      <button type="button" data-mg-view="round" role="tab" aria-selected="false">🔁 왕복 후보</button>
+      <button type="button" data-mg-view="new" role="tab" aria-selected="false">🆕 새로 열린 좌석 <b id="mgNewBadge" hidden>0</b></button>
+      <button type="button" data-mg-view="calc" role="tab" aria-selected="false">🧮 마일 계산기</button>
+    </div>
+
+    <div class="mg-block" id="mgViewCal">
+      <div class="mg-routes" id="mgRoutes" role="group" aria-label="노선 선택"></div>
+      <div class="mg-calbar">
+        <button type="button" class="nav" id="mgPrev" aria-label="이전 달">‹</button>
+        <span class="mg-mon" id="mgMon">—</span>
+        <button type="button" class="nav" id="mgNext" aria-label="다음 달">›</button>
+        <span class="mg-sp"></span>
+        <select id="mgDir" aria-label="방향">
+          <option value="0" selected>가는 편 부산→현지</option>
+          <option value="1">오는 편 현지→부산</option>
+        </select>
+        <select id="mgGrade" aria-label="등급 필터">
+          <option value="all">모든 등급</option>
+          <option value="1">일반석 보너스만</option>
+          <option value="2">프레스티지 보너스만</option>
+          <option value="4">프레스티지 승급만</option>
+        </select>
+        <select id="mgSort" aria-label="정렬">
+          <option value="date">날짜순</option>
+          <option value="miles">마일 적은 순</option>
+        </select>
+      </div>
+      <table class="mg-cal" id="mgCal" aria-label="노선별 보너스 좌석 달력">
+        <thead><tr><th class="sun">일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th class="sat">토</th></tr></thead>
+        <tbody id="mgCalBody"></tbody>
+      </table>
+      <div class="mg-legend" id="mgLegend">
+        <span><span class="bd e">E</span> 일반석 보너스</span>
+        <span><span class="bd p">P</span> 프레스티지 보너스</span>
+        <span><span class="bd u">U</span> 프레스티지 승급</span>
+        <span>무표시 = 원천에 없음</span>
+        <span>점선 = 미수집 / 원천 미제공</span>
+      </div>
+      <p class="mg-note" id="mgCalNote"></p>
+    </div>
+
+    <div class="mg-block" id="mgViewRound" hidden>
+      <div class="mg-toolbar">
+        <span>숙박</span>
+        <select id="mgNights" aria-label="숙박 일수">
+          <option value="1">1박</option>
+          <option value="2" selected>2박</option>
+          <option value="3">3박</option>
+          <option value="4">4박</option>
+        </select>
+        <button type="button" class="chip" id="mgWeekend" aria-pressed="false" title="가는 편이 금·토요일인 후보만 남깁니다">주말 포함</button>
+        <span class="mg-sp" style="flex:1"></span>
+        <span id="mgRoundCount"></span>
+      </div>
+      <div class="mg-list" id="mgRoundList"></div>
+      <p class="mg-note" id="mgRoundNote"></p>
+    </div>
+
+    <div class="mg-block" id="mgViewNew" hidden>
+      <div class="mg-toolbar">
+        <span>직전 수집과 비교</span>
+        <select id="mgNewKind" aria-label="변화 종류">
+          <option value="all">전체</option>
+          <option value="new">새로 열린 좌석</option>
+          <option value="gone">사라진 좌석</option>
+        </select>
+        <span id="mgNewCount"></span>
+      </div>
+      <div id="mgNewBody"></div>
+      <p class="mg-note" id="mgNewNote"></p>
+    </div>
+
+    <div class="mg-block" id="mgViewCalc" hidden>
+      <div class="mg-calc">
+        <div class="mg-form">
+          <div class="row"><label for="mgMiles">보유 마일</label><input id="mgMiles" type="text" inputmode="numeric" value="70000" aria-label="보유 마일"></div>
+          <div class="row"><label for="mgCabin">등급</label>
+            <select id="mgCabin" aria-label="등급">
+              <option value="eco">일반석 보너스</option>
+              <option value="pre" selected>프레스티지 보너스</option>
+              <option value="first">일등석</option>
+            </select>
+          </div>
+          <div class="row"><label for="mgRegion">여정</label>
+            <select id="mgRegion" aria-label="여정">
+              <option value="jp_cn_ne">부산 → 일본·중국·동북아</option>
+              <option value="sea_guam">부산 → 동남아·괌</option>
+              <option value="sw_asia">부산 → 서남아</option>
+              <option value="us_eu_me_oc">부산 → 미주·유럽·중동·대양주</option>
+            </select>
+          </div>
+          <div class="row"><label for="mgTrip">여정 형태</label>
+            <select id="mgTrip" aria-label="여정 형태">
+              <option value="rt" selected>왕복</option>
+              <option value="ow">편도</option>
+            </select>
+          </div>
+          <div class="row"><label for="mgSeason">시즌</label>
+            <select id="mgSeason" aria-label="시즌">
+              <option value="off" selected>평수기</option>
+              <option value="peak">성수기</option>
+            </select>
+          </div>
+        </div>
+        <div class="mg-out" id="mgCalcOut"></div>
+      </div>
+      <p class="mg-note" id="mgCalcNote"></p>
+    </div>
+  </section>
+
+  <dialog id="mgSheet" aria-label="보너스 좌석 상세">
+    <div class="mg-sh" id="mgSheetBody"></div>
+  </dialog>

@@ -44,6 +44,7 @@ PART_TABS = (('lux', 'tab1_vip.json'), ('china', 'tab2_china.json'),
              ('domestic', 'tab3_accor.json'), ('marriott', 'tab4_marriott.json'))
 PART_FLIGHTS = 'tab5_flights.json'
 PART_TTANG = 'tab6_ttang.json'
+PART_MILEAGE = 'tab8_mileage.json'      # ⑦ 마일리지(부산) — 호텔 묶음이 아니라 별도 검사
 PART_ORDER = [tab for tab, _ in PART_TABS]
 PART_ADDRESS = dict(PART_TABS)
 
@@ -87,6 +88,58 @@ ALLOWED_LABELS = ('① 호텔럭스', '💎 호텔럭스',
                   '트립닷컴·스카이스캐너·구글 플라이트',
                   '트립닷컴·스카이스캐너에서',
                   '트립닷컴 ↗', '스카이스캐너 ↗')
+
+
+def check_mileage(mg):
+    """⑦ 마일리지(부산) — 원천이 준 값만 있는지(비트 0~31), 날짜 창, 집계 일치 검사.
+
+    좌석 수량·수수료·기재는 원천에 없으므로 자료에도 없어야 한다(있으면 실패).
+    """
+    problems = []
+    if not isinstance(mg, dict):
+        return ['⑦ 마일리지 데이터가 객체가 아님']
+    if mg.get('schema') != 'mileage/1':
+        problems.append('⑦ schema 가 mileage/1 이 아님')
+    for need in ('observedAt', 'observedLabel', 'months', 'routes', 'cells', 'counts'):
+        if need not in mg:
+            problems.append('⑦ %s 키가 없음' % need)
+    if problems:
+        return problems
+    codes = {r.get('code') for r in mg['routes'] if isinstance(r, dict)}
+    months = set(mg['months'] or [])
+    cells = mg['cells'] or []
+    seen = set()
+    for row in cells:
+        if not isinstance(row, list) or len(row) != 4:
+            problems.append('⑦ cells 행 형식이 [노선, 방향, 날짜, 값] 이 아님: %r' % (row,))
+            break
+        code, direction, date, bit = row
+        if code not in codes:
+            problems.append('⑦ 모르는 노선 %r' % (code,))
+        if direction not in (0, 1):
+            problems.append('⑦ 방향 %r 가 0/1 이 아님' % (direction,))
+        if len(str(date)) != 10 or str(date)[:7] not in months:
+            problems.append('⑦ 날짜 %r 가 탑승월 목록 밖' % (date,))
+        if not isinstance(bit, int) or bit < 0 or bit & ~31:
+            problems.append('⑦ %s %s 값 %r 가 비트(0~31) 밖' % (code, date, bit))
+        key = (code, direction, date)
+        if key in seen:
+            problems.append('⑦ %s %s %s 중복' % key)
+        seen.add(key)
+    cnt = mg.get('counts') or {}
+    if cnt.get('cells') not in (None, len(cells)):
+        problems.append('⑦ counts.cells %r ≠ 실제 %d' % (cnt.get('cells'), len(cells)))
+    open_cells = sum(1 for r in cells if isinstance(r, list) and len(r) == 4 and r[3] and not (r[3] & 16))
+    if cnt.get('open') not in (None, open_cells):
+        problems.append('⑦ counts.open %r ≠ 실제 %d' % (cnt.get('open'), open_cells))
+    if not (mg.get('sourceUrl') or '').startswith('https://www.koreanair.com/'):
+        problems.append('⑦ 출처 주소가 항공사 공식 주소가 아님')
+    # 원천에 없는 값이 섞이지 않았는지(수량·수수료·기재)
+    blob = json.dumps(mg, ensure_ascii=False).lower()
+    for bad in ('"seats"', 'quantity', 'surcharge', 'aircraft', '"fee"'):
+        if bad in blob:
+            problems.append('⑦ 원천에 없는 항목이 들어 있음: %s' % bad)
+    return problems
 
 
 def check_ttang(tt):
@@ -4756,6 +4809,13 @@ def cmd_verify(args, quiet=False):
     problems.extend(check_sources(_read(part_path(PART_TTANG))))
     problems.extend(check_flights(flights))
     problems.extend(check_ttang(tt))
+    if os.path.exists(os.path.join(APP_DIR, PART_MILEAGE)):
+        try:
+            problems.extend(check_mileage(json.loads(_read(os.path.join(APP_DIR, PART_MILEAGE)))))
+        except Exception as exc:                  # noqa: BLE001
+            problems.append('⑦ %s 를 읽지 못했습니다: %r' % (PART_MILEAGE, exc))
+    else:
+        problems.append('⑦ %s 가 없습니다' % PART_MILEAGE)
     check_history(problems)
     # ⑥ 탭·탭별 JSON 골격이 빠지지 않았는지(마크업·탭 버튼·데이터 블록)
     for needle in ('id="ttPanel"', 'data-tab="tt"', 'const TTANG', 'const FLIGHTS',
@@ -4775,6 +4835,13 @@ def cmd_verify(args, quiet=False):
         print('  cells %(cells)d  priced %(priced)d  na %(na)d  stayplus %(stayplus)d' % st)
         print('  routes {routes}  deals {deals}  window {date_min}~{date_max}'.format(**st))
         print('  ⑥ 땡처리 {pus_deals}건 · {pus_routes}개 노선'.format(**st))
+        try:
+            mgv = json.loads(_read(os.path.join(APP_DIR, PART_MILEAGE)))
+            mc = mgv.get('counts') or {}
+            print('  ⑦ 마일리지 %d개 노선 · 수집칸 %d · 좌석 있는 칸 %d · 미수집 %d'
+                  % (mc.get('routes', 0), mc.get('cells', 0), mc.get('open', 0), mc.get('miss', 0)))
+        except Exception:                          # noqa: BLE001
+            pass
         print('  flights 당일치기 %d건 · 패턴 %d종' % (flights['counts'].get('daytrip', 0),
                                                    len(flights['patterns'])))
         print('  index.html const DB 호텔 %d곳 (비어 있어야 함)' % len(dbmeta.get('hotels') or []))

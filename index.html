@@ -3007,12 +3007,14 @@ function openWxSheet(hid,dt,nights){
   const el=wxSheetEl(),h=wxHotel(hid)||dayHotel(dt);
   if(!h||!el)return;
   const n=nights?Number(nights):bkNights(),co=bkAdd(dt,n);
-  el.dataset.nights=String(n);
+  /* dataset 키는 wx* 로 둔다 — data-nights·data-hotel·data-date 는 문서 전체 위임 핸들러(연박 필터 등)가
+     쓰는 이름이라 시트 자체에 같은 이름을 달면 시트 안 버튼 클릭이 그 핸들러에 먹혀 preventDefault 된다 */
+  el.dataset.wxNights=String(n);
   $('wxHotel').textContent=h.name;
   const zh=$('wxZh');zh.textContent=h.nameZh||'';zh.hidden=!h.nameZh;
   $('wxWhen').textContent=fullDate(dt)+' 체크인 · '+fullDate(co)+' 체크아웃 · '+n+'박 · 성인 2인 1실';
   const cb=$('wxCopy');cb.textContent='호텔명·날짜 복사';cb.classList.remove('done');
-  el.dataset.hotel=h.id;el.dataset.date=dt;
+  el.dataset.wxHotel=h.id;el.dataset.wxDate=dt;
   el.classList.add('show');el.setAttribute('aria-hidden','false');
   cb.focus({preventScroll:true});
 }
@@ -3054,7 +3056,7 @@ function openBkSheet(hid,dt,nights){
   const url=bookUrlOf(h,dt,n),alt=bkAltCached(h,dt,n);
   if(!url||!alt)return;
   const p=valueOfN(h,dt);
-  el.dataset.hotel=h.id;el.dataset.date=dt;el.dataset.nights=String(n);
+  el.dataset.bkHotel=h.id;el.dataset.bkDate=dt;el.dataset.bkNights=String(n);
   $('bkHotel').textContent=h.name;
   $('bkWhen').innerHTML=esc(fullDate(dt)+' 체크인 → '+fullDate(co)+' 체크아웃')+'<br>'+esc(n+'박 · 성인 2인 1실 · 세금 포함 표시가');
   const pTxt=p==null?'이 날짜는 표시 요금이 없습니다 — 예약 페이지에서 확인하세요.'
@@ -3075,8 +3077,8 @@ function openBkSheet(hid,dt,nights){
 }
 function closeBkSheet(){const el=bkSheetEl();if(!el)return;el.classList.remove('show');el.setAttribute('aria-hidden','true')}
 function copyWxText(){
-  const el=wxSheetEl(),h=wxHotel(el.dataset.hotel);if(!h)return;
-  const text=wxCopyText(h,el.dataset.date,el.dataset.nights);
+  const el=wxSheetEl(),h=wxHotel(el.dataset.wxHotel);if(!h)return;
+  const text=wxCopyText(h,el.dataset.wxDate,el.dataset.wxNights);
   const done=()=>{const b=$('wxCopy');b.textContent='복사됨 ✓';b.classList.add('done');setTimeout(()=>{b.textContent='호텔명·날짜 복사';b.classList.remove('done')},2200)};
   if(navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(text).then(done,()=>{legacyCopy(text);done()});
@@ -3102,9 +3104,9 @@ document.addEventListener('click',e=>{
      닫으면 브라우저가 <a target="_blank"> 기본 이동을 취소한다(모바일·일부 데스크톱).
      같은 날짜의 창이 아직 열려 있을 때만 닫아, 그 사이 다른 날짜를 눌러 새로 연 창은 건드리지 않는다. */
   if(e.target.closest&&e.target.closest('a.bkgo')){
-    const dt=el.dataset.date;
+    const dt=el.dataset.bkDate;
     setTimeout(()=>{const cur=bkSheetEl();
-      if(cur&&cur.classList.contains('show')&&cur.dataset.date===dt)closeBkSheet();},350);
+      if(cur&&cur.classList.contains('show')&&cur.dataset.bkDate===dt)closeBkSheet();},350);
   }
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeBkSheet()});
@@ -5338,6 +5340,8 @@ function pwaInit(){
 
 /* ── 이벤트 ───────────────────────────────────────────────── */
 document.addEventListener('click',function(e){
+  /* 예약처·위챗 시트 안의 링크·버튼은 이 위임 핸들러가 가로채지 않는다(새 탭 이동이 취소되지 않게) */
+  if(e.target.closest&&e.target.closest('.wxsheet'))return;
   const c=e.target.closest('[data-cmp]');
   if(c){e.preventDefault();const it=CMP_ITEMS[c.getAttribute('data-cmp')];if(it)cmpToggle(it);return}
   const pb=e.target.closest('[data-plan]');

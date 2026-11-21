@@ -4766,6 +4766,15 @@ function cbBasisText(){
   parts.push('①~④ 호텔 '+hTxt);
   return parts.join(' · ');
 }
+function cbBasisShort(){
+  const fl=tabFresh('flight'),tt=String((typeof TTANG!=='undefined'&&TTANG&&TTANG.observedAt)||'');
+  const hr=hotelFreshRange();
+  const hTxt=hr.min?(hr.min===hr.max?dateLabel(hr.min):dateLabel(hr.min)+'~'+dateLabel(hr.max)):'—';
+  const parts=['⑤ '+(fl?dateLabel(fl):'—')];
+  if(tt)parts.push('⑥ '+dateLabel(tt.slice(0,10)));
+  parts.push('①~④ '+hTxt);
+  return parts.join(' · ');
+}
 function cbNotesHtml(pat){
   const cities=cbCitiesAll(),ttc=cbTtCities();
   const ttRoutes=Object.keys(ttAll().reduce(function(m,d){m[d.code]=1;return m},{})).length;
@@ -4786,7 +4795,7 @@ function cbNotesHtml(pat){
 function renderCombo(){
   setDealPanels('combo');
   const t=tabs.combo;
-  $('sectionTitle').textContent=t.title;$('sectionSubtitle').textContent=t.sub;$('checktime').textContent='기준일 — '+cbBasisText();
+  $('sectionTitle').textContent=t.title;$('sectionSubtitle').textContent=t.sub;$('checktime').textContent='기준일 — '+cbBasisShort();
   if(FLIGHTS.months.indexOf(cb.month)<0)cb.month=FLIGHTS.months[0];
   cbFillSelects();
   const rows=cbRows(),cities=cbCitiesAll(),ttcities=cbTtCities();

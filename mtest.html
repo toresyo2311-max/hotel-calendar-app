@@ -57,9 +57,13 @@ function measure(tag){
 }
 
 f.addEventListener('load',function(){
-  setTimeout(function(){
+  var tries=0;
+  function ready(){
     try{
       var d=f.contentDocument, w=f.contentWindow;
+      if(!d||!d.getElementById('mgRoutes')||!d.querySelector('#mgRoutes button')||!d.getElementById('mgCalBody')||!d.getElementById('mgCalBody').children.length){
+        if(++tries<60)return setTimeout(ready,100);
+      }
       var steps=[];
       if(view!=='cal'){ click(d.querySelector('[data-mg-view="'+view+'"]')); steps.push('view:'+view); }
       if(route){ click(d.querySelector('#mgRoutes [data-mg-route="'+route+'"]')); steps.push('route:'+route); }
@@ -70,10 +74,16 @@ f.addEventListener('load',function(){
         while(i>0&&n<13){ click(d.getElementById('mgNext')); i--; n++; }
         steps.push('month:'+month+'('+n+'회 이동)');
       }
-      w.scrollTo&&w.scrollTo(0,0);
-      setTimeout(function(){ measure(steps.join(' · ')||'default'); }, 700);
+      /* 보고 싶은 영역(마일리지 패널)을 화면 위로 올린다 */
+      var p=d.getElementById('mgPanel');
+      if(p&&q.get('y')!=='0'){
+        var top=p.getBoundingClientRect().top+(w.scrollY||0)-6;
+        w.scrollTo(0,top);
+      }
+      setTimeout(function(){ measure(steps.join(' · ')||'default'); }, 350);
     }catch(e){ r.textContent='ERR2 '+e.message }
-  }, 2200);
+  }
+  ready();
 });
 </script>
 </body></html>

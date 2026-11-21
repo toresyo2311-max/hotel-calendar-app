@@ -3042,7 +3042,7 @@ function bkHasAlt(h){
   BK_ALT_OK.set(h.id,v);return v;
 }
 function bkPrimDesc(h){  if(!h)return '';
-  if(h.group==='lux')return '💎 호텔럭스 VIP 요금 페이지';
+  if(h.group==='lux')return 'VIP 요금 · 회원 전용 요금 페이지';
   if(h.group==='marriott')return '공식 사이트 · 현금·포인트 요금';
   if(h.group==='domestic')return '아코르 공식 사이트 회원가';
   return '예약 페이지';
@@ -3056,17 +3056,17 @@ function openBkSheet(hid,dt,nights){
   const p=valueOfN(h,dt);
   el.dataset.hotel=h.id;el.dataset.date=dt;el.dataset.nights=String(n);
   $('bkHotel').textContent=h.name;
-  $('bkWhen').textContent=fullDate(dt)+' 체크인 · '+fullDate(co)+' 체크아웃 · '+n+'박 · 성인 2인 1실';
+  $('bkWhen').innerHTML=esc(fullDate(dt)+' 체크인 → '+fullDate(co)+' 체크아웃')+'<br>'+esc(n+'박 · 성인 2인 1실 · 세금 포함 표시가');
   const pTxt=p==null?'이 날짜는 표시 요금이 없습니다 — 예약 페이지에서 확인하세요.'
     :('표시 요금 '+(pointsMode()?exactP(p):exactWon(p))+(n>1?' · '+n+'박 합계':' · 1박'));
   $('bkPrice').innerHTML=esc(pTxt)+'<small>'+esc('요금은 조회 시점 값입니다. 결제 금액은 연 페이지에서 확인하세요.')+'</small>';
   const pb=$('bkPrim'),ab=$('bkAlt');
   pb.href=url;pb.innerHTML='<b>'+esc(bkPrimName(h))+' ↗</b><span>'+esc(bkPrimDesc(h))+'</span>';
-  ab.href=alt.url;ab.innerHTML='<b>'+esc(alt.label)+' ↗</b><span>'+esc(alt.site)+(alt.note?' · '+esc(alt.note):'')+'</span>';
+  ab.href=alt.url;ab.innerHTML='<b>'+esc(alt.label)+' ↗</b><span>'+esc(alt.kind==='lux'?'VIP 요금 · 공홈 요금과 비교':(alt.site+(alt.kind==='search'?' · 그 도시 호텔 목록':' · 해당 호텔 페이지')))+'</span>';
   ab.className='bkgo'+(alt.kind==='lux'?' lux':'');
   $('bkNote').textContent=alt.kind==='search'
-    ?(alt.site+' — 이 호텔의 공식 사이트 코드가 확인되지 않아 '+alt.note+'으로 엽니다. 목록에서 호텔을 고르면 고른 날짜·박수로 요금이 조회됩니다.')
-    :(alt.site+' — '+alt.note+'.');
+    ?(alt.site+'에 이 호텔의 코드가 확인되지 않아 '+alt.note+'으로 엽니다. 목록에서 호텔을 고르면 위 날짜·박수로 요금이 조회됩니다.')
+    :'두 버튼 모두 위 날짜·박수가 그대로 들어간 페이지가 새 탭에서 열립니다. 결제·취소 조건은 연 페이지에서 확인하세요.';
   el.classList.add('show');el.setAttribute('aria-hidden','false');
   document.querySelectorAll('.cal-day.selected-day').forEach(x=>x.classList.remove('selected-day'));
   const cell=document.querySelector('.cal-day[data-dual-hotel="'+h.id+'"][data-dual-date="'+dt+'"]');

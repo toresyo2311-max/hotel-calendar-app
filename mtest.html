@@ -23,12 +23,15 @@ function measure(tag){
   try{
     var d=f.contentDocument, w=f.contentWindow, de=d.documentElement;
     var panel=d.getElementById('mgPanel');
-    var vw=w.innerWidth, over=[];
+    var vw=w.innerWidth, over=[], strip=0;
     ['#mgPanel','#mgRoutes','#mgKpi','#mgCal','#mgRoundList','#mgBanner'].forEach(function(sel){
       var root=d.querySelector(sel); if(!root)return;
       root.querySelectorAll('*').forEach(function(el){
         var b=el.getBoundingClientRect();
-        if(b.width>0&&(b.right>vw+1||b.left<-1))over.push(sel+':'+(el.id||el.className||el.tagName)+'@'+Math.round(b.left)+'..'+Math.round(b.right));
+        if(b.width>0&&(b.right>vw+1||b.left<-1)){
+          if(el.closest&&el.closest('.mg-routes')){strip++;return;}   /* 노선 칩 줄은 가로 스크롤 영역 — 정상 */
+          over.push(sel+':'+(el.id||el.className||el.tagName)+'@'+Math.round(b.left)+'..'+Math.round(b.right));
+        }
       });
     });
     var cells=[].slice.call(d.querySelectorAll('#mgCalBody .mg-cell'));
@@ -36,7 +39,7 @@ function measure(tag){
     cells.forEach(function(c){var k=c.className.replace('mg-cell','').trim()||'blank';counts[k]=(counts[k]||0)+1;});
     var out={
       tag:tag, innerW:vw, innerH:w.innerHeight, scrollW:de.scrollWidth, clientW:de.clientWidth,
-      ratio:w.outerWidth/w.innerWidth,
+      chipStripOverflow:strip,
       errs:(w.__ERRS||[]).slice(0,5),
       month:(d.getElementById('mgMon')||{}).textContent,
       route:(d.querySelector('#mgRoutes button[pressed]')||{}).textContent,

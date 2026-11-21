@@ -43,7 +43,8 @@ HOOKS = [
     ('setDealPanels',
      "const fp=document.getElementById('frPanel');if(fp)fp.hidden=which!=='forest';",
      "const fp=document.getElementById('frPanel');if(fp)fp.hidden=which!=='forest';"
-     "const mp=document.getElementById('mgPanel');if(mp)mp.hidden=which!=='mileage';"),
+     "const mp=document.getElementById('mgPanel');if(mp)mp.hidden=which!=='mileage';"
+     "const sbx=document.getElementById('snapshotBox');if(sbx)sbx.style.display=which==='mileage'?'none':'';"),
     ('render() 디스패치',
      "if(st.tab==='forest'){renderForest();hashSync();return}",
      "if(st.tab==='forest'){renderForest();hashSync();return}\n"

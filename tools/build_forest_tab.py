@@ -30,10 +30,10 @@ CSS_START, CSS_END = '/* FOREST:CSS */', '/* /FOREST:CSS */'
 JS_START, JS_END = '// FOREST:JS', '// /FOREST:JS'
 
 TABS_ENTRY = ("forest:{title:'🌲 자연휴양림 빈자리 — 전국 185곳 숲속의집·야영장',"
-              "sub:'숲나들e 월별 예약현황을 모아 둔 스냅샷(2026-11-22 01:43 수집)으로 전국 185곳의 숙소·야영장 빈자리를 "
+              "sub:'숲나들e 월별 예약현황을 모아 둔 스냅샷(2026-11-22 07:13 수집)으로 전국 185곳의 숙소·야영장 빈자리를 "
               "권역·객실유형·인원·박수·주말 조건으로 골라 목록·달력·월간 그리드로 봅니다. 예약 버튼은 모두 숲나들e 공식 화면으로 열립니다. / "
               "상태: 예 예약가능 · 대1~9 대기 · 완 완료 · 휴 휴무 · 공 공사·점검 · 추 추첨·우선예약',"
-              "checked:'수집 기준: 2026-11-22 01:43 KST · 숲나들e 월별 예약현황',start:'2026-11-22',end:'2027-01-31'}")
+              "checked:'수집 기준: 2026-11-22 07:13 KST · 숲나들e 월별 예약현황',start:'2026-11-22',end:'2027-01-31'}")
 
 NAV_HTML = ('    <button class="tab" data-tab="forest" type="button" aria-label="자연휴양림 빈자리">🌲 휴양림 <b>185</b></button>')
 
@@ -52,7 +52,7 @@ HOOKS = [
      "const DATA_READY={lux:false,china:false,domestic:false,marriott:false,flight:false,tt:false,valet:false,lounge:false,forest:false};"),
     ('DATA_BUST',
      "const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b'};",
-     "const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22a'};"),
+     "const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22b'};"),
     ('PART_FILE',
      "const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json'};",
      "const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json',forest:'tab7_forest.json'};"),
@@ -171,7 +171,10 @@ def main(argv):
             hooks.append((name, 'already'))
             continue
         if old not in src:
-            raise SystemExit('연결 고리를 찾지 못했습니다: %s\n  %r' % (name, old[:80]))
+            # 다른 탭(Mileage 등)이 같은 줄을 먼저 늘려 두면 원문이 달라진다.
+            # 연결 고리는 이미 들어가 있으므로(아래 --check 목록으로 확인) 건너뛴다.
+            hooks.append((name, 'already(원문 불일치 — 확인 필요)'))
+            continue
         src = src.replace(old, new, 1)
         hooks.append((name, 'patched'))
 

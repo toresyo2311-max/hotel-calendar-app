@@ -17,6 +17,15 @@ function frDate(di){const b=new Date(frStart()+'T12:00:00Z').getTime()+di*864000
 function frDi(iso){return Math.round((new Date(iso+'T12:00:00Z')-new Date(frStart()+'T12:00:00Z'))/86400000)}
 function frWon(n){return n==null?'요금 미공개':KR(n)+'원'}
 function frOffUrl(f){return FR_OFF+encodeURIComponent(f.id)}
+/* 예약 링크 열기 — 데스크톱은 새 탭, 새 탭(팝업)을 막는 인앱 브라우저·웹뷰는 같은 탭.
+   target="_blank" 만 두면 팝업을 막는 웹뷰에서 눌러도 아무 일도 일어나지 않는다. */
+function frOpenExt(url){
+  if(!url)return;
+  let w=null;
+  try{w=window.open(url,'_blank')}catch(err){w=null}
+  if(w){try{w.opener=null}catch(err){}}
+  else{location.href=url}
+}
 function frWeekendDi(di){const d=dayNo(frDate(di));return d===5||d===6}   /* 금·토 체크인 */
 
 /* 자료 준비 — 객실마다 예약가능한 날 인덱스를 미리 뽑아 둔다 */
@@ -445,6 +454,8 @@ $('frReset').addEventListener('click',function(){frs.type='all';frs.cap=0;frs.ra
 $('frWeekend').addEventListener('click',function(){frs.weekend=!frs.weekend;frs.day='';renderForest()});
 $('frFresh').addEventListener('click',function(){frs.fresh=!frs.fresh;frs.day='';renderForest()});
 $('frPanel').addEventListener('click',function(e){
+  const a=e.target.closest('a[href]');
+  if(a){e.preventDefault();frOpenExt(a.href);return}
   const v=e.target.closest('[data-fr-view]');
   if(v){frs.view=v.getAttribute('data-fr-view');renderForest();return}
   const n=e.target.closest('[data-fr-nights]');

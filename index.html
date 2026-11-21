@@ -370,6 +370,20 @@ button:disabled{cursor:not-allowed;opacity:.3}
 .wxguide b{color:var(--ink)}
 .wxclose{margin-top:12px;width:100%;border:0;background:#f3f0fa;border-radius:10px;padding:11px;font-size:12px;font-weight:800;color:var(--muted);cursor:pointer}
 button.wx-cell{font:inherit;color:inherit;cursor:pointer}
+/* 예약처 선택 시트 — 이중 연결(💎 호텔럭스 + 공홈) 호텔의 달력 날짜를 누르면 뜬다 */
+button.dual-cell{font:inherit;color:inherit;cursor:pointer;text-align:left;width:100%}
+button.dual-cell::after{content:'⇄';position:absolute;top:2px;right:3px;font-size:9px;font-weight:800;line-height:1;opacity:.62;color:var(--violet-d)}
+.cal-day.hm1.dual-cell::after,.cal-day.hm2.dual-cell::after{color:#fff;opacity:.9}
+.bkprice{margin:11px 0 0;padding:9px 11px;background:var(--h5);border-radius:9px;font-size:12px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.bkprice small{display:block;margin-top:4px;font-size:10.5px;font-weight:600;color:var(--muted2);line-height:1.65}
+.bkacts{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.bkgo{display:block;border-radius:11px;padding:12px 13px;text-decoration:none;border:1px solid var(--lav2);background:var(--lav);color:var(--violet-d)}
+.bkgo b{display:block;font-size:13px;font-weight:800;letter-spacing:-.02em}
+.bkgo span{display:block;margin-top:3px;font-size:10.5px;font-weight:600;color:var(--muted2);line-height:1.55}
+.bkgo.prim{border:0;background:var(--violet-d);color:#fff}
+.bkgo.prim span{color:rgba(255,255,255,.8)}
+.bkgo.lux{background:#f7f0ff;border-color:#dcc9f4}
+.bknote{margin:11px 0 0;font-size:10.5px;line-height:1.7;color:var(--muted2)}
 
 /* ── ③ 아코르 SNU 패널 ───────────────────────────────── */
 #snuPanel[hidden]{display:none}
@@ -1748,6 +1762,16 @@ html.locked #lockGate{display:flex}
   <p class="wxguide"><b>1</b> 위챗 열기 → <b>2</b> 검색에서 <b>雅高心悦界</b> 미니프로그램 실행 → <b>3</b> 복사한 호텔명을 붙여넣고 날짜를 맞춰 조회하세요. 위챗이 설치돼 있지 않거나 창이 열리지 않으면 위챗을 직접 실행한 뒤 미니프로그램을 여세요.</p>
   <button type="button" class="wxclose" id="wxClose">닫기</button>
 </div></div>
+<div class="wxsheet" id="bkSheet" aria-hidden="true"><div class="wxcard" role="dialog" aria-modal="true" aria-labelledby="bkTitle">
+  <h3 id="bkTitle">어느 예약처로 갈까요?</h3>
+  <p class="wxsub">이 호텔은 예약처가 두 곳입니다 — 요금을 비교해 고르세요. 두 버튼 모두 아래 날짜·박수가 그대로 들어간 페이지가 새 탭에서 열립니다.</p>
+  <p class="wxhotel" id="bkHotel"></p>
+  <p class="wxwhen" id="bkWhen"></p>
+  <p class="bkprice" id="bkPrice"></p>
+  <div class="bkacts"><a class="bkgo prim" id="bkPrim" href="#" target="_blank" rel="noopener"></a><a class="bkgo" id="bkAlt" href="#" target="_blank" rel="noopener"></a></div>
+  <p class="bknote" id="bkNote"></p>
+  <button type="button" class="wxclose" id="bkClose">닫기</button>
+</div></div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="cmpbar" id="cmpBar"><span>⚖️ 비교함 <b id="cmpN">0</b>/4</span><button type="button" id="cmpOpen">나란히 비교</button><button type="button" class="ghost" id="cmpClear">비우기</button></div>
@@ -2256,7 +2280,7 @@ function renderCalendar(S){
   $('monthRail').innerHTML=yearMonths().map(m=>'<button type="button" data-goto="'+m+'" class="'+(m===st.month?'on':'')+'">'+Number(m.slice(5,7))+'월</button>').join('');
   if(N>1){const onlyH=st.hotel!=='all'?(filteredHotels()[0]||{}).name:null;$('selectionInfo').textContent=(onlyH?onlyH+' · ':'선택 호텔 중 ')+N+'박 연속 합계 최저';}
   renderMonthHighlight();
-  $('legendDetail').textContent=(st.tab==='domestic'&&st.mode!=='cash'?'세금 별도, Stay Plus 적용 후 '+(st.mode==='sp2'?'2박':'토 체크인 3박')+' 결제액 · ':'')+(st.tab==='china'?'날짜를 누르면 위챗 예약 창이 열립니다 · ':'날짜를 누르면 그 날짜의 예약 페이지가 새 탭에서 열립니다 · ')+(only&&naRulesOf(filteredHotels()[0])?'칸의 「미오픈 · 판매 중지 · 이상치 제외」는 그 호텔 자료에 적힌 사유입니다 · ':'')+'호텔별 금액 비교는 「선택일 호텔 비교」.';
+  $('legendDetail').textContent=(st.tab==='domestic'&&st.mode!=='cash'?'세금 별도, Stay Plus 적용 후 '+(st.mode==='sp2'?'2박':'토 체크인 3박')+' 결제액 · ':'')+(st.tab==='china'?'날짜를 누르면 위챗 예약 창이 열립니다 · ':'날짜를 누르면 그 날짜의 예약 페이지가 새 탭에서 열립니다(예약처가 둘인 호텔은 어느 예약처로 갈지 먼저 고릅니다) · ')+(only&&naRulesOf(filteredHotels()[0])?'칸의 「미오픈 · 판매 중지 · 이상치 제외」는 그 호텔 자료에 적힌 사유입니다 · ':'')+'호텔별 금액 비교는 「선택일 호텔 비교」.';
   const byDate={};for(const x of S)byDate[x.d]=x;
   /* 호텔별 '유효 평균가' — 이상치(1박 1,000만 원 이상)는 빼고 계산. 특가 = 그 호텔 평균의 80% 이하 */
   const AVG={};
@@ -2331,7 +2355,11 @@ function renderCalendar(S){
       const cellInner='<span class="daynum">'+Number(date.slice(-2))+'</span>'+(deal?'<span class="daydeal">특가</span>':'')+vlabel+sub+tail+ticketCell(date,e,only);
       const bUrl=(p!=null&&!blkHide)?dayBookUrl(date):'';
       const wxH=(st.tab==='china'&&(p!=null||only)&&!blkHide)?(dayHotel(date)||(only?filteredHotels()[0]:null)):null;
+      /* 예약처가 둘인 호텔(💎 호텔럭스 + 공홈) — 바로 열지 않고 선택 시트를 먼저 띄운다 */
+      const dH=bUrl?dayHotel(date):null;
+      const dDual=dH?bkHasAlt(dH):false;
       cells+=wxH?('<button type="button" class="'+cls+' wx-cell" data-wx-hotel="'+wxH.id+'" data-wx-date="'+date+'" data-wx-nights="'+N+'" aria-label="'+fullDate(date)+' '+shortVal(p)+(naR?' '+naR.label:'')+' · 위챗 예약 열기" title="'+fullDate(date)+' · 위챗 예약 창이 열립니다'+(naR?' · '+naR.label+' — 호텔 자료에 적힌 사유':'')+'">'+cellInner+'</button>')
+        :dDual?('<button type="button" class="'+cls+' dual-cell" data-dual-hotel="'+esc(dH.id)+'" data-dual-date="'+date+'" data-dual-nights="'+N+'" aria-label="'+fullDate(date)+' '+(N>1?N+'박 합계 ':'')+shortVal(p)+' · 예약처 선택 열기(💎 호텔럭스·공홈)" title="'+esc(fullDate(date)+' · 예약처가 두 곳입니다 — 💎 호텔럭스와 공홈 중 어디서 예약할지 고르는 창이 열립니다')+'">'+cellInner+'</button>')
         :bUrl?('<a class="'+cls+'" data-date="'+date+'" href="'+esc(bUrl)+'" target="_blank" rel="noopener" aria-label="'+fullDate(date)+' '+(N>1?N+'박 합계 ':'')+' '+shortVal(p)+' · 예약 페이지 열기" title="'+fullDate(date)+' · 예약 페이지가 새 탭에서 열립니다'+(out?' · ⚠ 1박 1,000만 원 이상 — 시스템 오류가 의심되는 값(0원·무료 아님)':'')+(deal?' · 이 호텔 유효 평균가 대비 20% 이상 저렴한 특가':'')+(overb?' · 1박 예산 초과':'')+'">'+cellInner+'</a>')
         :('<button type="button" class="'+cls+'" data-date="'+date+'" aria-label="'+fullDate(date)+' '+(naR?naR.label+' · 요금 미표시':'요금 미표시')+'" title="'+fullDate(date)+' · '+(naR?naR.label+' — '+(naR.title||'호텔 자료에 적힌 사유'):'요금 미표시')+'">'+cellInner+'</button>');
     }
@@ -2349,7 +2377,7 @@ function renderNotes(){if(st.tab==='lux'){
  $('basis').innerHTML=(st.cur==='usd'?'<div class="note-row"><span class="note-mark">$</span><span class="note-text"><strong>지금은 USD 로 보고 있습니다.</strong> ① 자료는 조사 때 USD 표시가를 원화로 환산해 담았습니다 — 화면의 USD는 그 환산값을 <strong>조사 때 쓴 환율</strong>(140곳 '+usdRateTxt(null)+' · 2026-11-17 / 21곳 USD 1 = ₩1,331.56 · 2026-11-19)로 되돌린 표시입니다. 새 환율을 곱한 값이 아니므로 실제 결제 금액과는 다릅니다(카드 환율·수수료 반영 안 됨). 복사·CSV는 원화로 나갑니다.</span></div>':'')
   +'<div class="note-row"><span class="note-mark">✕</span><span class="note-text"><strong>취소 조건은 호텔 단위 표기</strong>입니다 — 자료에 적힌 문구만 읽어 <strong>무료 취소 · 환불 가능 · 환불 불가 · 취소조건 미확인</strong>으로 나눕니다. 요금(날짜)별 취소 조건은 ① 자료에 없어서 날짜 칸에는 붙이지 않았습니다. <strong>「취소조건 미확인」은 무료 취소가 아니라는 뜻이 아니라, 자료에 조건이 적혀 있지 않다는 뜻</strong>입니다. 「무료취소 확인」 필터는 그 문구가 있는 호텔만 남깁니다.</span></div>'
   +'<div class="note-row"><span class="note-mark">◌</span><span class="note-text"><strong>빈칸(—)의 상태</strong> — 호텔을 하나 고르면 칸에 <strong>예약창 미개시 / 매진·판매중지 / 최소 N박</strong>을 적습니다. 요금이 열린 기간 밖이거나 20일 넘게 끊긴 구간은 <strong>예약창 미개시</strong>, 같은 요일(2~3요일)만 반복해서 비면 <strong>최소 N박</strong>, 그 밖의 안쪽 결번은 <strong>매진·판매중지</strong>로 봅니다. ① 자료에는 사유 문구가 없어 <strong>앞뒤 날짜의 요금 유무로 가른 추정</strong>입니다 — 실제 사유는 예약 화면에서 확인하세요. 인터컨티넨탈 다낭의 2027-07-01~08-31 62일은 실측으로 확인된 <strong>2박 이상 최소숙박</strong> 구간이라 <strong>최소 2박</strong>으로 적습니다(만실 아님).</span></div>'
-  +'<div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>VIP 요금 날짜별 최저 1박가</strong> · 성인 2인 1실, 세금 포함 표시가. 해외 호텔은 사이트 USD 표시가를 <strong>USD 1 = ₩1,336.02</strong>(2026-11-17)로 환산해 100원 단위 반올림했습니다. 2026-11-20~21에 예약 사이트에서 직접 조회한 <strong>21곳</strong>은 <strong>USD 1 = ₩1,331.56</strong>(2026-11-19)로 환산했습니다. 상세 카드에는 2026-11-19 참고 환율로 환산한 현지 통화(엔화 약 ¥34,692 등)를 함께 적었습니다.</span></div><div class="note-row"><span class="note-mark">◷</span><span class="note-text">수집 <strong>2026-11-17 01:13 KST</strong> VIP 요금 조사 140곳(365일) + <strong>2026-11-20 07:30~13:55 · 14:10~14:45 · 14:49~16:05 · 15:51~16:23 · 16:31~17:09 · 17:15~17:53 · 17:58~18:33 · 18:41~19:24 · 19:34~20:13 KST</strong> 예약 사이트 직접 조회 21곳(<strong>21곳 모두 2026-12-01~2027-11-30</strong> 365칸). 다섯 곳(방콕 3곳 월도프 아스토리아·만다린 오리엔탈·카펠라, 다낭 2곳 하얏트 리젠시·인터컨티넨탈)은 2026-11-21에 <strong>2026-12-01~2027-11-30 365일을 전부 쟀고</strong>(요금 없음 44일·46일·49일·43일·150일은 —), 2027-10-18·10-19 이후는 사이트가 1박 판매를 열지 않아 —입니다. 인터컨티넨탈 다낭의 2027-07-01~08-31 62일은 만실이 아니라 <strong>2박 이상 최소숙박 제한</strong>이라 1박 기준으로 —입니다. 판매 객실이 없던 날(최소 숙박 조건·예약 창 미개시 등)도 —입니다.</span></div><div class="note-row"><span class="note-mark">↔</span><span class="note-text">2026-11-20 정리 — 검색 화면·PDF 에서 모은 요금 <strong>17곳</strong>은 ① 탭에서 모두 빼고, 그 17곳을 예약 사이트에서 직접 다시 실측해 채웠습니다. 이제 ① 탭 <strong>161곳 모두 달력</strong>이 있고 <strong>요금이 아예 없는 호텔은 0곳</strong>입니다(2026-11-21에 다섯 곳까지 2027-11-30까지 다 쟀습니다 — 직접 조회 21곳 모두 365일 완결).</span></div><div class="note-row"><span class="note-mark">✓</span><span class="note-text"><strong>예약 사이트 직접 조회 21곳</strong>은 2026-11-20~21에 예약 사이트 호텔 상세 페이지를 비로그인으로 조회한 <strong>공개 요금</strong>입니다 — 21곳 모두 <strong>2026-12-01~2027-11-30(365칸)</strong>이고(21곳 모두 11-30까지 실측), 성인 2인·1실·1박 세금·수수료 포함 USD 총액을 <strong>USD 1 = ₩1,331.56</strong>(2026-11-19)로 환산해 정수로 적었습니다. 콘래드 도쿄의 2027-10~11월 61일과 페어몬트 도쿄의 2027-10-18~11-30 44일은 <strong>판매 객실 없음</strong>(예약 창 미개시 가능성 · 추후 재조회 대상)이라 —이고, 그 밖에 판매 객실이 없던 날도 —입니다. 푸동 샹그릴라는 2027-03-01~05-31 92일 · 2027-06-01~08-31 92일 · 2027-09-01~10-17 47일 <strong>모두 판매 요금</strong>이 있었고(객실 21종 · 3~5월 USD 168~260 · 6~8월 USD 185~248 · 9~10월 USD 157~220), 2027-10-18~11-30 <strong>44일은 판매 객실 없음</strong>(10-18 이후 판매 객실 없음 · 예약 창 미개시 가능성 · 추후 재조회 대상)이라 <strong>2026-12-01~2027-11-30 365일 실측을 마쳤습니다</strong>. 페어몬트 피스는 2027-03-01~05-31 92일과 2027-06-01~08-20 81일 <strong>모두 판매 요금</strong>이 있었고, 2027-08-21~11-30 <strong>102일은 판매 객실 없음</strong>(08-21 이후 판매 객실 없음 · 예약 창 미개시 가능성 · 추후 재조회 대상)이라 <strong>2026-12-01~2027-11-30 365일 실측을 마쳤습니다</strong>.</span></div>'+'<div class="note-row"><span class="note-mark">🔀</span><span class="note-text"><strong>예약처가 둘인 호텔 79곳</strong>입니다 — 날짜를 눌러 연 상세 카드·선택 호텔 요약·후보 비교·일정 복사에 <strong>💎 호텔럭스</strong>(VIP 요금)와 공홈 버튼이 나란히 나오고, 두 버튼 모두 고른 체크인·체크아웃이 들어간 페이지로 열립니다. 메리어트 계열 44곳은 <strong>🏨 메리어트 공홈</strong>, 아코르 계열 15곳(페어몬트·소피텔·래플스·반얀트리·파에나)은 <strong>🏨 아코르 공홈</strong>, 하얏트 계열 20곳(파크·그랜드 하얏트·안다즈·톰슨·하얏트 리젠시·하얏트 센트릭·언바운드)은 <strong>🏨 하얏트 공홈</strong>입니다. 호텔 코드가 확인된 곳만 그 호텔 페이지로 가고, 나머지는 그 도시의 공홈 호텔 목록(고른 체크인·체크아웃 포함)으로 갑니다(코드를 추정해 만들지 않았습니다).</span></div>'+hlxLinkNoteRow()+'<details><summary>소스 설명 더 보기</summary><p>① 탭 161곳 = <strong>VIP 요금 조사 140곳</strong>(2026-11-17 · 365일) + <strong>예약 사이트 직접 조회 21곳</strong>(2026-11-20), 요금 자료가 아예 없는 호텔은 0곳입니다. 칸 수는 140곳 × 365일 + 21곳 × 365일 = <strong>58,765칸</strong>이며, <strong>—는 요금 미표시(NA)</strong>로 0원·무료 숙박이 아닙니다. 실측이 창 끝까지 닿지 않은 호텔은 없습니다 — 2026-11-21에 방콕 3곳(월도프 아스토리아·만다린 오리엔탈·카펠라)과 다낭 2곳(하얏트 리젠시·인터컨티넨탈)까지 창 끝(2027-11-30)까지 쟀고, 2027-10-18·10-19 이후는 사이트가 1박 판매를 열지 않아 —입니다. 인터컨티넨탈 다낭의 2027-07-01~08-31 62일은 2박 이상 최소숙박 제한이라 1박 기준으로 —입니다.</p></details>';
+  +'<div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>VIP 요금 날짜별 최저 1박가</strong> · 성인 2인 1실, 세금 포함 표시가. 해외 호텔은 사이트 USD 표시가를 <strong>USD 1 = ₩1,336.02</strong>(2026-11-17)로 환산해 100원 단위 반올림했습니다. 2026-11-20~21에 예약 사이트에서 직접 조회한 <strong>21곳</strong>은 <strong>USD 1 = ₩1,331.56</strong>(2026-11-19)로 환산했습니다. 상세 카드에는 2026-11-19 참고 환율로 환산한 현지 통화(엔화 약 ¥34,692 등)를 함께 적었습니다.</span></div><div class="note-row"><span class="note-mark">◷</span><span class="note-text">수집 <strong>2026-11-17 01:13 KST</strong> VIP 요금 조사 140곳(365일) + <strong>2026-11-20 07:30~13:55 · 14:10~14:45 · 14:49~16:05 · 15:51~16:23 · 16:31~17:09 · 17:15~17:53 · 17:58~18:33 · 18:41~19:24 · 19:34~20:13 KST</strong> 예약 사이트 직접 조회 21곳(<strong>21곳 모두 2026-12-01~2027-11-30</strong> 365칸). 다섯 곳(방콕 3곳 월도프 아스토리아·만다린 오리엔탈·카펠라, 다낭 2곳 하얏트 리젠시·인터컨티넨탈)은 2026-11-21에 <strong>2026-12-01~2027-11-30 365일을 전부 쟀고</strong>(요금 없음 44일·46일·49일·43일·150일은 —), 2027-10-18·10-19 이후는 사이트가 1박 판매를 열지 않아 —입니다. 인터컨티넨탈 다낭의 2027-07-01~08-31 62일은 만실이 아니라 <strong>2박 이상 최소숙박 제한</strong>이라 1박 기준으로 —입니다. 판매 객실이 없던 날(최소 숙박 조건·예약 창 미개시 등)도 —입니다.</span></div><div class="note-row"><span class="note-mark">↔</span><span class="note-text">2026-11-20 정리 — 검색 화면·PDF 에서 모은 요금 <strong>17곳</strong>은 ① 탭에서 모두 빼고, 그 17곳을 예약 사이트에서 직접 다시 실측해 채웠습니다. 이제 ① 탭 <strong>161곳 모두 달력</strong>이 있고 <strong>요금이 아예 없는 호텔은 0곳</strong>입니다(2026-11-21에 다섯 곳까지 2027-11-30까지 다 쟀습니다 — 직접 조회 21곳 모두 365일 완결).</span></div><div class="note-row"><span class="note-mark">✓</span><span class="note-text"><strong>예약 사이트 직접 조회 21곳</strong>은 2026-11-20~21에 예약 사이트 호텔 상세 페이지를 비로그인으로 조회한 <strong>공개 요금</strong>입니다 — 21곳 모두 <strong>2026-12-01~2027-11-30(365칸)</strong>이고(21곳 모두 11-30까지 실측), 성인 2인·1실·1박 세금·수수료 포함 USD 총액을 <strong>USD 1 = ₩1,331.56</strong>(2026-11-19)로 환산해 정수로 적었습니다. 콘래드 도쿄의 2027-10~11월 61일과 페어몬트 도쿄의 2027-10-18~11-30 44일은 <strong>판매 객실 없음</strong>(예약 창 미개시 가능성 · 추후 재조회 대상)이라 —이고, 그 밖에 판매 객실이 없던 날도 —입니다. 푸동 샹그릴라는 2027-03-01~05-31 92일 · 2027-06-01~08-31 92일 · 2027-09-01~10-17 47일 <strong>모두 판매 요금</strong>이 있었고(객실 21종 · 3~5월 USD 168~260 · 6~8월 USD 185~248 · 9~10월 USD 157~220), 2027-10-18~11-30 <strong>44일은 판매 객실 없음</strong>(10-18 이후 판매 객실 없음 · 예약 창 미개시 가능성 · 추후 재조회 대상)이라 <strong>2026-12-01~2027-11-30 365일 실측을 마쳤습니다</strong>. 페어몬트 피스는 2027-03-01~05-31 92일과 2027-06-01~08-20 81일 <strong>모두 판매 요금</strong>이 있었고, 2027-08-21~11-30 <strong>102일은 판매 객실 없음</strong>(08-21 이후 판매 객실 없음 · 예약 창 미개시 가능성 · 추후 재조회 대상)이라 <strong>2026-12-01~2027-11-30 365일 실측을 마쳤습니다</strong>.</span></div>'+'<div class="note-row"><span class="note-mark">🔀</span><span class="note-text"><strong>예약처가 둘인 호텔 79곳</strong>입니다 — 달력에서 이 호텔의 날짜를 누르면 <strong>「어느 예약처로 갈까요?」 창</strong>이 먼저 뜨고, 거기서 고른 예약처가 그 날짜·박수로 열립니다. 날짜를 눌러 연 상세 카드·선택 호텔 요약·후보 비교·일정 복사에는 <strong>💎 호텔럭스</strong>(VIP 요금)와 공홈 버튼이 나란히 나오고, 두 버튼 모두 고른 체크인·체크아웃이 들어간 페이지로 열립니다. 메리어트 계열 44곳은 <strong>🏨 메리어트 공홈</strong>, 아코르 계열 15곳(페어몬트·소피텔·래플스·반얀트리·파에나)은 <strong>🏨 아코르 공홈</strong>, 하얏트 계열 20곳(파크·그랜드 하얏트·안다즈·톰슨·하얏트 리젠시·하얏트 센트릭·언바운드)은 <strong>🏨 하얏트 공홈</strong>입니다. 호텔 코드가 확인된 곳만 그 호텔 페이지로 가고, 나머지는 그 도시의 공홈 호텔 목록(고른 체크인·체크아웃 포함)으로 갑니다(코드를 추정해 만들지 않았습니다).</span></div>'+hlxLinkNoteRow()+'<details><summary>소스 설명 더 보기</summary><p>① 탭 161곳 = <strong>VIP 요금 조사 140곳</strong>(2026-11-17 · 365일) + <strong>예약 사이트 직접 조회 21곳</strong>(2026-11-20), 요금 자료가 아예 없는 호텔은 0곳입니다. 칸 수는 140곳 × 365일 + 21곳 × 365일 = <strong>58,765칸</strong>이며, <strong>—는 요금 미표시(NA)</strong>로 0원·무료 숙박이 아닙니다. 실측이 창 끝까지 닿지 않은 호텔은 없습니다 — 2026-11-21에 방콕 3곳(월도프 아스토리아·만다린 오리엔탈·카펠라)과 다낭 2곳(하얏트 리젠시·인터컨티넨탈)까지 창 끝(2027-11-30)까지 쟀고, 2027-10-18·10-19 이후는 사이트가 1박 판매를 열지 않아 —입니다. 인터컨티넨탈 다낭의 2027-07-01~08-31 62일은 2박 이상 최소숙박 제한이라 1박 기준으로 —입니다.</p></details>';
  $('caution').innerHTML='<ul><li><strong class="alert">표시가는 VIP(및 파트너 요율) 또는 예약 사이트에서 직접 조회한 공개 요금</strong>입니다. 실제 예약 화면 금액·적용 혜택과 다를 수 있고, 회원 등급·결제 통화에 따라 달라집니다.</li><li><strong>프로모션(15% OFF, 2+1, Stay 4 Pay 3 등)은 예약 기간·숙박 기간·최소 박수 조건</strong>이 있어 달력 1박가에 자동 반영되지 않습니다. 호텔을 선택하면 그 호텔의 조건이 상세에 나옵니다.</li><li><strong>NA(—)는 「요금 미표시」</strong>입니다 — 요금 미공개·만실·판매 중지·미오픈을 구분하지 않고, <strong>아직 재지 않은 날짜</strong>도 —입니다(① 은 실측한 칸만 실어서, 실측이 끝나지 않은 기간도 —).</li><li>조식 포함·환불 가능 여부는 사이트가 실시간 조회한 날짜에만 표시되고, 대부분의 날짜는 확인되지 않았습니다.</li><li>환율은 수집 시점 고정값(2026-11-17 · 예약 사이트 직접 조회 21곳은 2026-11-19)이라 이후 환율 변동은 반영되지 않습니다. 상세 카드의 현지 통화 환산은 2026-11-19 참고 환율이며 실제 결제 금액과 다를 수 있습니다.</li></ul><details><summary>자세한 혜택·특이사항 확인</summary><div id="promoNotes"></div></details>';
  $('promoNotes').innerHTML=filteredHotels().filter(h=>h.promotion&& !h.promotion.includes('확인된 프로모션 없음')).map(h=>'<p><strong>'+esc(h.name)+'</strong>: '+esc(h.promotion)+'</p>').join('')||'<p>선택된 호텔에 기재된 체인 프로모션이 없습니다.</p>';
  }else if(st.tab==='china'){
@@ -2943,7 +2971,7 @@ function bkBookHtml(h,ci,nights,cls){
      요금 확인·예약도 그 화면에서 그대로 된다. 기기 분기(intent://·App Link)는 걷어냈다.
    hlxUrl·bookUrlOf·cbHotelUrl 이 돌려주는 값은 예약 웹페이지 주소 하나뿐이다. */
 function hlxLinkNoteRow(){
-  return '<div class="note-row"><span class="note-mark">🔗</span><span class="note-text">예약 링크 — 날짜 칸·호텔 카드를 누르면 <strong>그 날짜·1박</strong>이 들어간 <strong>예약 웹페이지</strong>가 열립니다. 예약 앱은 호텔 페이지만 열고 날짜는 앱에 저장된 마지막 검색 날짜로 뜨기 때문에, 날짜가 정확한 웹페이지로 엽니다.</span></div>';
+  return '<div class="note-row"><span class="note-mark">🔗</span><span class="note-text">예약 링크 — 날짜 칸·호텔 카드를 누르면 <strong>그 날짜·박수</strong>가 들어간 <strong>예약 웹페이지</strong>가 열립니다. <strong>예약처가 둘인 호텔(💎 호텔럭스 + 공홈)은 달력 날짜를 누르면 바로 열리지 않고 「어느 예약처로 갈까요?」 창이 먼저 뜨며</strong>, 거기서 고른 버튼이 같은 날짜·박수로 새 탭에서 열립니다(한 쪽 링크만 있는 호텔은 지금처럼 바로 열립니다). 예약 앱은 호텔 페이지만 열고 날짜는 앱에 저장된 마지막 검색 날짜로 뜨기 때문에, 날짜가 정확한 웹페이지로 엽니다.</span></div>';
 }
 /* 호텔·체크인 → 탭별 예약처 주소
    ① (호텔 페이지) · ② (위챗 창: 주소 없음) · ③ all.accor.com · ④ marriott.com
@@ -2989,6 +3017,63 @@ function openWxSheet(hid,dt,nights){
   cb.focus({preventScroll:true});
 }
 function closeWxSheet(){const el=wxSheetEl();if(!el)return;el.classList.remove('show');el.setAttribute('aria-hidden','true')}
+/* ── 예약처 선택 시트 — 예약처가 둘인 호텔은 달력 날짜를 누르면 바로 열지 않고 고르게 한다 ──
+   2026-11-21 한진님 요청("메리엇 달력 클릭하면 바로 들어가지는데 호럭하고 메리엇 어느것 들어갈지 선택후 연결되게").
+   대상: ① 호텔럭스(메리어트·아코르·하얏트 계열 = 공홈 짝 있음) · ③ 아코르(LUX_REF_ACC 있음) · ④ 메리엇(luxTwinOfMar 있음).
+   한 쪽 링크만 있는 호텔은 지금처럼 <a href>로 바로 열린다. */
+const bkSheetEl=()=>document.getElementById('bkSheet');
+const BK_ALT_CACHE=new Map();
+const BK_ALT_OK=new Map();
+function bkAltCached(h,ci,nights){
+  if(!h||!ci)return null;
+  const k=h.id+'|'+ci+'|'+(Number(nights)||1);
+  if(BK_ALT_CACHE.has(k))return BK_ALT_CACHE.get(k);
+  const v=bkAltLinkOf(h,ci,nights);BK_ALT_CACHE.set(k,v);return v;
+}
+/* 달력 366칸 × 12달을 그릴 때마다 링크를 만들지 않도록 「예약처가 둘인 호텔인가」만 호텔별로 한 번 판단한다.
+   bkAltLinkOf 가 null 을 돌려주는 조건과 같게 맞춘다(링크 주소는 창을 열 때 만든다). */
+function bkHasAlt(h){
+  if(!h||h.fhr)return false;
+  if(BK_ALT_OK.has(h.id))return BK_ALT_OK.get(h.id);
+  let v=false;
+  if(h.group==='lux')v=Boolean(marriottBrandName(h)||accorBrandName(h)||hyattBrandName(h));
+  else if(h.group==='marriott')v=Boolean(luxTwinOfMar(h));
+  else if(h.group==='domestic')v=Boolean(LUX_REF_ACC[h.id]);
+  BK_ALT_OK.set(h.id,v);return v;
+}
+function bkPrimDesc(h){  if(!h)return '';
+  if(h.group==='lux')return '💎 호텔럭스 VIP 요금 페이지';
+  if(h.group==='marriott')return '공식 사이트 · 현금·포인트 요금';
+  if(h.group==='domestic')return '아코르 공식 사이트 회원가';
+  return '예약 페이지';
+}
+function openBkSheet(hid,dt,nights){
+  const el=bkSheetEl();if(!el||!dt)return;
+  const h=wxHotel(hid)||dayHotel(dt);if(!h)return;
+  const n=Number(nights)||st.nights||1,co=bkAdd(dt,n);
+  const url=bookUrlOf(h,dt,n),alt=bkAltCached(h,dt,n);
+  if(!url||!alt)return;
+  const p=valueOfN(h,dt);
+  el.dataset.hotel=h.id;el.dataset.date=dt;el.dataset.nights=String(n);
+  $('bkHotel').textContent=h.name;
+  $('bkWhen').textContent=fullDate(dt)+' 체크인 · '+fullDate(co)+' 체크아웃 · '+n+'박 · 성인 2인 1실';
+  const pTxt=p==null?'이 날짜는 표시 요금이 없습니다 — 예약 페이지에서 확인하세요.'
+    :('표시 요금 '+(pointsMode()?exactP(p):exactWon(p))+(n>1?' · '+n+'박 합계':' · 1박'));
+  $('bkPrice').innerHTML=esc(pTxt)+'<small>'+esc('요금은 조회 시점 값입니다. 결제 금액은 연 페이지에서 확인하세요.')+'</small>';
+  const pb=$('bkPrim'),ab=$('bkAlt');
+  pb.href=url;pb.innerHTML='<b>'+esc(bkPrimName(h))+' ↗</b><span>'+esc(bkPrimDesc(h))+'</span>';
+  ab.href=alt.url;ab.innerHTML='<b>'+esc(alt.label)+' ↗</b><span>'+esc(alt.site)+(alt.note?' · '+esc(alt.note):'')+'</span>';
+  ab.className='bkgo'+(alt.kind==='lux'?' lux':'');
+  $('bkNote').textContent=alt.kind==='search'
+    ?(alt.site+' — 이 호텔의 공식 사이트 코드가 확인되지 않아 '+alt.note+'으로 엽니다. 목록에서 호텔을 고르면 고른 날짜·박수로 요금이 조회됩니다.')
+    :(alt.site+' — '+alt.note+'.');
+  el.classList.add('show');el.setAttribute('aria-hidden','false');
+  document.querySelectorAll('.cal-day.selected-day').forEach(x=>x.classList.remove('selected-day'));
+  const cell=document.querySelector('.cal-day[data-dual-hotel="'+h.id+'"][data-dual-date="'+dt+'"]');
+  if(cell)cell.classList.add('selected-day');
+  if(pb.focus)pb.focus({preventScroll:true});
+}
+function closeBkSheet(){const el=bkSheetEl();if(!el)return;el.classList.remove('show');el.setAttribute('aria-hidden','true')}
 function copyWxText(){
   const el=wxSheetEl(),h=wxHotel(el.dataset.hotel);if(!h)return;
   const text=wxCopyText(h,el.dataset.date,el.dataset.nights);
@@ -3007,6 +3092,14 @@ document.addEventListener('click',e=>{
   if(el&&el.classList.contains('show')&&(e.target.id==='wxClose'||e.target===el))closeWxSheet();
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeWxSheet()});
+/* 예약처 선택 시트 — 달력의 이중 연결 칸(button.dual-cell)을 누르면 열린다 */
+document.addEventListener('click',e=>{
+  const b=e.target.closest?e.target.closest('[data-dual-hotel]'):null;
+  if(b){e.preventDefault();st.selectedDay=b.getAttribute('data-dual-date');openBkSheet(b.getAttribute('data-dual-hotel'),b.getAttribute('data-dual-date'),b.getAttribute('data-dual-nights'));return}
+  const el=bkSheetEl();if(!el||!el.classList.contains('show'))return;
+  if(e.target.id==='bkClose'||e.target===el||(e.target.closest&&e.target.closest('a.bkgo')))closeBkSheet();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeBkSheet()});
 /* ★ 토글 — 별을 누르면 localStorage 에 저장하고 화면을 다시 그린다 */
 document.addEventListener('click',function(e){
   const b=e.target.closest?e.target.closest('[data-fav]'):null;if(!b)return;

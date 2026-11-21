@@ -20,6 +20,9 @@
    "observed":"2026-11-22 01:30",                  # 원천이 화면에 적어 둔 기준 시각
    "rows":[{"code":"NRT","dir":0,"month":"2026-12","cells":"1:7,2:7,3:1,..."}]}
   dir 0 = 부산(PUS)→현지, 1 = 현지→부산(PUS)
+
+팀원 수집본 여러 개는 tools/merge_mileage.py 로 (노선, 방향, 탑승월) 기준 병합해
+하루 한 파일로 만든 뒤 이 스크립트를 돌린다.
 """
 import argparse
 import datetime
@@ -126,7 +129,11 @@ def load_captures():
 
 
 def flatten(caps):
-    """수집본들 → ({(code, dir, date): (bit, 관측일)}, {(code, dir, month): 메모}) · 나중 파일이 이긴다."""
+    """수집본들 → ({(code, dir, date): (bit, 관측일)}, {(code, dir, month): 메모}) · 나중 파일이 이긴다.
+
+    한 행에 값(cells)과 메모(note)가 같이 있을 수 있다 — PVG 2027-11 처럼
+    1~16일 값은 있고 17~30일은 원천 제공 범위 밖이라고 적은 경우다. 둘 다 받는다.
+    """
     cells = {}
     notes = {}
     for stamp, cap in caps:
@@ -140,9 +147,11 @@ def flatten(caps):
             if len(month) != 7:
                 log('  ! %s: 탑승월 %r 형식이 아닙니다' % (code, month))
                 continue
-            if row.get('note'):
-                notes[(code, direction, month)] = row['note']
-                continue
+            note = str(row.get('note') or '').strip()
+            if note:
+                notes[(code, direction, month)] = note
+            if not row.get('cells'):
+                continue                     # 메모만 있는 달 — 값을 채우지 않는다
             for date, bit in parse_cells(month, row.get('cells')).items():
                 cells[(code, direction, date)] = (bit, stamp)
     return cells, notes
@@ -171,6 +180,31 @@ def diff_of(prev, cur):
     return new, gone
 
 
+def classify(cells, notes):
+    """노선 상태와 메모 종류를 가른다 — '미수집'과 '원천 조회 불가'를 섞지 않기 위해서다.
+
+    unserved : 두 방향 12개월 어디에도 값이 없고 메모만 있다 → 부산발 미운항으로 표기한다.
+    summer   : 값이 있는 노선의 2027-04 이후 메모 → 하계 스케줄 미개시로 표기한다.
+    blocked  : 그 밖의 메모(원천이 그 달 조회를 거절)
+    range    : 값은 있고 일부 날짜만 원천 제공 범위 밖이라고 적은 메모
+    """
+    state = {}
+    for code, _city, _region, _direct in ROUTES:
+        has_cells = any(k[0] == code for k in cells)
+        state[code] = 'ok' if has_cells else 'unserved'
+    kinds = {}
+    for (code, direction, month), text in notes.items():
+        if state[code] == 'unserved':
+            kinds[(code, direction, month)] = 'unserved'
+        elif '제공 범위 밖' in text or '미제공' in text:
+            kinds[(code, direction, month)] = 'range'
+        elif month >= '2027-04':
+            kinds[(code, direction, month)] = 'summer'
+        else:
+            kinds[(code, direction, month)] = 'blocked'
+    return state, kinds
+
+
 def months_range(caps):
     m = set()
     for _stamp, cap in caps:
@@ -188,6 +222,7 @@ def build(args):
         raise SystemExit('수집본이 없습니다 — %s 에 먼저 수집본을 두세요.' % CAPTURES)
 
     cells, notes = flatten(caps)
+    state, note_kinds = classify(cells, notes)
     stamps = sorted({s for s, _ in caps})
     latest = stamps[-1]
     cur_cap = [c for s, c in caps if s == latest][-1]
@@ -220,7 +255,7 @@ def build(args):
         last = (datetime.date(y + (m == 12), 1 if m == 12 else m + 1, 1) - datetime.timedelta(days=1)).day
         for code, _city, _region, _direct in ROUTES:
             for direction in (0, 1):
-                if (code, direction, month) in notes:
+                if note_kinds.get((code, direction, month)) in ('unserved', 'summer', 'blocked'):
                     continue                     # 원천이 조회를 거절한 달 — 미수집으로 세지 않고 따로 적는다
                 for day in range(1, last + 1):
                     date = '%s-%02d' % (month, day)
@@ -245,9 +280,25 @@ def build(args):
                    for c, city, region, direct in ROUTES],
         'cells': rows,
         'chart': CHART,
-        'monthNotes': [[k[0], k[1], k[2], v] for k, v in sorted(notes.items(), key=lambda kv: (kv[0][2], kv[0][0]))],
-        'coverage': [{'code': c, 'months': sorted({k[2][:7] for k in cells if k[0] == c and k[1] == 0}),
-                      'noted': sorted({k[2] for k in notes if k[0] == c and k[1] == 0})}
+        'monthNotes': [[k[0], k[1], k[2], v, note_kinds.get(k, 'blocked')]
+                       for k, v in sorted(notes.items(), key=lambda kv: (kv[0][2], kv[0][0]))],
+        'routeState': [{'code': c, 'state': state[c],
+                        'label': '부산발 미운항' if state[c] == 'unserved' else ('일부 달 조회 불가' if any(k[0] == c for k in notes) else '정상')}
+                       for c, _city, _region, _direct in ROUTES],
+        'noService': [c for c, _city, _region, _direct in ROUTES if state[c] == 'unserved'],
+        'summerNotOpen': [{'code': c,
+                           'months': sorted({k[2] for k in note_kinds if k[0] == c and note_kinds[k] == 'summer'}),
+                           'dirs': sorted({k[1] for k in note_kinds if k[0] == c and note_kinds[k] == 'summer'})}
+                          for c, _city, _region, _direct in ROUTES
+                          if any(k[0] == c and note_kinds[k] == 'summer' for k in note_kinds)],
+        'coverage': [{'code': c, 'state': state[c],
+                      'months': sorted({k[2][:7] for k in cells if k[0] == c and k[1] == 0}),
+                      'noted': sorted({k[2] for k in notes if k[0] == c and k[1] == 0}),
+                      'dirs': [{'dir': d,
+                                'months': sorted({k[2][:7] for k in cells if k[0] == c and k[1] == d}),
+                                'noted': sorted({k[2] for k in notes if k[0] == c and k[1] == d}),
+                                'summer': sorted({k[2] for k in note_kinds if k[0] == c and k[1] == d and note_kinds[k] == 'summer'})}
+                               for d in (0, 1)]}
                      for c, _city, _region, _direct in ROUTES],
         'newSeats': new,
         'goneSeats': gone,
@@ -263,6 +314,11 @@ def build(args):
             'miss': miss_dates,
             'noted': len(notes),
             'months': len(months),
+            'blocks': len({(k[0], k[1], k[2][:7]) for k in cells} | set(notes)),
+            'blockTarget': len(ROUTES) * 2 * len(months),
+            'unserved': sum(1 for c in state if state[c] == 'unserved'),
+            'summerNotes': sum(1 for k in note_kinds if note_kinds[k] == 'summer'),
+            'rangeNotes': sum(1 for k in note_kinds if note_kinds[k] == 'range'),
         },
     }
     write_json(OUT, payload)
@@ -283,9 +339,9 @@ def status(args):
     if not caps:
         log('수집본 없음 (%s)' % CAPTURES)
         return 0
-    cells = flatten(caps)
-    log('수집본 %d개 · 칸 %d개 · 노선 %s'
-        % (len(caps), len(cells), ', '.join(sorted({k[0] for k in cells}))))
+    cells, notes = flatten(caps)
+    log('수집본 %d개 · 칸 %d개 · 노선 %s · 메모 %d개'
+        % (len(caps), len(cells), ', '.join(sorted({k[0] for k in cells})), len(notes)))
     for stamp, cap in caps:
         log('  %s · row %d · 원천 기준 %s'
             % (stamp, len(cap.get('rows') or []), cap.get('observed') or '-'))

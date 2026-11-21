@@ -51,8 +51,8 @@ WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 
 # 탭별 기대 호텔 수 — ① 호텔럭스 161곳(2026-11-20 파라다이스 호텔 부산 제외) · ② 중올플 289곳
-# (참여 287 + 기존 미참여·자격없음 2) · ③ 아코르 51곳 · ④ 메리어트 62곳 · 총 563곳
-EXPECT_TABS = {'lux': 161, 'china': 289, 'domestic': 51, 'marriott': 62}
+# (참여 287 + 기존 미참여·자격없음 2) · ③ 아코르 247곳(국내 30 + 동남아 196 + 한·중·일 21) · ④ 메리어트 62곳 · 총 759곳
+EXPECT_TABS = {'lux': 161, 'china': 289, 'domestic': 247, 'marriott': 62}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 중올플 APC — 참여 282 + 기존 2 = 284곳 · 12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715
 EXPECT_APC = {'hotels': 289, 'participating': 287, 'dec_available': 210,
@@ -60,8 +60,10 @@ EXPECT_APC = {'hotels': 289, 'participating': 287, 'dec_available': 210,
               'cash_filled': 40, 'cash_empty': 249}
 
 # ③ 아코르 · Stay Plus & SNU — 국내 4곳 + 한·중·일 페어몬트·소피텔 21곳(365일)
+# 2026-11-22 — 동남아(태국 102 · 베트남 55 · 싱가포르 39) 196곳을 a52~a247 로 더해 247곳.
+#   'new' 는 id 가 a 로 시작하는 호텔 수(= 기존 해외 21 + 동남아 196 = 217)다.
 EXPECT_ACCOR3 = {
-    'hotels': 51, 'new': 21,
+    'hotels': 247, 'new': 217,
     'priced': {'C1B5': 0, 'A7Z9': 124, 'A5G7': 263, '8167': 357, 'B6R8': 362},
     'snu_rows': 43, 'snu_cities': 8,
 }
@@ -250,7 +252,10 @@ def check_accor3(db):
             if v is not None and (not isinstance(v, int) or v <= 0):
                 problems.append('③ %s 요금이 양의 정수가 아님: %r' % (h['id'], v))
                 break
-            if isinstance(v, int) and v > 3_000_000:
+            # 2026-11-22 — 동남아 196곳을 더하며 상한을 1천만 원으로 올렸다. 앱의 이상치 기준
+            #   (차트·콤보에서 1박 1천만 원 이상 제외)과 같은 값이고, 동남아 실측 최고가는
+            #   반얀트리 크라비 7,482,333원(2026-12-31 빌라)이라 정상값을 자르지 않는다.
+            if isinstance(v, int) and v > 10_000_000:
                 problems.append('③ %s 에 비정상 고가(%s) — 이상값은 null 이어야 함' % (h['id'], v))
                 break
         if h.get('alsoIn'):
@@ -5346,9 +5351,16 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
           그 스냅샷을 전환으로 보고 그 전 관측을 기준선에서 뺀다(srcs 표지가 없어도 걸린다 — h24).
       (f) '직전 대비'는 그 스냅샷에 실제로 관측된 값에만 적용한다 — 값이 안 바뀐 날 이전 관측의
           차이를 매일 다시 세어 보고하지 않는다(11-21 에 15건이 불어난 직접 원인).
+
+    오탐 차단(2026-11-22 — ③ 동남아 196곳 첫 관측):
+      (g) '절대 초저가'도 그 호텔의 1년 중앙값 절반 이하이고 같은 값이 3일 이상 반복되지 않을 때만
+          남긴다. 동남아 이비스·머큐어는 비수기 1박이 2.6만~4.9만 원이 정상이라, 5만 원 기준만 쓰면
+          72건이 '에러 의심'으로 올라왔다.
+      (h) 이 스냅샷이 그 호텔의 **첫 관측**이면 '기준 대비 50%↓'는 1년 중앙값 절반 이하일 때만 남긴다.
+          주변이 매진(null)이라 비싼 날만 남은 호텔(앙사나 라구나 푸켓 12/15)이 '급락'으로 잡히던 것을 막는다.
     """
     out = []
-    suppressed = {'level': 0, 'method': 0, 'window': 0, 'spike': 0, 'patch': 0, 'cap': 0}
+    suppressed = {'level': 0, 'method': 0, 'window': 0, 'spike': 0, 'patch': 0, 'cap': 0, 'first': 0}
 
     # ① 호텔
     for h in master['hotels']:
@@ -5373,9 +5385,12 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
         # 전환 스냅샷이 있으면 그 전 관측(다른 산식으로 잰 값)은 기준선에서 뺀다
         fresh = {k: a for k, a in latest.items() if not sw or a[0] >= sw}
         vals = [a[1] for a in fresh.values() if isinstance(a[1], int) and a[1] < ERROR_MIN]
-        year = _median(_trim(vals)) if len(vals) >= ALERT_MIN_HOTEL else None
+        year_any = _median(_trim(vals)) if len(vals) >= ALERT_MIN_HOTEL else None
+        year = year_any
         if year and not _stable(vals):
             year = None
+        # 이 호텔의 첫 관측인가 — 직전 스냅샷에 이 호텔 값이 하나도 없으면 그렇다
+        first_obs = not any(p for p in prev.values())
         rep = {}
         for v in vals:
             rep[v] = rep.get(v, 0) + 1
@@ -5412,12 +5427,16 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
             why = base = None
             if today and prevprice and prev_ok and v <= prevprice * ALERT_DROP:
                 why, base = '직전 대비 50%↓', prevprice
-            elif v <= ALERT_HOTEL_LOW:
+            elif v <= ALERT_HOTEL_LOW and (year_any is None or v <= year_any * ALERT_DROP) \
+                    and rep.get(v, 0) < ALERT_TIER_REPEAT:
                 why, base = '초저가', ALERT_HOTEL_LOW
             else:
                 base = base_loc or year
                 if base and v <= base * ALERT_DROP and rep.get(v, 0) < ALERT_TIER_REPEAT \
                         and (prevprice is not None or first_seen):
+                    if first_obs and year_any and v > year_any * ALERT_DROP:
+                        suppressed['first'] += 1
+                        continue
                     why = '기준 대비 50%↓'
                     # 앞뒤 날짜도 함께 싸면 1~2주짜리 비수기 구간 — 하루만 뚫린 급락이 아니다
                     if near is not None and v > near * ALERT_PATCH_MARGIN:

@@ -765,7 +765,10 @@ button.fl-plink{font-family:inherit;line-height:1.35;cursor:pointer}
   .modal-head{padding:14px 15px}
   .modal-body{padding:4px 15px 20px}
   /* 🚨 에러가 의심 모달 — 390×844에서 내용이 88dvh(742.7px)를 넘어 안쪽 스크롤이 생기던 문제.
-     .dialog 상한을 92dvh로 올리고, 이 모달만 머리·규칙 문구의 위아래 여백을 조금 줄인다. */
+     .dialog 상한을 92dvh로 올리고, 이 모달만 머리·규칙 문구의 위아래 여백을 조금 줄인다.
+     글자가 크게 잡히는 기기·360px 폭에서도 2건이 한 화면에 들어오도록 이 모달만 상한을
+     화면 높이 -24px까지 연다(내용이 그보다 짧으면 지금처럼 내용 높이만큼만 차지한다). */
+  #alertModal .dialog{max-height:calc(100dvh - 24px)}
   #alertModal .modal-head{padding:11px 15px}
   #alertModal #alertSub{line-height:1.5}
   #alertModal .al-tags{margin-bottom:10px}

@@ -16,16 +16,42 @@
 </div>
 <pre id="out">measuring…</pre>
 <script>
-function m(id){
-  const f=document.getElementById(id), w=f.contentWindow, d=w.document;
-  const q=s=>d.querySelector(s), r=e=>{const b=e.getBoundingClientRect();return [Math.round(b.x),Math.round(b.y),Math.round(b.width),Math.round(b.height)]};
-  const tabs=[...d.querySelectorAll('.tab')].map(t=>[t.innerText.replace(/\s+/g,' ').trim(),...r(t),t.scrollWidth>t.clientWidth+1?'OVF':'']);
-  const g=e=>e?r(e):null;
-  return {id, clientW:d.documentElement.clientWidth, docSW:d.documentElement.scrollWidth, bodySW:d.body.scrollWidth,
-    disp:q('.tabs')?w.getComputedStyle(q('.tabs')).display:null, tbox:g(q('.tabs')), tsw:q('.tabs')?q('.tabs').scrollWidth:null, tcw:q('.tabs')?q('.tabs').clientWidth:null,
-    rows:[...new Set(tabs.map(t=>t[2]))].length, lock:g(q('#lockAgain')), brand:g(q('.brand')), met:g(q('.topbar-metrics')), hdrH:g(q('.topbar'))?r(q('.topbar'))[3]:null, tabs};
+function strip(w){
+  var d=w.document;
+  ['.page','#dataLoading','.alertbar','.dataloading'].forEach(function(s){
+    d.querySelectorAll(s).forEach(function(e){
+      // 탭 줄은 상단 헤더(.topbar) 안에 있으므로 그대로 두고 본문만 뺀다
+      e.remove();
+    });
+  });
 }
-const done=()=>{document.getElementById('out').textContent=JSON.stringify(['f390','f360','f1440'].map(m))};
-let n=0;['f390','f360','f1440'].forEach(id=>{const f=document.getElementById(id);f.addEventListener('load',()=>{if(++n===3)setTimeout(done,2500)})});
+function m(id){
+  var f=document.getElementById(id), w=f.contentWindow, d=w.document;
+  var q=function(s){return d.querySelector(s)};
+  var r=function(e){var b=e.getBoundingClientRect();return [Math.round(b.x),Math.round(b.y),Math.round(b.width),Math.round(b.height)]};
+  var tabs=[].slice.call(d.querySelectorAll('.tab')).map(function(t){
+    return [t.innerText.replace(/\s+/g,' ').trim()].concat(r(t)).concat([t.scrollWidth>t.clientWidth+1?'OVF']);
+  });
+  var g=function(e){return e?r(e):null};
+  var tn=q('.tabs');
+  return {id:id, clientW:d.documentElement.clientWidth, docSW:d.documentElement.scrollWidth, bodySW:d.body.scrollWidth,
+    disp:tn?w.getComputedStyle(tn).display:null, tbox:g(tn), tsw:tn?tn.scrollWidth:null, tcw:tn?tn.clientWidth:null,
+    rows:Array.from(new Set(tabs.map(function(t){return t[2]}))).length,
+    lock:g(q('#lockAgain')), brand:g(q('.brand')), met:g(q('.topbar-metrics')), hdrH:g(q('.topbar'))?r(q('.topbar'))[3]:null, tabs:tabs};
+}
+function run(){
+  ['f390','f360','f1440'].forEach(function(id){ var f=document.getElementById(id); try{strip(f.contentWindow)}catch(e){} });
+  setTimeout(function(){
+    var res=['f390','f360','f1440'].map(m);
+    document.getElementById('out').textContent=JSON.stringify(res);
+    document.title='ready '+res.map(function(x){return x.id+':'+x.rows+'r/'+x.docSW+'-'+x.clientW}).join(' | ');
+  },400);
+}
+var n=0;
+['f390','f360','f1440'].forEach(function(id){
+  var f=document.getElementById(id);
+  f.addEventListener('load',function(){ if(++n<=3) setTimeout(run,2600); });
+});
+setTimeout(run,4000);
 </script>
 </body></html>

@@ -569,7 +569,11 @@ EXPECT_OLD_BY_MONTH = {'2026-12': 1111, '2027-01': 1161, '2027-02': 935,
 # 2027-07~10은 2026-11-18 중국 8개 노선 2027년 7~11월 측정 465칸(7월 152 · 8월 127 · 9월 135 · 10월 51)
 # 2027-07~09는 2026-11-18 필리핀 4개 노선 7~11월 실측(7월 64 · 8월 40 · 9월 22)을 더한 값
 EXPECT_H2_BY_MONTH = {'2027-06': 886, '2027-07': 1106, '2027-08': 887,
-                      '2027-09': 918, '2027-10': 460, '2027-11': 143}
+                      '2027-09': 918, '2027-10': 700, '2027-11': 143}
+# 2027-10 은 2026-11-21 B조 12개 노선 10월 4주(10/7~11 · 10/14~18 · 10/21~25 ·
+# 10/28~11/1) 빈칸 240칸을 더한 700 이다(460→700 — 이 격자에 앱이 이미 갖고 있던 칸이
+# 0칸이라 교체 없이 240칸이 모두 새 칸이다. B조 10월 보유분은 9월 보고서에서 온 10/1·10/2
+# 출발 36칸뿐이고 모두 이 네 주 밖이다).
 # 2027-09·10 은 2026-11-20 B조 12개 노선 9월 5주(9/2~10/4) 빈칸 288칸을 출발일 기준으로
 # 나눠 더한 값이다 — 9/30주 가운데 9/30 출발 24칸이 9월(654→918), 10/1·10/2 출발 24칸이
 # 10월(436→460)이다(10/1 금~일 12칸은 앞선 조회분을 교체했으므로 건수는 그대로).
@@ -593,7 +597,9 @@ EXPECT_H2_BY_MONTH = {'2027-06': 886, '2027-07': 1106, '2027-08': 887,
 #   방콕 10/1 금~일 1칸은 재실측으로 교체했으므로 건수는 그대로).
 # 2027-10은 2026-11-20 A조 12개 노선 10월 4주(10/7~11/1) 빈칸 231칸을 더한 436 이다(205→436 —
 #   이번 원본은 교체 0칸이고, 격자에 이미 있던 9칸(금~일 10/8·10/15 8칸 + 후쿠오카 10/29)은 그대로).
-EXPECT_H2 = {'weekend': 4305, 'day': 95, 'total': 4400}   # 주말형 2,587+205+245+102+231+109+163+147+228+288 · 당일치기 95
+EXPECT_H2 = {'weekend': 4545, 'day': 95, 'total': 4640}   # 주말형 2,587+205+245+102+231+109+163+147+228+288+240 · 당일치기 95
+# 2027-10 은 2026-11-21 B조 12개 노선 10월 4주(10/7~11/1) 빈칸 240칸을 더한 값이다
+# (주말형 4,305→4,545 · 총 4,400→4,640 — 교체 0칸).
 # 2027-07 은 2026-11-20 B조 12개 노선 7월 3주(7/15~8/2) 빈칸 147칸을 더한 1,106 이다(959→1,106 —
 #   같은 격자의 가격표 자리표시 33칸은 실측값으로 교체했으므로 건수는 그대로).
 # 2027-06 은 2026-11-19 기존 24개 노선 6월 3주차(6/17~21) 120칸 가운데 새 칸 92를 더하고(530→622),
@@ -1155,6 +1161,57 @@ GRP_B_SEP_REPLACE = {
 GRP_B_SEP_REPLACE_AVG = (702333, 632717)   # 교체 12칸 평균(기존 → 신규)
 # 원본 note 꼴 — 출발-도착 시각(괄호 안)이 있고, 그 뒤에 최단 대안이 붙을 수 있다
 GRP_B_SEP_NOTE = re.compile(r' \(\d\d:\d\d-\d\d:\d\d[^)]*\)')
+
+# 부산 출발 B조 12개 노선 2027년 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) —
+# 2026-11-21 5번 보고서(2026-11-20 13:59 ~ 2026-11-21 08:55 KST 실측). 12노선 × 5패턴 × 4주 =
+# 240칸을 전수 실측해 값 240칸(판매편 0건 0 · 편성 미확인 0)으로 채웠다. 이 격자(10/7~11/1 출발)에
+# 앱이 이미 갖고 있던 칸은 0칸이다 — B조 12노선의 2027-10 보유분은 9월 보고서에서 온 10/1·10/2
+# 출발 36칸뿐이고 모두 이 네 주 밖이라, 교체 0칸 · 새 칸 240칸이다. 0박 당일치기는 이 조사 범위 밖이다.
+# 이 원본에는 '직항(항공사) N원' 꼴의 직항 최저 금액 표기가 없어 `alt` 를 만들지 않았고,
+# 최저가 일정보다 짧은 대안 일정이 조회된 75칸은 note 끝에 `최단 …` 으로 살렸다.
+GRP_B_OCT = ('SIN', 'GUM', 'NGO', 'OKA', 'HGH', 'TAO', 'HAN', 'CNX', 'DPS', 'KHH',
+             'RMQ', 'BJS')
+GRP_B_OCT_WEEKS = ('2027-10-07', '2027-10-14', '2027-10-21', '2027-10-28')
+GRP_B_OCT_START, GRP_B_OCT_END = '2027-10-07', '2027-11-01'
+GRP_B_OCT_TOTAL = 240          # 12노선 × 5패턴 × 4주가 모두 금액
+GRP_B_OCT_REPLACED = 0         # 앞선 조회분 → 실측값 교체 칸(이 격자에 기존 칸 0칸)
+GRP_B_OCT_OVERALL = (379100, 1086100)   # 오키나와 10/21~24 목~일 · 오키나와 10/8~11 금~월
+GRP_B_OCT_AVG = 611788         # 240칸 평균(반올림)
+GRP_B_OCT_MEDIAN = 615600      # 240칸 중앙값 — 120·121번째(615,600 · 615,600)의 평균
+GRP_B_OCT_DIRECT = 26          # 최저가가 직항인 칸
+# 노선: (칸수, 최저, 최고, 평균(반올림), 최저가가 직항인 칸)
+GRP_B_OCT_ROUTE = {
+    'SIN': (20, 422500, 626900, 479660, 0), 'GUM': (20, 630900, 941500, 770210, 0),
+    'NGO': (20, 623100, 758700, 696880, 0), 'OKA': (20, 379100, 1086100, 680520, 11),
+    'HGH': (20, 500500, 794600, 637590, 0), 'TAO': (20, 485900, 681000, 539290, 0),
+    'HAN': (20, 453100, 655900, 501195, 1), 'CNX': (20, 579400, 941300, 684270, 3),
+    'DPS': (20, 420100, 714200, 478475, 0), 'KHH': (20, 564200, 901700, 693755, 2),
+    'RMQ': (20, 435400, 889500, 670690, 7), 'BJS': (20, 480100, 622600, 508920, 2)}
+GRP_B_OCT_GRID_ROUTE = {c: (v[1], v[2]) for c, v in GRP_B_OCT_ROUTE.items()}
+# 출발일 기준 월별 칸수 — 10/28주 금~월·목~월만 귀국일이 11/1이고 출발일은 모두 10월이다
+GRP_B_OCT_MONTH = {'2027-10': 240}
+# 주차: (칸수, 합, 평균(반올림), 최저, 최고)
+GRP_B_OCT_WEEK = {'2027-10-07': (60, 40898600, 681643, 420900, 1086100),
+                  '2027-10-14': (60, 33573700, 559562, 420100, 831800),
+                  '2027-10-21': (60, 34247600, 570793, 379100, 864400),
+                  '2027-10-28': (60, 38109200, 635153, 444200, 864400)}
+GRP_B_OCT_PAT_AVG = {'목~일': 607160, '금~일': 596871, '토~월': 621681,
+                     '금~월': 613190, '목~월': 620038}
+# 10만원 단위 구간
+GRP_B_OCT_BUCKET = {'30만원 미만': 0, '30만~40만원': 1, '40만~50만원': 69,
+                    '50만~60만원': 44, '60만~70만원': 62, '70만~80만원': 40,
+                    '80만~90만원': 15, '90만~100만원': 8, '100만원 이상': 1}
+# 장시간 경유 — 환승 12시간 이상 20시간 미만 10칸 · 20시간 이상 41칸(15시간 이상 51칸)
+GRP_B_OCT_LONG = (10, 41)
+GRP_B_OCT_LONG15 = 51
+GRP_B_OCT_MAX_LAY = 1420       # 가장 긴 환승 23시간 40분(칭다오 10/15 금~월 · 10/16 토~월 홍콩)
+GRP_B_OCT_OVER20 = 51          # 총 소요가 20시간을 넘는 칸
+# 이 원본에는 직항 최저 금액 표기가 없어 alt 를 만들지 않았다(0칸)
+GRP_B_OCT_ALT = {}
+GRP_B_OCT_SHORTEST = 75        # `최단 …` 대안 일정을 note 에 덧붙인 칸
+GRP_B_OCT_TWOHOP = 6           # 두 번 환승이라 환승 시간 대신 경유지만 적은 칸
+# 원본 note 꼴 — 출발-도착 시각(괄호 안)이 있고, 그 뒤에 최단 대안이 붙을 수 있다
+GRP_B_OCT_NOTE = re.compile(r' \(\d\d:\d\d-\d\d:\d\d[^)]*\)')
 
 # 부산 출발 A조 12개 노선 2027년 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) — 2026-11-19 5번 보고서
 # (2026-11-19 22:00~23:12 KST 실측). 12노선 × 5패턴 × 4주 = 240칸 가운데 빈칸 205칸을 실측하고,
@@ -2722,6 +2779,159 @@ def check_flights(flights):
                 problems.append('B조 9월 5주 note 에 자리표시·조사 시각·상품 이름이 남았습니다: '
                                 '%s %s' % (d['code'], d['date']))
                 break
+
+    # 부산 출발 B조 12개 노선 2027년 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) —
+    # 격자 240칸이 모두 금액을 가지는지, 앞선 조회 표시가 남지 않았는지, 노선별 20칸(최저/최고/평균/
+    # 직항 칸)과 격자 최저·최고·평균·중앙값, 주차·패턴·10만원 구간, 장시간 경유·두 번 환승 칸수가
+    # 원본 보고서와 같은지.
+    gb10 = [dict(d, code=r['code']) for r in routes if r['code'] in GRP_B_OCT
+            for d in r['deals'] if GRP_B_OCT_START <= d['date'] <= GRP_B_OCT_END
+            and d['pattern'] in EXPECT_WEEKEND]
+    if len(gb10) != GRP_B_OCT_TOTAL:
+        problems.append('B조 10월 4주 %d칸 (기대 %d칸)' % (len(gb10), GRP_B_OCT_TOTAL))
+    else:
+        want10 = set()
+        for code10 in GRP_B_OCT:
+            for thu10 in GRP_B_OCT_WEEKS:
+                for label10 in EXPECT_WEEKEND:
+                    dt10 = (datetime.date.fromisoformat(thu10) + datetime.timedelta(
+                        days=(FL_WD[label10[0]] - FL_WD['목']) % 7)).isoformat()
+                    want10.add((code10, dt10, label10))
+        got10 = {(d['code'], d['date'], d['pattern']) for d in gb10}
+        if got10 != want10:
+            problems.append('B조 10월 4주 격자 차이: %s' % sorted(got10 ^ want10)[:6])
+        if [d for d in gb10 if d.get('src')]:
+            problems.append('B조 10월 4주에 앞선 조회 표시(src)가 남아 있습니다')
+        left10 = [d for d in gb10 if not d.get('price') or d.get('via') is None]
+        if left10:
+            problems.append('B조 10월 4주 금액·편성 없는 칸 %d칸 (기대 0칸): %s'
+                            % (len(left10), [(d['code'], d['date']) for d in left10][:4]))
+        ps10 = [d['price'] for d in gb10]
+        if (min(ps10), max(ps10)) != GRP_B_OCT_OVERALL:
+            problems.append('B조 10월 4주 최저·최고 %s (기대 %s)'
+                            % ((min(ps10), max(ps10)), GRP_B_OCT_OVERALL))
+        if _rnd(sum(ps10) / len(ps10)) != GRP_B_OCT_AVG:
+            problems.append('B조 10월 4주 평균 %d (기대 %d)'
+                            % (_rnd(sum(ps10) / len(ps10)), GRP_B_OCT_AVG))
+        sp10 = sorted(ps10)
+        mid10 = sp10[len(sp10) // 2] if len(sp10) % 2 \
+            else (sp10[len(sp10) // 2 - 1] + sp10[len(sp10) // 2]) / 2
+        if mid10 != GRP_B_OCT_MEDIAN:
+            problems.append('B조 10월 4주 중앙값 %s (기대 %s)' % (mid10, GRP_B_OCT_MEDIAN))
+        for code10, (n10, low10, high10, avg10, ndirect10) in GRP_B_OCT_ROUTE.items():
+            cells10 = [d for d in gb10 if d['code'] == code10]
+            v10 = [d['price'] for d in cells10]
+            if len(v10) != n10:
+                problems.append('B조 10월 4주 %s %d칸 (기대 %d칸)' % (code10, len(v10), n10))
+                continue
+            if (min(v10), max(v10), _rnd(sum(v10) / len(v10))) != (low10, high10, avg10):
+                problems.append('B조 10월 4주 %s 집계 %s (기대 %s)'
+                                % (code10, (min(v10), max(v10), _rnd(sum(v10) / len(v10))),
+                                   (low10, high10, avg10)))
+            if sum(1 for d in cells10 if d.get('via') is False) != ndirect10:
+                problems.append('B조 10월 4주 %s 직항이 최저가인 칸 %d (기대 %d)'
+                                % (code10,
+                                   sum(1 for d in cells10 if d.get('via') is False),
+                                   ndirect10))
+        direct10 = sum(1 for d in gb10 if d.get('via') is False)
+        if direct10 != GRP_B_OCT_DIRECT:
+            problems.append('B조 10월 4주 직항이 최저가인 칸 %d (기대 %d)'
+                            % (direct10, GRP_B_OCT_DIRECT))
+        for m10, n10 in GRP_B_OCT_MONTH.items():
+            c10 = sum(1 for d in gb10 if d['date'][:7] == m10)
+            if c10 != n10:
+                problems.append('B조 10월 4주 %s 출발 %d칸 (기대 %d칸)' % (m10, c10, n10))
+        for thu10, (cells_n10, total10, avg10, low10, high10) in GRP_B_OCT_WEEK.items():
+            v10 = [d['price'] for d in gb10
+                   if (datetime.date.fromisoformat(d['date']) - datetime.timedelta(
+                       days=(datetime.date.fromisoformat(d['date']).weekday()
+                             - 3) % 7)).isoformat() == thu10]   # 3 = datetime 목요일
+            if not v10:
+                problems.append('B조 10월 4주 %s 칸이 없습니다' % thu10)
+                continue
+            got_w10 = (len(v10), sum(v10), _rnd(sum(v10) / len(v10)), min(v10), max(v10))
+            if got_w10 != (cells_n10, total10, avg10, low10, high10):
+                problems.append('B조 10월 4주 %s 주차 집계 %s (기대 %s)'
+                                % (thu10, got_w10, (cells_n10, total10, avg10, low10, high10)))
+        for pat10, want10_avg in GRP_B_OCT_PAT_AVG.items():
+            v10 = [d['price'] for d in gb10 if d['pattern'] == pat10]
+            if not v10 or _rnd(sum(v10) / len(v10)) != want10_avg:
+                problems.append('B조 10월 4주 %s 평균 %s (기대 %d)'
+                                % (pat10, v10 and _rnd(sum(v10) / len(v10)), want10_avg))
+        bucket10 = {k: 0 for k in GRP_B_OCT_BUCKET}
+        edges10 = ((300000, '30만원 미만'), (400000, '30만~40만원'),
+                   (500000, '40만~50만원'), (600000, '50만~60만원'),
+                   (700000, '60만~70만원'), (800000, '70만~80만원'),
+                   (900000, '80만~90만원'), (1000000, '90만~100만원'))
+        for p10 in ps10:
+            name10 = '100만원 이상'
+            for edge10, label10 in edges10:
+                if p10 < edge10:
+                    name10 = label10
+                    break
+            bucket10[name10] += 1
+        if bucket10 != GRP_B_OCT_BUCKET:
+            problems.append('B조 10월 4주 10만원 구간 %s (기대 %s)'
+                            % (bucket10, GRP_B_OCT_BUCKET))
+        lay10 = []
+        for d in gb10:
+            hit10 = FL_LAY.search(d.get('note') or '') if d.get('via') is True else None
+            if hit10:
+                lay10.append(int(hit10.group(1)) * 60 + int(hit10.group(2) or 0))
+        if (sum(1 for x in lay10 if 720 <= x < 1200),
+                sum(1 for x in lay10 if x >= 1200)) != GRP_B_OCT_LONG:
+            problems.append('B조 10월 4주 장시간 경유 %d/%d칸 (기대 %s)'
+                            % (sum(1 for x in lay10 if 720 <= x < 1200),
+                               sum(1 for x in lay10 if x >= 1200), GRP_B_OCT_LONG))
+        if sum(1 for x in lay10 if x >= 900) != GRP_B_OCT_LONG15:
+            problems.append('B조 10월 4주 환승 15시간 이상 %d칸 (기대 %d칸)'
+                            % (sum(1 for x in lay10 if x >= 900), GRP_B_OCT_LONG15))
+        if not lay10 or max(lay10) != GRP_B_OCT_MAX_LAY:
+            problems.append('B조 10월 4주 가장 긴 환승 %s분 (기대 %d분)'
+                            % (lay10 and max(lay10), GRP_B_OCT_MAX_LAY))
+        over10 = 0
+        for d in gb10:
+            note10 = d.get('note') or ''
+            m10 = re.search(r'총\s*(\d+)시간\s*(?:(\d+)분)?', note10) or \
+                re.search(r'직항\s*(\d+)시간\s*(?:(\d+)분)?', note10)
+            if m10 and int(m10.group(1)) * 60 + int(m10.group(2) or 0) > 1200:
+                over10 += 1
+        if over10 != GRP_B_OCT_OVER20:
+            problems.append('B조 10월 4주 총 소요 20시간 초과 %d칸 (기대 %d칸)'
+                            % (over10, GRP_B_OCT_OVER20))
+        alt10 = {(d['code'], d['date'], d['pattern']): d['alt'] for d in gb10 if d.get('alt')}
+        if alt10 != GRP_B_OCT_ALT:
+            problems.append('B조 10월 4주 직항 최저 금액 칸이 다릅니다: %s' % sorted(alt10)[:4])
+        short10 = sum(1 for d in gb10 if '최단 ' in (d.get('note') or ''))
+        if short10 != GRP_B_OCT_SHORTEST:
+            problems.append('B조 10월 4주 최단 대안 칸 %d (기대 %d칸)'
+                            % (short10, GRP_B_OCT_SHORTEST))
+        twohop10 = sum(1 for d in gb10 if '경유 2회(' in (d.get('note') or ''))
+        if twohop10 != GRP_B_OCT_TWOHOP:
+            problems.append('B조 10월 4주 두 번 환승 칸 %d (기대 %d칸)'
+                            % (twohop10, GRP_B_OCT_TWOHOP))
+        for d in gb10:
+            note10 = d.get('note') or ''
+            if not GRP_B_OCT_NOTE.search(note10):
+                problems.append('B조 10월 4주 note 에 출발-도착 시각이 없습니다: %s %s'
+                                % (d['code'], d['date']))
+                break
+            if d.get('via') is True and '총' not in note10:
+                problems.append('B조 10월 4주 경유 칸에 총 소요시간이 없습니다: %s %s'
+                                % (d['code'], d['date']))
+                break
+            if d.get('via') is False and '직항' not in note10:
+                problems.append('B조 10월 4주 직항 칸 note 이상: %s %s'
+                                % (d['code'], d['date']))
+                break
+            if ('2026-11' in note10 or '액세스레일' in note10 or '구성 미확인' in note10
+                    or '가격표' in note10):
+                problems.append('B조 10월 4주 note 에 자리표시·조사 시각·상품 이름이 남았습니다: '
+                                '%s %s' % (d['code'], d['date']))
+                break
+        month10 = [d for d in gb10 if '최단 ' in (d.get('note') or '')]
+        if any('원(' not in (d.get('note') or '') for d in month10):
+            problems.append('B조 10월 4주 최단 대안에 금액·항공사 표기가 빠졌습니다')
 
     # A조 12개 노선 2027년 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) — 240칸이 모두 값인지,
     # 재확인 3칸의 금액, 노선별 20칸(최저/최고/직항 칸), 격자 최저·최고, note 표기(경유 총 소요).

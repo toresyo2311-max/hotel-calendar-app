@@ -383,6 +383,12 @@ button.dual-cell::after{content:'⇄';position:absolute;top:2px;right:3px;font-s
 .bkgo.prim{border:0;background:var(--violet-d);color:#fff}
 .bkgo.prim span{color:rgba(255,255,255,.8)}
 .bkgo.lux{background:#f7f0ff;border-color:#dcc9f4}
+/* 두 예약처 버튼 안의 그 채널·그 날짜 요금 — 한눈에 나란히 비교되도록 버튼 안 맨 아래에 둔다 */
+.bkgo .bkcharge{display:block;margin-top:7px;padding-top:6px;border-top:1px dashed rgba(109,40,217,.35);font-size:12px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--violet-d)}
+.bkgo.prim .bkcharge{color:#fff;border-top-color:rgba(255,255,255,.45)}
+.bkgo .bkcharge em{font-style:normal;margin-left:4px;font-size:9.5px;font-weight:700;opacity:.8}
+.bkgo .bkcharge.na{font-size:10px;font-weight:700;color:var(--muted2);border-top-style:dotted}
+.bkgo.prim .bkcharge.na{color:rgba(255,255,255,.72)}
 .bknote{margin:11px 0 0;font-size:10.5px;line-height:1.7;color:var(--muted2)}
 /* ⑤ 항공 예약처 선택 창 — #bkSheet 와 같은 모양, 버튼 넷(항공사 공홈 + 써드파티 셋) */
 .flbk-go{display:block;border-radius:11px;padding:12px 13px;text-decoration:none;border:1px solid var(--lav2);background:var(--lav);color:var(--violet-d)}
@@ -1277,7 +1283,7 @@ html.locked #lockGate{display:flex}
     <button class="tab active" data-tab="lux" type="button">① 호텔럭스 <b>161</b></button>
     <button class="tab" data-tab="china" type="button">② 중올플 <b>289</b></button>
     <button class="tab" data-tab="domestic" type="button">③ 아코르 <b>51</b></button>
-    <button class="tab" data-tab="marriott" type="button">④ 메리엇(한중일) <b>62</b></button>
+    <button class="tab" data-tab="marriott" type="button">④ 메리어트(한중일) <b>62</b></button>
     <button class="tab" data-tab="flight" type="button">⑤ 항공특가(부산) <b>47</b></button>
     <button class="tab combo-tab" data-tab="combo" type="button" aria-label="항공+호텔 주말 콤보">✈️+🏨 콤보</button>
 <!-- TT:NAV -->
@@ -1835,7 +1841,7 @@ html.locked #lockGate{display:flex}
 </div></div>
 <div class="wxsheet" id="bkSheet" aria-hidden="true"><div class="wxcard" role="dialog" aria-modal="true" aria-labelledby="bkTitle">
   <h3 id="bkTitle">어느 예약처로 갈까요?</h3>
-  <p class="wxsub">이 호텔은 예약처가 두 곳입니다 — 요금을 비교해 고르세요. 두 버튼 모두 아래 날짜·박수가 그대로 들어간 페이지가 새 탭에서 열립니다.</p>
+  <p class="wxsub">이 호텔은 예약처가 두 곳입니다 — 버튼마다 그 채널의 같은 날짜·박수 요금을 적었습니다. 두 버튼 모두 아래 날짜·박수가 그대로 들어간 페이지가 새 탭에서 열립니다.</p>
   <p class="wxhotel" id="bkHotel"></p>
   <p class="wxwhen" id="bkWhen"></p>
   <p class="bkprice" id="bkPrice"></p>
@@ -2067,7 +2073,16 @@ function minPerHotel(h,mode=st.mode){
 function maxVoucherDay(h){return Object.entries(h.rates||{}).filter(([d,p])=>typeof p==='number'&&!h.blackouts?.includes(d)&&(!st.weekend||isWeekend(d))).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]))[0]||null}
 function filteredValuesForMonth(){return daysOf(st.month).map(d=>({date:d,items:positiveDeals(d)}))}
 function getActiveMonthMin(){const ns=filteredValuesForMonth().filter(x=>!st.weekend||isWeekend(x.date)).flatMap(x=>x.items.map(v=>v.price));return ns.length?Math.min(...ns):null}
-function renderTabs(){document.querySelectorAll('.tab').forEach(b=>{const active=b.dataset.tab===st.tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))})}
+function renderTabs(){document.querySelectorAll('.tab').forEach(b=>{const active=b.dataset.tab===st.tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))});tabScrollToActive()}
+/* 탭 줄은 가로로 밀리는 상자다 — 390px 폰에서 ④·⑥처럼 뒤쪽 탭을 열면 활성 탭이 화면 밖에 남아
+   라벨이 잘려 보였다(한진님 2026-11-21). 활성 탭이 보이도록 상자만 가로로 밀어 준다(세로 스크롤은 건드리지 않음). */
+function tabScrollToActive(){
+  const host=document.querySelector('.tabs');if(!host)return;
+  const act=host.querySelector('.tab.active');if(!act)return;
+  const pad=8,l=act.offsetLeft,r=l+act.offsetWidth;
+  if(l-pad<host.scrollLeft)host.scrollLeft=Math.max(0,l-pad);
+  else if(r+pad>host.scrollLeft+host.clientWidth)host.scrollLeft=Math.min(host.scrollWidth-host.clientWidth,r+pad-host.clientWidth);
+}
 function renderHeader(){const t=tabs[st.tab];$('sectionTitle').textContent=t.title;$('sectionSubtitle').textContent=t.sub;$('checktime').textContent=t.checked;
  const btw=$('blackoutToggleWrap');if(btw)btw.style.display=st.tab==='china'?'block':'none';
  $('blackoutLegend').style.display=st.tab==='china'?'inline-flex':'none';
@@ -2161,9 +2176,25 @@ function renderLuxCtl(){
       :('해외 호텔 '+usdRateTxt(h)+' 환산값');
   }
 }
+/* 목록·요약의 「도시」 줄 — 자료의 region 과 city 가 겹쳐 있을 때가 있다(예: region '일본 · 후쿠오카' + city '후쿠오카').
+   같은 말을 두 번 쓰지 않게 토막을 합치고, 호텔 이름에 이미 도시가 들어 있으면(④ '세인트레지스 베이징' + '베이징') 도시를 뺀다.
+   비슷한 중복을 한 번에 걸러 내려고 목록 메타 줄도 같은 함수로 잇는다(한진님 2026-11-21). */
+function cityMetaOf(h){
+  if(!h)return '';
+  const name=String(h.name||''),city=String(h.city||'').trim(),region=String(h.region||'').trim();
+  const toks=[];
+  (region+' · '+city).split('·').map(function(s){return s.trim()}).filter(Boolean).forEach(function(t){if(toks.indexOf(t)<0)toks.push(t)});
+  if(city&&name.indexOf(city)>=0)return toks.filter(function(t){return t!==city}).join(' · ');
+  return toks.join(' · ');
+}
+function metaJoin(parts){
+  const toks=[];
+  (parts||[]).forEach(function(p){String(p==null?'':p).split('·').map(function(s){return s.trim()}).filter(Boolean).forEach(function(t){if(toks.indexOf(t)<0)toks.push(t)})});
+  return toks.join(' · ');
+}
 /* 순위 목록 항목을 누를 수 있게 하는 공통 속성 — 그 호텔·그 날짜로 달력을 바꾼다 */
 function rankAttr(h,date){return ' data-rank-hotel="'+esc(h&&h.id)+'"'+(date?' data-rank-date="'+esc(date)+'"':'')+' role="button" tabindex="0"'}
-function row(rank,h,price,date,cl='',sub=''){let extra='';if(st.tab==='marriott'){if(pointsMode()){const c=cashOf(h,date);if(c!=null)extra=shortWon(c)}else{const p=ptsOf(h,date);if(p!=null)extra=shortP(p)}}const num=st.tab==='marriott'?shortVal(price):shortWon(price);return '<div class="rank-item rank-click"'+rankAttr(h,date)+' title="'+esc(h.name)+' — 달력에서 이 호텔 요금 보기"><span class="rank-n">'+String(rank).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+favStar('hotel',h.id,h.name)+esc(h.name)+(st.tab==='lux'?cxlBadge(h):'')+'</div><div class="rank-meta">'+esc(h.region&&h.region!==h.city?h.region+' · '+h.city:h.city)+' · '+esc(dateLabel(date))+' '+weekday(date)+'요일'+(sub?' · '+esc(sub):'')+(extra?' · '+extra:'')+'</div></div><div class="rank-num '+cl+'">'+num+'</div></div>'}
+function row(rank,h,price,date,cl='',sub=''){let extra='';if(st.tab==='marriott'){if(pointsMode()){const c=cashOf(h,date);if(c!=null)extra=shortWon(c)}else{const p=ptsOf(h,date);if(p!=null)extra=shortP(p)}}const num=st.tab==='marriott'?shortVal(price):shortWon(price);return '<div class="rank-item rank-click"'+rankAttr(h,date)+' title="'+esc(h.name)+' — 달력에서 이 호텔 요금 보기"><span class="rank-n">'+String(rank).padStart(2,'0')+'</span><div class="rank-entity"><div class="rank-name">'+favStar('hotel',h.id,h.name)+esc(h.name)+(st.tab==='lux'?cxlBadge(h):'')+'</div><div class="rank-meta">'+esc(metaJoin([cityMetaOf(h),dateLabel(date)+' '+weekday(date)+'요일',sub,extra]))+'</div></div><div class="rank-num '+cl+'">'+num+'</div></div>'}
 function promoBadge(h){let p=h.promotion||'';if(p.includes('2+1')||p.includes('Stay 3 Pay 2'))return '2+1 무료 1박';if(p.includes('3+1')||p.includes('Stay 4 Pay 3'))return '4박 중 1박 무료';if(p.includes('Stay 5 Pay 4'))return '5박 중 1박 무료';if(p.includes('Club Lounge'))return '클럽 라운지';if(p.includes('25%'))return '최대 25% 할인';if(p.includes('20%')||p.includes('30%'))return '연박 할인';if(p.includes('10%'))return '10% 할인(조건 미확인)';let m=p.match(/(\d+)%\s*OFF/);if(m)return m[1]+'% 할인';if(p.includes('FHR'))return 'FHR 혜택';return null}
 function renderRanking(){const hs=filteredHotels();
  if(st.tab==='lux'){
@@ -3253,6 +3284,53 @@ function bkFreshHtml(h){
   if(!parts.length)return '';
   return '<span aria-hidden="true">🗓</span><span><b>데이터 기준일</b> — '+esc(parts.join(' · '))+' · 요금은 조회 시점 값입니다.</span>';
 }
+/* ── 두 채널 요금 나란히 보기 (2026-11-21 한진님 요청) ──────────────
+   「예약처가 두 곳」인 호텔의 선택 창에서, 각 예약처 버튼(a.bkgo) 아래에 그 채널의 그 날짜·박수 요금을 적는다.
+   · 지금 탭 채널 = 이 호텔 자료의 그 날짜 값(#bkPrice 와 같은 값). ④ 는 공홈 검색가, ① 은 VIP 요금.
+   · 반대편 ① 호텔럭스 = ① 탭 자료에 있는 짝 호텔의 같은 날짜 rates. ④·③ 호텔의 짝은
+     MAR_CROSS·LUX_REF_MAR·LUX_REF_ACC 의 ref(VIP 예약처 ID)와 ① 호텔의 ref_id 로 찾는다.
+   · ① 탭 자료는 그 탭에 들어갈 때만 받으므로, 없으면 창을 열어 둔 채 한 번 받아 와 채운다.
+   · 공홈 요금(① 호텔의 반대편)은 조사 자료에 없다 — 0원이나 잡도값을 넣지 않고 「미실측」으로 둔다. */
+function bkRateSum(h,dt,n){
+  const src=(h&&h.rates)||{};let s=0;
+  for(let i=0;i<(n||1);i++){const v=src[bkAdd(dt,i)];if(typeof v!=='number'||v>=NIGHT_ERR)return null;s+=v}
+  return s;
+}
+function bkChanLabel(h){
+  if(!h)return '요금';
+  if(h.group==='lux')return 'VIP 요금';
+  if(h.group==='marriott')return '공홈 검색가';
+  if(h.group==='domestic')return '공홈 요금';
+  return '요금';
+}
+function bkLuxTwinOf(h){
+  if(!h)return null;
+  let ref='';
+  if(h.group==='marriott'){const t=luxTwinOfMar(h);ref=t?String(t.ref||''):''}
+  else if(h.group==='domestic')ref=String(LUX_REF_ACC[h.id]||'');
+  if(!ref)return null;
+  return ((DB&&DB.hotels)||[]).filter(function(x){return x.group==='lux'&&String(x.ref_id||'')===ref})[0]||null;
+}
+function bkChargeHtml(label,amt,n,note){
+  if(typeof amt!=='number')return '<span class="bkcharge na"'+(note?' title="'+esc(note)+'"':'')+'>'+esc(label+' 미실측')+'</span>';
+  return '<span class="bkcharge">'+esc(label+' '+exactWon(amt))+(n>1?'<em>'+n+'박 합계</em>':'')+'</span>';
+}
+/* 지금 탭 채널의 버튼 아래 요금 — #bkPrice 와 같은 값(p)을 같은 단위로 적는다 */
+function bkPrimChargeHtml(h,dt,n,p){
+  if(p==null)return bkChargeHtml(bkChanLabel(h),null,n,'이 날짜는 자료에 표시 요금이 없습니다');
+  if(pointsMode())return '<span class="bkcharge">'+esc('공홈 포인트 '+exactP(p))+(n>1?'<em>'+n+'박 합계</em>':'')+'</span>';
+  const label=(st.tab==='domestic'&&st.mode!=='cash')?(st.mode==='sp2'?'공홈 2박 결제':'공홈 3박 결제'):bkChanLabel(h);
+  return '<span class="bkcharge">'+esc(label+' '+exactWon(p))+(n>1?'<em>'+n+'박 합계</em>':'')+'</span>';
+}
+function bkAltCharge(h,dt,n,alt){
+  if(!alt)return {state:'none',html:''};
+  if(alt.kind!=='lux')return {state:'noint',html:bkChargeHtml('공홈 요금',null,n,'공홈 요금은 조사 자료에 없습니다 — 추정값을 넣지 않았습니다')};
+  if(!DATA_READY.lux)return {state:'loading',html:'<span class="bkcharge na">'+esc('VIP 요금 불러오는 중…')+'</span>'};
+  const twin=bkLuxTwinOf(h);
+  if(!twin)return {state:'nomatch',html:bkChargeHtml('VIP 요금',null,n,'① 탭 자료에 이 호텔의 짝이 없어 반대 채널 요금을 확인할 수 없습니다')};
+  const amt=bkRateSum(twin,dt,n);
+  return {state:amt==null?'na':'ok',html:bkChargeHtml('VIP 요금',amt,n,'① 자료에 그 날짜 요금이 없습니다 — 0원이 아니라 미실측입니다')};
+}
 function openBkSheet(hid,dt,nights){
   const el=bkSheetEl();if(!el||!dt)return;
   const h=wxHotel(hid)||dayHotel(dt);if(!h)return;
@@ -3271,13 +3349,32 @@ function openBkSheet(hid,dt,nights){
   /* 혜택 줄은 그 버튼이 어느 사이트인지에 따라 고른다 — 예전에는 주 버튼에 늘 'lux' 문구를 붙여,
      ④ 메리어트 호텔(주 버튼 = 🏨 메리어트 공홈)에도 「VIP 혜택」이 붙었다(@jin_1·QA 발견 2026-11-21). */
   const primWhich=h.group==='lux'?'lux':'official';
-  pb.href=url;pb.innerHTML='<b>'+esc(bkPrimName(h))+' ↗</b><span>'+esc(bkPrimDesc(h))+'</span><span class="bkbenefit">'+esc(bkBenefitOf(h,primWhich))+'</span>';
-  ab.href=alt.url;ab.innerHTML='<b>'+esc(alt.label)+' ↗</b><span>'+esc(alt.kind==='lux'?'VIP 요금 · 공홈 요금과 비교':(alt.site+(alt.kind==='search'?' · 그 도시 호텔 목록':' · 해당 호텔 페이지')))+'</span><span class="bkbenefit">'+esc(alt.kind==='lux'?bkBenefitOf(h,'lux'):bkBenefitOf(h,'official'))+'</span>';
+  pb.href=url;pb.innerHTML='<b>'+esc(bkPrimName(h))+' ↗</b><span>'+esc(bkPrimDesc(h))+'</span><span class="bkbenefit">'+esc(bkBenefitOf(h,primWhich))+'</span>'+bkPrimChargeHtml(h,dt,n,p);
+  const altCh=bkAltCharge(h,dt,n,alt);
+  ab.href=alt.url;ab.innerHTML='<b>'+esc(alt.label)+' ↗</b><span>'+esc(alt.kind==='lux'?'VIP 요금 · 공홈 요금과 비교':(alt.site+(alt.kind==='search'?' · 그 도시 호텔 목록':' · 해당 호텔 페이지')))+'</span><span class="bkbenefit">'+esc(alt.kind==='lux'?bkBenefitOf(h,'lux'):bkBenefitOf(h,'official'))+'</span>'+altCh.html;
   ab.className='bkgo'+(alt.kind==='lux'?' lux':'');
+  /* ① 탭 자료가 아직 없으면 한 번 받아 와 반대 채널 요금을 채운다.
+     그 사이 사용자가 다른 날짜·호텔로 창을 다시 열었으면 건드리지 않는다. */
+  if(altCh.state==='loading'){
+    loadPart('lux').then(function(){
+      const cur=bkSheetEl();
+      if(!cur||!cur.classList.contains('show')||cur.dataset.bkHotel!==h.id||cur.dataset.bkDate!==dt)return;
+      const done=bkAltCharge(h,dt,n,alt);
+      const box=cur.querySelector('#bkAlt .bkcharge');
+      if(box)box.outerHTML=done.html;else ab.insertAdjacentHTML('beforeend',done.html);
+    },function(){
+      const cur=bkSheetEl();
+      if(!cur||!cur.classList.contains('show')||cur.dataset.bkHotel!==h.id||cur.dataset.bkDate!==dt)return;
+      const box=cur.querySelector('#bkAlt .bkcharge');
+      const html=bkChargeHtml('VIP 요금',null,n,'반대 채널 자료(① 탭)를 불러오지 못했습니다 — 잠시 뒤 다시 열어 주세요');
+      if(box)box.outerHTML=html;
+    });
+  }
   const fr=$('bkFresh');if(fr){const html=bkFreshHtml(h);fr.innerHTML=html;fr.hidden=!html}
-  $('bkNote').textContent=alt.kind==='search'
+  $('bkNote').textContent=(alt.kind==='search'
     ?(alt.site+'에 이 호텔의 코드가 확인되지 않아 '+alt.note+'으로 엽니다. 목록에서 호텔을 고르면 위 날짜·박수로 요금이 조회됩니다.')
-    :'두 버튼 모두 위 날짜·박수가 그대로 들어간 페이지가 새 탭에서 열립니다. 결제·취소 조건은 연 페이지에서 확인하세요.';
+    :'두 버튼 모두 위 날짜·박수가 그대로 들어간 페이지가 새 탭에서 열립니다. 결제·취소 조건은 연 페이지에서 확인하세요.')
+    +' 버튼의 요금은 각 채널 자료의 같은 날짜·박수 표시가이고, 조사하지 않은 채널·날짜는 미실측으로 적습니다.';
   el.classList.add('show');el.setAttribute('aria-hidden','false');
   document.querySelectorAll('.cal-day.selected-day').forEach(x=>x.classList.remove('selected-day'));
   const cell=document.querySelector('.cal-day[data-dual-hotel="'+h.id+'"][data-dual-date="'+dt+'"]');
@@ -3908,7 +4005,7 @@ function renderHero(S){
     return;
   }
   const name=h?h.name:(hs.length+'곳 비교');
-  const cityLine=h?[h.region&&h.region!==h.city?h.region+' · '+h.city:h.city,heroGrade(h)].filter(Boolean).join(' · '):(meta.apc?'선택 범위 전체 호텔의 APC 무료숙박 재고':'전체 호텔 중 그날 최저가');
+  const cityLine=h?[cityMetaOf(h),heroGrade(h)].filter(Boolean).join(' · '):(meta.apc?'선택 범위 전체 호텔의 APC 무료숙박 재고':'전체 호텔 중 그날 최저가');
   const N=st.nights||1;
   const priceUnit=meta.apc?'APC 무료숙박 가능 호텔':(st.tab==='marriott'&&pointsMode()?(N>1?N+'박 아워드 포인트 합계':'아워드 포인트 · 1박'):(st.tab==='domestic'&&st.mode!=='cash'?(st.mode==='sp2'?'Stay Plus 2박 잔여 결제':'Stay Plus 토 체크인 3박 결제'):(N>1?N+'박 합계 · 세금 포함':'1박 · 세금 포함')));
   const usdNow=usdOn()&&!meta.apc&&!(st.tab==='marriott'&&pointsMode());
@@ -3921,7 +4018,7 @@ function renderHero(S){
   $('heroMain').innerHTML='<div class="hero-eyebrow">'+eyebrow+' · '+dateLabel(cur.d)+' ('+weekday(cur.d)+')</div>'
     +'<div class="hero-hotel">'+esc(name)+'</div>'
     +'<div class="hero-meta">'+esc(cityLine)+' · <b>'+fullDate(cur.d)+'</b>'+(meta.apc?'':' 체크인')+' · '+esc(priceUnit)+'</div>'
-    +'<div class="hero-price"><span class="p">'+bigTxt+(meta.apc?'':(usdNow?'<small>'+usdRateTxt(h)+'</small>':'<small>원</small>'))+'</span><span class="u">'+esc(secLine)+'</span></div>'
+    +'<div class="hero-price"><span class="p">'+bigTxt+(meta.apc?'':(usdNow?'<small> · 환산 전 ₩'+KR(cur.p)+'</small>':'<small>원</small>'))+'</span><span class="u">'+esc(secLine)+'</span></div>'
     +(h&&!meta.apc&&!(st.tab==='marriott'&&pointsMode())?heroFxLine(cur.p,h):'')
     +'<div class="hero-chips">'+chips+(st.tab==='marriott'&&h?ticketBadge(h,cur.d):'')+'</div>'
     +(h?'<div class="hero-acts">'+bkBookHtml(h,cur.d,N,'deal-book')+'<button type="button" class="histbtn" data-hist="hotels" data-hid="'+h.id+'" data-date="'+cur.d+'">📈 가격 추이 차트</button>'+planBtn('hero|'+h.id+'|'+cur.d+'|'+N,planHotelText(h,cur.d,N))+cmpBtn(cmpHotelItem(h,cur.d,N))+'</div>':'');

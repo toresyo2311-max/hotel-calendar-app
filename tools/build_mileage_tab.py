@@ -37,7 +37,8 @@ TABS_ENTRY = ("mileage:{title:'⑦ 마일리지(부산) — 부산 출발 보너
               "checked:'수집 기준: 2026-11-22 KST · 대한항공 공개 보너스 좌석 현황',start:'2026-12',end:'2027-11'}")
 
 NAV_HTML = ('    <button class="tab" data-tab="mileage" type="button" aria-label="마일리지 부산 — 부산 출발 보너스 좌석">'
-            '⑦ 마일리지(부산) <b hidden>—</b></button>')
+            '<span class="t-full">⑦ 마일리지(부산)</span>'
+            '<span class="t-short" aria-hidden="true">⑦ 마일리지</span> <b hidden>—</b></button>')
 
 HOOKS = [
     ('setDealPanels',

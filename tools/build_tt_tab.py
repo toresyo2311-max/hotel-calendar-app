@@ -35,7 +35,8 @@ TABS_ENTRY = ("tt:{title:'부산 출발 땡처리 항공권',"
               "checked:'수집 기준: 2026-11-19 KST',start:'2026-11',end:'2027-11'}")
 
 NAV_ANCHOR = ('    <button class="tab" data-tab="flight" type="button">'
-              '⑤ 항공특가(부산) <b>47</b></button>\n')
+              '<span class="t-full">⑤ 항공특가(부산)</span>'
+              '<span class="t-short" aria-hidden="true">⑤ 항공</span> <b>47</b></button>\n')
 SEC_ANCHOR = '  <div class="note-grid" id="hotelNotes">\n'
 CSS_ANCHOR = '/* ── 반응형 ─'
 JS_ANCHOR = '\nrender();\n</script>'
@@ -110,7 +111,9 @@ def main(argv):
         src = fp.read()
     before_len = len(src)
 
-    nav = ('    <button class="tab" data-tab="tt" type="button">⑥ 땡처리(부산) <b>0</b></button>')
+    nav = ('    <button class="tab" data-tab="tt" type="button">'
+           '<span class="t-full">⑥ 땡처리(부산)</span>'
+           '<span class="t-short" aria-hidden="true">⑥ 땡처리</span> <b>0</b></button>')
     src, s_nav = put(src, NAV_START, NAV_END, nav, NAV_ANCHOR, before=False)
     src, s_sec = put(src, SEC_START, SEC_END, asset('section.html'), SEC_ANCHOR, before=True)
     src, s_css = put(src, CSS_START, CSS_END, asset('tab.css'), CSS_ANCHOR, before=True)

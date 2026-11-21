@@ -67,7 +67,7 @@ button:disabled{cursor:not-allowed;opacity:.3}
 .brand-mark{width:34px;height:34px;flex:none;border-radius:9px;display:grid;place-items:center;background:linear-gradient(150deg,#7c3aed,#4c1d95);color:#fff;font-size:15px;box-shadow:0 6px 16px rgba(76,29,149,.45)}
 .brand-name{font-size:16px;font-weight:800;letter-spacing:-.03em;line-height:1.25}
 .brand-sub{font-size:9.5px;font-weight:700;letter-spacing:.2em;color:#b7a8d9;margin-top:2px}
-.topbar-metrics{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.topbar-metrics{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-left:auto}
 .topbar-metrics>div{text-align:right}
 .topbar-metrics b{display:block;font-size:17px;font-weight:800;letter-spacing:-.04em;line-height:1.2;color:#fff}
 .topbar-metrics span{font-size:10px;color:#a99bc7;letter-spacing:.02em}
@@ -81,6 +81,8 @@ button:disabled{cursor:not-allowed;opacity:.3}
 .tab:hover{background:rgba(196,181,253,.09);color:#fff}
 .tab.active{background:var(--bg);color:var(--plum);border-color:var(--bg)}
 .tab.active b{background:var(--lav);color:var(--violet-d)}
+/* 좁은 화면에서만 쓰는 짧은 탭 이름 — 데스크톱은 긴 이름 그대로 */
+.t-short{display:none}
 
 .page{max-width:1340px;padding:18px 24px 48px;margin:auto}
 
@@ -1009,10 +1011,7 @@ table.fr-g td.c-A.new{box-shadow:inset 0 0 0 2px #e0872f}
 @media(max-width:430px){
   .page{padding:12px 11px 32px}
   .topbar-in{padding:14px 11px 0}
-  .tabs{padding:11px 11px 0;gap:4px}
-  .tab{font-size:10.5px;padding:9px 11px}
-  .tab b{font-size:8.5px;padding:2px 4px;margin-left:4px}
-  .topbar-metrics{gap:13px}
+  .topbar-metrics{gap:12px 14px}
   .topbar-metrics b{font-size:15px}
   .topbar-metrics span{font-size:9px}
   .offline{font-size:9px;padding:4px 7px}
@@ -1062,6 +1061,26 @@ table.fr-g td.c-A.new{box-shadow:inset 0 0 0 2px #e0872f}
   .fl-day .dayprice{font-size:9px}
   .fl-day-pat{font-size:7px;padding:0 2px}
   .fl-day-air{font-size:7px}
+}
+/* ── 모바일 탭은 4칸 폴더 그리드 (2026-11-22 한진님: "1 2 3 4 밑에 5 6 7 8") ──
+   한 줄 가로 스크롤이던 탭 줄은 390px 폰에서 ④부터 잘려 뒤쪽 탭이 보이지 않았다.
+   폭 76px 이상이면 한 줄에 네 칸씩 접히는 그리드로 바꿔 열 개 탭이 모두 스크롤 없이 보이게 한다. */
+@media(max-width:760px){
+  .tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:6px;overflow:visible;padding:12px 15px 0}
+  .tab{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:34px;padding:6px 4px;border-radius:10px;border-bottom:1px solid rgba(196,181,253,.22);font-size:10.5px;letter-spacing:-.03em;white-space:nowrap}
+  .tab b{margin-left:0;font-size:8px;padding:1px 3px;vertical-align:0}
+  .tab.active{background:linear-gradient(150deg,#7c3aed 0%,#5b21b6 62%,#4c1d95 100%);color:#fff;border-color:rgba(196,181,253,.55);box-shadow:0 6px 14px rgba(76,29,149,.4)}
+  .tab.active b{background:rgba(255,255,255,.24);color:#fff}
+  .t-full{display:none}
+  .t-short{display:inline}
+  /* 🔒 잠금은 제목 줄 오른쪽 끝으로 — 통계 아래 따로 한 줄을 차지하지 않게 */
+  .topbar-in{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:10px;row-gap:12px}
+  .brand{grid-area:1/1}
+  .lockagain{grid-area:1/2;align-self:start;justify-self:end;margin-top:1px}
+  .topbar-metrics{grid-area:2/1/3/3;margin-left:0}
+}
+@media(max-width:430px){
+  .tabs{padding:10px 11px 0}
 }
 @media print{
   body{background:#fff}
@@ -1560,19 +1579,19 @@ html.locked #lockGate{display:flex}
     <button class="tab active" data-tab="lux" type="button">① 호텔럭스 <b>161</b></button>
     <button class="tab" data-tab="china" type="button">② 중올플 <b>289</b></button>
     <button class="tab" data-tab="domestic" type="button">③ 아코르 <b>247</b></button>
-    <button class="tab" data-tab="marriott" type="button">④ 메리어트(한중일) <b>62</b></button>
-    <button class="tab" data-tab="flight" type="button">⑤ 항공특가(부산) <b>47</b></button>
+    <button class="tab" data-tab="marriott" type="button"><span class="t-full">④ 메리어트(한중일)</span><span class="t-short" aria-hidden="true">④ 메리어트</span> <b>62</b></button>
+    <button class="tab" data-tab="flight" type="button"><span class="t-full">⑤ 항공특가(부산)</span><span class="t-short" aria-hidden="true">⑤ 항공</span> <b>47</b></button>
     <button class="tab combo-tab" data-tab="combo" type="button" aria-label="항공+호텔 주말 콤보">✈️+🏨 콤보</button>
 <!-- TT:NAV -->
-    <button class="tab" data-tab="tt" type="button">⑥ 땡처리(부산) <b>3,847</b></button>
+    <button class="tab" data-tab="tt" type="button"><span class="t-full">⑥ 땡처리(부산)</span><span class="t-short" aria-hidden="true">⑥ 땡처리</span> <b>3,847</b></button>
 <!-- /TT:NAV --><!-- FOREST:NAV -->
     <button class="tab" data-tab="forest" type="button" aria-label="자연휴양림 빈자리">🌲 휴양림 <b>185</b></button>
 <!-- /FOREST:NAV --><!-- MILEAGE:NAV -->
-    <button class="tab" data-tab="mileage" type="button" aria-label="마일리지 부산 — 부산 출발 보너스 좌석">⑦ 마일리지(부산) <b hidden>—</b></button>
+    <button class="tab" data-tab="mileage" type="button" aria-label="마일리지 부산 — 부산 출발 보너스 좌석"><span class="t-full">⑦ 마일리지(부산)</span><span class="t-short" aria-hidden="true">⑦ 마일리지</span> <b hidden>—</b></button>
 <!-- /MILEAGE:NAV -->
 
 
-    <button class="tab" data-tab="valet" type="button" aria-label="발렛·공항 라운지">🅿️ 발렛 · 🛫 라운지 <b>75</b></button>
+    <button class="tab" data-tab="valet" type="button" aria-label="발렛·공항 라운지"><span class="t-full">🅿️ 발렛 · 🛫 라운지</span><span class="t-short" aria-hidden="true">🅿️ 발렛</span> <b>75</b></button>
   </nav>
 </div>
 <div class="page">

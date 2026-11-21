@@ -4972,6 +4972,19 @@ ALERT_LEVEL_RATIO = 0.30       # 그 '크게'의 폭(중앙값 기준 ±30%)
 ALERT_PREV_SPIKE = 3.0         # 직전 값이 주변의 3배를 넘으면 스파이크로 보고 '직전 대비' 기준에서 뺀다
 ALERT_PER_ID = 6               # 같은 호텔·노선에서 한 번에 올리는 최대 건수(홍수 방지)
 ALERT_LOCAL_STABLE = 2.0       # 가까운 날짜 묶음의 p75/p25 가 이보다 크면 '평소'로 쓰지 않는다
+# ── 2026-11-21 오탐 차단 보완 ───────────────────────────────────────────────
+# (a) 같은 요일 중앙값만 보면 '1주~2주짜리 비수기 구간'을 급락으로 잘못 잡는다
+#     (h42 2/3 51만 < 1월 수요일 132만, h52 4/29 117만 < 4월 목요일 239만).
+#     → 날짜 바로 앞뒤 며칠(요일 무관)도 같이 싸면 그 구간의 계절 요금으로 보고 뺀다.
+# (b) 출처·산식이 통째로 바뀐 스냅샷(11-19 검색가 → 11-20 예약 사이트 직접 조회)은
+#     srcs 표지가 남지 않은 경우도 있어, 이력에서 '여러 날짜가 같은 날 같은 방향으로 크게 움직인 날'을
+#     직접 찾아 그 전 관측을 기준선에서 뺀다(h24 아마노이 365일이 한꺼번에 내려간 경우).
+ALERT_NEAR_SPAN = 3            # 호텔 — 날짜 앞뒤 며칠을 '그 구간의 값'으로 볼지
+ALERT_NEAR_MIN = 2             # 그 표본이 이만큼은 있어야 본다
+ALERT_PATCH_MARGIN = 0.70      # 이웃 중앙값의 70% 아래로 내려간 값만 급락으로 본다(구간 비수기 제외)
+ALERT_SWITCH_MIN = 5           # 한 스냅샷에서 이만큼의 날짜가 함께 움직이면 전환 후보
+ALERT_SWITCH_RATIO = 0.30      # 그 '함께 움직임'의 폭(±30%)
+ALERT_SWITCH_SHARE = 0.20      # 호텔 날짜 칸의 이 비율 이상이 움직여야 전환으로 본다
 KST = datetime.timezone(datetime.timedelta(hours=9))
 
 
@@ -5146,7 +5159,7 @@ def hotel_url(h, ci, nights=1):
     if g == 'marriott' and h.get('code'):
         return ('https://www.marriott.com/reservation/availabilitySearch.mi?propertyCode=%s'
                 '&isSearch=true&fromDate=%s&toDate=%s&numberOfAdults=2&numberOfRooms=1'
-                '&useRewards=false&earchType=QuickSearch' % (h['code'], _mdy(ci), _mdy(co)))
+                '&useRewards=false&searchType=QuickSearch' % (h['code'], _mdy(ci), _mdy(co)))
     return ''
 
 
@@ -5221,6 +5234,62 @@ def _stable(vals, limit=None):
     return p75 / float(p25) <= (limit or ALERT_STABLE_RATIO)
 
 
+def _near_base(pairs, date, span=ALERT_NEAR_SPAN, kmin=ALERT_NEAR_MIN):
+    """date 바로 앞뒤 span일(요일 무관) 값의 중앙값 — '그 구간이 통째로 싼지'를 본다.
+
+    같은 요일 중앙값만 보면 1~2주짜리 비수기 구간을 급락으로 잘못 잡는다.
+    앞뒤 날짜까지 함께 싸면 그건 계절 요금표이고, 하루만 뚫린 값이라면 이 값보다 훨씬 높다.
+    """
+    try:
+        d0 = datetime.date.fromisoformat(date)
+    except ValueError:
+        return None
+    near = []
+    for d, v in pairs:
+        try:
+            gap = abs((datetime.date.fromisoformat(d) - d0).days)
+        except ValueError:
+            continue
+        if not gap or gap > span:
+            continue
+        near.append((gap, v))
+    if len(near) < kmin:
+        return None
+    near.sort()
+    return _median([v for _g, v in near[:6]])
+
+
+def _switch_snaps(series, min_ratio=ALERT_SWITCH_RATIO, min_keys=ALERT_SWITCH_MIN,
+                  share=ALERT_SWITCH_SHARE):
+    """요금 출처·산식이 바뀐 스냅샷 — 같은 날 여러 날짜가 같은 방향으로 크게 움직인 날.
+
+    2026-11-20 에 h24 아마노이 등이 11-19 검색값 → 11-20 예약 사이트 직접 조회값으로 통째로 바뀌었는데,
+    srcs 표지가 그 전날 것까지 남아 있지 않아 '출처 전환'으로 걸리지 않고 365일이 급락으로 남았다.
+    이력만 보고 그런 날을 찾아, 그 전 관측은 기준선에서 뺀다.
+    """
+    moved = {}
+    for arr in series.values():
+        for i in range(1, len(arr)):
+            a, b = arr[i - 1][1], arr[i][1]
+            if not (isinstance(a, int) and isinstance(b, int)) or a <= 0 or b <= 0:
+                continue
+            if a >= ERROR_MIN or b >= ERROR_MIN:
+                continue
+            r = b / float(a)
+            if abs(r - 1) < min_ratio:
+                continue
+            moved.setdefault(arr[i][0], []).append(1 if r < 1 else -1)
+    pool = sum(1 for arr in series.values() if len(arr) >= 2)
+    out = []
+    for sn, dirs in moved.items():
+        if len(dirs) < min_keys or (pool and len(dirs) < pool * share):
+            continue
+        down, up = dirs.count(1), dirs.count(-1)
+        if max(down, up) >= len(dirs) * 0.8:      # 한 방향으로 몰려 움직였을 때만
+            out.append(sn)
+    return sorted(out)
+
+
 def _level_run_dates(changed, minrun=ALERT_LEVEL_RUN, minratio=ALERT_LEVEL_RATIO):
     """같은 스냅샷에 연속 날짜들이 함께 ±30% 넘게 움직였으면 '출처·산식 전환'으로 본다.
 
@@ -5269,9 +5338,17 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
           1년 중앙값을 아예 쓰지 않는다.
       (c) 예약창 — 직전 스냅샷에 요금이 없던(null·판매편 없음·예약창 미오픈) 칸이 이번에
           요금을 얻은 것은 '급락'이 아니므로 뺀다. 처음 관측된 칸은 이력이 없으므로 남긴다.
+
+    오탐 차단(2026-11-21 보완 — 교차 검수에서 15건 중 12건이 오탐으로 지적됨):
+      (d) 구간 비수기 — 같은 요일 중앙값은 1~2주짜리 계절 구간을 놓친다. 날짜 앞뒤 3일(요일 무관)
+          값의 중앙값보다 30% 이상 싼 경우에만 급락으로 본다(h42 2/3·h52 4/29 등이 여기서 빠졌다).
+      (e) 이력으로 찾은 산식 전환 — 한 스냅샷에서 여러 날짜가 같은 방향으로 ±30% 넘게 움직였으면
+          그 스냅샷을 전환으로 보고 그 전 관측을 기준선에서 뺀다(srcs 표지가 없어도 걸린다 — h24).
+      (f) '직전 대비'는 그 스냅샷에 실제로 관측된 값에만 적용한다 — 값이 안 바뀐 날 이전 관측의
+          차이를 매일 다시 세어 보고하지 않는다(11-21 에 15건이 불어난 직접 원인).
     """
     out = []
-    suppressed = {'level': 0, 'method': 0, 'window': 0, 'spike': 0, 'cap': 0}
+    suppressed = {'level': 0, 'method': 0, 'window': 0, 'spike': 0, 'patch': 0, 'cap': 0}
 
     # ① 호텔
     for h in master['hotels']:
@@ -5291,14 +5368,18 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
             if len(arr) >= 2 and arr[-1][0] == snap and arr[-2][0] != snap:
                 changed[k] = (arr[-2][1], arr[-1][1])
         level = _level_run_dates(changed)
-        vals = [a[1] for a in latest.values() if isinstance(a[1], int) and a[1] < ERROR_MIN]
+        switches = _switch_snaps(series)
+        sw = switches[-1] if switches else None
+        # 전환 스냅샷이 있으면 그 전 관측(다른 산식으로 잰 값)은 기준선에서 뺀다
+        fresh = {k: a for k, a in latest.items() if not sw or a[0] >= sw}
+        vals = [a[1] for a in fresh.values() if isinstance(a[1], int) and a[1] < ERROR_MIN]
         year = _median(_trim(vals)) if len(vals) >= ALERT_MIN_HOTEL else None
         if year and not _stable(vals):
             year = None
         rep = {}
         for v in vals:
             rep[v] = rep.get(v, 0) + 1
-        pairs = [(k, a[1]) for k, a in latest.items() if isinstance(a[1], int) and a[1] < ERROR_MIN]
+        pairs = [(k, a[1]) for k, a in fresh.items() if isinstance(a[1], int) and a[1] < ERROR_MIN]
         prevpairs = [(k, p[1]) for k, p in prev.items() if p and isinstance(p[1], int) and p[1] < ERROR_MIN]
         for key, last in latest.items():
             v = last[1]
@@ -5307,8 +5388,12 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
             pv = prev.get(key)
             prevprice = pv[1] if pv and isinstance(pv[1], int) and pv[1] < ERROR_MIN else None
             first_seen = len(series[key]) == 1
+            today = (last[0] == snap)          # 이번 스냅샷에서 실제로 관측된 값인가
             if method_switch:
                 suppressed['method'] += 1
+                continue
+            if sw and last[0] < sw:
+                suppressed['method'] += 1     # 전환 전 산식으로 잰 값 — 지금 기준선과 비교하지 않는다
                 continue
             if key in level:
                 suppressed['level'] += 1
@@ -5317,6 +5402,7 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
                 suppressed['window'] += 1
                 continue
             base_loc = _local_base(pairs, key, ALERT_LOCAL_SPAN_H, ALERT_LOCAL_MIN_H, same_dow=True)
+            near = _near_base(pairs, key)
             prev_ok = True
             if prevprice:
                 ref = _local_base(prevpairs, key, ALERT_LOCAL_SPAN_H, ALERT_LOCAL_MIN_H, same_dow=True) or year
@@ -5324,7 +5410,7 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
                     prev_ok = False
                     suppressed['spike'] += 1
             why = base = None
-            if prevprice and prev_ok and v <= prevprice * ALERT_DROP:
+            if today and prevprice and prev_ok and v <= prevprice * ALERT_DROP:
                 why, base = '직전 대비 50%↓', prevprice
             elif v <= ALERT_HOTEL_LOW:
                 why, base = '초저가', ALERT_HOTEL_LOW
@@ -5333,6 +5419,10 @@ def build_alerts(master, hist_hotels, hist_flights, hist_ttang, snap):
                 if base and v <= base * ALERT_DROP and rep.get(v, 0) < ALERT_TIER_REPEAT \
                         and (prevprice is not None or first_seen):
                     why = '기준 대비 50%↓'
+                    # 앞뒤 날짜도 함께 싸면 1~2주짜리 비수기 구간 — 하루만 뚫린 급락이 아니다
+                    if near is not None and v > near * ALERT_PATCH_MARGIN:
+                        suppressed['patch'] += 1
+                        why = None
             if not why:
                 continue
             out.append(_alert('hotel', h['id'], h['name'], h.get('city'), key, v, base, why,
@@ -5560,9 +5650,13 @@ def snapshot_run(master, args, verbose=True):
                   'localSpan': {'hotel': ALERT_LOCAL_SPAN_H, 'flight': ALERT_LOCAL_SPAN_F},
                   'levelRun': ALERT_LEVEL_RUN, 'levelRatio': int(ALERT_LEVEL_RATIO * 100),
                   'prevSpike': ALERT_PREV_SPIKE, 'perId': ALERT_PER_ID,
-                  'basis': '같은 호텔(노선·패턴·직항 여부) 안에서 앞뒤 35·42일 기준 50%↓ 또는 '
-                           '직전 스냅샷 대비 50%↓ 또는 절대 초저가. 출처·산식 전환, 연속 5일 '
-                           '이상 동시 이동, 요금 없던 칸이 열린 경우는 뺀다'},
+                  'patch': {'span': ALERT_NEAR_SPAN, 'margin': int(ALERT_PATCH_MARGIN * 100)},
+                  'switch': {'min': ALERT_SWITCH_MIN, 'ratio': int(ALERT_SWITCH_RATIO * 100),
+                             'share': int(ALERT_SWITCH_SHARE * 100)},
+                  'basis': '같은 호텔(노선·패턴·직항 여부) 안에서 앞뒤 35·42일(같은 요일) 기준 50%↓ 또는 '
+                           '이번 스냅샷에서 실제로 바뀐 값의 직전 대비 50%↓ 또는 절대 초저가. '
+                           '출처·산식 전환, 연속 5일 이상 동시 이동, 요금 없던 칸이 열린 경우, '
+                           '날짜 앞뒤 3일도 함께 싼 구간 비수기는 뺀다'},
         'counts': counts,
         'shown': len(kept),
         'alerts': kept,
@@ -5578,10 +5672,10 @@ def snapshot_run(master, args, verbose=True):
         print('  🚨 에러가 의심 %d건 (호텔 %d · 항공 %d · ⑥ %d)'
               % (total, counts.get('hotel', 0), counts.get('flight', 0), counts.get('ttang', 0)))
         if suppressed:
-            print('  오탐 차단 — 출처·산식 전환 %d · 연속 동시 이동 %d · 예약창 열림 %d · 직전 스파이크 %d · 건수 상한 %d'
+            print('  오탐 차단 — 출처·산식 전환 %d · 연속 동시 이동 %d · 예약창 열림 %d · 직전 스파이크 %d · 구간 비수기 %d · 건수 상한 %d'
                   % (suppressed.get('method', 0), suppressed.get('level', 0),
                      suppressed.get('window', 0), suppressed.get('spike', 0),
-                     suppressed.get('cap', 0)))
+                     suppressed.get('patch', 0), suppressed.get('cap', 0)))
     return hist
 
 

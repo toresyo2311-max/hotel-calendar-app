@@ -1,0 +1,98 @@
+  <section id="frPanel" class="fr-panel" hidden aria-label="🌲 자연휴양림 빈자리 — 전국 숲속의집·야영장 예약 현황">
+    <div class="fr-banner" id="frBanner"></div>
+
+    <div class="fr-kpi" id="frKpi"></div>
+
+    <div class="fr-toolbar">
+      <div class="field"><label for="frRegion">권역</label><select id="frRegion" aria-label="권역 필터"></select></div>
+      <div class="field"><label for="frType">객실 유형</label><select id="frType" aria-label="객실 유형 필터">
+        <option value="all">전체 (숙소 + 야영장)</option>
+        <option value="house">숙소 전체</option>
+        <option value="camp">야영장 전체</option>
+        <option value="숲속의집">숲속의집</option>
+        <option value="연립동">연립동</option>
+        <option value="휴양관">휴양관</option>
+        <option value="야영데크">야영데크</option>
+        <option value="오토캠핑장">오토캠핑장</option>
+        <option value="카라반">카라반</option>
+        <option value="글램핑">글램핑</option>
+      </select></div>
+      <div class="field"><label for="frCap">인원</label><select id="frCap" aria-label="수용 인원 필터">
+        <option value="0">인원 무관</option>
+        <option value="2">2인 이상</option>
+        <option value="4">4인 이상</option>
+        <option value="6">6인 이상</option>
+        <option value="8">8인 이상</option>
+      </select></div>
+      <div class="field"><label for="frRange">기간</label><select id="frRange" aria-label="조회 기간">
+        <option value="14">앞으로 2주</option>
+        <option value="28" selected>앞으로 4주</option>
+        <option value="70">수집 기간 전체</option>
+      </select></div>
+      <div class="fr-nights" role="group" aria-label="숙박 일수">
+        <button type="button" data-fr-nights="1" class="on">1박</button>
+        <button type="button" data-fr-nights="2">2박</button>
+        <button type="button" data-fr-nights="3">3박</button>
+      </div>
+      <div class="fr-toggles">
+        <button type="button" class="chip" id="frWeekend" aria-pressed="false" title="체크인이 금·토요일인 날만 남깁니다">금·토 체크인만</button>
+        <button type="button" class="chip" id="frFresh" aria-pressed="false" title="직전 수집에서 완료·대기 → 예약가능으로 바뀐 자리만">🆕 새로 빈 자리</button>
+      </div>
+      <div class="fr-search"><input id="frQ" type="search" placeholder="휴양림·시군 이름" aria-label="휴양림 검색"></div>
+      <button type="button" class="fr-reset" id="frReset">초기화</button>
+    </div>
+
+    <div class="fr-viewbar">
+      <div class="fr-views" role="group" aria-label="보기 방식">
+        <button type="button" data-fr-view="list" class="on">목록</button>
+        <button type="button" data-fr-view="cal">달력</button>
+        <button type="button" data-fr-view="grid">월간 그리드</button>
+      </div>
+      <div class="fr-sortwrap"><label for="frSort">정렬</label>
+        <select id="frSort" aria-label="정렬">
+          <option value="soon">다음 빈 날짜 빠른 순</option>
+          <option value="open">빈자리 많은 순</option>
+          <option value="price">1박 요금 낮은 순</option>
+          <option value="name">이름 순</option>
+        </select>
+      </div>
+      <div class="fr-count" id="frCount"></div>
+    </div>
+
+    <div class="fr-block" id="frListBlock">
+      <div class="fl-block-head"><div><h3>빈자리 있는 휴양림</h3><div class="meta" id="frListSub"></div></div>
+        <div class="fl-head-right"><div class="fl-legend"><span>카드의 예약 버튼은 <b>숲나들e</b> 공식 화면으로 열립니다</span></div></div></div>
+      <div class="fr-cards" id="frCards"></div>
+    </div>
+
+    <div class="fr-block" id="frCalBlock" hidden>
+      <div class="fl-block-head">
+        <div><h3>체크인 달력 — 어느 날 어디가 비었나</h3><div class="meta" id="frCalSub"></div></div>
+        <div class="fl-head-right">
+          <div class="nav-month fl-monthnav"><button type="button" id="frPrevMonth" aria-label="이전 달">‹</button><span id="frMonthTitle">—</span><button type="button" id="frNextMonth" aria-label="다음 달">›</button></div>
+          <div class="fl-legend"><span><i class="red"></i>칸이 많음</span><span><i class="grey"></i>없음</span></div>
+        </div>
+      </div>
+      <div class="weekhead"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+      <div id="frDays" class="fr-days" role="group" aria-label="휴양림 체크인 달력"></div>
+      <div id="frDayDetail" class="fl-detail"></div>
+    </div>
+
+    <div class="fr-block" id="frGridBlock" hidden>
+      <div class="fl-block-head">
+        <div><h3>월간 빈자리 그리드 — 객실 × 날짜</h3><div class="meta" id="frGridSub"></div></div>
+        <div class="fl-head-right">
+          <select id="frForestSel" class="fr-fsel" aria-label="휴양림 선택"></select>
+          <div class="nav-month fl-monthnav"><button type="button" id="frGPrevMonth" aria-label="이전 달">‹</button><span id="frGMonthTitle">—</span><button type="button" id="frGNextMonth" aria-label="다음 달">›</button></div>
+        </div>
+      </div>
+      <div class="fr-glegend" id="frGLegend"></div>
+      <div class="fr-gwrap" id="frGridWrap"></div>
+      <div class="fr-gfoot" id="frGridFoot"></div>
+    </div>
+
+    <div class="note-grid">
+      <section class="notice"><h3>조회 기준과 표시 읽는 법</h3><div id="frBasis"></div></section>
+      <section class="notice"><h3>예약 전에 확인하세요</h3><div id="frCaution"></div></section>
+    </div>
+  </section>

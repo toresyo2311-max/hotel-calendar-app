@@ -695,6 +695,116 @@ button.fl-plink{font-family:inherit;line-height:1.35;cursor:pointer}
 .value-per{display:inline-block;font-size:9px;font-weight:800;color:var(--violet-d);margin-left:4px}
 @media(max-width:430px){.snapshot{grid-template-columns:1fr 1fr;font-size:9px}.stat-pill{font-size:9px;padding:2px 6px}.logbody{max-height:320px}}
 /* /상태 코드 · 이상치 · 이력 접기 */
+/* FOREST:CSS */
+/* ── 🌲 휴양림 빈자리 탭 ──────────────────────────────── */
+#frPanel[hidden]{display:none}
+.fr-banner{margin:0 0 12px;padding:9px 11px;border-radius:9px;background:#f3faf5;border:1px solid #d8eadf;color:#235c3c;font-size:10.5px;font-weight:700;line-height:1.65}
+.fr-banner b{color:#17503a}
+.fr-banner .fr-b2{display:block;font-weight:600;color:#4c6b58;margin-top:2px}
+.fr-kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.fr-kpi>div{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:linear-gradient(160deg,#f7fbf8 0%,#fff 70%);min-width:0}
+.fr-kpi span{display:block;font-size:9px;font-weight:800;color:var(--muted2);margin-bottom:4px}
+.fr-kpi b{display:block;font-size:16px;letter-spacing:-.05em;line-height:1.15;color:var(--ink);font-variant-numeric:tabular-nums}
+.fr-kpi i{display:block;font-style:normal;font-size:9.5px;color:var(--muted);margin-top:3px;line-height:1.45;overflow:hidden;text-overflow:ellipsis}
+.fr-kpi .g b{color:#1f7a4a}
+.fr-toolbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:end;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--card);margin-bottom:10px}
+.fr-toolbar .field{display:flex;flex-direction:column;gap:3px;min-width:0}
+.fr-toolbar .field label{font-size:9px;font-weight:800;color:var(--muted2)}
+.fr-toolbar select,.fr-toolbar input{width:100%;min-width:0;border:1px solid var(--line);border-radius:7px;padding:6px 7px;font-size:11px;font-weight:700;color:var(--ink);background:#fff}
+.fr-nights{display:flex;gap:4px;align-items:center}
+.fr-nights button{flex:1;border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 4px;font-size:10.5px;font-weight:800;color:var(--muted)}
+.fr-nights button.on{background:var(--violet-d);border-color:var(--violet-d);color:#fff}
+.fr-toggles{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.fr-toggles .chip{font-size:10px;padding:5px 8px}
+.fr-toggles .chip[aria-pressed="true"]{background:#e9f6ee;border-color:#9fd0b3;color:#17503a}
+.fr-search input{background:#fff}
+.fr-reset{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 9px;font-size:10.5px;font-weight:800;color:var(--muted)}
+.fr-viewbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.fr-views{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.fr-views button{border:0;background:transparent;padding:6px 11px;font-size:10.5px;font-weight:800;color:var(--muted);border-right:1px solid var(--line2)}
+.fr-views button:last-child{border-right:0}
+.fr-views button.on{background:var(--lav);color:var(--violet-d)}
+.fr-sortwrap{display:inline-flex;align-items:center;gap:5px}
+.fr-sortwrap label{font-size:9px;font-weight:800;color:var(--muted2)}
+.fr-sortwrap select{border:1px solid var(--line);border-radius:7px;padding:5px 7px;font-size:10.5px;font-weight:700;background:#fff;color:var(--ink)}
+.fr-count{font-size:10px;font-weight:700;color:var(--muted);margin-left:auto}
+.fr-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.fr-card{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:10px 11px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.fr-card-head{display:flex;align-items:flex-start;gap:6px;justify-content:space-between}
+.fr-card-name{font-size:13px;font-weight:800;letter-spacing:-.03em;color:var(--ink);line-height:1.3;min-width:0;word-break:keep-all}
+.fr-badge{display:inline-block;font-size:8px;font-weight:800;border-radius:3px;padding:0 3px;vertical-align:2px;margin-left:3px;background:var(--lav);color:var(--violet-d)}
+.fr-badge.nat{background:#e9f6ee;color:#17503a}
+.fr-badge.pri{background:#fdf0e3;color:#9a4508}
+.fr-go{flex:none;font-size:9.5px;font-weight:800;color:#17503a;border:1px solid #bcdcc9;border-radius:6px;padding:4px 7px;background:#f3faf5;text-decoration:none;white-space:nowrap}
+.fr-go:hover{background:#e4f4ea}
+.fr-meta{font-size:9.5px;color:var(--muted);font-weight:600;line-height:1.5}
+.fr-line{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.fr-big{font-size:12.5px;font-weight:800;color:#1f7a4a;letter-spacing:-.03em}
+.fr-big.zero{color:var(--muted2)}
+.fr-line span{font-size:9.5px;color:var(--ink2);font-weight:700}
+.fr-newtag{font-size:8.5px;font-weight:800;color:#9a4508;background:#fdf0e3;border-radius:3px;padding:0 3px}
+.fr-chips{display:flex;flex-wrap:wrap;gap:3px}
+.fr-chip2{font-size:9px;font-weight:800;border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:var(--ink2);background:#fbfaff;white-space:nowrap}
+.fr-chip2 b{color:#1f7a4a}
+.fr-chip2.wk{background:#fff8ef;border-color:#efdcc2}
+.fr-acts{display:flex;gap:5px;flex-wrap:wrap;margin-top:auto;padding-top:2px}
+.fr-acts button,.fr-acts a{font-size:9.5px;font-weight:800;border-radius:6px;padding:4px 8px;text-decoration:none;white-space:nowrap}
+.fr-acts button{border:1px solid var(--lav2);background:var(--lav);color:var(--violet-d)}
+.fr-acts a{border:1px solid #bcdcc9;background:#f3faf5;color:#17503a}
+.fr-empty{padding:18px 14px;font-size:11.5px;color:var(--muted);line-height:1.7;border:1px dashed var(--line);border-radius:10px;background:#fcfbff}
+/* 달력 */
+.fr-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.fr-day{min-height:58px;gap:1px;padding:4px 3px}
+.fr-day .daynum{font-size:9px}
+.fr-day .fr-dn{font-size:10.5px;font-weight:800;letter-spacing:-.03em}
+.fr-day .fr-df{font-size:7.5px;font-weight:700;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.fr-day.none{background:var(--h5);border-color:var(--line);cursor:default;color:var(--muted2)}
+.fr-day.sel{outline:2px solid var(--violet-d);outline-offset:-2px}
+.fr-day.wk{box-shadow:inset 0 -2px 0 #e7b06a}
+.fr-detail-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+.fr-dcard{border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:#fff;min-width:0}
+.fr-dcard b{font-size:11px;letter-spacing:-.02em}
+.fr-dcard small{display:block;font-size:9px;color:var(--muted);font-weight:700;margin-top:2px;line-height:1.45}
+.fr-dcard .fr-drooms{font-size:9.5px;color:var(--ink2);font-weight:700;margin-top:3px;line-height:1.5}
+/* 그리드 */
+.fr-glegend{display:flex;flex-wrap:wrap;gap:4px 9px;margin:0 0 7px;font-size:9px;font-weight:700;color:var(--muted)}
+.fr-glegend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:3px;vertical-align:-1px;border:1px solid rgba(0,0,0,.06)}
+.fr-gwrap{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:9px;background:#fff;max-width:100%}
+table.fr-g{border-collapse:separate;border-spacing:0;font-size:9px;font-variant-numeric:tabular-nums}
+table.fr-g th,table.fr-g td{width:21px;min-width:21px;height:20px;text-align:center;padding:0;border-top:1px solid var(--line2);border-left:1px solid var(--line2);font-weight:700;color:var(--ink2)}
+table.fr-g thead th{background:#f8f6fd;font-size:8.5px;color:var(--muted);border-top:0;position:sticky;top:0}
+table.fr-g thead th.wk{background:#fdf6ec;color:#8a5a2b}
+table.fr-g th.frs,table.fr-g td.frs{position:sticky;left:0;z-index:2;background:#fff;width:126px;min-width:126px;text-align:left;padding:3px 5px;border-left:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+table.fr-g thead th.frs{background:#f8f6fd;z-index:3}
+table.fr-g tbody tr:hover td.frs{background:#fbfaff}
+table.fr-g td.frs b{font-size:9.5px;color:var(--ink);letter-spacing:-.02em}
+table.fr-g td.frs small{display:block;font-size:8px;color:var(--muted2);font-weight:600;margin-top:1px}
+table.fr-g td.c-A{background:#e7f6ec;color:#17503a;font-weight:800}
+table.fr-g td.c-W{background:#fdf3e3;color:#8a5a2b}
+table.fr-g td.c-F{background:#f2f0f7;color:#8b86a3}
+table.fr-g td.c-C{background:#fbf0ef;color:#a4504a}
+table.fr-g td.c-R{background:#f7f1ea;color:#8a6b4a}
+table.fr-g td.c-P{background:#efeafd;color:var(--violet-d)}
+table.fr-g td.c-N{background:#fff;color:#c9c4d8}
+table.fr-g td.c-A.new{box-shadow:inset 0 0 0 2px #e0872f}
+.fr-gfoot{margin-top:7px;font-size:9.5px;color:var(--muted);font-weight:700;line-height:1.6}
+.fr-fsel{max-width:230px;border:1px solid var(--line);border-radius:7px;padding:5px 7px;font-size:10.5px;font-weight:700;background:#fff;color:var(--ink)}
+@media(max-width:980px){
+  .fr-cards{grid-template-columns:1fr}
+  .fr-kpi{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fr-toolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .fr-detail-list{grid-template-columns:1fr}
+}
+@media(max-width:430px){
+  .fr-kpi{gap:6px}
+  .fr-kpi b{font-size:14px}
+  .fr-toolbar{gap:6px;padding:8px}
+  .fr-day{min-height:50px}
+  .fr-day .fr-df{display:none}
+  .fr-count{width:100%;margin-left:0}
+  .fr-fsel{max-width:100%}
+}
+/* /FOREST:CSS */
 /* ── 반응형 ──────────────────────────────────────────── */
 @media(max-width:1180px){
   .workspace{grid-template-columns:180px minmax(0,1fr)}
@@ -1288,7 +1398,10 @@ html.locked #lockGate{display:flex}
     <button class="tab combo-tab" data-tab="combo" type="button" aria-label="항공+호텔 주말 콤보">✈️+🏨 콤보</button>
 <!-- TT:NAV -->
     <button class="tab" data-tab="tt" type="button">⑥ 땡처리(부산) <b>3,847</b></button>
-<!-- /TT:NAV -->
+<!-- /TT:NAV --><!-- FOREST:NAV -->
+    <button class="tab" data-tab="forest" type="button" aria-label="자연휴양림 빈자리">🌲 휴양림 <b>185</b></button>
+<!-- /FOREST:NAV -->
+
     <button class="tab" data-tab="valet" type="button" aria-label="발렛·공항 라운지">🅿️ 발렛 · 🛫 라운지 <b>75</b></button>
   </nav>
 </div>
@@ -1704,6 +1817,106 @@ html.locked #lockGate{display:flex}
     </div>
   </section>
 <!-- /TT:SECTION -->
+<!-- FOREST:SECTION -->
+  <section id="frPanel" class="fr-panel" hidden aria-label="🌲 자연휴양림 빈자리 — 전국 숲속의집·야영장 예약 현황">
+    <div class="fr-banner" id="frBanner"></div>
+
+    <div class="fr-kpi" id="frKpi"></div>
+
+    <div class="fr-toolbar">
+      <div class="field"><label for="frRegion">권역</label><select id="frRegion" aria-label="권역 필터"></select></div>
+      <div class="field"><label for="frType">객실 유형</label><select id="frType" aria-label="객실 유형 필터">
+        <option value="all">전체 (숙소 + 야영장)</option>
+        <option value="house">숙소 전체</option>
+        <option value="camp">야영장 전체</option>
+        <option value="숲속의집">숲속의집</option>
+        <option value="연립동">연립동</option>
+        <option value="휴양관">휴양관</option>
+        <option value="야영데크">야영데크</option>
+        <option value="오토캠핑장">오토캠핑장</option>
+        <option value="카라반">카라반</option>
+        <option value="글램핑">글램핑</option>
+      </select></div>
+      <div class="field"><label for="frCap">인원</label><select id="frCap" aria-label="수용 인원 필터">
+        <option value="0">인원 무관</option>
+        <option value="2">2인 이상</option>
+        <option value="4">4인 이상</option>
+        <option value="6">6인 이상</option>
+        <option value="8">8인 이상</option>
+      </select></div>
+      <div class="field"><label for="frRange">기간</label><select id="frRange" aria-label="조회 기간">
+        <option value="14">앞으로 2주</option>
+        <option value="28" selected>앞으로 4주</option>
+        <option value="70">수집 기간 전체</option>
+      </select></div>
+      <div class="fr-nights" role="group" aria-label="숙박 일수">
+        <button type="button" data-fr-nights="1" class="on">1박</button>
+        <button type="button" data-fr-nights="2">2박</button>
+        <button type="button" data-fr-nights="3">3박</button>
+      </div>
+      <div class="fr-toggles">
+        <button type="button" class="chip" id="frWeekend" aria-pressed="false" title="체크인이 금·토요일인 날만 남깁니다">금·토 체크인만</button>
+        <button type="button" class="chip" id="frFresh" aria-pressed="false" title="직전 수집에서 완료·대기 → 예약가능으로 바뀐 자리만">🆕 새로 빈 자리</button>
+      </div>
+      <div class="fr-search"><input id="frQ" type="search" placeholder="휴양림·시군 이름" aria-label="휴양림 검색"></div>
+      <button type="button" class="fr-reset" id="frReset">초기화</button>
+    </div>
+
+    <div class="fr-viewbar">
+      <div class="fr-views" role="group" aria-label="보기 방식">
+        <button type="button" data-fr-view="list" class="on">목록</button>
+        <button type="button" data-fr-view="cal">달력</button>
+        <button type="button" data-fr-view="grid">월간 그리드</button>
+      </div>
+      <div class="fr-sortwrap"><label for="frSort">정렬</label>
+        <select id="frSort" aria-label="정렬">
+          <option value="soon">다음 빈 날짜 빠른 순</option>
+          <option value="open">빈자리 많은 순</option>
+          <option value="price">1박 요금 낮은 순</option>
+          <option value="name">이름 순</option>
+        </select>
+      </div>
+      <div class="fr-count" id="frCount"></div>
+    </div>
+
+    <div class="fr-block" id="frListBlock">
+      <div class="fl-block-head"><div><h3>빈자리 있는 휴양림</h3><div class="meta" id="frListSub"></div></div>
+        <div class="fl-head-right"><div class="fl-legend"><span>카드의 예약 버튼은 <b>숲나들e</b> 공식 화면으로 열립니다</span></div></div></div>
+      <div class="fr-cards" id="frCards"></div>
+    </div>
+
+    <div class="fr-block" id="frCalBlock" hidden>
+      <div class="fl-block-head">
+        <div><h3>체크인 달력 — 어느 날 어디가 비었나</h3><div class="meta" id="frCalSub"></div></div>
+        <div class="fl-head-right">
+          <div class="nav-month fl-monthnav"><button type="button" id="frPrevMonth" aria-label="이전 달">‹</button><span id="frMonthTitle">—</span><button type="button" id="frNextMonth" aria-label="다음 달">›</button></div>
+          <div class="fl-legend"><span><i class="red"></i>칸이 많음</span><span><i class="grey"></i>없음</span></div>
+        </div>
+      </div>
+      <div class="weekhead"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+      <div id="frDays" class="fr-days" role="group" aria-label="휴양림 체크인 달력"></div>
+      <div id="frDayDetail" class="fl-detail"></div>
+    </div>
+
+    <div class="fr-block" id="frGridBlock" hidden>
+      <div class="fl-block-head">
+        <div><h3>월간 빈자리 그리드 — 객실 × 날짜</h3><div class="meta" id="frGridSub"></div></div>
+        <div class="fl-head-right">
+          <select id="frForestSel" class="fr-fsel" aria-label="휴양림 선택"></select>
+          <div class="nav-month fl-monthnav"><button type="button" id="frGPrevMonth" aria-label="이전 달">‹</button><span id="frGMonthTitle">—</span><button type="button" id="frGNextMonth" aria-label="다음 달">›</button></div>
+        </div>
+      </div>
+      <div class="fr-glegend" id="frGLegend"></div>
+      <div class="fr-gwrap" id="frGridWrap"></div>
+      <div class="fr-gfoot" id="frGridFoot"></div>
+    </div>
+
+    <div class="note-grid">
+      <section class="notice"><h3>조회 기준과 표시 읽는 법</h3><div id="frBasis"></div></section>
+      <section class="notice"><h3>예약 전에 확인하세요</h3><div id="frCaution"></div></section>
+    </div>
+  </section>
+<!-- /FOREST:SECTION -->
   <section id="valetPanel" class="valet-panel" hidden aria-label="발렛·공항 라운지 — 내 카드로 무료 주차와 라운지 이용">
     <div class="vt-modes" role="tablist" aria-label="호텔 발렛·공항 라운지 보기 전환">
       <button type="button" class="vt-mode on" data-vt-mode="hotel" role="tab" aria-selected="true">🏨 호텔 발렛</button>
@@ -1878,7 +2091,7 @@ html.locked #lockGate{display:flex}
 const DB = {"hotels":[],"sources":["머큐어-울산·이비스-전주-12~2월-최저가-달력.md","소피텔·페어몬트-서울-스테이플러스-주말점검.md","중올플-추가4도시-4개월-요금달력.md","페어몬트-서울-스테이플러스-전수조사.md","호텔-요금-조사-다낭·나트랑.md","중올플-6개호텔-4개월-요금달력.md","호텔-요금-조사-일본·방콕.md","호텔-요금-조사-부산·상하이.md","아코르-스테이플러스-SNU-가성비-가이드.md","2026-12_2027-02-호텔-최저가-달력-24곳.pdf","호텔-요금-조사-부산-3곳-2027-03_11.md","호텔-요금-조사-상하이-4곳-2027-03_11.md","국내-아코르-4곳-2027년11월-연장조사.md","중올플-10개호텔-2027-04_11-요금달력.md","호텔-요금-조사-일본-6곳-2027-03_11.md","호텔-요금-조사-방콕-5곳-2027-03_11.md","호텔-요금-조사-다낭·나트랑-6곳-2027-03_11.md","vip-rate.json (VIP 요금 전 호텔·날짜별 요금, 2026-11-17 수집)","marriott-china/0-2026-12_2027-11-중국홍콩마카오-리츠칼튼-part1.md","marriott-china/1-2026-12_2027-11-중국홍콩마카오-리츠칼튼-part1b.md","marriott-china/2-2026-12_2027-11-중국홍콩마카오-리츠칼튼-part2.md","marriott-china/3-2026-12_2027-11-중국홍콩마카오-리츠칼튼-part3.md","marriott-china/4-2026-12_2027-11-중국홍콩마카오-세인트레지스.md","marriott-china/5-2026-12_2027-11-중국홍콩마카오-W호텔.md","marriott-china/6-2026-12_2027-11-중국홍콩마카오-W호텔-part2.md","marriott-china/7-2026-12_2027-11-중국-보완1.md","marriott-korea/korea_marriott_2026_12_2027_11.csv","marriott-japan/japan_marriott_2026_12_2027_11.csv","apc/예약 캘린더_availability.json","apc/fetch_예약 캘린더.py","apc/API-구조.md","apc/부산출발-APC-전체-availability.json","accor_stayplus_snu_12m_report.md","accor-fairmont-sofitel/summary.md · calendar_1~3.md","accor-allplus-china-30/summary.md · calendar.md","2026-11-19_vip-fhr-일본-6개호텔.md","2026-11-19_vip-fhr-방콕-5개호텔.md","2026-11-19_vip-fhr-다낭나트랑-6개호텔.md","2026-11-20_vip4-예약사이트-직접조회-실측.json","VIP 예약 사이트 실측 2026-11-20 — h08~h11 4곳 365일 (No.2)","VIP 예약 사이트 실측 2026-11-20 — h16 방콕 124일 (5번 전달)","VIP 예약 사이트 실측 2026-11-20 — h21·h22·h23 365일 (6번 전달)","VIP 예약 사이트 실측 2026-11-20 — h06·h07 상하이 365일 (4번 전달)","VIP 예약 사이트 실측 2026-11-20 — h14·h15 방콕 실측일 (4번 전달)","VIP 예약 사이트 실측 2026-11-20 — h14·h15 방콕 보완 27일 + h14 정정 3건 (4번 전달)","VIP 예약 사이트 실측 2026-11-20 — h24 아마노이 365일 (6번 전달)","VIP 예약 사이트 실측 2026-11-20 — h16~h20 (5번 전달, h16 132일 · h17~h20 121일)","VIP 예약 사이트 실측 2026-11-21 — h16·h17 방콕 365일 완결 (5번 전달)","VIP 예약 사이트 실측 2026-11-21 — h18 카펠라 방콕 365일 완결 (5번 전달)","VIP 예약 사이트 실측 2026-11-21 — h19 하얏트 리젠시 다낭 365일 완결 (5번 전달)","VIP 예약 사이트 실측 2026-11-21 — h20 인터컨티넨탈 다낭 365일 완결 (5번 전달)","아워드 포인트 캘린더 실측 2026-11-21 — 중국·홍콩·마카오 40곳 365일 (m01~m10 2번 · m11~m20 4번 · m21~m30 5번 · m31~m40 6번)","동남아 아코르 40곳 365일 최저요금 실측 — 2번 담당 (2026-11-21)","동남아 아코르 39곳 365일 실측 — 3번 담당 (2026-11-21~22)","동남아 아코르 39곳 365일 실측(회원가·비회원가 2계열) — 4번 담당 (2026-11-21)","동남아 아코르 39곳 365일 실측 — 5번 담당 (2026-11-21)","동남아 아코르 39곳 365일 실측(비회원 공개 최저가) — 6번 담당 (2026-11-21)"],"built":"2026-11-17","voucherExpiry":"2027-09-30","extended":"2026-11-17 11:25~12:05 KST (2·3·4번 계정 연장 조사) / 2026-11-17 13:47 KST VIP 요금 수집 반영 / 2026-11-17 14:10 KST ④ 메리어트(중국·홍콩·마카오 40곳) 수집 반영 / 2026-11-17 14:21 KST ⑤ 항공 12월 잔여 주 5노선 보완2차(마카오·난징·항저우·칭다오·가오슝 99건) 반영 / 2026-11-17 14:40 KST ⑤ 항공 12월 잔여 주 보완1차·2차잔여·3차(302건, 중복 18건 제외) 반영 / 2026-11-17 14:45 KST ⑤ 항공 12월 잔여 최종 18칸(방콕·나트랑·상하이) 반영 — 12월 네 주 24노선 전수 완결 / 2026-11-17 15:10 KST ④ 메리어트 한국 10 + 일본 12곳(현금·아워드 포인트) 수집 반영 / 2026-11-17 15:00 KST ② 중올플 APC 무료숙박 가능일(예약 캘린더 72시간 규칙) 반영 / ⑤ 항공 2027-01 24개 노선 5패턴 전수 실측(보완1~3차 460건, 2026-11-17) / ⑤ 항공 당일치기(0박 1일) 156건 반영(12월 81·1월 75, 2026-11-17) / 2026-11-17 ② 중올플 284곳(참여 282 + 기존 2) · 99개 도시 · 권역(tier) 필터 / 2027년 2월 2~4주차 24개 노선 × 5패턴 345건 병합(기존 후쿠오카 캘린더값 15칸은 최신 실측가로 교체) / 2026-11-17 19:40 KST ⑤ 항공 2027년 6~11월(6개월) 병합 — 6~7월 260칸 · 8~9월 73건 · 10~11월 53칸(+판매편 없음 4건) / 2026-11-17 19:40~11-18 00:05 KST ⑤ 항공 중국 신규 8개 노선(선양·다롄·광저우·샤먼·연길·장가계·구이린·황산) 신설 — 주말형 171칸 + 당일치기 8칸(성립 6·판매편 없음 2) = 177건, 총 2,024→2,201건 / 2026-11-18 KST 아코르 12개월 조사 3건(SNU·Stay Plus 21곳 365일 · 중올플 30곳 365일) 반영 / 2026-11-18 KST ⑤ 항공 중국 4노선(연길·장가계·구이린·황산) 2026.12~2027.01 9주 × 5패턴 완본 병합 — 값 153칸(신규 66칸) + 판매편 0건 27칸(황산 토~월·금~월·목~월) = 180칸, 총 2,201→2,267건(주말형 2,092 · 당일치기 175) / 2026-11-18 KST ⑤ 항공 중국 4노선(선양·다롄·광저우·샤먼) 2026.12~2027.01 9주 × 5패턴 완본 병합 — 빠진 96칸(2~9주 3·4박) 추가로 180칸 완주, 중국 신규 8개 노선 360/360칸(값 333 + 판매편 0건 27), 총 2,363건(주말형 2,188 · 당일치기 175) / 2026-11-18 KST ⑤ 항공: 연길·장가계·구이린·황산 2027년 2~6월 금~일(2박) 66칸(값 58 + 황산 판매편 0건 8) 반영 — 총 2,421건 / 2026-11-18 KST ⑤ 항공 선양·다롄·광저우·샤먼 2027년 2~5월 2박 131칸 반영 / 2026-11-18 KST ⑤ 항공 연길·장가계·구이린·황산 2027년 2~6월 토~월(2박) 35칸(값 29 + 황산 판매편 0건 6) 반영 — 신규 34칸(값 28 + 0건 6), 총 2,603→2,631건 / 2026-11-18 KST ⑤ 항공 2027년 2월 1주차(설 연휴 2/4~8) 24개 노선 × 5패턴 120칸 완결 — 잔여 86칸 추가 + 후쿠오카 3칸 재조회 갱신(392,400→364,100 · 400,000→401,500 · 465,400→467,050), 총 2,631→2,717건 / 2026-11-18 중국 8노선 2027년 2~6월 완주본 2건(선양·다롄·광저우·샤먼 목~일 84칸 + 선양 금~월 1칸, 연길·장가계·구이린·황산 토~월 48칸 + 황산 3/20 판매편 0건 1칸) / 2026-11-18 06:10 KST ⑤ 항공 필리핀 신규 4노선(세부·마닐라·보홀·클락) 2026.12~2027.01 180칸 신설 / 2026-11-18 06:10 KST ⑤ 항공 일본 신규 7노선(구마모토·가고시마·시즈오카·마쓰야마·다카마쓰·미야코지마·삿포로) 12월 1차 90칸 신설 / 2026-11-18 06:10 KST ⑤ 항공 기존 24노선 2027년 3월 1주차(3/4~8) 5패턴 120칸 반영 / 2026-11-18 06:20 KST ⑤ 항공 동남아 신규 4노선(푸꾸옥·코타키나발루·쿠알라룸푸르·비엔티안) 2026.12~2027.01 178칸 신설 / 2026-11-18 06:40 KST ⑤ 항공 팀원 보고 3건 병합 — 일본 7노선 12월 보완 150칸(마쓰야마·다카마쓰·미야코지마 25칸 완결, 신규 60칸) + 당일치기 실측 4칸, 중국 8노선 2027년 2~6월 금~월 83칸·목~일 84칸 = 신규 227칸, 총 3,418→3,649건 / 2026-11-18 07:05 KST ⑤ 항공 팀원 보고 4건 병합 — 3월 2주차 120칸(후쿠오카 238,100) + 일본 12월 완결 171칸(삿포로 25/25, 신규 21칸) + 동남아 4노선 2027년 2~6월 420칸 + 중국 G1 목~월 48칸 = 신규 609칸, 총 3,649→4,258건 / 2026-11-18 07:4x KST 중국 8노선 2027년 7~11월 840칸(측정 465·요금 미공개 255·0건 120)+미오픈 16칸 · 필리핀 4노선 2027년 2~6월 420칸 · 중국 G2 4노선 2027년 2~6월 금~월 84칸 병합 / 2026-11-18 KST 동남아 4노선(푸꾸옥·코타키나발루·쿠알라룸푸르·비엔티안) 2027년 7~11월 22주 × 5패턴 440칸 병합 — 실측 220칸 + 예약 미오픈 220칸(경계 2027-09-14), 총 5,218→5,438건 / 2026-11-18 KST ⑤ 항공 중국 G1 4노선 2027년 2~6월 420/420칸 완결(목~월 9주 36칸) + 일본 7노선 2027년 1월 140칸(값 138 · 항공편 없음 2) + 당일치기 21칸 병합, 총 5,438→5,633건 / 2026-11-18 KST ⑤ 항공 중국 G2 4노선 2027년 2~6월 420/420칸 완결(목~월 84칸 = 값 77 + 판매편 0건 7) + 2027년 3월 3·4주차 24노선 × 5패턴 240칸 병합, 총 5,633→5,950건 / 2026-11-18 필리핀 4개 노선 2027년 7~11월 22주 × 5패턴 440칸 — 실측 126칸(마닐라 57·클락 55·세부 12·보홀 2) + 미오픈 140칸(예약창 2027-10-14) / 2026-11-18 KST ⑤ 항공 일본 7노선(구마모토·가고시마·시즈오카·마쓰야마·다카마쓰·미야코지마·삿포로) 2027년 2~6월 21주 × 7패턴 1,029칸 병합 — 실측 523칸(주말형 480·당일치기 43) + 판매편 0건 303칸 + 요금 미공개 98칸, 미조회 105칸은 빈칸, 총 6,076→6,599건 / 2026-11-18 KST ⑤ 항공 기존 24개 노선 2027년 4월 1~3주차(4/1~5·4/8~12·4/15~19) 5패턴 360칸 완결 — 주차 최저 상하이 4/3~5·4/10~12 299,100원 · 4/17~19 299,000원, 직항이 최저인 칸 47·49·45, 총 6,599→6,959건 / 2026-11-18 KST ⑤ 항공 일본 7노선 2027년 2월 보완 — 2월 주말형 140칸 재조회로 빈칸 7칸 + 판매편 0건 7칸을 값으로 채우고 더 싼 최신 실측 73칸 갱신(주말형 값 136 + 항공편 없음 4로 완결), 총 6,959→6,973건(주말형 6,641→6,655) / 2026-11-18~19 KST ⑤ 항공 기존 24개 노선 2027년 4월 4주차(4/22~26) 5패턴 120칸 완결 — 최저 타이베이 4/23~26 금~월 256,200원(타이거항공 직항), 직항 62·경유 58칸, 4월 1~4주차 480/480칸(100%), 총 6,973→7,093건 / 2026-11-19 KST ⑤ 항공 일본 7노선 2027년 7월 완결본 — 5주 × 5패턴 175칸(값 150 + 미오픈 25), 최저 구마모토 7/8~7/12 483,700원(직항), 총 7,093→7,243건(주말형 6,775→6,925) / 2026-11-19 KST ⑤ 항공 필리핀 4노선 2027년 7~10월 미조회 174칸 전부 실측(세부 63 · 보홀 73 · 마닐라 18 · 클락 20) — 네 노선 75/75칸 완결, 최저 마닐라 10/7~10 399,291원, 총 7,243→7,417건 / 2026-11-19 KST ⑤ 항공 일본 7노선 2027년 9~10월 — 9주 × 5패턴 315칸(값 190 · 판매편 0건 34 · 요금 미확인 4 · 예약창 밖 87), 최저 삿포로 9/24~27 374,540원(직항), 총 7,417→7,607건 / 2026-11-19 KST ⑤ 항공 일본 7노선 2027년 8월 — 4주 × 5패턴 140칸(값 120 + 시즈오카 미오픈 20), 최저 삿포로 8/26~30 573,300원(직항), 총 7,607→7,727건 / 2026-11-19 KST ⑤ 항공 일본 7노선 2027년 11월 — 4주 × 5패턴 140칸(값 33 · 미오픈 87 · 시즈오카 판매편 0건 20), 최저 구마모토 11/4~8 558,700원(서울 1회 경유), 총 7,727→7,760건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 5월 3~4주차(5/13~17 · 5/20~24) 5패턴 240칸 완결 — 최저 하노이 5/20~24 목~월 266,570원(직항), 직항이 최저가인 칸 83, 총 7,760→8,000건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 5월 1주차(4/29~5/3) 5패턴 120칸 완결 — 최저 호찌민 4/29~5/2 목~일 325,800원(직항), 직항이 최저가인 칸 44, 총 8,000→8,120건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 5월 5주차(5/27~31) 5패턴 120칸 완결 — 최저 하노이 5/27~30 목~일 282,171원(직항), 직항이 최저가인 칸 45, 총 8,120→8,240건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 5월 2주차(5/6~10) 5패턴 120칸 완결 — 최저 타이베이 5/7~9 금~일 258,200원(직항), 직항이 최저가인 칸 50, 총 8,240→8,360건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 6월 3주차(6/17~21) 5패턴 120칸 완결 — 최저 홍콩 6/18~20 금~일 296,600원(직항), 직항이 최저가인 칸 37, 가격표 자리표시 28칸 교체, 총 8,360→8,452건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 6월 4주차(6/24~28) 5패턴 120칸 완결 — 최저 상하이 6/26~28 토~월 299,100원(춘추항공 직항), 직항이 최저가인 칸 36, 가격표 자리표시 19칸 교체, 총 8,452→8,553건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 7월 1주차(7/1~5) 5패턴 120칸 완결 — 최저 후쿠오카 7/1~4·7/1~5 299,700원(트리니티항공 직항), 직항이 최저가인 칸 38, 가격표 자리표시 28칸 교체, 총 8,553→8,645건 / 2026-11-19 21:13~23:30 KST ① VIP·FHR 17곳 재실측 반영 — 일본 6(365일) · 다낭·나트랑 6(365일) · 방콕 5(2026-12-01~2027-03-31 121일, 2027-04 이후 기존 유지) / 2026-11-19 KST ⑤ 항공 부산 출발 A조 12개 노선 2027년 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) 5패턴 180칸 완결 — 빈칸 134칸 실측 + 재확인 1칸(후쿠오카 7/30~8/1 447,100→325,800원), 최저 후쿠오카 7/22~26 목~월 300,500원(트리니티항공 직항), 직항이 최저가인 칸 60, 가격표 자리표시 1칸 교체, 총 8,645→8,779건 / 2026-11-19 KST ⑤ 항공 부산 출발 A조 12개 노선 2027년 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) 5패턴 240칸 완결 — 빈칸 205칸 실측 + 재확인 3칸(마카오 8/6 767,700→763,200원 · 상하이 8/6 417,500→422,400원 · 타이베이 8/6 468,400→464,200원), 최저 후쿠오카 8/19~23 금~월 283,700원(트리니티항공 직항), 직항이 최저가인 칸 97, 총 8,779→8,984건 / 2026-11-20 KST ⑤ 항공 부산 출발 A조 12개 노선 2027년 9월 5주(9/2~6 · 9/9~13 · 9/16~20 · 9/23~27 · 9/30~10/4) 5패턴 300칸 완결 — 빈칸 245칸 실측 + 재확인 1칸(방콕 10/1 416,600→408,000원), 최저 상하이 9/4~6 토~월 276,600원(춘추항공 직항), 직항이 최저가인 칸 110, 총 8,984→9,229건 / 2026-11-19 KST ⑤ 항공 기존 24개 노선 2027년 7월 2주차(7/8~12) 5패턴 120칸 완결 — 최저 후쿠오카 7/8~12 272,300원(트리니티항공 직항), 직항이 최저가인 칸 39, 가격표 자리표시 18칸 교체, 총 9,229→9,331건 / 2026-11-20 KST ⑤ 항공 부산 출발 A조 12개 노선 2027년 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) 5패턴 240칸 완결 — 빈칸 231칸 실측(교체 0칸), 최저 타이베이 10/29 금~일 255,600원(이스타항공 직항), 직항이 최저가인 칸 98, 총 9,331→9,562건 / 2026-11-20 KST ⑤ 항공 부산 출발 A조 12개 노선 2027년 11월 2주(11/4~8 · 11/11~15) 5패턴 120칸 완결 — 빈칸 117칸 조회(값 109 · 판매편 0건 8), 최저 홍콩 11/13 토~월 363,000원(홍콩 익스프레스항공 직항), 직항이 최저가인 칸 35, 총 9,562→9,671건 / 2026-11-20 KST ⑤ 항공 부산 출발 기존 24개 노선 2027년 6월 1~2주차(6/3~7 · 6/10~14) 5패턴 240칸 완결 — 가격표 자리표시 77칸 교체 + 빈칸 163칸 실측, 최저 타이베이 6/10~13 목~일 262,460원(직항 2시간 20분), 직항이 최저가인 칸 91, 총 9,671→9,834건 / 2026-11-20 KST ③ 아코르 국내 전 지점 재세팅 — 대한민국 예약 가능 30곳(기존 4 + 신규 26) 365일 회원 최저가 실측 반영 / 2026-11-20 KST ⑤ 항공 부산 출발 B조 12개 노선 2027년 7월 3주(7/15~19 · 7/22~26 · 7/29~8/2) 5패턴 180칸 완결 — 가격표 자리표시 33칸 교체 + 빈칸 147칸 실측, 최저 타이중 7/15~19 금~일 433,700원(스타룩스 직항), 직항이 최저가인 칸 22, 총 9,834→9,981건 / 2026-11-20 07:30~ KST ① VIP 4곳 중 1곳 예약 사이트 직접 조회 실측 반영(2026-12-01~2027-02-28 90일, 2027-03-01 이후 기존 검색값 유지) — h12 / 2026-11-20 07:30~ KST ① VIP 4곳 중 1곳 예약 사이트 직접 조회 실측 반영(2026-12-01~2027-02-28 90일, 2027-03-01 이후 기존 검색값 유지) — h13 / 2026-11-20 07:30~ KST ① VIP 4곳 중 1곳 예약 사이트 직접 조회 실측 반영(2026-12-01~2027-02-28 90일, 2027-03-01 이후 기존 검색값 유지) — h04 / 2026-11-20 07:30~ KST ① VIP 4곳 중 1곳 예약 사이트 직접 조회 실측 반영(2026-12-01~2027-02-28 90일, 2027-03-01 이후 기존 검색값 유지) — h05 / 2026-11-20 KST ⑤ 항공 부산 출발 B조 12개 노선 2027년 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) 5패턴 240칸 완결 — 앞선 실시간 조회 12칸 교체 + 빈칸 228칸 실측, 최저 타이중 8/26~30 금~일 435,200원(스타룩스 직항), 직항이 최저가인 칸 38, 총 9,981→10,209건 / 2026-11-20 10:19~11:20 KST ① VIP 4곳 중 1곳 예약 사이트 직접 조회 실측 연장(2027-03-01~2027-05-31 92일, 2026-12-01~2027-05-31 실측 · 2027-06 이후 미실측(null)) — h12 / 2026-11-20 ① VIP 예약 사이트 실측 병합 — h08~h11 4곳 365일 전수(No.2, 예약 사이트 요금 서비스 1박 조회 · 세금 포함 총액 · JPY→₩) + h16 방콕 124일(5번) + h21 호이안 365일·h22 캄란베이 365일(6번) USD→₩ 교체, h01 파라다이스 부산 예약 사이트 미입점 확인 / 2026-11-20 11:25~12:20 KST ① VIP 4곳 중 1곳 예약 사이트 직접 조회 실측 연장(2027-06-01~2027-08-31 92일, 2026-12-01~2027-08-31 실측 · 2027-09 이후 미실측(null)) — h12 / 2026-11-20 12:2x KST ① VIP 예약 사이트 실측 보완 — h14 페어몬트 방콕 수쿰윗 322일(잔여 21일 추가 · 1차 정정 3건) · h15 킴튼 말라이 방콕 319일(잔여 6일 추가), 4번(@jin_4) / 2026-11-20 12:21~13:09 KST ① VIP 4곳 중 1곳 예약 사이트 직접 조회 실측 연장(2027-09-01~2027-11-30 91일 중 30일 요금·61일 판매 없음, 2026-12-01~2027-11-30 365일 완결) — h12 / 2026-11-20 ① VIP 예약 사이트 실측 병합 — h24 아마노이(닌투언/판랑) 365일 전수(6번(@jin_6) 전달, USD→₩, 판매 없음 119일 null) / 2026-11-20 ① VIP 예약 사이트 실측 병합(2차) — h16 방콕 2027-04-04~04-11 8일 추가로 2026-12-01~2027-04-11 132일 · h17 만다린 오리엔탈 방콕·h18 카펠라 방콕·h19 하얏트 리젠시 다낭·h20 인터컨티넨탈 다낭 4곳 2026-12-01~2027-03-31 실측(365칸 · 이후 미실측 null), 요금 전무 호텔 0곳(5번 전달, USD→₩ 1,331.56) / 2026-11-20 10:19~11:20 KST ① VIP 4곳 중 1곳 예약 사이트 직접 조회 실측 연장(2027-03-01~2027-05-31 92일, 2026-12-01~2027-05-31 실측 · 2027-06 이후 미실측(null)) — h13 / 2026-11-20 KST ⑤ 항공 부산 출발 B조 12개 노선 2027년 9월 5주(9/2~6 · 9/9~13 · 9/16~20 · 9/23~27 · 9/30~10/4) 5패턴 300칸 완결 — 앞선 조회 12칸(10/1 금~일) 교체 + 빈칸 288칸 실측, 최저 발리 9/9~13 목~일 420,800원, 직항이 최저가인 칸 34, 총 10,209→10,497건 / 2026-11-20 14:49~16:05 KST ① VIP 1곳 중 페어몬트 도쿄(h13) 예약 사이트 직접 조회 실측 연장(2027-09-01~2027-11-30 91일 중 46일 요금·45일 판매 없음(10-18 이후 예약창 미개시 가능성), 2026-12-01~2027-11-30 365일 완결) — h13 / 2026-11-20 15:51~16:23 KST ① VIP 페어몬트 피스 호텔 온 더 번드(h04) 예약 사이트 직접 조회 실측 연장(2027-03-01~2027-05-31 92일 전부 요금 있음, 2026-12-01~2027-05-31 182칸 · 2027-06 이후 미실측(null)) — h04 / 2026-11-20 16:31~17:09 KST ① VIP 페어몬트 피스 호텔 온 더 번드(h04) 예약 사이트 직접 조회 실측 연장(2027-06-01~2027-08-31 92일 · 요금 81일 · 판매 객실 없음 11일(08-21~08-31), 2026-12-01~2027-08-31 274칸 · 2027-09 이후 미실측(null)) — h04 / 2026-11-20 17:15~17:53 KST ① VIP 페어몬트 피스 호텔 온 더 번드(h04) 예약 사이트 직접 조회 실측 연장(2027-09-01~2027-11-30 91일 전부 판매 객실 없음 · 08-21 이후 판매 객실 없음(예약 창 미개시 가능성), 2026-12-01~2027-11-30 365칸 완결 — 요금 263일 · 판매 없음 102일) — h04 / 2026-11-20 17:58~18:33 KST ① VIP 푸동 샹그릴라 상하이(h05) 예약 사이트 직접 조회 실측 연장(2027-03-01~2027-05-31 92일 전부 요금 있음 · 객실 21종, 2026-12-01~2027-05-31 182칸 · 2027-06 이후 미실측(null)) — h05 / 2026-11-20 18:41~19:24 KST ① VIP 푸동 샹그릴라 상하이(h05) 예약 사이트 직접 조회 실측 연장(2027-06-01~2027-08-31 92일 전부 요금 있음(판매 없음 0일) · 객실 21종 · USD 185~248, 2026-12-01~2027-08-31 274칸 · 2027-09 이후 미실측(null)) — h05 / 2026-11-20 19:34~20:13 KST ① VIP 푸동 샹그릴라 상하이(h05) 예약 사이트 직접 조회 실측 연장(2027-09-01~2027-10-17 47일 요금 있음(객실 21종 · USD 157~220) · 2027-10-18~2027-11-30 44일 판매 객실 없음(예약 창 미개시 가능성 · 추후 재조회 대상), 2026-12-01~2027-11-30 365칸 완결 — 요금 321일 · 판매 없음 44일) — h05 / 2026-11-20~21 KST ⑤ 항공 부산 출발 B조 12개 노선 2027년 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) 5패턴 240칸 완결 — 겹친 칸 0칸(교체 0) · 빈칸 240칸 실측, 최저 오키나와 10/21~25 목~일 379,100원, 직항이 최저가인 칸 26, 총 10,497→10,737건 / 2026-11-21 KST ① VIP 예약 사이트 실측 병합(3차) — h16 월도프 아스토리아 방콕·h17 만다린 오리엔탈 방콕 2026-12-01~2027-11-30 365일 완결(h16 요금 321일·판매 없음 44일, h17 요금 319일·판매 없음 46일, 신규 390칸 · h18~h20 기존 121일 유지)(5번 전달, USD→₩ 1,331.56) / 2026-11-21 KST ⑤ 항공 부산 출발 B조 12개 노선 2027년 11월 2주(11/4~8 · 11/11~15) 5패턴 120칸 완결 — 겹친 칸 0칸(교체 0) · 빈칸 120칸 실측, 최저 타이중 11/4~7 목~일 442,700원, 직항이 최저가인 칸 14, 총 10,737→10,857건 / 2026-11-21 KST ① VIP 예약 사이트 실측 병합(4차) — h18 카펠라 방콕 2026-12-01~2027-11-30 365일 완결(요금 316일·판매 없음 49일, 2027-04-01~10-18 신규 201칸 · 방콕 3곳 모두 365일 완결, 다낭 2곳은 2027-03-31까지)(5번 전달, USD→₩ 1,331.56) / 2026-11-21 KST ① VIP 예약 사이트 실측 병합(5차) — h19 하얏트 리젠시 다낭 2026-12-01~2027-11-30 365일 완결(요금 322일·판매 없음 43일, 2027-04-01~10-18 신규 201칸 · 방콕 3곳 + 하얏트 리젠시 다낭 4곳 모두 365일 완결, 인터컨티넨탈 다낭 1곳만 2027-03-31까지)(5번 전달, USD→₩ 1,331.56) / 2026-11-21 KST ① VIP 예약 사이트 실측 병합(6차) — h20 인터컨티넨탈 다낭 2026-12-01~2027-11-30 365일 완결(요금 215일·판매 없음 150일, 2027-04-01~10-18 신규 118칸 · 직접 조회 21곳 모두 365일 완결, 7~8월 62일은 2박 이상 최소숙박)(5번 전달, USD→₩ 1,331.56) / 2026-11-21 KST ④ 메리어트 중국·홍콩·마카오 40곳 아워드 포인트 캘린더 365일 실측 병합 — 값 12175칸(전 호텔 2027-11-06~11-30은 예약창 밖 null, m06 선전 리츠칼튼·m17 리츠칼튼 마카오·m18 리사이밸리는 Standard 아워드 연중 전무 365일 null, m07~m12 월 단위 포인트는 날짜별 실측으로 교체) / 2026-11-22 KST ③ 아코르 동남아 196곳(태국 102 · 베트남 55 · 싱가포르 39) × 365일 실측 병합 — 세금 포함 KRW 1박 최저 표시가로 기준 통일(157곳 ALL 회원 요금 포함 · 6번 담당 39곳은 비회원 공개 최저가), ③ 51→247곳, ① 호텔럭스와 겹치는 7곳 alsoIn 양방향 연결","accor":null,"counts":{"hotels":759,"tabs":{"lux":161,"china":289,"domestic":247,"marriott":62},"cells":277035,"priced":153277,"na":123758,"stayplus":142,"routes":47,"deals":10857,"snu":43,"pus_deals":3847,"pus_routes":44}};
 const FLIGHTS={"patterns":[],"months":[],"weeks":[],"counts":{"total":0},"routes":[],"noSale":[],"notes":{},"bookingWindow":{}};
 const $=id=>document.getElementById(id);
-const tabs={lux:{title:'VIP 요금 · FHR 호텔 161곳',sub:'VIP 요금 조사 140곳(365일 · 2026-11-17) + 예약 사이트 직접 조회 21곳(2026-11-20~21 · 21곳 전부 2027.11.30까지 365일 완결) / 서울·부산·도쿄·싱가포르·시드니·뉴욕 외 / 요금 없는 호텔 0곳 — 161곳 모두 달력 있음',checked:'요금 기준: VIP 요금 조사 140곳 2026-11-17 01:13 KST · 예약 사이트 직접 조회 21곳 2026-11-20 07:30~13:55 · 14:10~14:45 · 15:51~16:23 · 16:31~17:09 · 17:15~17:53 · 17:58~18:33 · 18:41~19:24 · 19:34~20:13 KST · 2026-11-21 KST(21곳 12~11월 365일 · 21곳 전부 2027.11.30까지 365일 완결)',start:'2026-12',end:'2027-11'},china:{title:'중올플 289곳 · 101개 도시',sub:'101개 도시 · 부산 출발 가능 중국·홍콩·마카오 APC 참여 287곳 + 기존 2곳 + 이번 조사 신규 5곳 / 김해 직항 116 · 환승·고속철 137 · 국내선 환승 36 / 12개월(2026.12~2027.11) · 30곳은 365일 현금 요금 · APC 무료숙박 가능일은 예약 캘린더 관측(12/1~12/18 · 72시간 규칙)',checked:'APC 관측 기준: 2026-11-16',start:'2026-12',end:'2027-11'},domestic:{title:'아코르 247곳 (국내 30 · 동남아 196 · 한·중·일 21)',sub:'국내 아코르 예약 가능 30곳(서울 17·경기·인천 3·수원 2·창원·울산·전주·속초 2·제주) + 동남아 196곳(태국 102·베트남 55·싱가포르 39 — 방콕 40·싱가포르 38·푸켓 28 등 32개 도시) + 한·중·일 페어몬트·소피텔 21곳, 모두 2026.12~2027.11 365일 최저가 / 국내 30곳은 세금 별도 회원가, 동남아 196곳·한·중·일 21곳은 세금 포함 1박 최저 표시가(동남아 157곳은 ALL 회원 요금 포함 · 39곳은 비회원 공개 최저가) / SNU 유효 2027.12.31 · Stay Plus 만료 2027.09.30',checked:'조회 기준: 국내 2026.11.20 05:30~07:00 (국내 30곳) · 동남아 2026.11.21 20:50~21:25 KST (196곳 365일 — 2·3·4·5·6번 분담) · 해외 2026.11.16~17 (SNU 2026.11.17 16:30~17:10)',start:'2026-12',default:'2026-12',end:'2027-11'},flight:{title:'부산 출발 항공 특가 — 47개 노선 10,857건',sub:'부산(PUS) 출발 47개 노선 × 주말형 5패턴(금~일·토~월·목~일·금~월·목~월) + 당일치기(0박) 패턴 / 2026.12~2027.11 출발 (2026년 12월~2027년 3월은 기존 24개 노선 5패턴 전수 — 12월 599칸 · 1월 480칸 · 2월 480칸 · 3월 1~4주차 480칸 완결, 2027년 4월 1~4주차 480칸 완결(4주차 최저 타이베이 4/23~26 256,200원) · 4월 5주(4/29~5/3) 120칸 완결(앱 주차 선택 기준, 최저 호찌민 4/29~5/2 325,800원) · 5월 3~4주차(5/13~17 · 5/20~24) 240칸 완결(3주차 최저 타이베이 5/14~17 276,160원 · 4주차 최저 하노이 5/20~24 266,570원) · 5월 4주(5/27~31) 120칸 완결(최저 하노이 5/27~30 282,171원) · 5월 2주차(5/6~10) 120칸 완결(최저 타이베이 5/7~9 258,200원) · 6월 1~2주차(6/3~7 · 6/10~14) 24개 노선 5패턴 240칸 완결(가격표 자리표시 77칸 교체 + 빈칸 163칸 실측, 최저 타이베이 6/10~13 262,460원) · 6월 3주차(6/17~21) 120칸 완결(최저 홍콩 6/18~20 296,600원 · 가격표 자리표시 28칸 교체) · 6월 4주차(6/24~28) 120칸 완결(최저 상하이 6/26~28 299,100원 · 가격표 자리표시 19칸 교체) · 7월 1주차(7/1~5) 120칸 완결(최저 후쿠오카 7/1~4·7/1~5 299,700원 · 가격표 자리표시 28칸 교체) · 7월 2주차(7/8~12) 120칸 완결(최저 후쿠오카 7/8~12 272,300원 · 가격표 자리표시 18칸 교체) · 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) A조 12개 노선 5패턴 180칸 완결(빈칸 134칸 실측 + 재확인 1칸, 최저 후쿠오카 7/22~26 300,500원) · 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) B조 12개 노선 5패턴 180칸 완결(가격표 자리표시 33칸 교체 + 빈칸 147칸 실측, 최저 타이중 7/15~19 433,700원) · 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) A조 12개 노선 5패턴 240칸 완결(빈칸 205칸 실측 + 재확인 3칸, 최저 후쿠오카 8/20~23 283,700원) · 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) B조 12개 노선 5패턴 240칸 완결(앞선 실시간 12칸 교체 + 빈칸 228칸 실측, 최저 타이중 8/27~29 435,200원) · 9월 5주(9/2~6 · 9/9~13 · 9/16~20 · 9/23~27 · 9/30~10/4) A조 12개 노선 5패턴 300칸 완결(빈칸 245칸 실측 + 재확인 1칸, 최저 상하이 9/4~6 276,600원) · 9월 5주(9/2~6 · 9/9~13 · 9/16~20 · 9/23~27 · 9/30~10/4) B조 12개 노선 5패턴 300칸 완결(앞선 조회 12칸 교체 + 빈칸 288칸 실측, 최저 발리 9/9~13 420,800원) · 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) A조 12개 노선 5패턴 240칸 완결(빈칸 231칸 실측 · 교체 0칸, 최저 타이베이 10/29~31 255,600원) · 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) B조 12개 노선 5패턴 240칸 완결(겹친 칸 0칸 · 교체 0칸 + 빈칸 240칸 실측, 최저 오키나와 10/21~25 379,100원) · 11월 2주(11/4~8 · 11/11~15) A조 12개 노선 5패턴 120칸 완결(값 109칸 실측 · 판매편 0건 8칸 · 교체 0칸, 최저 홍콩 11/13~15 363,000원) · 11월 2주(11/4~8 · 11/11~15) B조 12개 노선 5패턴 120칸 완결(겹친 칸 0칸 · 교체 0칸 + 빈칸 120칸 실측, 최저 타이중 11/4~7 442,700원) + 중국 8개 노선은 2026.12~2027.01 360칸, 2027년 2~6월 840칸(중국 8개 노선 모두 420/420칸 완결 — 2박에 4박까지), 2027년 7~11월 15주말 × 7패턴 840칸(측정 465 · 요금 미공개 255 · 판매편 0건 120) + 미오픈 확인 16칸 — 예약창 2027-10-13까지 + 필리핀 4개 노선 2026.12~2027.01 180칸 · 2027년 2~6월 420칸 · 2027년 7~11월 22주 × 5패턴 440칸(실측 300 + 미오픈 140 — 예약창 2027-10-14까지, 네 노선 75/75칸 완결) + 동남아 4개 노선 178칸 · 2027년 2~6월 420칸 · 2027년 7~11월 22주 × 5패턴 440칸(실측 220 + 미오픈 220 — 예약창 2027-09-14까지) + 일본 7개 노선 2026년 12월 171칸 · 2027년 1월 140칸(값 138 + 항공편 없음 2) 완결 + 당일치기 25칸 + 2027년 2~6월 21주 × 7패턴 1,029칸(실측 537 · 판매편 0건 296 · 요금 미공개 98 · 미조회 98 — 2027년 2월 주말형 140칸은 값 136 + 항공편 없음 4로 완결) + 2027년 7월 5주 × 5패턴 175칸(실측 150 · 미오픈 25, 최저 구마모토 7/8~7/12 483,700원 직항) + 2027년 8월 4주 × 5패턴 140칸(실측 120 · 미오픈 20, 최저 삿포로 8/26~30 573,300원 직항) + 2027년 9~10월 9주 × 5패턴 315칸(실측 190 · 판매편 0건 34 · 요금 미확인 4 · 미오픈 87 — 최저 삿포로 9/24~27 374,540원 직항) + 2027년 11월 4주 × 5패턴 140칸(실측 33 · 미오픈 87 · 시즈오카 판매편 0건 20 — 최저 구마모토 11/4~8 558,700원 경유)) / 성인 1인 왕복 총액. 값이 없는 칸은 판매편 0건 549 · 요금 미공개 357 · 미오픈 595로 나눠 적었습니다',checked:'조회 기준: 2026.11.21 KST · 팀원 보고 22건',start:'2026-12',end:'2027-11'},marriott:{title:'메리어트 중국/한·일 62곳 (중국 40 · 한국 10 · 일본 12)',sub:'중국 본토·홍콩·마카오 40곳 + 한국 10곳 + 일본 12곳 / 2026.12~2027.11 현금(검색 세금 포함 1박 최저) + 아워드 포인트 365일(중국 40곳 2026-11-21 실측 · 한·일 22곳 2026-11-17)',checked:'조회 기준: 현금 2026.11.17 · 포인트 2026.11.17(한·일 22곳) · 2026.11.21(중국 40곳 365일 실측)',start:'2026-12',end:'2027-11'},combo:{title:'✈️+🏨 주말 콤보 — 20개 도시 · 항공+숙박',sub:'⑤ 항공 왕복가 + ①~④ 같은 도시 호텔의 숙박일 1박 요금 합계 / 금~일·토~월·목~일·금~월·목~월 / 2026.12~2027.11',checked:'⑤ 항공 2026-11-17~21 · ①~④ 호텔 2026-11-16~21 조회값(아워드 포인트 2026-11-21 실측 포함)',start:'2026-12',end:'2027-11'},tt:{title:'부산 출발 땡처리 항공권',sub:'부산(PUS) 출발 땡처리 항공권 — 공동구매·특가 두 채널을 노선·출발일·기간·잔여석 단위로 모아 출발일 달력과 노선별 표로 보여 줍니다. 날짜 칸·노선 행·상품 행을 누르면 그 상품 예약 페이지가 새 탭에서 바로 열립니다. / 성인 1인 왕복 총액(유류·세금 포함)',checked:'수집 기준: 2026-11-22 KST',start:'2026-11',end:'2027-11'},valet:{title:'🅿️ 발렛 · 🛫 공항 라운지 — 내 카드로 무료 주차되는 호텔 75곳과 라운지 58장',sub:'위쪽 전환 버튼으로 🏨 호텔 발렛 / 🛫 공항 라운지 화면을 바꿉니다 / 호텔 발렛 — 국내 특급호텔 75곳 × 카드사·브랜드사 공식 발레파킹 안내 26종, 보유 58장 중 발렛 확인 6장 / 공항 라운지 — 보유 58장 공식 안내 전수 조사(라운지 가능 7장 · 연간 무료 40회 · 미확정 8장), 카드별 연·월 사용 횟수 기록',checked:'카드사 공식 안내장·상품설명서 확인 2026-11-20',start:'2026-11',end:'2027-11'}};
+const tabs={lux:{title:'VIP 요금 · FHR 호텔 161곳',sub:'VIP 요금 조사 140곳(365일 · 2026-11-17) + 예약 사이트 직접 조회 21곳(2026-11-20~21 · 21곳 전부 2027.11.30까지 365일 완결) / 서울·부산·도쿄·싱가포르·시드니·뉴욕 외 / 요금 없는 호텔 0곳 — 161곳 모두 달력 있음',checked:'요금 기준: VIP 요금 조사 140곳 2026-11-17 01:13 KST · 예약 사이트 직접 조회 21곳 2026-11-20 07:30~13:55 · 14:10~14:45 · 15:51~16:23 · 16:31~17:09 · 17:15~17:53 · 17:58~18:33 · 18:41~19:24 · 19:34~20:13 KST · 2026-11-21 KST(21곳 12~11월 365일 · 21곳 전부 2027.11.30까지 365일 완결)',start:'2026-12',end:'2027-11'},china:{title:'중올플 289곳 · 101개 도시',sub:'101개 도시 · 부산 출발 가능 중국·홍콩·마카오 APC 참여 287곳 + 기존 2곳 + 이번 조사 신규 5곳 / 김해 직항 116 · 환승·고속철 137 · 국내선 환승 36 / 12개월(2026.12~2027.11) · 30곳은 365일 현금 요금 · APC 무료숙박 가능일은 예약 캘린더 관측(12/1~12/18 · 72시간 규칙)',checked:'APC 관측 기준: 2026-11-16',start:'2026-12',end:'2027-11'},domestic:{title:'아코르 247곳 (국내 30 · 동남아 196 · 한·중·일 21)',sub:'국내 아코르 예약 가능 30곳(서울 17·경기·인천 3·수원 2·창원·울산·전주·속초 2·제주) + 동남아 196곳(태국 102·베트남 55·싱가포르 39 — 방콕 40·싱가포르 38·푸켓 28 등 32개 도시) + 한·중·일 페어몬트·소피텔 21곳, 모두 2026.12~2027.11 365일 최저가 / 국내 30곳은 세금 별도 회원가, 동남아 196곳·한·중·일 21곳은 세금 포함 1박 최저 표시가(동남아 157곳은 ALL 회원 요금 포함 · 39곳은 비회원 공개 최저가) / SNU 유효 2027.12.31 · Stay Plus 만료 2027.09.30',checked:'조회 기준: 국내 2026.11.20 05:30~07:00 (국내 30곳) · 동남아 2026.11.21 20:50~21:25 KST (196곳 365일 — 2·3·4·5·6번 분담) · 해외 2026.11.16~17 (SNU 2026.11.17 16:30~17:10)',start:'2026-12',default:'2026-12',end:'2027-11'},flight:{title:'부산 출발 항공 특가 — 47개 노선 10,857건',sub:'부산(PUS) 출발 47개 노선 × 주말형 5패턴(금~일·토~월·목~일·금~월·목~월) + 당일치기(0박) 패턴 / 2026.12~2027.11 출발 (2026년 12월~2027년 3월은 기존 24개 노선 5패턴 전수 — 12월 599칸 · 1월 480칸 · 2월 480칸 · 3월 1~4주차 480칸 완결, 2027년 4월 1~4주차 480칸 완결(4주차 최저 타이베이 4/23~26 256,200원) · 4월 5주(4/29~5/3) 120칸 완결(앱 주차 선택 기준, 최저 호찌민 4/29~5/2 325,800원) · 5월 3~4주차(5/13~17 · 5/20~24) 240칸 완결(3주차 최저 타이베이 5/14~17 276,160원 · 4주차 최저 하노이 5/20~24 266,570원) · 5월 4주(5/27~31) 120칸 완결(최저 하노이 5/27~30 282,171원) · 5월 2주차(5/6~10) 120칸 완결(최저 타이베이 5/7~9 258,200원) · 6월 1~2주차(6/3~7 · 6/10~14) 24개 노선 5패턴 240칸 완결(가격표 자리표시 77칸 교체 + 빈칸 163칸 실측, 최저 타이베이 6/10~13 262,460원) · 6월 3주차(6/17~21) 120칸 완결(최저 홍콩 6/18~20 296,600원 · 가격표 자리표시 28칸 교체) · 6월 4주차(6/24~28) 120칸 완결(최저 상하이 6/26~28 299,100원 · 가격표 자리표시 19칸 교체) · 7월 1주차(7/1~5) 120칸 완결(최저 후쿠오카 7/1~4·7/1~5 299,700원 · 가격표 자리표시 28칸 교체) · 7월 2주차(7/8~12) 120칸 완결(최저 후쿠오카 7/8~12 272,300원 · 가격표 자리표시 18칸 교체) · 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) A조 12개 노선 5패턴 180칸 완결(빈칸 134칸 실측 + 재확인 1칸, 최저 후쿠오카 7/22~26 300,500원) · 7월 3~5주차(7/15~19 · 7/22~26 · 7/29~8/2) B조 12개 노선 5패턴 180칸 완결(가격표 자리표시 33칸 교체 + 빈칸 147칸 실측, 최저 타이중 7/15~19 433,700원) · 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) A조 12개 노선 5패턴 240칸 완결(빈칸 205칸 실측 + 재확인 3칸, 최저 후쿠오카 8/20~23 283,700원) · 8월 4주(8/5~9 · 8/12~16 · 8/19~23 · 8/26~30) B조 12개 노선 5패턴 240칸 완결(앞선 실시간 12칸 교체 + 빈칸 228칸 실측, 최저 타이중 8/27~29 435,200원) · 9월 5주(9/2~6 · 9/9~13 · 9/16~20 · 9/23~27 · 9/30~10/4) A조 12개 노선 5패턴 300칸 완결(빈칸 245칸 실측 + 재확인 1칸, 최저 상하이 9/4~6 276,600원) · 9월 5주(9/2~6 · 9/9~13 · 9/16~20 · 9/23~27 · 9/30~10/4) B조 12개 노선 5패턴 300칸 완결(앞선 조회 12칸 교체 + 빈칸 288칸 실측, 최저 발리 9/9~13 420,800원) · 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) A조 12개 노선 5패턴 240칸 완결(빈칸 231칸 실측 · 교체 0칸, 최저 타이베이 10/29~31 255,600원) · 10월 4주(10/7~11 · 10/14~18 · 10/21~25 · 10/28~11/1) B조 12개 노선 5패턴 240칸 완결(겹친 칸 0칸 · 교체 0칸 + 빈칸 240칸 실측, 최저 오키나와 10/21~25 379,100원) · 11월 2주(11/4~8 · 11/11~15) A조 12개 노선 5패턴 120칸 완결(값 109칸 실측 · 판매편 0건 8칸 · 교체 0칸, 최저 홍콩 11/13~15 363,000원) · 11월 2주(11/4~8 · 11/11~15) B조 12개 노선 5패턴 120칸 완결(겹친 칸 0칸 · 교체 0칸 + 빈칸 120칸 실측, 최저 타이중 11/4~7 442,700원) + 중국 8개 노선은 2026.12~2027.01 360칸, 2027년 2~6월 840칸(중국 8개 노선 모두 420/420칸 완결 — 2박에 4박까지), 2027년 7~11월 15주말 × 7패턴 840칸(측정 465 · 요금 미공개 255 · 판매편 0건 120) + 미오픈 확인 16칸 — 예약창 2027-10-13까지 + 필리핀 4개 노선 2026.12~2027.01 180칸 · 2027년 2~6월 420칸 · 2027년 7~11월 22주 × 5패턴 440칸(실측 300 + 미오픈 140 — 예약창 2027-10-14까지, 네 노선 75/75칸 완결) + 동남아 4개 노선 178칸 · 2027년 2~6월 420칸 · 2027년 7~11월 22주 × 5패턴 440칸(실측 220 + 미오픈 220 — 예약창 2027-09-14까지) + 일본 7개 노선 2026년 12월 171칸 · 2027년 1월 140칸(값 138 + 항공편 없음 2) 완결 + 당일치기 25칸 + 2027년 2~6월 21주 × 7패턴 1,029칸(실측 537 · 판매편 0건 296 · 요금 미공개 98 · 미조회 98 — 2027년 2월 주말형 140칸은 값 136 + 항공편 없음 4로 완결) + 2027년 7월 5주 × 5패턴 175칸(실측 150 · 미오픈 25, 최저 구마모토 7/8~7/12 483,700원 직항) + 2027년 8월 4주 × 5패턴 140칸(실측 120 · 미오픈 20, 최저 삿포로 8/26~30 573,300원 직항) + 2027년 9~10월 9주 × 5패턴 315칸(실측 190 · 판매편 0건 34 · 요금 미확인 4 · 미오픈 87 — 최저 삿포로 9/24~27 374,540원 직항) + 2027년 11월 4주 × 5패턴 140칸(실측 33 · 미오픈 87 · 시즈오카 판매편 0건 20 — 최저 구마모토 11/4~8 558,700원 경유)) / 성인 1인 왕복 총액. 값이 없는 칸은 판매편 0건 549 · 요금 미공개 357 · 미오픈 595로 나눠 적었습니다',checked:'조회 기준: 2026.11.21 KST · 팀원 보고 22건',start:'2026-12',end:'2027-11'},marriott:{title:'메리어트 중국/한·일 62곳 (중국 40 · 한국 10 · 일본 12)',sub:'중국 본토·홍콩·마카오 40곳 + 한국 10곳 + 일본 12곳 / 2026.12~2027.11 현금(검색 세금 포함 1박 최저) + 아워드 포인트 365일(중국 40곳 2026-11-21 실측 · 한·일 22곳 2026-11-17)',checked:'조회 기준: 현금 2026.11.17 · 포인트 2026.11.17(한·일 22곳) · 2026.11.21(중국 40곳 365일 실측)',start:'2026-12',end:'2027-11'},combo:{title:'✈️+🏨 주말 콤보 — 20개 도시 · 항공+숙박',sub:'⑤ 항공 왕복가 + ①~④ 같은 도시 호텔의 숙박일 1박 요금 합계 / 금~일·토~월·목~일·금~월·목~월 / 2026.12~2027.11',checked:'⑤ 항공 2026-11-17~21 · ①~④ 호텔 2026-11-16~21 조회값(아워드 포인트 2026-11-21 실측 포함)',start:'2026-12',end:'2027-11'},tt:{title:'부산 출발 땡처리 항공권',sub:'부산(PUS) 출발 땡처리 항공권 — 공동구매·특가 두 채널을 노선·출발일·기간·잔여석 단위로 모아 출발일 달력과 노선별 표로 보여 줍니다. 날짜 칸·노선 행·상품 행을 누르면 그 상품 예약 페이지가 새 탭에서 바로 열립니다. / 성인 1인 왕복 총액(유류·세금 포함)',checked:'수집 기준: 2026-11-22 KST',start:'2026-11',end:'2027-11'},forest:{title:'🌲 자연휴양림 빈자리 — 전국 185곳 숲속의집·야영장',sub:'숲나들e 월별 예약현황을 모아 둔 스냅샷(2026-11-22 01:43 수집)으로 전국 185곳의 숙소·야영장 빈자리를 권역·객실유형·인원·박수·주말 조건으로 골라 목록·달력·월간 그리드로 봅니다. 예약 버튼은 모두 숲나들e 공식 화면으로 열립니다. / 상태: 예 예약가능 · 대1~9 대기 · 완 완료 · 휴 휴무 · 공 공사·점검 · 추 추첨·우선예약',checked:'수집 기준: 2026-11-22 01:43 KST · 숲나들e 월별 예약현황',start:'2026-11-22',end:'2027-01-31'},valet:{title:'🅿️ 발렛 · 🛫 공항 라운지 — 내 카드로 무료 주차되는 호텔 75곳과 라운지 58장',sub:'위쪽 전환 버튼으로 🏨 호텔 발렛 / 🛫 공항 라운지 화면을 바꿉니다 / 호텔 발렛 — 국내 특급호텔 75곳 × 카드사·브랜드사 공식 발레파킹 안내 26종, 보유 58장 중 발렛 확인 6장 / 공항 라운지 — 보유 58장 공식 안내 전수 조사(라운지 가능 7장 · 연간 무료 40회 · 미확정 8장), 카드별 연·월 사용 횟수 기록',checked:'카드사 공식 안내장·상품설명서 확인 2026-11-20',start:'2026-11',end:'2027-11'}};
 const TTANG={"schema":"team-busan/pus-deals/1","observedAt":"","window":{},"channels":[],"deals":[],"coverage":"","coverageOk":false};
 const st={tab:'lux',city:'all',hotel:'all',month:'2026-12',mode:'cash',cmode:'both',pmode:'both',ctier:'all',apcOnly:false,weekend:false,hideBlackouts:false,blk:'show',apcDaysOnly:false,prog:'all',brand:'all',selectedDay:'',favOnly:false,budget:0,nights:1,ticket:'all',cur:'krw',cxl:'all'};
 const allHotels=DB.hotels;
@@ -2688,6 +2901,7 @@ function render(){
   if(st.tab==='tt'){renderTt();hashSync();return}
   if(st.tab==='combo'){renderCombo();hashSync();return}
   if(st.tab==='valet'){renderValet();hashSync();return}
+  if(st.tab==='forest'){renderForest();hashSync();return}
   setFlightMode(false);
   renderFilters();renderRanking();retitleNights();renderPtTop();
   SER=dayLowSeries();
@@ -3679,7 +3893,7 @@ const flViaWord=d=>d.via===false?'직항':d.via===true?'경유':'미확인';
 const flMeta=d=>d.airline?flViaWord(d)+' · '+flAir(d):(d.via==null?'항공사·직항 미확인':flViaWord(d)+' · 항공사 미확인');
 const flViaTag=d=>d.via===false?'<span class="fl-via direct">직항</span>':d.via===true?'<span class="fl-via via">경유</span>':'<span class="fl-via unk">미확인</span>';
 function flMemo(d){if(!d.note)return '';const t=String(d.note).split('※')[0].split('—')[0].trim();return t==='경유'||t==='직항'?'':t}
-function setDealPanels(which){$('flightPanel').hidden=which!=='flight';$('ttPanel').hidden=which!=='tt';const vp=document.getElementById('valetPanel');if(vp)vp.hidden=which!=='valet';const cp=document.getElementById('comboPanel');if(cp)cp.hidden=which!=='combo';const cng=document.querySelector('.note-grid');if(cng)cng.style.display=which==='combo'?'none':'';['.ranking','.workspace'].forEach(function(sel){var el=document.querySelector(sel);if(el)el.style.display=which?'none':''});['glanceBox','hotelNotes','ptTopBox'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=which?'none':''})}
+function setDealPanels(which){$('flightPanel').hidden=which!=='flight';$('ttPanel').hidden=which!=='tt';const vp=document.getElementById('valetPanel');if(vp)vp.hidden=which!=='valet';const cp=document.getElementById('comboPanel');if(cp)cp.hidden=which!=='combo';const fp=document.getElementById('frPanel');if(fp)fp.hidden=which!=='forest';const cng=document.querySelector('.note-grid');if(cng)cng.style.display=which==='combo'?'none':'';['.ranking','.workspace'].forEach(function(sel){var el=document.querySelector(sel);if(el)el.style.display=which?'none':''});['glanceBox','hotelNotes','ptTopBox'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=which?'none':''})}
 function setFlightMode(on){setDealPanels(on?'flight':'')}
 function renderFlightTop5(){
   const rows=flRouteList().map(r=>{const d=[...r.deals].sort((a,b)=>flEff(a)-flEff(b))[0];return d?{...d,city:r.city,code:r.code}:null}).filter(Boolean).sort((a,b)=>flEff(a)-flEff(b)).slice(0,5);
@@ -5967,6 +6181,19 @@ function hashBuild(){
     if(st.blk!=='show')add('blk',st.blk);
     if(st.cur!=='krw')add('cur',st.cur);
     if(st.cxl!=='all')add('cxl',st.cxl);
+  }else if(st.tab==='forest'){
+    if(typeof frs!=='undefined'){
+      if(frs.region!=='부산/경남')add('frr',frs.region);
+      if(frs.type!=='all')add('frt',frs.type);
+      if(frs.cap)add('frc',frs.cap);
+      if(frs.nights>1)add('frn',frs.nights);
+      if(frs.range!==28)add('frg',frs.range);
+      if(frs.weekend)add('frw',1);
+      if(frs.fresh)add('frx',1);
+      if(frs.q)add('frq',frs.q);
+      if(frs.view!=='list')add('frv',frs.view);
+      if(frs.forest)add('frf',frs.forest);
+    }
   }else if(st.tab==='flight'){
     if(fl.route!=='all')add('route',fl.route);
     if(fl.pattern!=='all')add('pattern',fl.pattern);
@@ -6047,6 +6274,18 @@ function applyHashState(p){
     if($('apcOnly'))$('apcOnly').checked=st.apcOnly;
     if($('apcDaysOnly'))$('apcDaysOnly').checked=st.apcDaysOnly;
     if($('blackoutMode'))$('blackoutMode').value=st.blk;
+  }else if(tab==='forest'){
+    if(typeof frs!=='undefined'){
+      if(g('frr'))frs.region=g('frr');
+      if(g('frt'))frs.type=g('frt');
+      if(['0','2','4','6','8'].indexOf(g('frc'))>=0)frs.cap=Number(g('frc'));
+      if(['1','2','3'].indexOf(g('frn'))>=0)frs.nights=Number(g('frn'));
+      if(['14','28','70'].indexOf(g('frg'))>=0)frs.range=Number(g('frg'));
+      frs.weekend=g('frw')==='1';frs.fresh=g('frx')==='1';
+      if(g('frq'))frs.q=g('frq');
+      if(['list','cal','grid'].indexOf(g('frv'))>=0)frs.view=g('frv');
+      if(g('frf'))frs.forest=g('frf');
+    }
   }else if(tab==='flight'){
     if(g('route'))fl.route=g('route');
     if(g('pattern'))fl.pattern=g('pattern');
@@ -6169,10 +6408,10 @@ if(/[?&]diag=1(&|$)/.test(location.search+location.hash)){
    ✈️+🏨 콤보는 ①~④ 호텔과 ⑤ 항공이 모두 필요하므로 없는 것만 병렬로 받는다. */
 const DATA_ROOT='data/app/';
 /* 발렛 자료는 카드사 안내가 바뀔 때만 갱신되므로 배포마다 캐시를 비운다(브라우저 HTTP 캐시 10분 회피) */
-const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b'};
-const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json'};
+const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22a'};
+const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json',forest:'tab7_forest.json'};
 const HOTEL_TABS=['lux','china','domestic','marriott'];
-const DATA_READY={lux:false,china:false,domestic:false,marriott:false,flight:false,tt:false,valet:false,lounge:false};
+const DATA_READY={lux:false,china:false,domestic:false,marriott:false,flight:false,tt:false,valet:false,lounge:false,forest:false};
 const DATA_LOADING={};
 function tabNeeds(tab){
   if(tab==='valet')return ['valet'];
@@ -6200,6 +6439,8 @@ function loadPart(tab){
       Object.assign(VALET,data);
     }else if(tab==='lounge'){
       Object.assign(LOUNGE,data);
+    }else if(tab==='forest'){
+      Object.assign(FRD,data);frPrep();
     }
     DATA_READY[tab]=true;
   });
@@ -6240,6 +6481,465 @@ function dlFail(err,tok){
     $('dlBox').appendChild(b);
   }
 }
+// FOREST:JS
+/* ── 🌲 자연휴양림 빈자리 탭 ─────────────────────────────────
+   자료는 숲나들e(foresttrip.go.kr) 월별 예약현황 스냅샷을 tools/build_forest_data.py 가
+   tab7_forest.json 으로 옮긴 것이다. 상태 코드는 수집된 값 그대로이고 추정·보간하지 않는다.
+   예약 버튼은 모두 숲나들e 공식 화면으로만 연결한다. */
+var frs={region:'부산/경남',type:'all',cap:0,nights:1,range:28,weekend:false,fresh:false,q:'',
+           view:'list',forest:'',month:'',day:'',sort:'soon',gmonth:''};
+var FRD={meta:null,sidos:[],forests:[],ready:false};
+var frLastList=[];
+var FR_CACHE={key:'',list:null};   /* 필터 조합이 같으면 다시 집계하지 않는다 */          /* 마지막 렌더의 필터 결과(달력·그리드 클릭 때 다시 계산하지 않는다) */
+var FR_OFF='https://www.foresttrip.go.kr/indvz/main.do?hmpgId=';
+var FR_MONTH='https://www.foresttrip.go.kr/rep/or/sssn/monthRsrvtStatus.do?hmpgId=FRIP&menuId=001004';
+
+function frMeta(){return FRD.meta||{}}
+function frStart(){return frMeta().start||''}
+function frDayCount(){return frMeta().days||0}
+function frDate(di){const b=new Date(frStart()+'T12:00:00Z').getTime()+di*86400000;return new Date(b).toISOString().slice(0,10)}
+function frDi(iso){return Math.round((new Date(iso+'T12:00:00Z')-new Date(frStart()+'T12:00:00Z'))/86400000)}
+function frWon(n){return n==null?'요금 미공개':KR(n)+'원'}
+function frOffUrl(f){return FR_OFF+encodeURIComponent(f.id)}
+function frWeekendDi(di){const d=dayNo(frDate(di));return d===5||d===6}   /* 금·토 체크인 */
+
+/* 자료 준비 — 객실마다 예약가능한 날 인덱스를 미리 뽑아 둔다 */
+function frPrep(){
+  if(FRD.ready||!FRD.forests.length)return;
+  const days=frDayCount();
+  FRD.forests.forEach(function(f){f.nwx={}});
+  (FRD.new||[]).forEach(function(t){
+    const f=FRD.forests[t[0]];
+    if(f)f.nwx[t[1]+':'+t[2]]=1;
+  });
+  FRD.forests.forEach(function(f,fi){
+    (f.goods||[]).forEach(function(g,gi){
+      g.__fi=fi;g.__gi=gi;
+      const av=[];
+      for(let d=0;d<days;d++)if(g.s.charAt(d)==='A')av.push(d);
+      g.__av=av;
+    });
+  });
+  FRD.ready=true;
+}
+
+/* 객실 하나의 체크인 가능일(연박 n박 기준). g.__ck<박수> 에 캐시한다. */
+function frCheckins(g,n){
+  const key='__ck'+n;
+  if(g[key])return g[key];
+  const s=g.s||'',out=[];
+  if(n>1&&typeof g.m==='number'&&g.m>0&&g.m<n){g[key]=out;return out}
+  const lim=s.length-n;
+  for(let d=0;d<=lim;d++){
+    let ok=true;
+    for(let k=0;k<n;k++){if(s.charAt(d+k)!=='A'){ok=false;break}}
+    if(ok)out.push(d);
+  }
+  g[key]=out;return out;
+}
+function frTypeOK(g){
+  const t=frs.type;
+  if(t==='all')return true;
+  if(t==='house')return g.k==='01';
+  if(t==='camp')return g.k==='02';
+  return g.g===t;
+}
+function frCapOK(g){return !frs.cap||(g.cap||0)>=frs.cap}
+function frMaxDi(){const d=frDayCount()-1,lim=frs.range;return lim>0?Math.min(d,lim):d}
+function frPrice(g,d){
+  const p=g.p;if(!p||!p.length)return null;
+  const v=frWeekendDi(d)?p[1]:p[0];
+  return (typeof v==='number'&&v>0)?v:null;
+}
+
+/* 휴양림 하나의 집계 — 필터(유형·인원·박수·기간·주말)를 적용한 값 */
+function frStat(f){
+  const n=frs.nights,maxDi=frMaxDi(),dm={},touched={};
+  let cells=0,first=null,price=null,newc=0,units=0;
+  for(let i=0;i<f.goods.length;i++){
+    const g=f.goods[i];
+    if(!frTypeOK(g)||!frCapOK(g))continue;
+    units++;
+    const cs=frCheckins(g,n);
+    for(let j=0;j<cs.length;j++){
+      const d=cs[j];
+      if(d>maxDi)continue;
+      if(frs.weekend&&!frWeekendDi(d))continue;
+      cells++;touched[d]=1;
+      if(!dm[d])dm[d]={c:0,f:0};
+      dm[d].c++;
+      if(first==null||d<first)first=d;
+      if(f.nwx&&f.nwx[g.__gi+':'+d])newc++;
+      const p=frPrice(g,d);
+      if(p!=null&&(price==null||p<price))price=p;
+    }
+  }
+  Object.keys(touched).forEach(function(d){dm[d].f=1});
+  return {f:f,cells:cells,first:first,price:price,newc:newc,units:units,dm:dm};
+}
+
+function frForests(){
+  const q=(frs.q||'').trim().toLowerCase();
+  const key=[frs.region,frs.type,frs.cap,frs.nights,frs.range,frs.weekend?1:0,frs.fresh?1:0,q].join('|');
+  if(FR_CACHE.key===key&&FR_CACHE.list)return FR_CACHE.list;
+  const out=[];
+  for(let i=0;i<FRD.forests.length;i++){
+    const f=FRD.forests[i];
+    if(frs.region!=='all'&&f.sido!==frs.region)continue;
+    if(q&&(String(f.name).toLowerCase().indexOf(q)<0&&String(f.gug).toLowerCase().indexOf(q)<0))continue;
+    const s=frStat(f);
+    if(!s.cells)continue;
+    if(frs.fresh&&!s.newc)continue;
+    out.push(s);
+  }
+  FR_CACHE.key=key;FR_CACHE.list=out;
+  return out;
+}
+function frSorted(list){
+  const s=frs.sort,big=9e9;
+  return list.slice().sort(function(a,b){
+    if(s==='name')return String(a.f.name).localeCompare(String(b.f.name),'ko');
+    if(s==='price')return (a.price==null?big:a.price)-(b.price==null?big:b.price);
+    if(s==='soon')return (a.first==null?big:a.first)-(b.first==null?big:b.first)||b.cells-a.cells;
+    return b.cells-a.cells||(a.first==null?big:a.first)-(b.first==null?big:b.first);
+  });
+}
+
+/* ── 상단 안내·요약 ── */
+function renderFrBanner(){
+  const m=frMeta();
+  if(!m.at){$('frBanner').innerHTML='';return}
+  const last=frDate(frDayCount()-1);
+  $('frBanner').innerHTML='<b>숲나들e 월별 예약현황</b> · '+esc(m.at)+' 수집 — 전국 <b>'+KR(m.forests)+'곳</b> · 객실·사이트 '+KR(m.goods)+' · '+m.days+'일('+esc(m.start)+'~'+esc(last)+') · 예약가능 '+KR(m.avail)+'칸'
+    +'<span class="fr-b2">직전 수집에서 새로 빈 자리 '+KR(m.new)+'칸(🆕). 예약·결제는 숲나들e에서 진행합니다 — 이 화면은 대신 예약하지 않습니다.</span>';
+}
+function renderFrKpi(list){
+  const m=frMeta();
+  let cells=0,units=0,newc=0,wk=0,wkDays={};
+  for(let i=0;i<list.length;i++){
+    cells+=list[i].cells;units+=list[i].units;newc+=list[i].newc;
+    const dm=list[i].dm;
+    for(const d in dm){if(frWeekendDi(+d)){wk+=dm[d].c;wkDays[d]=1}}
+  }
+  const kp=[
+    {k:'빈자리 있는 휴양림',v:KR(list.length)+'곳',i:(frs.region==='all'?'전국':frs.region)+' · 필터 적용',cls:'g'},
+    {k:'객실 · 사이트',v:KR(units)+'개',i:'필터에 걸린 숙소·야영장',cls:''},
+    {k:'예약가능',v:KR(cells)+'칸',i:frs.nights+'박 기준 · '+frs.range+'일 창',cls:'g'},
+    {k:'금·토 체크인',v:KR(wk)+'칸',i:Object.keys(wkDays).length?Object.keys(wkDays).length+'일에 걸쳐':'주말 자리 없음',cls:'g'}
+  ];
+  $('frKpi').innerHTML=kp.map(function(o){return '<div class="'+o.cls+'"><span>'+o.k+'</span><b>'+o.v+'</b><i>'+esc(o.i)+'</i></div>'}).join('');
+}
+
+/* ── 목록 ── */
+function frChips(s){
+  const ds=Object.keys(s.dm).map(Number).sort(function(a,b){return a-b}).slice(0,8);
+  return ds.map(function(d){
+    const n=s.dm[d].c;
+    return '<span class="fr-chip2'+(frWeekendDi(d)?' wk':'')+'">'+dateLabel(frDate(d))+' '+weekday(frDate(d))+' <b>'+n+'</b></span>';
+  }).join('');
+}
+function renderFrCards(list){
+  const box=$('frCards');
+  if(!list.length){
+    box.innerHTML='<div class="fr-empty">조건에 맞는 빈자리가 없습니다 — 기간을 넓히거나(앞으로 2주 → 4주 → 수집 기간 전체), 인원·유형 필터를 풀어 보세요. 수집 시각 이후 예약이 찬 자리는 다음 수집에 반영됩니다.</div>';
+    $('frListSub').textContent='0곳';return;
+  }
+  box.innerHTML=list.slice(0,120).map(function(s){
+    const f=s.f;
+    const typeBadge=f.type==='국립'?'<span class="fr-badge nat">국립</span>':(f.type==='사립'?'<span class="fr-badge pri">사립</span>':'<span class="fr-badge">공립</span>');
+    const f2=s.first==null?'':('다음 빈 날 '+dateLabel(frDate(s.first))+'('+weekday(frDate(s.first))+')');
+    return '<div class="fr-card">'
+      +'<div class="fr-card-head"><div class="fr-card-name">'+esc(f.name)+typeBadge+'</div>'
+      +'<a class="fr-go" href="'+esc(frOffUrl(f))+'" target="_blank" rel="noopener" title="'+esc(f.name)+' 숲나들e 예약 화면이 새 탭에서 열립니다">숲나들e 예약 ↗</a></div>'
+      +'<div class="fr-meta">'+esc(f.sido)+' '+esc(f.gug)+(f.ci?' · 입실 '+esc(f.ci)+' / 퇴실 '+esc(f.co):'')+(f.tel?' · '+esc(f.tel):'')+'</div>'
+      +'<div class="fr-line"><span class="fr-big">빈자리 '+KR(s.cells)+'칸</span>'
+        +(f2?'<span>'+f2+'</span>':'')
+        +'<span>1박 '+(s.price!=null?KR(s.price)+'원~':'요금 미공개')+'</span>'
+        +(s.newc?'<span class="fr-newtag">🆕 '+s.newc+'</span>':'')+'</div>'
+      +'<div class="fr-meta">객실·사이트 '+s.units+'개'+(f.op?' · 예약 '+esc(f.op):'')+(f.rw!=null?' · 주말 예약률 '+f.rw+'%':'')+'</div>'
+      +'<div class="fr-chips">'+frChips(s)+'</div>'
+      +'<div class="fr-acts"><button type="button" data-fr-grid="'+esc(f.id)+'">월간 그리드</button>'
+        +'<a href="'+esc(frOffUrl(f))+'" target="_blank" rel="noopener">예약 화면 열기</a></div>'
+      +'</div>';
+  }).join('');
+  $('frListSub').textContent=KR(list.length)+'곳'+(list.length>120?' 중 120곳 표시':'')+' · '+frs.nights+'박 기준';
+}
+
+/* ── 달력 ── */
+function frCalMonths(){
+  const seen={},out=[];
+  for(let d=0;d<=frMaxDi();d++){const k=frDate(d).slice(0,7);if(!seen[k]){seen[k]=1;out.push(k)}}
+  return out;
+}
+function renderFrCal(list){
+  const months=frCalMonths();
+  if(!months.length){$('frDays').innerHTML='<div class="fr-empty">자료가 없습니다.</div>';return}
+  if(months.indexOf(frs.month)<0)frs.month=months[0];
+  const idx=months.indexOf(frs.month);
+  $('frMonthTitle').textContent=monlabel(frs.month);
+  $('frPrevMonth').disabled=idx<=0;$('frNextMonth').disabled=idx>=months.length-1;
+  const agg={};
+  let mx=1;
+  list.forEach(function(s){for(const d in s.dm){const k=d;if(!agg[k])agg[k]={c:0,f:0};agg[k].c+=s.dm[d].c;agg[k].f+=s.dm[d].f;if(agg[k].c>mx)mx=agg[k].c}});
+  const [y,m]=frs.month.split('-').map(Number);
+  const lead=new Date(Date.UTC(y,m-1,1)).getUTCDay();
+  let html='';
+  for(let i=0;i<lead;i++)html+='<div class="cal-day empty" aria-hidden="true"></div>';
+  daysOf(frs.month).forEach(function(date){
+    const di=frDi(date);
+    const dow=dayNo(date);
+    const wdCls=dow===0?'sunday ':dow===6?'saturday ':'';
+    const a=di>=0&&di<=frMaxDi()?agg[String(di)]:null;
+    const num='<span class="daynum">'+Number(date.slice(-2))+'</span>';
+    if(!a||!a.c){
+      html+='<button type="button" class="cal-day fr-day none '+wdCls+'" aria-label="'+fullDate(date)+' 빈자리 없음">'+num+'<span class="fr-df">—</span></button>';
+      return;
+    }
+    const lv=Math.max(1,Math.min(5,Math.ceil(a.c/mx*5)));
+    html+='<button type="button" class="cal-day fr-day hm'+lv+' '+(frs.day===date?'sel ':'')+wdCls+'" data-fr-date="'+date+'" aria-label="'+fullDate(date)+' 체크인 빈자리 '+a.c+'칸">'
+      +num+'<span class="fr-dn">'+a.c+'</span><span class="fr-df">'+a.f+'곳</span></button>';
+  });
+  $('frDays').innerHTML=html;
+  const tot={};let totC=0;
+  daysOf(frs.month).forEach(function(date){const di=frDi(date);const a=di>=0&&di<=frMaxDi()?agg[String(di)]:null;if(a&&a.c){totC+=a.c}});
+  $('frCalSub').textContent=monlabel(frs.month)+' · 이 달 체크인 가능 '+KR(totC)+'칸 · 칸을 누르면 그 날 어느 휴양림·객실이 비었는지 나옵니다 · 금·토 칸은 아래에 밑줄';
+  renderFrDay(list);
+}
+function renderFrDay(list){
+  const box=$('frDayDetail');
+  if(!frs.day){
+    box.innerHTML='<p class="fl-empty">달력 칸을 누르면 <strong>그 날 체크인할 수 있는 휴양림과 객실</strong>이 여기에 나옵니다. 숫자는 그 날 예약가능한 객실·사이트 수이고, 아래 작은 숫자는 그 자리가 있는 휴양림 수입니다. 빈칸(—)은 그 날 빈자리가 없다는 뜻이며 추정하지 않았습니다.</p>';
+    return;
+  }
+  const di=frDi(frs.day);
+  const rows=[];
+  list.forEach(function(s){
+    const a=s.dm[String(di)];
+    if(!a)return;
+    const rooms=[];
+    s.f.goods.forEach(function(g){
+      if(!frTypeOK(g)||!frCapOK(g))return;
+      const cs=frCheckins(g,frs.nights);
+      for(let i=0;i<cs.length;i++){if(cs[i]===di){rooms.push(g);break}}
+    });
+    rows.push({s:s,n:a.c,rooms:rooms});
+  });
+  rows.sort(function(a,b){return b.n-a.n});
+  let html='<div class="fl-detail-head"><div><h3>'+fullDate(frs.day)+' ('+weekday(frs.day)+') 체크인 · '+frs.nights+'박</h3>'
+    +'<div class="meta">'+(rows.length?rows.length+'곳 · 객실 '+KR(rows.reduce(function(n,r){return n+r.n},0))+'개':'이 날 빈자리가 없습니다')+'</div></div>'
+    +'<button type="button" class="fl-close" id="frDayClose" aria-label="상세 닫기">✕</button></div>';
+  if(rows.length){
+    html+='<div class="fr-detail-list">';
+    rows.slice(0,16).forEach(function(r){
+      const f=r.s.f;
+      const names=r.rooms.slice(0,6).map(function(g){
+        const p=frPrice(g,di);
+        return esc(g.n)+'('+g.cap+'인'+(p!=null?' · '+KR(p)+'원':'')+')';
+      }).join(', ')+(r.rooms.length>6?' 외 '+(r.rooms.length-6)+'개':'');
+      html+='<div class="fr-dcard"><b>'+esc(f.name)+'</b><small>'+esc(f.type)+' · '+esc(f.sido)+' '+esc(f.gug)+' · '+esc(f.ci)+'~'+esc(f.co)+'</small>'
+        +'<div class="fr-drooms">'+names+'</div>'
+        +'<div class="fr-acts" style="margin-top:5px"><button type="button" data-fr-grid="'+esc(f.id)+'">월간 그리드</button>'
+        +'<a href="'+esc(frOffUrl(f))+'" target="_blank" rel="noopener">숲나들e 예약 ↗</a></div></div>';
+    });
+    if(rows.length>16)html+='<p class="hint">'+rows.length+'곳 중 16곳만 표시했습니다 — 권역·유형 필터로 좁히면 그 안에서 다시 보여 드립니다.</p>';
+    html+='</div>';
+  }
+  box.innerHTML=html;
+}
+
+/* ── 월간 그리드 ── */
+function frGridMonths(){return frCalMonths()}
+function frGridForest(list){
+  const hit=list.filter(function(s){return s.f.id===frs.forest})[0];
+  if(hit)return hit;
+  const all=FRD.forests.filter(function(f){return f.id===frs.forest})[0];
+  if(all){const s=frStat(all);if(s.cells)return s}
+  return list[0]||null;
+}
+function frSChar(ch){
+  if(ch==='A')return {t:'예',c:'A',l:'예약가능'};
+  if(ch>='1'&&ch<='9')return {t:'대'+ch,c:'W',l:'대기'+ch};
+  if(ch==='F')return {t:'완',c:'F',l:'예약완료'};
+  if(ch==='C')return {t:'휴',c:'C',l:'휴무'};
+  if(ch==='R')return {t:'공',c:'R',l:'공사·점검'};
+  if(ch==='P')return {t:'추',c:'P',l:'추첨·우선예약'};
+  return {t:'·',c:'N',l:'표시 없음'};
+}
+function renderFrGrid(list){
+  const months=frGridMonths();
+  const sel=$('frForestSel');
+  const opts=list.slice(0,200).map(function(s){return '<option value="'+esc(s.f.id)+'">'+esc(s.f.name)+' ('+KR(s.cells)+'칸)</option>'}).join('');
+  sel.innerHTML=opts||'<option value="">빈자리 있는 휴양림 없음</option>';
+  const pick=frGridForest(list);
+  if(!pick){
+    $('frGridWrap').innerHTML='<div class="fr-empty" style="padding:14px">조건에 맞는 휴양림이 없습니다.</div>';
+    $('frGridSub').textContent='';$('frGridFoot').innerHTML='';$('frGMonthTitle').textContent='—';return;
+  }
+  frs.forest=pick.f.id;
+  sel.value=pick.f.id;
+  if(months.indexOf(frs.gmonth)<0)frs.gmonth=months[0];
+  const idx=months.indexOf(frs.gmonth);
+  $('frGMonthTitle').textContent=monlabel(frs.gmonth);
+  $('frGPrevMonth').disabled=idx<=0;$('frGNextMonth').disabled=idx>=months.length-1;
+  const dates=daysOf(frs.gmonth).filter(function(d){const di=frDi(d);return di>=0&&di<=frMaxDi()});
+  if(!dates.length){
+    $('frGridWrap').innerHTML='<div class="fr-empty" style="padding:14px">이 달은 조회 기간 밖입니다 — 기간 필터를 넓히면 표시됩니다.</div>';
+    $('frGridSub').textContent=monlabel(frs.gmonth);$('frGridFoot').innerHTML='';return;
+  }
+  let head='<thead><tr><th class="frs">객실 · 유형</th>';
+  dates.forEach(function(d){
+    const dow=dayNo(d);
+    head+='<th class="'+(dow===5||dow===6?'wk':'')+'" title="'+fullDate(d)+'">'+Number(d.slice(-2))+'</th>';
+  });
+  head+='</tr></thead>';
+  const goods=pick.f.goods.filter(function(g){return frTypeOK(g)&&frCapOK(g)});
+  let body='<tbody>';
+  let monthCells=0;
+  goods.forEach(function(g){
+    const ck=frs.nights>1?frCheckins(g,frs.nights):null;
+    const pr=g.p&&g.p.length?('평일 '+KR(g.p[0])+' / 주말 '+KR(g.p[1])+'원'):'요금 미공개';
+    body+='<tr><td class="frs" title="'+esc(g.n+' · '+g.c+' · '+g.cap+'인 · '+g.ar+' · '+pr)+'"><b>'+esc(g.n)+'</b><small>'+esc(g.c)+(g.cap?' · '+g.cap+'인':'')+'</small></td>';
+    dates.forEach(function(d){
+      const di=frDi(d);
+      const ch=g.s.charAt(di)||'.';
+      const s=frSChar(ch);
+      if(frs.nights>1?ck.indexOf(di)>=0:ch==='A')monthCells++;
+      const nw=pick.f.nwx&&pick.f.nwx[g.__gi+':'+di]?' new':'';
+      body+='<td class="c-'+s.c+nw+'" title="'+esc(g.n+' · '+fullDate(d)+' · '+s.l)+'">'+s.t+'</td>';
+    });
+    body+='</tr>';
+  });
+  body+='</tbody>';
+  $('frGridWrap').innerHTML='<table class="fr-g">'+head+body+'</table>';
+  $('frGLegend').innerHTML=['A:예약가능','W:대기','F:예약완료','C:휴무','R:공사·점검','P:추첨·우선예약','N:표시 없음'].map(function(x){
+    const c=x.slice(0,1);
+    return '<span><i class="c-'+c+'" style="background:'+({A:'#e7f6ec',W:'#fdf3e3',F:'#f2f0f7',C:'#fbf0ef',R:'#f7f1ea',P:'#efeafd',N:'#fff'}[c])+'"></i>'+esc(x.slice(2))+'</span>';
+  }).join('')+'<span style="display:inline-flex;align-items:center;gap:3px"><i style="background:#e7f6ec;border:2px solid #e0872f"></i>🆕 직전 수집에서 새로 빈 자리</span>';
+  const f=pick.f;
+  const pr=f.goods.filter(function(g){return g.p&&g.p.length}).length;
+  $('frGridSub').textContent=f.name+' · 객실·사이트 '+goods.length+'개 · '+monlabel(frs.gmonth)+' 예약가능 '+KR(monthCells)+'칸'+(frs.nights>1?' ('+frs.nights+'박 연속 기준)':'');
+  $('frGridFoot').innerHTML='<b>'+esc(f.name)+'</b> · '+esc(f.type)+' · '+esc(f.sido)+' '+esc(f.gug)+' · 입실 '+esc(f.ci)+' / 퇴실 '+esc(f.co)
+    +(f.op?' · 예약 오픈 '+esc(f.op):'')
+    +(f.rw!=null||f.rd!=null?' · 수집 기간 예약률 '+(f.rw!=null?'주말 '+f.rw+'%':'')+(f.rd!=null?(f.rw!=null?' · ':'')+'평일 '+f.rd+'%':''):'')
+    +' · 요금표 있는 객실 '+pr+'/'+f.goods.length+'개 (요금은 요금표의 비수기 평일·주말 값)'
+    +' · <a href="'+esc(frOffUrl(f))+'" target="_blank" rel="noopener" style="color:var(--violet-d);font-weight:800">숲나들e에서 예약 ↗</a>';
+}
+
+/* ── 안내문 ── */
+function renderFrNotes(){
+  const m=frMeta(),last=frDate(frDayCount()-1);
+  $('frBasis').innerHTML='<p class="hint">자료: 숲나들e(foresttrip.go.kr)에 공개된 <strong>월별 예약현황</strong> · 수집 <strong>'+esc(m.at||'—')+'</strong> KST · 범위 '+esc(m.start||'')+'~'+esc(last)+' ('+m.days+'일). 전국 <strong>'+KR(m.forests||0)+'곳</strong> · 객실·사이트 <strong>'+KR(m.goods||0)+'</strong> · 예약가능 <strong>'+KR(m.avail||0)+'칸</strong>.<br>'
+    +'<strong>예</strong> 예약가능 · <strong>대1~9</strong> 예약은 찼지만 대기 신청을 받는 날 · <strong>완</strong> 예약완료 · <strong>휴</strong> 휴무 · <strong>공</strong> 공사·점검 · <strong>추</strong> 추첨·우선예약. 빈자리를 찾을 때는 <strong>예</strong>만 세고, 대기·완·휴·공·추는 세지 않습니다.<br>'
+    +'2박·3박을 고르면 <strong>그 박수만큼 연속으로 예약가능한 체크인 날</strong>만 셉니다(객실마다 최대 연박이 짧으면 그 객실은 빠집니다). 요금은 숲나들e 요금표의 <strong>비수기 평일·주말 1박 값</strong>이고, 성수기·지역주민 할인 등에 따라 실제 결제액과 다릅니다. 요금표가 없는 객실은 <strong>요금 미공개</strong>로 둡니다.</p>';
+  $('frCaution').innerHTML='<ul class="hint" style="margin:0;padding-left:16px">'
+    +'<li>빈자리는 <strong>수집 시각 기준</strong>입니다. 그 뒤 예약이 찰 수 있으니 예약 전 숲나들e에서 다시 확인하세요. 인기 휴양림은 몇 분 만에 찹니다.</li>'
+    +'<li>예약 버튼·행은 모두 <strong>숲나들e 공식 화면</strong>으로 열립니다(각 휴양림 페이지 · <a href="'+FR_MONTH+'" target="_blank" rel="noopener">월별현황조회</a>). 예약·결제·취소는 숲나들e에서 하고, 이 화면은 예약을 대신하지 않습니다.</li>'
+    +'<li>숙소·야영장은 휴양림마다 <strong>입실·퇴실 시간과 최대 연박</strong>이 다릅니다. 카드와 그리드에 적힌 시간을 먼저 보세요.</li>'
+    +'<li>국립·공립·사립의 예약 규칙(오픈 요일·추첨·지역주민 우선)이 서로 다릅니다. 그리드 아래의 <strong>예약 오픈</strong> 표기를 확인하세요.</li>'
+    +'<li>요금·예약률은 수집된 값으로 계산한 참고 값입니다. 실제 금액은 숲나들e 예약 화면의 값을 따릅니다.</li>'
+    +'</ul>';
+}
+
+/* ── 전체 ── */
+function renderFrTabs(){
+  const on=frs.view;
+  document.querySelectorAll('[data-fr-view]').forEach(function(b){
+    const sel=b.getAttribute('data-fr-view')===on;
+    b.classList.toggle('on',sel);b.setAttribute('aria-pressed',String(sel));
+  });
+  document.querySelectorAll('[data-fr-nights]').forEach(function(b){
+    const sel=Number(b.getAttribute('data-fr-nights'))===frs.nights;
+    b.classList.toggle('on',sel);b.setAttribute('aria-pressed',String(sel));
+  });
+  const w=$('frWeekend'),fr2=$('frFresh');
+  if(w)w.setAttribute('aria-pressed',String(!!frs.weekend));
+  if(fr2)fr2.setAttribute('aria-pressed',String(!!frs.fresh));
+  $('frListBlock').hidden=on!=='list';
+  $('frCalBlock').hidden=on!=='cal';
+  $('frGridBlock').hidden=on!=='grid';
+}
+function renderFrFilters(){
+  const cnt={};
+  FRD.forests.forEach(function(f){cnt[f.sido]=(cnt[f.sido]||0)+1});
+  const sidos=(FRD.sidos&&FRD.sidos.length?FRD.sidos:Object.keys(cnt));
+  $('frRegion').innerHTML='<option value="all">전국 ('+FRD.forests.length+'곳)</option>'+sidos.map(function(s){
+    return '<option value="'+esc(s)+'">'+esc(s)+' ('+(cnt[s]||0)+'곳)</option>';
+  }).join('');
+  if(frs.region!=='all'&&!(sidos.indexOf(frs.region)>=0))frs.region='all';
+  $('frRegion').value=frs.region;
+  $('frType').value=frs.type;$('frCap').value=String(frs.cap);$('frRange').value=String(frs.range);$('frSort').value=frs.sort;
+  if($('frQ').value!==frs.q)$('frQ').value=frs.q;
+}
+function renderForest(){
+  setDealPanels('forest');
+  if(!FRD.forests.length){
+    $('frKpi').innerHTML='';$('frCards').innerHTML='<div class="fr-empty">자료를 받지 못했습니다 — 새로고침하면 다시 받습니다.</div>';return;
+  }
+  frPrep();
+  renderFrBanner();renderFrFilters();
+  const list=frSorted(frForests());
+  frLastList=list;
+  renderFrKpi(list);
+  $('frCount').textContent='빈자리 있는 휴양림 '+KR(list.length)+'곳 · '+(frs.view==='list'?'목록':frs.view==='cal'?'달력':'월간 그리드');
+  if(frs.view==='list')renderFrCards(list);
+  else if(frs.view==='cal')renderFrCal(list);
+  else renderFrGrid(list);
+  renderFrNotes();renderFrTabs();
+  const t=tabs.forest;
+  if(t){$('sectionTitle').textContent=t.title;$('sectionSubtitle').textContent=t.sub;$('checktime').textContent=t.checked}
+  const tb=document.querySelector('[data-tab="forest"] b');
+  if(tb)tb.textContent=KR(FRD.meta?FRD.meta.forests:FRD.forests.length);
+  hashSync();
+}
+function frGo(id){
+  frs.forest=id;frs.view='grid';frs.gmonth='';
+  const f=FRD.forests.filter(function(x){return x.id===id})[0];
+  if(f){
+    const s=frStat(f);
+    if(s.first!=null)frs.gmonth=frDate(s.first).slice(0,7);
+  }
+  renderForest();
+  const b=$('frGridBlock');if(b&&b.scrollIntoView)b.scrollIntoView({block:'start',behavior:'smooth'});
+}
+
+/* 이벤트 */
+$('frRegion').addEventListener('change',function(e){frs.region=e.target.value;frs.day='';renderForest()});
+$('frType').addEventListener('change',function(e){frs.type=e.target.value;frs.day='';renderForest()});
+$('frCap').addEventListener('change',function(e){frs.cap=Number(e.target.value)||0;frs.day='';renderForest()});
+$('frRange').addEventListener('change',function(e){frs.range=Number(e.target.value)||0;frs.day='';renderForest()});
+$('frSort').addEventListener('change',function(e){frs.sort=e.target.value;renderForest()});
+var frQTimer=null;
+$('frQ').addEventListener('input',function(e){
+  frs.q=e.target.value;frs.day='';
+  clearTimeout(frQTimer);frQTimer=setTimeout(renderForest,160);
+});
+$('frReset').addEventListener('click',function(){frs.type='all';frs.cap=0;frs.range=28;frs.weekend=false;frs.fresh=false;frs.q='';frs.nights=1;frs.sort='soon';frs.day='';frs.view='list';renderForest()});
+$('frWeekend').addEventListener('click',function(){frs.weekend=!frs.weekend;frs.day='';renderForest()});
+$('frFresh').addEventListener('click',function(){frs.fresh=!frs.fresh;frs.day='';renderForest()});
+$('frPanel').addEventListener('click',function(e){
+  const v=e.target.closest('[data-fr-view]');
+  if(v){frs.view=v.getAttribute('data-fr-view');renderForest();return}
+  const n=e.target.closest('[data-fr-nights]');
+  if(n){frs.nights=Number(n.getAttribute('data-fr-nights'))||1;frs.day='';renderForest();return}
+  const g=e.target.closest('[data-fr-grid]');
+  if(g){e.preventDefault();frGo(g.getAttribute('data-fr-grid'));return}
+  const d=e.target.closest('[data-fr-date]');
+  if(d){frs.day=d.getAttribute('data-fr-date');renderFrCal(frLastList);return}
+  if(e.target.closest('#frDayClose')){frs.day='';renderFrCal(frLastList);return}
+  const m=e.target.closest('#frPrevMonth,#frNextMonth,#frGPrevMonth,#frGNextMonth');
+  if(m){
+    const cal=m.id.indexOf('frG')<0;
+    const months=cal?frCalMonths():frGridMonths();
+    const cur=cal?frs.month:frs.gmonth;
+    const i=months.indexOf(cur);
+    const k=m.id.indexOf('Prev')>=0?i-1:i+1;
+    if(k<0||k>=months.length)return;
+    if(cal){frs.month=months[k];frs.day=''}else{frs.gmonth=months[k]}
+    renderForest();
+  }
+});
+$('frForestSel').addEventListener('change',function(e){frs.forest=e.target.value;renderForest()});
+// /FOREST:JS
 function activate(tab){
   renderTabs();
   if($('modal')&&$('modal').classList.contains('show'))closeDetail();

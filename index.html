@@ -1082,6 +1082,11 @@ table.fr-g td.c-A.new{box-shadow:inset 0 0 0 2px #e0872f}
 @media(max-width:430px){
   .tabs{padding:10px 11px 0}
 }
+/* 360~400px 폰은 탭 한 칸이 80px 안팎 — 글자·배지를 조금 줄여 라벨이 잘리지 않게 한다 */
+@media(max-width:400px){
+  .tab{font-size:10px;padding:6px 3px;gap:3px}
+  .tab b{font-size:7.5px;padding:1px 2px}
+}
 @media print{
   body{background:#fff}
   .topbar,.tabs,.side,.querybar,.extra-control,.nav-month,.calendar-bottom,.modal,.mode-control,.insights{display:none!important}
@@ -1579,19 +1584,19 @@ html.locked #lockGate{display:flex}
     <button class="tab active" data-tab="lux" type="button">① 호텔럭스 <b>161</b></button>
     <button class="tab" data-tab="china" type="button">② 중올플 <b>289</b></button>
     <button class="tab" data-tab="domestic" type="button">③ 아코르 <b>247</b></button>
-    <button class="tab" data-tab="marriott" type="button"><span class="t-full">④ 메리어트(한중일)</span><span class="t-short" aria-hidden="true">④ 메리어트</span> <b>62</b></button>
-    <button class="tab" data-tab="flight" type="button"><span class="t-full">⑤ 항공특가(부산)</span><span class="t-short" aria-hidden="true">⑤ 항공</span> <b>47</b></button>
+    <button class="tab" data-tab="marriott" type="button"><span class="t-full">④ 메리어트(한중일)</span><span class="t-short">④ 메리어트</span> <b>62</b></button>
+    <button class="tab" data-tab="flight" type="button"><span class="t-full">⑤ 항공특가(부산)</span><span class="t-short">⑤ 항공</span> <b>47</b></button>
     <button class="tab combo-tab" data-tab="combo" type="button" aria-label="항공+호텔 주말 콤보">✈️+🏨 콤보</button>
 <!-- TT:NAV -->
-    <button class="tab" data-tab="tt" type="button"><span class="t-full">⑥ 땡처리(부산)</span><span class="t-short" aria-hidden="true">⑥ 땡처리</span> <b>3,847</b></button>
+    <button class="tab" data-tab="tt" type="button"><span class="t-full">⑥ 땡처리(부산)</span><span class="t-short">⑥ 땡처리</span> <b>3,847</b></button>
 <!-- /TT:NAV --><!-- FOREST:NAV -->
     <button class="tab" data-tab="forest" type="button" aria-label="자연휴양림 빈자리">🌲 휴양림 <b>185</b></button>
 <!-- /FOREST:NAV --><!-- MILEAGE:NAV -->
-    <button class="tab" data-tab="mileage" type="button" aria-label="마일리지 부산 — 부산 출발 보너스 좌석"><span class="t-full">⑦ 마일리지(부산)</span><span class="t-short" aria-hidden="true">⑦ 마일리지</span> <b hidden>—</b></button>
+    <button class="tab" data-tab="mileage" type="button" aria-label="마일리지 부산 — 부산 출발 보너스 좌석"><span class="t-full">⑦ 마일리지(부산)</span><span class="t-short">⑦ 마일리지</span> <b hidden>—</b></button>
 <!-- /MILEAGE:NAV -->
 
 
-    <button class="tab" data-tab="valet" type="button" aria-label="발렛·공항 라운지"><span class="t-full">🅿️ 발렛 · 🛫 라운지</span><span class="t-short" aria-hidden="true">🅿️ 발렛</span> <b>75</b></button>
+    <button class="tab" data-tab="valet" type="button" aria-label="발렛·공항 라운지"><span class="t-full">🅿️ 발렛 · 🛫 라운지</span><span class="t-short">🅿️ 발렛</span> <b>75</b></button>
   </nav>
 </div>
 <div class="page">

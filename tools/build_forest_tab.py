@@ -54,8 +54,8 @@ HOOKS = [
      "const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b'};",
      "const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22b'};"),
     ('PART_FILE',
-     "const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json'};",
-     "const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json',forest:'tab7_forest.json'};"),
+     "const PART_FILE={lux:'tab1_vip.json',accor:'tab2_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json'};",
+     "const PART_FILE={lux:'tab1_vip.json',accor:'tab2_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json',forest:'tab7_forest.json'};"),
     ('loadPart',
      "    }else if(tab==='lounge'){\n      Object.assign(LOUNGE,data);\n    }",
      "    }else if(tab==='lounge'){\n      Object.assign(LOUNGE,data);\n"

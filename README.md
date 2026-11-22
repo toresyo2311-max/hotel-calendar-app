@@ -26,11 +26,13 @@
 | 탭 | 파일 | 내용 | 크기 |
 | --- | --- | --- | --- |
 | ① VIP 요금 · FHR | `data/app/tab1_vip.json` | 호텔 161곳 | 0.45 MB |
-| ② 중올플 | `data/app/tab2_china.json` | 호텔 289곳 + APC | 0.93 MB |
-| ③ 아코르 | `data/app/tab3_accor.json` | 호텔 25곳 + SNU 43줄(`accor`) | 0.08 MB |
-| ④ 메리어트 | `data/app/tab4_marriott.json` | 호텔 62곳(현금·포인트) | 0.23 MB |
-| ⑤ 항공 | `data/app/tab5_flights.json` | 47개 노선 10,737건 | 1.73 MB |
-| ⑥ 땡처리 | `data/app/tab6_ttang.json` | 44개 노선 3,847건 | 1.61 MB |
+| ② 아코르 | `data/app/tab2_accor.json` | 호텔 536곳(중국(APC) 291 · 국내 30 · 동남아 196 · 기타 19) + APC + SNU 43줄(`accor`) | 1.62 MB |
+| ③ 메리어트 | `data/app/tab4_marriott.json` | 호텔 62곳(현금·포인트) | 0.23 MB |
+| ④ 항공 | `data/app/tab5_flights.json` | 47개 노선 10,737건 | 1.73 MB |
+| ⑤ 땡처리 | `data/app/tab6_ttang.json` | 44개 노선 3,847건 | 1.61 MB |
+
+> 2026-11-22 — ② 중올플(`tab2_china.json`)과 ③ 아코르(`tab3_accor.json`)를 **② 아코르** 한 탭으로 합쳤습니다.
+> 같은 호텔 18곳은 한 카드로 합쳐 536곳이고, 사라진 중국 카드 id 는 `data/id_alias_accor.json` 매핑으로 남은 카드에 이어집니다.
 
 > 위 크기는 2026-11-19 5단계(JSON 43.6% 경량화, 키 이름 표(`$t`) + 행 배열(`$r`) 압축) 뒤
 > 저장소 파일 크기 그대로입니다. 앱은 받은 JSON을 그대로 쓰므로 화면 동작은 같습니다.
@@ -1111,8 +1113,7 @@ python3 tools/merge_pus_deals.py ../../data-sources/flights-ttang/2026-11-20/nor
 ```
 index.html              앱 본체. 화면 코드 + 집계값(const DB 의 counts·sources)만. 호텔·항공·땡처리 데이터는 없습니다(340 KB).
 data/app/tab1_vip.json  ① VIP 요금 · FHR 호텔 161곳 (탭 진입 시 fetch)
-data/app/tab2_china.json  ② 중올플 289곳 + APC 무료숙박 가능일
-data/app/tab3_accor.json  ③ 아코르 25곳 + SNU·Stay Plus 43줄(accor)
+data/app/tab2_accor.json  ② 아코르 536곳 + APC 무료숙박 가능일 + SNU·Stay Plus 43줄(accor)
 data/app/tab4_marriott.json  ④ 메리어트 62곳 (현금 + 아워드 포인트)
 data/app/tab5_flights.json  ⑤ 부산 출발 항공 47개 노선 10,737건
 data/app/tab6_ttang.json  ⑥ 땡처리 44개 노선 3,847건
@@ -1279,7 +1280,7 @@ netlify.toml            (구) Netlify 배포 설정 — GitHub Pages로 이전�
 - `hotels` 순서는 탭 묶음 순서(① 162 → ② 289 → ③ 25 → ④ 62)이고, 각 탭 안의 순서는 화면 목록 순서입니다.
   `data/app/tab1~tab4.json` 이 이 묶음을 그대로 나눠 가지므로, 앱에서 `DB.hotels` 에 탭별로 push 해도
   탭별 목록 순서는 원본과 같습니다.
-- `accor`(SNU 43줄)는 `data/app/tab3_accor.json` 에 함께 실려 ③ 탭 진입 시 로딩됩니다.
+- `accor`(SNU 43줄)는 `data/app/tab2_accor.json` 에 함께 실려 ② 아코르 탭 진입 시 로딩됩니다.
 - **`index.html` 의 `const DB` 는 호텔 배열이 비어 있습니다**(`hotels: []`). 호텔 데이터의 배포본은
   `data/app/tab1~tab4.json` 이고, `data/master_db.json` 은 병합 도구가 고치는 정본입니다.
   `tools/master_db.py verify` 가 **정본 == 배포본 + index.html 집계값** 을 검사합니다.

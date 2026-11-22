@@ -4,11 +4,11 @@
 
 데이터는 두 층으로 나뉜다.
 
-  · `data/master_db.json` — 병합 도구(merge_*.py)가 고치는 **정본**. 호텔 538곳 × 365일 ·
+  · `data/master_db.json` — 병합 도구(merge_*.py)가 고치는 **정본**. 호텔 759곳 × 365일 ·
     항공 47개 노선 · ⑥ 땡처리 상품을 한 파일에 담는다(바뀌지 않음).
   · `data/app/*.json` — 앱이 탭에 들어갈 때 `fetch` 로 받는 **탭별 배포본**(지연 로딩).
-      tab1_vip.json(①) · tab2_china.json(②) · tab3_accor.json(③ + SNU rows)
-      tab4_marriott.json(④) · tab5_flights.json(⑤) · tab6_ttang.json(⑥)
+      tab1_vip.json(①) · tab2_accor.json(② 아코르 + SNU rows)
+      tab4_marriott.json(③) · tab5_flights.json(④) · tab6_ttang.json(⑤)
   · `index.html` — 화면 코드 + 집계값만. `const DB` 에는 호텔이 없고(`hotels: []`),
     출처·기준일·갱신 이력·counts 만 둔다. `const FLIGHTS` / `const TTANG` 은 빈 골격이며
     실제 값은 tab5/tab6 JSON 이 채운다.
@@ -40,38 +40,48 @@ MASTER = os.path.join(ROOT, 'data', 'master_db.json')
 
 # 탭별 지연 로딩 배포본 — index.html 은 이 파일들을 fetch 해서 화면을 그린다
 APP_DIR = os.path.join(ROOT, 'data', 'app')
-PART_TABS = (('lux', 'tab1_vip.json'), ('china', 'tab2_china.json'),
-             ('domestic', 'tab3_accor.json'), ('marriott', 'tab4_marriott.json'))
+# 2026-11-22 — ② 중올플(china)과 ③ 아코르(domestic)를 「② 아코르」 한 탭으로 합쳤다.
+#   배포본도 tab2_accor.json 하나이고, 옛 tab2_china.json·tab3_accor.json 은 쓰지 않는다.
+PART_TABS = (('lux', 'tab1_vip.json'), ('accor', 'tab2_accor.json'),
+             ('marriott', 'tab4_marriott.json'))
 PART_FLIGHTS = 'tab5_flights.json'
 PART_TTANG = 'tab6_ttang.json'
-PART_MILEAGE = 'tab8_mileage.json'      # ⑦ 마일리지(부산) — 호텔 묶음이 아니라 별도 검사
+PART_MILEAGE = 'tab8_mileage.json'      # ⑥ 마일리지(부산) — 호텔 묶음이 아니라 별도 검사
 PART_ORDER = [tab for tab, _ in PART_TABS]
 PART_ADDRESS = dict(PART_TABS)
 
 WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 
-# 탭별 기대 호텔 수 — ① 호텔럭스 161곳(2026-11-20 파라다이스 호텔 부산 제외) · ② 중올플 289곳
-# (참여 287 + 기존 미참여·자격없음 2) · ③ 아코르 265곳(국내 30 + 동남아 196 + 한·중·일 21
-# + 레드핫으로 새로 넣은 해외 18곳) · ④ 메리어트 62곳 · 총 777곳
-EXPECT_TABS = {'lux': 161, 'china': 289, 'domestic': 265, 'marriott': 62}
+# 탭별 기대 호텔 수 — ① 호텔럭스 161곳 · ② 아코르 536곳 · ③ 메리어트 62곳 · 총 759곳
+#   ② 아코르 = 중국(APC) 291(중올플 289 + 아코르 카드 가운데 중국 2) + 국내 30 + 동남아 196
+#   + 기타 해외 19.  중올플 289 + 아코르 265 = 554 가운데 같은 호텔 18곳을 한 카드로 합친 수다.
+EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 62}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
-# ② 중올플 APC — 참여 282 + 기존 2 = 284곳 · 12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715
+# ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
+#   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
+#   현금 요금 보유 44곳(기존 40 + 통합하며 아코르 카드의 365일 요금이 붙은 4곳) · 미수집 245곳
 EXPECT_APC = {'hotels': 289, 'participating': 287, 'dec_available': 210,
               'cells': 4715, 'tiers': {1: 116, 2: 137, 3: 36},
-              'cash_filled': 40, 'cash_empty': 249}
+              'cash_filled': 44, 'cash_empty': 245}
 
-# ③ 아코르 · Stay Plus & SNU — 국내 4곳 + 한·중·일 페어몬트·소피텔 21곳(365일)
-# 2026-11-22 — 동남아(태국 102 · 베트남 55 · 싱가포르 39) 196곳을 a52~a247 로 더해 247곳.
-#   'new' 는 id 가 a 로 시작하는 호텔 수(= 기존 해외 21 + 동남아 196 = 217)다.
-# 2026-11-22 — Red Hot Rooms 로 해외 18곳(a248~a265)을 더해 265곳. 이 18곳은 365일 요금이 없고
-#   레드핫 시작가(`redhotRates`)만 있다. 'new' 는 217 + 18 = 235.
-EXPECT_ACCOR3 = {
-    'hotels': 265, 'new': 235,
+# ② 아코르(통합) · Stay Plus & SNU — 536곳 · 지역 칩 4가지
+#   2026-11-22 — ② 중올플 289곳과 ③ 아코르 265곳을 합쳤다(같은 호텔 18곳은 한 카드).
+#   지역(zone): cn 중국(APC) 291 · kr 국내 30 · sea 동남아 196 · etc 기타 해외 19.
+#   Red Hot Rooms 32곳 가운데 18곳은 365일 요금 없이 레드핫 시작가(`redhotRates`)만 있다.
+EXPECT_ACCOR = {
+    'hotels': 536,
+    'zones': {'cn': 291, 'kr': 30, 'sea': 196, 'etc': 19},
     # Red Hot Rooms — 2026-11-22 오퍼 목록 32건 · 참여 호텔 32곳(기존 14 + 신규 18) · 창 안 날짜 1,909칸
     'redhot': {'offers': 32, 'hotels': 32, 'cells': 1909},
     'priced': {'C1B5': 0, 'A7Z9': 124, 'A5G7': 263, '8167': 357, 'B6R8': 362},
     'snu_rows': 43, 'snu_cities': 8,
+    # 통합하며 중국 카드가 사라진 18곳 — 사라진 id 는 data/id_alias_accor.json 의 매핑대로 남은 카드로 간다
+    'merged': {'ap052': 'aB9G8', 'ap063': 'aB953', 'ap075': 'a5949', 'ap088': 'a6824',
+               'ap101': 'aB733', 'ap118': 'a8102', 'ap125': 'aB8Y3', 'ap140': 'a8167',
+               'ap142': 'aB851', 'ap176': 'a2197', 'ap190': 'aC3B5', 'ap200': 'a8529',
+               'ap216': 'a8719', 'ap224': 'a7970', 'ap237': 'aC4U2', 'ap241': 'a8873',
+               'ap251': 'a9567', 'cA7Z9': 'aA7Z9'},
 }
 EXPECT_DOMESTIC_PROGRAM = {'dB220': (True, True), 'dB200': (True, False),
                            'dA3N6': (True, False), 'dC2G2': (True, False)}
@@ -96,7 +106,7 @@ ALLOWED_LABELS = ('① 호텔럭스', '💎 호텔럭스',
 
 
 def check_mileage(mg):
-    """⑦ 마일리지(부산) — 원천이 준 값만 있는지(비트 0~31), 날짜 창, 집계 일치 검사.
+    """⑥ 마일리지(부산) — 원천이 준 값만 있는지(비트 0~31), 날짜 창, 집계 일치 검사.
 
     좌석 수량·수수료·기재는 원천에 없으므로 자료에도 없어야 한다(있으면 실패).
     """
@@ -217,11 +227,11 @@ def check_ttang(tt):
 
 
 def check_apc(db):
-    """② 중올플 284곳 · 권역(tier) · APC 상태 검사."""
+    """② 아코르 가운데 중올플 APC 카드 289곳 · 권역(tier) · APC 상태 검사."""
     problems = []
-    china = [h for h in db['hotels'] if h.get('group') == 'china']
+    china = [h for h in db['hotels'] if h.get('group') == 'accor' and h.get('accor')]
     if len(china) != EXPECT_APC['hotels']:
-        problems.append('② 중올플 %d곳 (기대 %d곳)' % (len(china), EXPECT_APC['hotels']))
+        problems.append('② APC 카드 %d곳 (기대 %d곳)' % (len(china), EXPECT_APC['hotels']))
     part = [h for h in china if (h.get('accor') or {}).get('participation') == 'participating']
     if len(part) != EXPECT_APC['participating']:
         problems.append('② 참여 %d곳 (기대 %d곳)' % (len(part), EXPECT_APC['participating']))
@@ -289,19 +299,47 @@ def check_apc(db):
         problems.append('② 현금 요금 보유 호텔 %d곳 (기대 %d곳)' % (legacy_cash, EXPECT_APC['cash_filled']))
     if fresh_none != EXPECT_APC['cash_empty']:
         problems.append('② 현금 미수집 호텔 %d곳 (기대 %d곳)' % (fresh_none, EXPECT_APC['cash_empty']))
+    # 통합으로 사라진 중국 카드가 다시 생기지 않았는지
+    for gone, keep in EXPECT_ACCOR['merged'].items():
+        if any(h.get('id') == gone for h in db['hotels']):
+            problems.append('② 통합으로 합친 카드 %s 가 다시 있습니다(남은 카드 %s)' % (gone, keep))
     return problems
 
 
-def check_accor3(db):
-    """③ 아코르 · Stay Plus & SNU — 21곳 365일 · 우한 이상값 제외 · alsoIn 양방향 · SNU 표 · 레드핫."""
+def check_accor(db):
+    """② 아코르(통합) · Stay Plus & SNU — 536곳 · 지역 4가지 · alsoIn 양방향 · SNU 표 · 레드핫."""
     problems = []
-    dom = [h for h in db['hotels'] if h.get('group') == 'domestic']
-    if len(dom) != EXPECT_ACCOR3['hotels']:
-        problems.append('③ 아코르 %d곳 (기대 %d곳)' % (len(dom), EXPECT_ACCOR3['hotels']))
+    dom = [h for h in db['hotels'] if h.get('group') == 'accor']
+    if len(dom) != EXPECT_ACCOR['hotels']:
+        problems.append('② 아코르 %d곳 (기대 %d곳)' % (len(dom), EXPECT_ACCOR['hotels']))
     ids = {h['id']: h for h in db['hotels']}
-    new = [h for h in dom if h['id'].startswith('a')]
-    if len(new) != EXPECT_ACCOR3['new']:
-        problems.append('③ 신규 %d곳 (기대 %d곳)' % (len(new), EXPECT_ACCOR3['new']))
+    zones = {}
+    for h in dom:
+        z = h.get('zone')
+        zones[z] = zones.get(z, 0) + 1
+        if z not in EXPECT_ACCOR['zones']:
+            problems.append('② %s 지역(zone) 없음/이상: %r' % (h['id'], z))
+        if not h.get('city') or not h.get('name'):
+            problems.append('② %s 도시/이름 없음' % h['id'])
+        # 중국(APC) 카드는 APC 블록이 있어야 하고, APC 블록이 있으면 지역이 cn 이어야 한다
+        if h.get('accor') and z != 'cn':
+            problems.append('② %s APC 카드인데 지역이 %r' % (h['id'], z))
+    if zones != EXPECT_ACCOR['zones']:
+        problems.append('② 지역 분포 %s (기대 %s)' % (zones, EXPECT_ACCOR['zones']))
+    # 사라진 중국 카드 id 가 남아 있지 않고, 남은 카드가 별칭 파일과 같은지
+    alias_path = os.path.join(ROOT, 'data', 'id_alias_accor.json')
+    if os.path.exists(alias_path):
+        try:
+            alias = json.loads(_read(alias_path)).get('map') or {}
+        except Exception:                        # noqa: BLE001
+            alias = {}
+        if alias != EXPECT_ACCOR['merged']:
+            problems.append('② id_alias_accor.json 매핑이 기대와 다름 (%d개)' % len(alias))
+        for gone, keep in EXPECT_ACCOR['merged'].items():
+            if gone in ids:
+                problems.append('② 통합으로 합친 카드 %s 가 아직 있음' % gone)
+            if keep not in ids:
+                problems.append('② 통합 카드 %s 없음' % keep)
     rh_hotels = [h for h in dom if h.get('redhot')]
     for h in dom:
         rates = h.get('rates') or {}
@@ -326,7 +364,7 @@ def check_accor3(db):
                 problems.append('③ %s alsoIn %s 대상 없음' % (h['id'], h['alsoIn']))
             elif other.get('alsoIn') != h['id']:
                 problems.append('③ %s ↔ %s alsoIn 이 한쪽만 있음' % (h['id'], h['alsoIn']))
-    for code, n in EXPECT_ACCOR3['priced'].items():
+    for code, n in EXPECT_ACCOR['priced'].items():
         h = ids.get('a' + code)
         if not h:
             problems.append('③ %s 없음' % code)
@@ -339,8 +377,8 @@ def check_accor3(db):
         if p.get('stayplus') is not sp or p.get('snu') is not snu:
             problems.append('③ %s program %s (기대 stayplus=%s snu=%s)' % (hid, p, sp, snu))
     # ── Red Hot Rooms — 원천(오퍼 목록)에 적힌 값만 있는지 ──────────────────
-    if len(rh_hotels) != EXPECT_ACCOR3['redhot']['hotels']:
-        problems.append('③ 레드핫 참여 호텔 %d곳 (기대 %d곳)' % (len(rh_hotels), EXPECT_ACCOR3['redhot']['hotels']))
+    if len(rh_hotels) != EXPECT_ACCOR['redhot']['hotels']:
+        problems.append('③ 레드핫 참여 호텔 %d곳 (기대 %d곳)' % (len(rh_hotels), EXPECT_ACCOR['redhot']['hotels']))
     offer_ids, rh_codes, rh_cells = set(), set(), 0
     for h in rh_hotels:
         r = h['redhot']
@@ -391,10 +429,10 @@ def check_accor3(db):
             # 기존 호텔 — 레드핫을 더해도 365일 요금·Stay Plus 는 그대로여야 한다
             if len(h['rates']) != 365:
                 problems.append('③ %s 레드핫 추가 후 요금 칸 %d개' % (h['id'], len(h['rates'])))
-    if len(offer_ids) != EXPECT_ACCOR3['redhot']['offers']:
-        problems.append('③ 레드핫 오퍼 %d건 (기대 %d건)' % (len(offer_ids), EXPECT_ACCOR3['redhot']['offers']))
-    if rh_cells != EXPECT_ACCOR3['redhot']['cells']:
-        problems.append('③ 레드핫 칸 %d개 (기대 %d개)' % (rh_cells, EXPECT_ACCOR3['redhot']['cells']))
+    if len(offer_ids) != EXPECT_ACCOR['redhot']['offers']:
+        problems.append('③ 레드핫 오퍼 %d건 (기대 %d건)' % (len(offer_ids), EXPECT_ACCOR['redhot']['offers']))
+    if rh_cells != EXPECT_ACCOR['redhot']['cells']:
+        problems.append('③ 레드핫 칸 %d개 (기대 %d개)' % (rh_cells, EXPECT_ACCOR['redhot']['cells']))
     for h in dom:
         if not (h.get('rates') or {}) and not h.get('redhot'):
             problems.append('③ %s 요금도 레드핫도 없음' % h['id'])
@@ -404,11 +442,11 @@ def check_accor3(db):
     if program.get('stayplusExpiry') != '2027-09-30' or program.get('snuExpiry') != '2027-12-31':
         problems.append('③ SNU/Stay Plus 만료일 %s' % program)
     rows = accor.get('rows') or []
-    if len(rows) != EXPECT_ACCOR3['snu_rows']:
-        problems.append('③ SNU 후보 %d줄 (기대 %d줄)' % (len(rows), EXPECT_ACCOR3['snu_rows']))
+    if len(rows) != EXPECT_ACCOR['snu_rows']:
+        problems.append('③ SNU 후보 %d줄 (기대 %d줄)' % (len(rows), EXPECT_ACCOR['snu_rows']))
     cities = {r.get('city') for r in rows}
-    if len(cities) != EXPECT_ACCOR3['snu_cities']:
-        problems.append('③ SNU 도시 %d개 (기대 %d개: %s)' % (len(cities), EXPECT_ACCOR3['snu_cities'],
+    if len(cities) != EXPECT_ACCOR['snu_cities']:
+        problems.append('③ SNU 도시 %d개 (기대 %d개: %s)' % (len(cities), EXPECT_ACCOR['snu_cities'],
                                                         sorted(cities)))
     for r in rows:
         if not r.get('hotel') or not r.get('checkin'):
@@ -4504,7 +4542,7 @@ def write_parts(master):
     groups = split_hotels(master['hotels'])
     for tab, name in PART_TABS:
         part = {'tab': tab, 'count': len(groups[tab]), 'hotels': groups[tab]}
-        if tab == 'domestic':
+        if tab == 'accor':
             part['accor'] = master.get('accor')
         write_part(name, part)
     write_part(PART_FLIGHTS, master['flights'])
@@ -4675,7 +4713,7 @@ def stats_of(db, flights, tt=None):
 def cmd_extract(args):
     _, dbmeta, _ = read_db_literal()
     parts, hotels, flights, tt = read_parts()
-    accor = parts['domestic'].get('accor')
+    accor = parts['accor'].get('accor')
     commit = os.environ.get('MASTER_DB_COMMIT', '')
     if not commit:
         try:
@@ -4760,7 +4798,7 @@ def check_tabs(db):
     if len(db['hotels']) != EXPECT_HOTELS:
         problems.append('호텔 합계 %d곳 (기대 %d곳 = %s)' % (
             len(db['hotels']), EXPECT_HOTELS,
-            ' + '.join(str(EXPECT_TABS[t]) for t in ('lux', 'china', 'domestic', 'marriott'))))
+            ' + '.join(str(EXPECT_TABS[t]) for t in ('lux', 'accor', 'marriott'))))
     brands = {}
     ids = set()
     for h in db['hotels']:
@@ -4803,7 +4841,7 @@ def check_tabs(db):
         if u and not u.startswith('https://www.americanexpress.com/'):
             problems.append('%s fhr 주소가 아멕스 공식 페이지가 아님: %s' % (h['id'], u))
     problems.extend(check_apc(db))
-    problems.extend(check_accor3(db))
+    problems.extend(check_accor(db))
     return problems
 
 
@@ -4844,15 +4882,15 @@ def cmd_verify(args, quiet=False):
             if a != b:
                 problems.append('%s 호텔 %s 내용 다름' % (name, a.get('id')))
                 break
-    if parts['domestic'].get('accor') != master.get('accor'):
-        problems.append('tab3_accor.json 의 accor(SNU) 블록이 master 와 다름')
+    if parts['accor'].get('accor') != master.get('accor'):
+        problems.append('tab2_accor.json 의 accor(SNU) 블록이 master 와 다름')
     if flights != mfl:
         problems.append('%s 내용 다름' % PART_FLIGHTS)
     if tt != mtt:
         problems.append('%s(⑥ 땡처리) 내용 다름' % PART_TTANG)
 
     # 3) 탭별 JSON 을 합친 실제 배포 데이터로 통계
-    st = stats_of({'hotels': hotels, 'accor': parts['domestic'].get('accor')}, flights, tt)
+    st = stats_of({'hotels': hotels, 'accor': parts['accor'].get('accor')}, flights, tt)
     expect = master.get('counts') or {}
     for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus', 'routes', 'deals', 'snu',
               'pus_deals', 'pus_routes', 'redhot_hotels', 'redhot_cells'):
@@ -4985,7 +5023,7 @@ def _part_text(master, name):
     for tab, fname in PART_TABS:
         if fname == name:
             part = {'tab': tab, 'count': len(groups[tab]), 'hotels': groups[tab]}
-            if tab == 'domestic':
+            if tab == 'accor':
                 part['accor'] = master.get('accor')
             return compact(encode_part(part)) + '\n'
     if name == PART_FLIGHTS:
@@ -5010,7 +5048,7 @@ def _plain_parts(master):
     out = []
     for tab in PART_ORDER:
         part = {'tab': tab, 'count': len(groups[tab]), 'hotels': groups[tab]}
-        if tab == 'domestic':
+        if tab == 'accor':
             part['accor'] = master.get('accor')
         out.append((PART_ADDRESS[tab], part))
     out.append((PART_FLIGHTS, master['flights']))
@@ -5054,7 +5092,7 @@ def cmd_refresh(args):
 
 def cmd_stats(args):
     parts, hotels, flights, tt = read_parts()
-    st = stats_of({'hotels': hotels, 'accor': parts['domestic'].get('accor')}, flights, tt)
+    st = stats_of({'hotels': hotels, 'accor': parts['accor'].get('accor')}, flights, tt)
     print('data/app 기준 (탭별 지연 로딩 배포본)')
     print('  hotels  %d  %s' % (st['hotels'], st['tabs']))
     print('  cells   %d  (priced %d / NA %d)' % (st['cells'], st['priced'], st['na']))
@@ -5300,7 +5338,7 @@ def hotel_url(h, ci, nights=1):
             return ('https://hotel.hotelux.com/#/hotel/detail?hotelId=%s&checkIn=%s&checkOut=%s'
                     '&numberOfAdults=2&numberOfChildren=0&numberOfRooms=1' % (rid, ci, co))
         return 'https://hotel.hotelux.com/'
-    if g == 'domestic' and h.get('code'):
+    if g == 'accor' and h.get('code'):
         return ('https://all.accor.com/booking/ko/accor/hotel/%s?dateIn=%s&nights=%d'
                 '&compositions=2&stayplus=false' % (h['code'], ci, nights))
     if g == 'marriott' and h.get('code'):

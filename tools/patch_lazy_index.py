@@ -87,9 +87,9 @@ LOADER = r"""/* ══ 데이터 지연 로딩 — 탭별 JSON ═════�
    탭에 처음 들어갈 때 data/app/*.json 을 fetch 해서 메모리에 캐시한다.
    ✈️+🏨 콤보는 ①~④ 호텔과 ⑤ 항공이 모두 필요하므로 없는 것만 병렬로 받는다. */
 const DATA_ROOT='data/app/';
-const PART_FILE={lux:'tab1_vip.json',china:'tab2_china.json',domestic:'tab3_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json'};
-const HOTEL_TABS=['lux','china','domestic','marriott'];
-const DATA_READY={lux:false,china:false,domestic:false,marriott:false,flight:false,tt:false};
+const PART_FILE={lux:'tab1_vip.json',accor:'tab2_accor.json',marriott:'tab4_marriott.json',flight:'tab5_flights.json',tt:'tab6_ttang.json'};
+const HOTEL_TABS=['lux','accor','marriott'];
+const DATA_READY={lux:false,accor:false,marriott:false,flight:false,tt:false};
 const DATA_LOADING={};
 function tabNeeds(tab){return tab==='combo'?HOTEL_TABS.concat(['flight']):[tab]}
 function loadPart(tab){

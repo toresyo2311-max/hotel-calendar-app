@@ -21,8 +21,8 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INDEX = os.path.join(ROOT, 'index.html')
-TABS = [('lux', 'tab1_vip.json'), ('china', 'tab2_china.json'),
-        ('domestic', 'tab3_accor.json'), ('marriott', 'tab4_marriott.json')]
+TABS = [('lux', 'tab1_vip.json'), ('accor', 'tab2_accor.json'),
+        ('marriott', 'tab4_marriott.json')]
 
 
 def fx_source():

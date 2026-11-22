@@ -1,13 +1,19 @@
-/* ── ⑧ 외항사 마일리지(부산) 탭 ───────────────────────────────────
-   부산/김해(PUS)를 떠나거나 도착하는 노선의 '보너스(마일) 좌석'을 항공사
-   마일리지 프로그램별로 모아 둔 스냅샷입니다. 원천은 날짜·노선마다 등급별로
-   '예약 가능/불가'와 필요 마일, 직항·경유 편수까지만 알려 줍니다. 좌석 수량·
-   세금·수수료는 원천에 없어 표시하지 않습니다(항공사 예약 화면에서 확인).
+/* ── ⑧ 외항사 마일 탭 ─────────────────────────────────────
+   부산/김해(PUS)와 인천(ICN)을 떠나는 노선의 '보너스(마일) 좌석'을 항공사
+   마일리지 프로그램별로 모아 둔 스냅샷입니다. 원천은 날짜·노선마다 등급별로 '예약 가능/불가'와 필요 마일,
+   직항·경유 편수까지만 알려 줍니다. 좌석 수량·세금·수수료는 원천에 없어
+   표시하지 않습니다(항공사 예약 화면에서 확인).
    예약은 언제나 각 프로그램의 공식 사이트로 보냅니다. */
 var PMD={meta:null,programs:[],dests:[],rows:[],ready:false,progMap:{},destMap:{},byProg:{}};
-var pms={dir:0,alliance:'all',prog:'all',dest:'all',cabin:'all',direct:false,sort:'miles',view:'cal'};
+var PDS={};                    /* 출발지별 자료 보관 — 부산·인천을 오갈 때 다시 받지 않는다 */
+var pmBusy=false,pmErr='';
+var pms={origin:'PUS',dir:0,alliance:'all',prog:'all',dest:'all',cabin:'all',direct:false,sort:'miles',view:'cal'};
 
 function pmMeta(){return PMD||{}}
+function pmOrigin(){return (pmMeta().origin)||{code:'PUS',name:'부산',full:'부산/김해(PUS)'}}
+function pmOName(){return pmOrigin().name||'부산'}
+function pmOCode(){return pmOrigin().code||'PUS'}
+function pmDirText(dir){var n=pmOName(),c=pmOCode();return dir?(n+' 도착(→ '+c+')'):(n+' 출발('+c+' →)')}
 function pmKey(o){return o?o.key:''}
 function pmWon(n){return n==null?'—':KR(n)+'마일'}
 function pmProg(key){return PMD.progMap[key]||null}
@@ -28,6 +34,42 @@ function pmPrep(){
     PMD.byProg[p].push(r);
   });
   PMD.ready=true;
+}
+
+/* ── 출발지(부산 PUS / 인천 ICN) 전환 ──────────────────────────
+   부산 자료는 탭을 열 때 함께 받고(loadPart), 인천 자료는 처음 인천을 누를 때 한 번 받아
+   PDS 에 보관한다. 오갈 때는 다시 받지 않고 화면만 갈아 끼운다. */
+function pmRoot(){return (typeof DATA_ROOT!=='undefined'&&DATA_ROOT)?DATA_ROOT:'data/app/'}
+function pmBust(){
+  if(typeof DATA_BUST==='undefined')return '';
+  return DATA_BUST['partner-mileage']||'';
+}
+function pmSwap(d){
+  PMD=Object.assign({meta:null,programs:[],dests:[],rows:[],ready:false,progMap:{},destMap:{},byProg:{}},d);
+  PMD.ready=false;pmPrep();
+  pms.dest='all';pms.prog='all';
+  renderPartner();
+  var el=document.getElementById('pmCal');
+  if(el&&el.scrollIntoView)el.scrollIntoView({block:'start',behavior:'smooth'});
+}
+function pmPickOrigin(code){
+  if(pmBusy||code===pms.origin)return;
+  PDS[pms.origin]=PMD;                      /* 지금 보던 자료는 그대로 남긴다 */
+  if(PDS[code]){pms.origin=code;pmErr='';pmSwap(PDS[code]);return}
+  pmBusy=true;pmErr='';pmRenderOrigin();
+  var url=pmRoot()+'tab9_partner_mileage_icn.json'+(pmBust()?'?g='+pmBust():'');
+  fetch(url).then(function(r){
+    if(!r.ok)throw new Error(url+' → HTTP '+r.status);
+    return r.json();
+  }).then(function(d){
+    if(typeof hcDecode==='function')d=hcDecode(d);
+    PDS[code]=d;pms.origin=code;pmBusy=false;
+    pmSwap(d);
+  }).catch(function(){
+    pmBusy=false;
+    pmErr='인천 자료를 불러오지 못했습니다 — 잠시 뒤 다시 눌러 주세요.';
+    pmRenderOrigin();
+  });
 }
 
 /* 한 행 = [프로그램, 날짜, 최근확인, 도착/출발 코드, 이코, 프이, 비즈, 퍼스트]
@@ -108,6 +150,7 @@ function renderPartner(){
   if(!p)return;
   pmRenderBanner();
   pmRenderKpi();
+  pmRenderOrigin();
   pmRenderDir();
   pmRenderAlliance();
   pmRenderProgs();
@@ -123,7 +166,7 @@ function pmRenderBanner(){
   var b=document.getElementById('pmBanner');
   if(!b)return;
   var m=pmMeta(),w=pmWin();
-  var dirTxt=pms.dir?'부산 도착(→ PUS)':'부산 출발(PUS →)';
+  var dirTxt=pmDirText(pms.dir);
   var cnt=(PMD.rows||[]).length;
   var colDays=pmDaysBetween(w.cFrom,w.cTo),allDays=pmDaysBetween(w.from,w.to);
   b.innerHTML='<b>'+esc(m.sourceLabel||'항공사 마일리지 프로그램별 보너스 좌석')+'</b> · 기준 <b>'+esc(m.observedLabel||'—')+'</b>'
@@ -149,11 +192,28 @@ function pmRenderKpi(){
   });
   var withData=Object.keys(progs).length;
   el.innerHTML=''
-    +'<div><span>수집 프로그램</span><b>'+KR(withData)+'</b><i>9개 중 · 나머지는 원천에 부산 자료 없음</i></div>'
-    +'<div><span>보너스 좌석 행</span><b>'+KR(dirRows.length)+'</b><i>'+(pms.dir?'부산 도착':'부산 출발')+' 방향</i></div>'
+    +'<div><span>수집 프로그램</span><b>'+KR(withData)+'</b><i>9개 중 · 나머지는 원천에 '+esc(pmOName())+' 자료 없음</i></div>'
+    +'<div><span>보너스 좌석 행</span><b>'+KR(dirRows.length)+'</b><i>'+esc(pmOName())+(pms.dir?' 도착':' 출발')+' 방향</i></div>'
     +'<div><span>도시</span><b>'+KR(Object.keys(dests).length)+'</b><i>필터로 좁힐 수 있습니다</i></div>'
     +'<div class="new"><span>가장 적은 마일</span><b>'+(cheapest?KR(cheapest.c.miles):'—')+'</b><i>'
     +(cheapest?esc(pmDestName(cheapest.r[3]))+' · '+esc((cheapest.p&&(cheapest.p.short||cheapest.p.name))||'')+' '+esc(pmCabinShort(cheapest.c)):'—')+'</i></div>';
+}
+
+function pmRenderOrigin(){
+  var el=document.getElementById('pmOrigin');
+  if(!el)return;
+  PDS[pms.origin]=PMD;
+  var opts=[['PUS','부산'],['ICN','인천']];
+  el.innerHTML=opts.map(function(o){
+    var on=pms.origin===o[0];
+    var d=PDS[o[0]];
+    var n=d?(d.rows||[]).length:null;
+    return '<button type="button" data-pm-origin="'+o[0]+'" class="'+(on?'on':'')+'" aria-pressed="'+(on?'true':'false')+'"'
+      +' title="'+esc(o[1]+'('+o[0]+') 출발'+(n!=null?' · '+KR(n)+'건':''))+' ">'
+      +esc(o[1])+'('+o[0]+')'+(n!=null?' <b>'+KR(n)+'</b>':'')+'</button>';
+  }).join('');
+  var h=document.getElementById('pmOriginHint');
+  if(h)h.textContent=pmBusy?'자료 불러오는 중…':(pmErr||'');
 }
 
 function pmRenderDir(){
@@ -161,8 +221,8 @@ function pmRenderDir(){
   if(!el)return;
   var n0=0,n1=0;
   (PMD.rows||[]).forEach(function(r){if(+r[8]===0)n0++;else n1++});
-  el.innerHTML='<button type="button" data-pm-dir="0" class="'+(pms.dir===0?'on':'')+'" aria-pressed="'+(pms.dir===0?'true':'false')+'">부산 출발 PUS→ <b>'+KR(n0)+'</b></button>'
-    +'<button type="button" data-pm-dir="1" class="'+(pms.dir===1?'on':'')+'" aria-pressed="'+(pms.dir===1?'true':'false')+'">부산 도착 →PUS <b>'+KR(n1)+'</b></button>';
+  el.innerHTML='<button type="button" data-pm-dir="0" class="'+(pms.dir===0?'on':'')+'" aria-pressed="'+(pms.dir===0?'true':'false')+'">'+esc(pmOName())+' 출발 '+esc(pmOCode())+'→ <b>'+KR(n0)+'</b></button>'
+    +'<button type="button" data-pm-dir="1" class="'+(pms.dir===1?'on':'')+'" aria-pressed="'+(pms.dir===1?'true':'false')+'">'+esc(pmOName())+' 도착 →'+esc(pmOCode())+' <b>'+KR(n1)+'</b></button>';
   var dc=document.getElementById('pmDirect');
   if(dc)dc.setAttribute('aria-pressed',pms.direct?'true':'false');
   var cs=document.getElementById('pmCabin');
@@ -227,7 +287,7 @@ function pmRenderBest(){
   var rows=pmRows();
   if(!rows.length){
     el.innerHTML='<div class="pm-empty">이 조건에 맞는 보너스 좌석이 없습니다.<br>'
-      +(pms.dir?'부산 도착(→PUS) 방향은 아직 수집하지 못했습니다 — 다음 수집에서 채웁니다.':'프로그램·등급·직항 조건을 바꿔 보세요.')+'</div>';
+      +(pms.dir?esc(pmOName())+' 도착(→'+esc(pmOCode())+') 방향은 아직 수집하지 못했습니다 — 다음 수집에서 채웁니다.':'프로그램·등급·직항 조건을 바꿔 보세요.')+'</div>';
     return;
   }
   var best={};
@@ -279,7 +339,7 @@ function pmRenderNote(){
   var m=pmMeta();
   var cov=(m.coverage||[]).map(function(c){return esc(c.name)+' '+KR(c.rows)+(c.note?' ('+esc(c.note)+')':'')});
   el.innerHTML='<b>수집 범위</b> — '+(cov.length?cov.join(' · '):'—')
-    +'<br>원천은 프로그램마다 부산 노선을 얼마나 추적하는지가 다릅니다. 자료가 0건인 프로그램은 <b>보너스 좌석이 없다는 뜻이 아니라, 그 원천이 부산 노선을 추적하지 않는다는 뜻</b>입니다 — 해당 항공사 공식 사이트에서 직접 조회해 주세요.'
+    +'<br>원천은 프로그램마다 '+esc(pmOName())+' 노선을 얼마나 추적하는지가 다릅니다. 자료가 0건인 프로그램은 <b>보너스 좌석이 없다는 뜻이 아니라, 그 원천이 '+esc(pmOName())+' 노선을 추적하지 않는다는 뜻</b>입니다 — 해당 항공사 공식 사이트에서 직접 조회해 주세요.'
     +'<br>국내선(김포·제주)은 국제선 여행과 성격이 달라 이 화면에서 뺐습니다. 필요 마일은 원천 표시값이며, 같은 노선이라도 날짜·경유 편수·판매 조건에 따라 달라집니다. 세금·수수료는 마일과 별도입니다.';
 }
 
@@ -287,6 +347,8 @@ function pmRenderNote(){
 document.addEventListener('click',function(e){
   var t=e.target;
   if(!t||!t.closest)return;
+  var og=t.closest('[data-pm-origin]');
+  if(og){pmPickOrigin(og.getAttribute('data-pm-origin'));return}
   var d=t.closest('#pmDir button');
   if(d){pms.dir=+d.getAttribute('data-pm-dir');pms.dest='all';renderPartner();return}
   var al=t.closest('[data-pm-alliance]');
@@ -507,7 +569,7 @@ function pmOpenSheet(ds){
   if(!el||!ds)return;
   var w=pmWin(),list=(pmDayMap()[ds]||[]);
   var col=pmInRange(ds,w.cFrom,w.cTo);
-  var dirTxt=pms.dir?'부산 도착(→ PUS)':'부산 출발(PUS →)';
+  var dirTxt=pmDirText(pms.dir);
   document.getElementById('pmDsTitle').textContent=pmDateLong(ds);
   document.getElementById('pmDsSub').innerHTML=esc(dirTxt+' · '+pmCondText()+' · 원천 기준 '+((pmMeta()||{}).observedLabel||'—'));
   var body='';

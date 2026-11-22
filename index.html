@@ -1407,6 +1407,8 @@ table.fr-g td.c-A.new{box-shadow:inset 0 0 0 2px #e0872f}
 .zone-chips .mode-button{flex:0 1 auto;border-radius:20px}
 .zone-chips .mode-button b{font-size:9px;opacity:.7;margin-left:2px}
 @media(max-width:430px){.zone-chips{gap:4px}.zone-chips .mode-button{font-size:9.5px;padding:5px 5px}}
+/* ⑤ IHG 지역 칩 6개 — 휴대폰(≤430px)에서는 세 개씩 두 줄로 고르게 놓는다(5+1로 한 칩만 남지 않게) */
+@media(max-width:430px){#ihgChips [data-ihgzone]{flex:0 0 calc(33.333% - 4px);padding:5px 3px;text-align:center}}
 /* ── 모바일 탭은 4칸 폴더 그리드 (2026-11-22 한진님: "1 2 3 4 밑에 5 6 7 8") ──
    한 줄 가로 스크롤이던 탭 줄은 390px 폰에서 ④부터 잘려 뒤쪽 탭이 보이지 않았다.
    폭 76px 이상이면 한 줄에 네 칸씩 접히는 그리드로 바꿔 열 개 탭이 모두 스크롤 없이 보이게 한다. */
@@ -8176,7 +8178,7 @@ if(/[?&]diag=1(&|$)/.test(location.search+location.hash)){
    ✈️+🏨 콤보는 ①~③ 호텔과 ⑥ 항공이 모두 필요하므로 없는 것만 병렬로 받는다. */
 const DATA_ROOT='data/app/';
 /* 발렛 자료는 카드사 안내가 바뀔 때만 갱신되므로 배포마다 캐시를 비운다(브라우저 HTTP 캐시 10분 회피) */
-const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22b',mileage:'2026-11-23z94','mileage-pt':'2026-11-23z94',accor:'2026-11-22z52',marriott:'2026-11-23z97',hyatt:'2026-11-23z99',ihg:'2026-11-23z110',festival:'2026-11-22a'};
+const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22b',mileage:'2026-11-23z94','mileage-pt':'2026-11-23z94',accor:'2026-11-22z52',marriott:'2026-11-23z97',hyatt:'2026-11-23z99',ihg:'2026-11-23z111',festival:'2026-11-22a'};
 const PART_FILE={lux:'tab1_vip.json',accor:'tab2_accor.json',marriott:'tab4_marriott.json',hyatt:'tab10_hyatt.json',ihg:'tab11_ihg.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json',forest:'tab7_forest.json',mileage:'tab8_mileage.json','mileage-pt':'tab9_partner_mileage.json',festival:'tab12_festival.json'};
 const HOTEL_TABS=['lux','accor','marriott','hyatt','ihg'];
 /* ✈️+🏨 콤보가 쓰는 호텔 = ①~④ (④ 하얏트 · ⑤ IHG 는 콤보 계산에 넣지 않는다) */

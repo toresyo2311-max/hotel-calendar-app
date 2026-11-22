@@ -37,6 +37,9 @@ LUX = {'m56': 'h97',   # 웨스틴 싱가포르 (The Westin Singapore)
 NO_LUX = ['m57', 'm59', 'm60', 'm61', 'm62']
 # 원본 브랜드 표기 → 기존 카드와 같은 이름
 BRAND_FIX = {'포인트': '포 포인츠 바이 쉐라톤'}
+# 호텔 이름 앞의 브랜드 표기도 기존 카드와 맞춘다(브랜드 칸과 카드 제목이 같은 이름이 되게)
+NAME_FIX = {'m61': '포 포인츠 바이 쉐라톤 싱가포르 Riverview',
+            'm62': '포 포인츠 바이 쉐라톤 싱가포르 Jurong'}
 # 상태 기록(downloads/marriott_no2_sg_last7_status.md)에서 옮긴 호텔별 결번 사유
 EXTRA = {
     'm56': '2026-12-31은 현금·포인트 모두 미판매(Not available for check-in) · '
@@ -126,7 +129,7 @@ def build(h, label, day):
         'group': 'marriott',
         'brand': BRAND_FIX.get(h['brand'], h['brand']),
         'city': '싱가포르',
-        'name': h['name'],
+        'name': NAME_FIX.get(h['id'], h['name']),
         'english': h['english'],
         'region': '동남아',
         'promotion': promo,

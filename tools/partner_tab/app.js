@@ -1,7 +1,7 @@
 /* ── ⑧ 외항사 마일 탭 ─────────────────────────────────────
    부산/김해(PUS)와 인천(ICN)을 떠나는 노선의 '보너스(마일) 좌석'을 항공사
-   마일리지 프로그램별로 모아 둔 스냅샷입니다. 원천은 날짜·노선마다 등급별로 '예약 가능/불가'와 필요 마일,
-   직항·경유 편수까지만 알려 줍니다. 좌석 수량·세금·수수료는 원천에 없어
+   마일리지 프로그램별로 모아 둔 스냅샷입니다. 조회 사이트는 날짜·노선마다 등급별로 '예약 가능/불가'와 필요 마일,
+   직항·경유 편수까지만 알려 줍니다. 좌석 수량·세금·수수료는 조회 사이트에 없어
    표시하지 않습니다(항공사 예약 화면에서 확인).
    예약은 언제나 각 프로그램의 공식 사이트로 보냅니다. */
 var PMD={meta:null,programs:[],dests:[],rows:[],ready:false,progMap:{},destMap:{},byProg:{}};
@@ -168,14 +168,17 @@ function pmRenderBanner(){
   var m=pmMeta(),w=pmWin();
   var dirTxt=pmDirText(pms.dir);
   var cnt=(PMD.rows||[]).length;
+  var cOut=0,cIn=0;
+  (PMD.rows||[]).forEach(function(r){if(+r[8]===0)cOut++;else cIn++});
   var colDays=pmDaysBetween(w.cFrom,w.cTo),allDays=pmDaysBetween(w.from,w.to);
   b.innerHTML='<b>'+esc(m.sourceLabel||'항공사 마일리지 프로그램별 보너스 좌석')+'</b> · 기준 <b>'+esc(m.observedLabel||'—')+'</b>'
     +' · 목표 <b>1년 '+KR(allDays)+'일</b>('+esc(w.from)+'~'+esc(w.to)+')'
     +' · 실측 수집 <b>'+KR(colDays)+'일</b>('+esc(w.cFrom)+'~'+esc(w.cTo)+') · '+esc(dirTxt)+' · '+KR(cnt)+'건'
+    +' (출발 '+KR(cOut)+' · 도착 '+KR(cIn)+')'
     +'<span class="pm-b2">보너스 좌석은 실시간으로 변동됩니다. 예약 전 <b>각 항공사 공식 사이트에서 재확인</b>해 주세요. '
-    +'원천은 노선·날짜마다 등급별 <b>예약 가능 여부와 필요 마일</b>만 알려 주며, 좌석 수량·세금·수수료는 알려 주지 않아 표시하지 않습니다. '
-    +'표시된 마일은 원천이 그 등급에 보여 준 <b>최저값</b>이고, 경유편은 편수로 구분합니다. '
-    +(colDays<allDays?'<b>'+esc(w.cTo)+'</b> 이후 '+KR(allDays-colDays)+'일은 원천이 비로그인 화면에 열어 주지 않아 <b>미수집</b>입니다 — 달력에 빗금으로 표시하고 값을 채우지 않았습니다(추측·보간 없음). 각 항공사 공식 사이트에서 직접 조회해 주세요.':'')+'</span>';
+    +'조회 사이트는 노선·날짜마다 등급별 <b>예약 가능 여부와 필요 마일</b>만 알려 주며, 좌석 수량·세금·수수료는 알려 주지 않아 표시하지 않습니다. '
+    +'표시된 마일은 조회 사이트가 그 등급에 보여 준 <b>최저값</b>이고, 경유편은 편수로 구분합니다. '
+    +(colDays<allDays?'<b>'+esc(w.cTo)+'</b> 이후 '+KR(allDays-colDays)+'일은 조회 사이트가 비로그인 화면에 열어 주지 않아 <b>미수집</b>입니다 — 달력에 빗금으로 표시하고 값을 채우지 않았습니다(추측·보간 없음). 각 항공사 공식 사이트에서 직접 조회해 주세요.':'')+'</span>';
 }
 
 function pmRenderKpi(){
@@ -192,7 +195,7 @@ function pmRenderKpi(){
   });
   var withData=Object.keys(progs).length;
   el.innerHTML=''
-    +'<div><span>수집 프로그램</span><b>'+KR(withData)+'</b><i>9개 중 · 나머지는 원천에 '+esc(pmOName())+' 자료 없음</i></div>'
+    +'<div><span>수집 프로그램</span><b>'+KR(withData)+'</b><i>9개 중 · 나머지는 조회 사이트에 '+esc(pmOName())+' 자료 없음</i></div>'
     +'<div><span>보너스 좌석 행</span><b>'+KR(dirRows.length)+'</b><i>'+esc(pmOName())+(pms.dir?' 도착':' 출발')+' 방향</i></div>'
     +'<div><span>도시</span><b>'+KR(Object.keys(dests).length)+'</b><i>필터로 좁힐 수 있습니다</i></div>'
     +'<div class="new"><span>가장 적은 마일</span><b>'+(cheapest?KR(cheapest.c.miles):'—')+'</b><i>'
@@ -287,7 +290,7 @@ function pmRenderBest(){
   var rows=pmRows();
   if(!rows.length){
     el.innerHTML='<div class="pm-empty">이 조건에 맞는 보너스 좌석이 없습니다.<br>'
-      +(pms.dir?esc(pmOName())+' 도착(→'+esc(pmOCode())+') 방향은 아직 수집하지 못했습니다 — 다음 수집에서 채웁니다.':'프로그램·등급·직항 조건을 바꿔 보세요.')+'</div>';
+      +'프로그램·등급·직항 조건을 바꾸거나, 아래 방향 버튼으로 반대 방향('+(pms.dir?'출발':'도착')+')을 눌러 보세요.</div>';
     return;
   }
   var best={};
@@ -333,14 +336,24 @@ function pmRenderList(){
     }).join('')+'</div>';
 }
 
+function pmWord(t){return String(t==null?'':t).replace(/원천/g,'조회 사이트')}
 function pmRenderNote(){
   var el=document.getElementById('pmNote');
   if(!el)return;
   var m=pmMeta();
-  var cov=(m.coverage||[]).map(function(c){return esc(c.name)+' '+KR(c.rows)+(c.note?' ('+esc(c.note)+')':'')});
-  el.innerHTML='<b>수집 범위</b> — '+(cov.length?cov.join(' · '):'—')
-    +'<br>원천은 프로그램마다 '+esc(pmOName())+' 노선을 얼마나 추적하는지가 다릅니다. 자료가 0건인 프로그램은 <b>보너스 좌석이 없다는 뜻이 아니라, 그 원천이 '+esc(pmOName())+' 노선을 추적하지 않는다는 뜻</b>입니다 — 해당 항공사 공식 사이트에서 직접 조회해 주세요.'
-    +'<br>국내선(김포·제주)은 국제선 여행과 성격이 달라 이 화면에서 뺐습니다. 필요 마일은 원천 표시값이며, 같은 노선이라도 날짜·경유 편수·판매 조건에 따라 달라집니다. 세금·수수료는 마일과 별도입니다.';
+  var cov=(m.coverage||[]).map(function(c){
+    var d=(c.rowsIn!=null&&c.rowsOut!=null)?' (출발 '+KR(c.rowsOut)+' · 도착 '+KR(c.rowsIn)+')':'';
+    return esc(pmWord(c.name))+' '+KR(c.rows)+d+(c.note?' — '+esc(pmWord(c.note)):'');
+  });
+  var have=(m.coverage||[]).filter(function(c){return c.rows>0}).length;
+  var all=(m.coverage||[]).length||9;
+  el.innerHTML='<details class="notefold">'
+    +'<summary>📑 안내 및 조회 범위 보기 <small>'+all+'개 프로그램 중 자료 있는 곳 '+have+'곳 · 읽는 법</small></summary>'
+    +'<div class="pm-notebody">'
+    +'<b>수집 범위</b> — '+(cov.length?cov.join(' · '):'—')
+    +'<p>조회 사이트마다 '+esc(pmOName())+' 노선을 얼마나 추적하는지가 다릅니다. 자료가 0건인 프로그램은 <b>보너스 좌석이 없다는 뜻이 아니라, 그 조회 사이트가 '+esc(pmOName())+' 노선을 추적하지 않는다는 뜻</b>입니다 — 해당 항공사 공식 사이트에서 직접 조회해 주세요.</p>'
+    +'<p>국내선(김포·제주)은 국제선 여행과 성격이 달라 이 화면에서 뺐습니다. 필요 마일은 조회 사이트에 표시된 값이며, 같은 노선이라도 날짜·경유 편수·판매 조건에 따라 달라집니다. 세금·수수료는 마일과 별도입니다.</p>'
+    +'</div></details>';
 }
 
 /* ── 이벤트 ───────────────────────────────────────────────── */
@@ -378,7 +391,7 @@ document.addEventListener('change',function(e){
    연결해 주고 정보 볼 수 있도록".
    · 목표 창 = meta.dateFrom~dateTo(365일), 실제 수집 구간 = meta.collectedFrom~collectedTo.
      수집 구간 밖의 날은 값이 아니라 '미수집(공홈 조회)'으로 그린다 — 보간하지 않는다.
-   · 수집 구간 안에서 그 날 표시가 없는 칸은 '—'(원천 표시 없음)이다. 둘을 섞지 않는다. */
+   · 수집 구간 안에서 그 날 표시가 없는 칸은 '—'(조회 사이트에 표시 없음)이다. 둘을 섞지 않는다. */
 
 function pmP2(n){return (n<10?'0':'')+n}
 function pmWin(){
@@ -484,7 +497,7 @@ function pmRenderCal(){
   el.innerHTML=strip+grids
     +'<div class="pm-legend">'
     +'<span class="lg"><i class="pm-cell has e">7,000</i>최저 마일(등급 색: <b class="e">이코</b> <b class="p">프이</b> <b class="b">비즈</b> <b class="f">퍼스트</b>)</span>'
-    +'<span class="lg"><i class="pm-cell none">—</i>원천 표시 없음</span>'
+    +'<span class="lg"><i class="pm-cell none">—</i>조회 사이트에 표시 없음</span>'
     +'<span class="lg"><i class="pm-cell miss">미수집</i>수집 구간 밖</span>'
     +'</div>';
 }
@@ -522,7 +535,7 @@ function pmMonthGrid(mo,map,w,today){
         var list=map[ds]||[];
         if(!list.length){
           cls.push('none');inner+='<span class="t">—</span>';
-          aria+=' · 원천 표시 없음';
+          aria+=' · 조회 사이트에 표시 없음';
         }else{
           rows++;
           var st=pmDayStat(list);
@@ -564,6 +577,39 @@ function pmProgramsBlock(){
           +'<i>공식 발권 ↗</i></a>';
       }).join('')+'</div>';
 }
+/* ── 왕복 짝 — 같은 날 반대 방향 ────────────────────────────────
+   날짜 상세 시트에서 그 날의 반대 방향(부산·인천에서 떠나는 편 ↔ 돌아오는 편) 최저를
+   함께 보여 주고, 누르면 방향을 바꿔 같은 날짜를 다시 연다. 값이 없으면 없다고 적는다(보간 없음). */
+function pmRoundRows(ds,dir){
+  var out=[];
+  (PMD.rows||[]).forEach(function(r){
+    if(r[1]!==ds||+r[8]!==dir)return;
+    var p=pmProg(r[0]);
+    if(!p)return;
+    if(pms.alliance!=='all'&&p.alliance!==pms.alliance)return;
+    if(pms.prog!=='all'&&r[0]!==pms.prog)return;
+    var b=pmBestCabin(r,pms.cabin);
+    if(!b)return;
+    if(pms.direct&&b.stops!==0)return;
+    out.push({r:r,p:p,c:b});
+  });
+  out.sort(function(a,b){return a.c.miles-b.c.miles});
+  return out;
+}
+function pmRoundBlock(ds){
+  var od=1-pms.dir,label=pmDirText(od),list=pmRoundRows(ds,od);
+  var cities={};
+  list.forEach(function(x){cities[x.r[3]]=1});
+  var nc=Object.keys(cities).length,best=list.length?list[0]:null;
+  return '<div class="pm-ds-round">'
+    +'<div class="pm-ds-rh"><b>↔ 왕복 짝 — 같은 날 '+esc(label)+'</b>'
+    +'<span>'+(best?'최저 '+KR(best.c.miles)+'마일 · '+KR(list.length)+'건 · '+KR(nc)+'개 도시':'이 날은 반대 방향 자료 없음')+'</span></div>'
+    +(best?'<div class="pm-ds-rb"><span class="cb '+best.c.k+'">'+esc(pmDestName(best.r[3]))+' · '
+        +esc((best.p.short||best.p.name))+' '+esc(pmCabinShort(best.c))+' <b>'+KR(best.c.miles)+'</b> <i>'+esc(pmStopsText(best.c.stops))+'</i></span></div>':'')
+    +'<div class="pm-ds-rb"><button type="button" class="pm-ds-swap" data-pm-flip="'+esc(ds)+'">'
+    +esc(label)+' 보고 방향 바꾸기 →</button></div>'
+    +'</div>';
+}
 function pmOpenSheet(ds){
   var el=pmSheetEl();
   if(!el||!ds)return;
@@ -571,16 +617,16 @@ function pmOpenSheet(ds){
   var col=pmInRange(ds,w.cFrom,w.cTo);
   var dirTxt=pmDirText(pms.dir);
   document.getElementById('pmDsTitle').textContent=pmDateLong(ds);
-  document.getElementById('pmDsSub').innerHTML=esc(dirTxt+' · '+pmCondText()+' · 원천 기준 '+((pmMeta()||{}).observedLabel||'—'));
+  document.getElementById('pmDsSub').innerHTML=esc(dirTxt+' · '+pmCondText()+' · 조회 기준 '+((pmMeta()||{}).observedLabel||'—'));
   var body='';
   if(!col){
     body='<div class="pm-ds-warn"><b>이 날짜는 아직 수집하지 않았습니다.</b><br>'
-      +'원천이 비로그인 화면에 앞으로 '+KR(pmDaysBetween(w.cFrom,w.cTo))+'일('+esc(w.cFrom)+'~'+esc(w.cTo)+')만 열어 주어, '
+      +'조회 사이트가 비로그인 화면에 앞으로 '+KR(pmDaysBetween(w.cFrom,w.cTo))+'일('+esc(w.cFrom)+'~'+esc(w.cTo)+')만 열어 주어, '
       +esc(ds)+' 은 조회하지 못했습니다. 값을 추측해 채우지 않았습니다 — 아래 공식 사이트에서 직접 조회해 주세요.</div>'
       +pmProgramsBlock();
   }else if(!list.length){
-    body='<div class="pm-ds-warn"><b>이 날짜에는 원천에 표시된 보너스 좌석이 없습니다.</b><br>'
-      +'원천이 이 노선·날짜에 보너스 좌석을 보여 주지 않았습니다(좌석이 없다는 뜻과 조회되지 않았다는 뜻을 원천이 구분해 주지 않습니다). '
+    body='<div class="pm-ds-warn"><b>이 날짜에는 조회 사이트에 표시된 보너스 좌석이 없습니다.</b><br>'
+      +'조회 사이트가 이 노선·날짜에 보너스 좌석을 보여 주지 않았습니다(좌석이 없다는 뜻과 조회되지 않았다는 뜻을 조회 사이트가 구분해 주지 않습니다). '
       +'아래 공식 사이트에서 직접 확인해 주세요.</div>'
       +pmProgramsBlock();
   }else{
@@ -610,9 +656,9 @@ function pmOpenSheet(ds){
         +'</div>';
     }).join('');
   }
-  document.getElementById('pmDsBody').innerHTML=body;
-  document.getElementById('pmDsNote').innerHTML='필요 마일은 원천이 그 등급에 표시한 값이고, 같은 노선이라도 날짜·경유 편수·판매 조건에 따라 달라집니다. '
-    +'세금·수수료는 마일과 별도이며 좌석 수량은 원천에 없어 표시하지 않습니다. 예약 전 <b>항공사 공식 사이트에서 재확인</b>해 주세요.';
+  document.getElementById('pmDsBody').innerHTML=pmRoundBlock(ds)+body;
+  document.getElementById('pmDsNote').innerHTML='필요 마일은 조회 사이트가 그 등급에 표시한 값이고, 같은 노선이라도 날짜·경유 편수·판매 조건에 따라 달라집니다. '
+    +'세금·수수료는 마일과 별도이며 좌석 수량은 조회 사이트에 없어 표시하지 않습니다. 예약 전 <b>항공사 공식 사이트에서 재확인</b>해 주세요.';
   el.classList.add('show');
   el.setAttribute('aria-hidden','false');
   var close=document.getElementById('pmDsClose');
@@ -631,6 +677,14 @@ document.addEventListener('click',function(e){
   if(!t||!t.closest)return;
   var sheet=pmSheetEl();
   if(sheet&&sheet.classList.contains('show')&&t.closest('#pmSheet')){
+    var flb=t.closest('[data-pm-flip]');
+    if(flb){
+      var fd=flb.getAttribute('data-pm-flip');
+      pms.dir=1-pms.dir;pms.dest='all';      /* 반대 방향으로 바꿔 같은 날짜를 다시 연다 */
+      renderPartner();
+      pmOpenSheet(fd);
+      return;
+    }
     if(t.id==='pmDsClose'||t===sheet)pmCloseSheet();
     /* 공식 사이트 링크는 새 탭 이동이 끝난 뒤에 닫는다(이동이 취소되지 않게) */
     if(t.closest('a.pm-ds-go')||t.closest('a.pm-ds-site')){
@@ -640,6 +694,14 @@ document.addEventListener('click',function(e){
   }
   var vw=t.closest('[data-pm-view]');
   if(vw){pms.view=vw.getAttribute('data-pm-view');renderPartner();return}
+  var fl=t.closest('[data-pm-flip]');
+  if(fl){
+    var fd=fl.getAttribute('data-pm-flip');
+    pms.dir=1-pms.dir;pms.dest='all';
+    renderPartner();
+    pmOpenSheet(fd);
+    return;
+  }
   var jp=t.closest('[data-pm-jump]');
   if(jp){
     var mo=jp.getAttribute('data-pm-jump');

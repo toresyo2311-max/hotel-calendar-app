@@ -98,6 +98,8 @@ CITY = {
     'KTM': '카트만두', 'NGS': '나가사키', 'PKX': '베이징/다싱',
     'AOJ': '아오모리', 'KMJ': '구마모토', 'UKB': '고베', 'OKA': '오키나와',
     'KMQ': '고마쓰', 'OIT': '오이타', 'DYG': '장자제',
+    # 귀국편(→PUS · →ICN)에서만 나온 도시
+    'SDJ': '센다이',
 }
 DOMESTIC = {'GMP', 'CJU', 'PUS', 'TAE', 'KWJ', 'CJJ', 'RSU', 'KUV', 'HIN', 'USN', 'WJU', 'MPC', 'KPO', 'YNY', 'ICN', 'SEL'}
 
@@ -106,11 +108,11 @@ NOTE_PUS = {
     'smiles': '',
     'virgin': '',
     'delta': '경유편 다수 포함',
-    'united': '부산 출발은 싱가포르(SIN) 노선만 추적',
+    'united': '부산 쪽은 싱가포르(SIN) 노선만 추적',
     'aeroplan': '',
-    'asiamiles': '원천에 부산 자료 없음 — 공홈 직접 조회',
-    'british': '원천에 부산 자료 없음 — 공홈 직접 조회',
-    'jal': '원천에 부산 자료 없음 — 공홈 직접 조회',
+    'asiamiles': '조회 사이트에 부산 자료 없음 — 공홈 직접 조회',
+    'british': '조회 사이트에 부산 자료 없음 — 공홈 직접 조회',
+    'jal': '조회 사이트에 부산 자료 없음 — 공홈 직접 조회',
 }
 NOTE_ICN = {
     'flyingblue': '',
@@ -120,8 +122,8 @@ NOTE_ICN = {
     'united': '경유편 다수 포함',
     'aeroplan': '경유편 다수 포함',
     'asiamiles': '인천↔홍콩 노선만 추적',
-    'british': '원천에 인천 자료 없음 — 공홈 직접 조회',
-    'jal': '원천에 인천 자료 없음 — 공홈 직접 조회',
+    'british': '조회 사이트에 인천 자료 없음 — 공홈 직접 조회',
+    'jal': '조회 사이트에 인천 자료 없음 — 공홈 직접 조회',
 }
 
 # 출발지별 설정 — 창(목표 1년)·수집 구간·안내 문구가 다르다
@@ -129,11 +131,11 @@ ORIGINS = [
     dict(code='PUS', name='부산', full='부산/김해(PUS)', file='tab9_partner_mileage.json',
          src='항공사 마일리지 프로그램 9곳 보너스 좌석 실측(부산/김해 PUS)',
          sweep=('2026-11-22', '2027-11-21'), notes=NOTE_PUS,
-         dirNote='부산 출발(PUS→) 방향만 수집 — 부산 도착(→PUS) 방향은 다음 수집에서 채웁니다'),
+         dirNote='부산 출발(PUS→) · 부산 도착(→PUS) 두 방향 모두 2026-11-22~2027-11-21 수집'),
     dict(code='ICN', name='인천', full='인천(ICN)', file='tab9_partner_mileage_icn.json',
          src='항공사 마일리지 프로그램 9곳 보너스 좌석 실측(인천 ICN)',
          sweep=('2026-11-22', '2027-11-21'), notes=NOTE_ICN,
-         dirNote='인천 출발(ICN→) 방향만 수집 — 인천 도착(→ICN) 방향은 다음 수집에서 채웁니다'),
+         dirNote='인천 출발(ICN→) · 인천 도착(→ICN) 두 방향 모두 2026-11-22~2027-11-21 수집'),
 ]
 
 
@@ -173,21 +175,29 @@ def full_date(s):
 
 def build_origin(cfg, now):
     programs, dests, rows, coverage = [], {}, [], []
+    # 방향별 원자료 — 0 = 출발({코드}→, 파일 _dep_), 1 = 도착(→{코드}, 파일 _arr_)
+    #   귀국편 파일의 '도시'는 그 편이 떠나는 곳(원자료의 출발 도시)이다. 두 방향 모두
+    #   '상대 도시'를 dest 로 두어 화면의 도시 칩·달력이 같은 이름으로 움직인다.
     for slug, name, short, alliance, alliance_name, url, url_label in PROGRAMS:
-        files = sorted(glob.glob(os.path.join(RAW, slug + '_dep_' + cfg['code'] + '*.txt')))
         got = []
-        for f in files:
-            for rec in parse_raw(f):
-                date, seen, dest = full_date(rec[0]), rec[1], rec[2]
-                if dest in DOMESTIC:
-                    continue              # 국내선은 국제선 화면에서 뺀다
-                cab = [norm_cabin(v) for v in rec[3:7]]
-                got.append([slug, date, seen, dest, cab[0], cab[1], cab[2], cab[3], 0])
-                dests.setdefault(dest, {'code': dest, 'city': CITY.get(dest, dest)})
+        for d, mid in ((0, '_dep_'), (1, '_arr_')):
+            files = sorted(glob.glob(os.path.join(RAW, slug + mid + cfg['code'] + '*.txt')))
+            for f in files:
+                for rec in parse_raw(f):
+                    date, seen, dest = full_date(rec[0]), rec[1], rec[2]
+                    if dest in DOMESTIC:
+                        continue          # 국내선(김포·제주 ↔ 부산 등)은 국제선 화면에서 뺀다
+                    cab = [norm_cabin(v) for v in rec[3:7]]
+                    got.append([slug, date, seen, dest, cab[0], cab[1], cab[2], cab[3], d])
+                    dests.setdefault(dest, {'code': dest, 'city': CITY.get(dest, dest)})
+        n_out = len([r for r in got if r[8] == 0])
+        n_in = len(got) - n_out
         programs.append({'key': slug, 'name': name, 'short': short,
                          'alliance': alliance, 'allianceName': alliance_name,
-                         'url': url, 'urlLabel': url_label, 'rows': len(got)})
+                         'url': url, 'urlLabel': url_label,
+                         'rows': len(got), 'rowsOut': n_out, 'rowsIn': n_in})
         coverage.append({'name': name, 'key': slug, 'rows': len(got),
+                         'rowsOut': n_out, 'rowsIn': n_in,
                          'note': (cfg['notes'] or {}).get(slug, '')})
         rows.extend(got)
 
@@ -229,6 +239,8 @@ def build_origin(cfg, now):
         'rows': rows,
         'coverage': coverage,
         'counts': {'rows': len(rows), 'programs': len(counts), 'dests': len(dests),
+                   'rowsOut': len([r for r in rows if r[8] == 0]),
+                   'rowsIn': len([r for r in rows if r[8] == 1]),
                    'domesticExcluded': True},
     }
 
@@ -273,7 +285,7 @@ def main(argv):
         j = i + len(anchor)
         return text[:j] + '\n' + block + text[j:], 'inserted'
 
-    NAV_HTML = ('    <button class="tab" data-tab="%s" type="button" aria-label="외항사 마일 — 부산(PUS)·인천(ICN) 출발 9개 프로그램 보너스 좌석">'
+    NAV_HTML = ('    <button class="tab" data-tab="%s" type="button" aria-label="외항사 마일 — 부산(PUS)·인천(ICN) 출발·도착 9개 프로그램 보너스 좌석">'
                 '<span class="t-full">⑧ 외항사 마일</span>'
                 '<span class="t-short" aria-hidden="true">⑧ 외항사</span> <b>%d</b></button>'
                 % (KEY, pus['counts']['rows']))
@@ -281,18 +293,22 @@ def main(argv):
     TABS_ENTRY = ("'%s':{title:'⑧ 외항사 마일 — 부산(PUS)·인천(ICN) 9개 프로그램 보너스 좌석',"
                   "sub:'에어프랑스 플라잉블루 · 골 스마일즈 · 버진 애틀랜틱 · 델타 스카이마일즈 · 유나이티드 마일리지플러스 · "
                   "에어캐나다 에어로플랜 · 캐세이 아시아 마일즈 · 영국항공 아비오스 · JAL 마일지뱅크 9곳을 "
-                  "출발지(부산 PUS / 인천 ICN)를 골라 1년(365일) 달력 · 이코노미/프리미엄/비즈니스/퍼스트로 나눠 보여 줍니다. "
-                  "달력의 날짜 칸을 누르면 그 날의 프로그램별·등급별 필요 마일과 공식 발권 링크가 열리고, "
-                  "원천이 열어 준 구간 밖은 미수집으로 표시합니다. 각 행의 예약 버튼은 해당 프로그램의 공식 사이트로 엽니다. "
-                  "원천에 좌석 수량·세금·수수료가 없어 표시하지 않습니다. / 예약 전 항공사 공식 사이트에서 재확인',"
-                  "checked:'수집 기준: %s · 9개 프로그램 실측 · 부산 %s~%s %s건 · 인천 %s~%s %s건',start:'%s',end:'%s'}"
+                  "출발지(부산 PUS / 인천 ICN)와 방향(부산·인천에서 떠나는 편 / 부산·인천으로 돌아오는 편)을 골라 "
+                  "1년(365일) 달력 · 이코노미/프리미엄/비즈니스/퍼스트로 나눠 보여 줍니다. "
+                  "달력의 날짜 칸을 누르면 그 날의 프로그램별·등급별 필요 마일과 공식 발권 링크가 열리고, 같은 시트에서 "
+                  "같은 날 반대 방향(왕복 짝)의 최저 마일을 바로 확인해 방향을 바꿔 볼 수 있습니다. "
+                  "조회 사이트가 열어 준 구간 밖은 미수집으로 표시합니다. 각 행의 예약 버튼은 해당 프로그램의 공식 사이트로 엽니다. "
+                  "조회 사이트에 좌석 수량·세금·수수료가 없어 표시하지 않습니다. / 예약 전 항공사 공식 사이트에서 재확인',"
+                  "checked:'수집 기준: %s · 9개 프로그램 실측 · 부산 %s~%s %s건(출발 %s · 도착 %s) · 인천 %s~%s %s건(출발 %s · 도착 %s)',start:'%s',end:'%s'}"
                   % (KEY, now.strftime('%Y-%m-%d %H:%M KST'),
                      pus['collectedFrom'], pus['collectedTo'], format(pus['counts']['rows'], ','),
+                     format(pus['counts']['rowsOut'], ','), format(pus['counts']['rowsIn'], ','),
                      icn['collectedFrom'], icn['collectedTo'], format(icn['counts']['rows'], ','),
+                     format(icn['counts']['rowsOut'], ','), format(icn['counts']['rowsIn'], ','),
                      (pus['collectedFrom'] or '2026-11')[:7],
                      (pus['dateTo'] or '2027-11')[:7]))
 
-    SHORT_ENTRY = ("'%s':{sub:'9개 프로그램 · 부산(PUS)·인천(ICN) 출발 보너스 좌석',"
+    SHORT_ENTRY = ("'%s':{sub:'9개 프로그램 · 부산(PUS)·인천(ICN) 출발·도착 보너스 좌석',"
                    "checked:'조회 기준: %s KST'}" % (KEY, now.strftime('%Y.%m.%d %H:%M')))
 
     HOOKS = [
@@ -332,7 +348,7 @@ def main(argv):
 
     hooks = []
     # 캐시 키(DATA_BUST)는 반드시 이번 빌드 값으로 올린다 — 이미 ⑧ 키가 있어도 값을 갱신한다
-    src, nb = re.subn(r"'%s':'[^']*'" % KEY, "'%s':'2026-11-22h'" % KEY, src, count=1)
+    src, nb = re.subn(r"'%s':'[^']*'" % KEY, "'%s':'2026-11-22z48'" % KEY, src, count=1)
     hooks.append(('DATA_BUST', 'updated' if nb else 'missing'))
     # 자료 로더 — ⑧ 가지가 없을 때만 붙인다(있으면 그대로 둔다)
     if "else if(tab==='%s'){" % KEY not in src:

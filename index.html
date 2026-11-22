@@ -37,6 +37,11 @@
   if(!/^ok:[0-9a-f]{64}$/.test(t))document.documentElement.className+=' locked';
 }catch(e){document.documentElement.className+=' locked'}})();
 </script>
+<script>
+/* 🔒 화면 세로 고정 — 홈 화면에 설치한 앱(PWA)에서 처음 열 때 세로로 고정한다.
+   지원하지 않는 브라우저(iOS 사파리 등)는 오류만 남기고 그대로 둔다. */
+try{if(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches&&screen.orientation&&screen.orientation.lock){screen.orientation.lock('portrait').catch(function(){})}}catch(e){}
+</script>
 <style>
 :root{
   --plum:#1b122b;--plum2:#24173b;--plum3:#2f1f4a;

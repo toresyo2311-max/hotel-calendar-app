@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>휴대폰 폭(390) 확인 — ⑧ 외항사 마일</title>
+<!-- 앱 화면을 폭 390 하나만 띄우는 개발용 확인 페이지(앱 화면에는 링크하지 않는다).
+     앞으로 만든 frame.html 은 데스크톱·휴대폰 두 개를 함께 띄워 무거우므로, 한 화면만 볼 때 쓴다.
+     ?tab=partner-mileage&v=<캐시값> 으로 탭과 캐시를 지정한다. -->
+<style>
+  html,body{margin:0;background:#d9d5e4;height:100%;overflow:hidden}
+  #wrap{height:100%;display:flex;justify-content:center}
+  iframe{border:0;background:#fff;box-shadow:0 2px 12px rgba(20,10,36,.18)}
+</style>
+<div id="wrap"><iframe id="m" width="390" height="844" title="mobile 390"></iframe></div>
+<script>
+  var q = new URLSearchParams(location.search);
+  var tab = q.get('tab') || 'lux';
+  var v = q.get('v');
+  document.getElementById('m').src = '../../index.html' + (v ? '?v=' + v : '') + '#tab=' + tab;
+</script>
+</html>

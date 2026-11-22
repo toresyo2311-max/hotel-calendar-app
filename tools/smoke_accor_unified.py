@@ -258,6 +258,7 @@ def main():
     run('applyHash("#tab=china")', 'old #tab=china')
     run('applyHash("#tab=domestic&hotel=ap052")', 'old #tab=domestic&hotel=ap052 (기대 aB9G8)')
     run('applyHash("#tab=accor&zone=cn&mode=apc")', 'new hash zone/mode')
+    run('applyHash("#tab=accor&mode=apc")', 'new hash mode=apc only (기대 zone cn)')
     run('hashBuild()', 'hashBuild')
     for t in ('lux', 'marriott', 'flight', 'tt', 'combo', 'forest', 'mileage', 'partner-mileage', 'valet'):
         run('setTab("%s")' % t, 'tab %s' % t)

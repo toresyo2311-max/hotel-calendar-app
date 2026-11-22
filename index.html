@@ -7528,6 +7528,8 @@ function applyHashState(p){
     if(['cash','sp2','sp3','rhr','apc'].indexOf(g('mode'))>=0)st.mode=g('mode');
     if(g('cmode')==='apc'&&st.mode==='cash')st.mode='apc';       /* 옛 #cmode=apc 주소 */
     if(['all','kr','sea','cn','etc'].indexOf(g('zone'))>=0){if(!legacy)st.zone=g('zone')}
+    /* APC 무료숙박 주소(#mode=apc)는 중국(APC) 지역으로 연다 — APC 자료는 그 카드에만 있다 */
+    if(st.tab==='accor'&&st.mode==='apc'&&st.zone==='all')st.zone='cn';
     if(['both','cash','points'].indexOf(g('pmode'))>=0)st.pmode=g('pmode');
     if(['1','2','3','all'].indexOf(g('ctier'))>=0)st.ctier=g('ctier');
     if(g('prog'))st.prog=g('prog');

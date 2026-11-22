@@ -167,6 +167,8 @@
 .pm-ds-rb .cb.f{background:#fdf1e7;border-color:#f5dfc9;color:#8a4a10}
 .pm-ds-swap{font:inherit;font-size:10px;font-weight:800;color:#4c1d95;background:#fff;border:1px solid #c4b5fd;border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap}
 .pm-ds-swap:hover{background:#f3ecff;border-color:#a78bfa}
+.pm-ds-apphint{margin:2px 2px 7px;font-size:9.5px;line-height:1.6;color:#6b6580}
+.pm-ds-apphint b{color:#3f3960}
 .pm-ds-note{margin:9px 0 0;font-size:9.5px;line-height:1.6;color:#6b6580}
 .pm-ds-note b{color:#3f3960}
 @media(max-width:760px){

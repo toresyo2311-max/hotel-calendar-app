@@ -348,7 +348,7 @@ def main(argv):
 
     hooks = []
     # 캐시 키(DATA_BUST)는 반드시 이번 빌드 값으로 올린다 — 이미 ⑧ 키가 있어도 값을 갱신한다
-    src, nb = re.subn(r"'%s':'[^']*'" % KEY, "'%s':'2026-11-22z48'" % KEY, src, count=1)
+    src, nb = re.subn(r"'%s':'[^']*'" % KEY, "'%s':'2026-11-22z49'" % KEY, src, count=1)
     hooks.append(('DATA_BUST', 'updated' if nb else 'missing'))
     # 자료 로더 — ⑧ 가지가 없을 때만 붙인다(있으면 그대로 둔다)
     if "else if(tab==='%s'){" % KEY not in src:

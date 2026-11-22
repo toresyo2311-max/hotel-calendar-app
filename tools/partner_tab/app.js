@@ -17,6 +17,25 @@ function pmDirText(dir){var n=pmOName(),c=pmOCode();return dir?(n+' 도착(→ '
 function pmKey(o){return o?o.key:''}
 function pmWon(n){return n==null?'—':KR(n)+'마일'}
 function pmProg(key){return PMD.progMap[key]||null}
+
+/* ── 공식 링크 — 휴대폰에서는 앱으로, 없으면 공식 웹으로 ────────────────────
+   에어프랑스·KLM 플라이 블루만 공식 앱 딥링크를 쓴다.
+   · 안드로이드: intent://…package=<구글 플레이의 공식 앱 패키지> + S.browser_fallback_url=<공식 웹>
+     → 앱이 있으면 앱이 열리고, 없으면 크롬이 공식 웹으로 이어 준다.
+   · 아이폰·데스크톱: 공식 웹 주소 그대로(새 탭). 아이폰은 유니버설 링크가 있으면 사파리가 앱으로 넘긴다.
+   패키지 이름은 구글 플레이 'Air France - Book a flight'(AIRFRANCE S.A.) 페이지에서 확인한 값이다. */
+var PM_AF_APP='com.airfrance.android.dinamoprd';
+var PM_AF_WEB='https://wwws.airfrance.co.kr/';
+function pmUA(ua){return String(ua==null?navigator.userAgent:ua)}
+function pmAppHref(p,ua){
+  var web=(p&&p.url)||'';
+  if(!p||p.key!=='flyingblue')return web;
+  if(!/Android/i.test(pmUA(ua)))return web;
+  return 'intent://'+PM_AF_WEB.replace(/^https?:\/\//,'')
+    +'#Intent;scheme=https;package='+PM_AF_APP
+    +';S.browser_fallback_url='+encodeURIComponent(PM_AF_WEB)+';end';
+}
+function pmAppTarget(p){return (p&&p.key==='flyingblue'&&/Android/i.test(pmUA()))?'_self':'_blank'}
 function pmDest(code){return PMD.destMap[code]||null}
 function pmDestName(code){
   var d=pmDest(code);
@@ -331,7 +350,7 @@ function pmRenderList(){
         }).join('')+'</div>'
         +'<div class="foot"><span class="seen">최근 확인 '+esc(r[2])+'</span>'
         +'<span class="pm-footbtns"><button type="button" class="pm-open" data-pm-day="'+esc(r[1])+'">날짜 상세</button>'
-        +'<a class="go" href="'+esc(p.url)+'" target="_blank" rel="noopener">'+esc(p.urlLabel||'공식 예약')+'</a></span></div>'
+        +'<a class="go" href="'+esc(pmAppHref(p))+'" target="'+pmAppTarget(p)+'" rel="noopener"'+(p.key==='flyingblue'?' title="'+esc(p.name+' 공식 앱 또는 공식 웹으로 엽니다')+'"':'')+'>'+esc(p.urlLabel||'공식 예약')+'</a></span></div>'
         +'</article>';
     }).join('')+'</div>';
 }
@@ -569,9 +588,9 @@ function pmProgramsBlock(){
     return true;
   });
   if(!ws.length)return '';
-  return '<div class="pm-ds-gh">공식 사이트에서 직접 조회</div>'
+  return '<div class="pm-ds-gh">공식 사이트에서 직접 조회</div>'+pmAppsNote()
     +'<div class="pm-ds-sites">'+ws.map(function(p){
-        return '<a class="pm-ds-site" href="'+esc(p.url)+'" target="_blank" rel="noopener">'
+        return '<a class="pm-ds-site" href="'+esc(pmAppHref(p))+'" target="'+pmAppTarget(p)+'" rel="noopener"'+(p.key==='flyingblue'?' title="'+esc(p.name+' 공식 앱 또는 공식 웹으로 엽니다')+'"':'')+'>'
           +'<b>'+esc(p.short||p.name)+'</b>'
           +'<span>'+esc(p.name)+' · '+esc(p.allianceName||'')+'</span>'
           +'<i>공식 발권 ↗</i></a>';
@@ -609,6 +628,11 @@ function pmRoundBlock(ds){
     +'<div class="pm-ds-rb"><button type="button" class="pm-ds-swap" data-pm-flip="'+esc(ds)+'">'
     +esc(label)+' 보고 방향 바꾸기 →</button></div>'
     +'</div>';
+}
+function pmAppsNote(){
+  return /Android/i.test(pmUA())
+    ? '<p class="pm-ds-apphint">안드로이드에서는 <b>플라이 블루</b>를 누르면 에어프랑스 공식 앱이 설치된 경우 앱으로, 없으면 공식 웹으로 열립니다.</p>'
+    : '';
 }
 function pmOpenSheet(ds){
   var el=pmSheetEl();
@@ -650,7 +674,7 @@ function pmOpenSheet(ds){
                   return '<span class="cb '+c.k+'">'+esc(pmCabinShort(c))+' <b>'+KR(c.miles)+'</b> <i>'+esc(pmStopsText(c.stops))+'</i></span>';
                 }).join('')+'</div>'
               +'<div class="pm-ds-meta"><span class="seen">최근 확인 '+esc(r[2])+'</span>'
-              +'<a class="pm-ds-go" href="'+esc(p.url)+'" target="_blank" rel="noopener">'+esc(p.urlLabel||'공식 사이트')+' ↗</a></div>'
+              +'<a class="pm-ds-go" href="'+esc(pmAppHref(p))+'" target="'+pmAppTarget(p)+'" rel="noopener">'+esc(p.urlLabel||'공식 사이트')+' ↗</a></div>'
               +'</div>';
           }).join('')
         +'</div>';

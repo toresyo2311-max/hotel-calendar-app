@@ -86,6 +86,17 @@ CITY = {
     'BNE': '브리즈번', 'AKL': '오클랜드', 'NAN': '난디', 'GUM': '괌', 'SPN': '사이판',
     'TLV': '텔아비브', 'CAI': '카이로', 'JNB': '요하네스버그', 'NBO': '나이로비',
     'ADD': '아디스아바바', 'MLE': '말레', 'CMB': '콜롬보', 'DEL': '델리',
+    # 인천 노선 도시 이름 보강(2026-11-22)
+    'PDX': '포틀랜드', 'SLC': '솔트레이크시티', 'SZX': '선전', 'MSP': '미니애폴리스',
+    'WUX': '우시', 'FOC': '푸저우', 'DTW': '디트로이트', 'FLL': '포트로더데일',
+    'TFU': '청두/톈푸', 'AUS': '오스틴', 'MTY': '몬테레이', 'SBA': '산타바바라',
+    'PQC': '푸꾸옥', 'UBN': '울란바토르', 'WNZ': '원저우', 'YNJ': '옌지',
+    'CSX': '창사', 'WRO': '브로츠와프', 'RDU': '롤리/더럼', 'OKJ': '오카야마',
+    'HKT': '푸껫', 'KIJ': '니가타', 'PHL': '필라델피아', 'SAI': '시엠림',
+    'VCE': '베네치아', 'RMQ': '타이중', 'YNZ': '옌청', 'CNX': '치앙마이',
+    'KMG': '쿤밍', 'KOJ': '가고시마', 'RUH': '리야드', 'JED': '제다',
+    'AOJ': '아오모리', 'KMJ': '구마모토', 'UKB': '고베', 'OKA': '오키나와',
+    'KMQ': '고마쓰', 'OIT': '오이타', 'DYG': '장자제',
 }
 DOMESTIC = {'GMP', 'CJU', 'PUS', 'TAE', 'KWJ', 'CJJ', 'RSU', 'KUV', 'HIN', 'USN', 'WJU', 'MPC', 'KPO', 'YNY', 'ICN', 'SEL'}
 
@@ -318,7 +329,7 @@ def main(argv):
 
     hooks = []
     # 캐시 키(DATA_BUST)는 반드시 이번 빌드 값으로 올린다 — 이미 ⑧ 키가 있어도 값을 갱신한다
-    src, nb = re.subn(r"'%s':'[^']*'" % KEY, "'%s':'2026-11-22g'" % KEY, src, count=1)
+    src, nb = re.subn(r"'%s':'[^']*'" % KEY, "'%s':'2026-11-22h'" % KEY, src, count=1)
     hooks.append(('DATA_BUST', 'updated' if nb else 'missing'))
     # 자료 로더 — ⑧ 가지가 없을 때만 붙인다(있으면 그대로 둔다)
     if "else if(tab==='%s'){" % KEY not in src:

@@ -63,7 +63,9 @@ WINDOW_END = '2027-11-30'
 #   2026-11-23에 싱가포르 마지막 7곳(m56~m62)을 더해 114곳이 됐다 — 동남아 22(싱가포르 완결).
 #   2026-11-23에 오세아니아 1차 23곳(m63~m85)을 더해 137곳이 됐다 — 오세아니아 23(호주 12 · 멜버른 8 ·
 #   골드코스트 3 · 피지 3 · 오클랜드 2 · 포트모르즈비 2 · 보라보라 2 · 괌 1 · 아피아 1).
-EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 137}
+#   2026-11-23에 일본 1차 30곳(m86~m115)을 더해 167곳이 됐다 — 일본 42(기존 12 + 신규 30: 교토 14 ·
+#   고베 5 · 나고야 3 · 가고시마 2 · 가나자와 2 · 나가사키 2 · 가루이자와 1 · 구마모토 1).
+EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 167}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
 #   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
@@ -543,12 +545,12 @@ def check_sources(text_blob):
     return ['출처 문구에 금지된 사이트 이름: %s' % ', '.join(hits)] if hits else []
 
 
-EXPECT_BRANDS = {'리츠칼튼': 26, '세인트레지스': 16, 'W': 12, '코트야드 바이 메리어트': 9,
-                 '포 포인츠 바이 쉐라톤': 8, 'JW 메리어트': 7, '럭셔리 컬렉션': 5, '웨스틴': 6,
-                 '오토그래프 컬렉션': 6, '페어필드 바이 메리어트': 3, '메리어트': 6, 'AC 호텔': 4,
-                 '알로프트': 3, '목시': 2, '쉐라톤': 9, '에디션': 3,
-                 '메리어트 이그제큐티브 아파트먼트': 2, '르메르디앙': 2, '트리뷰트 포트폴리오': 4,
-                 '디자인 호텔스': 4}
+EXPECT_BRANDS = {'리츠칼튼': 26, '세인트레지스': 16, 'W': 12, '코트야드 바이 메리어트': 14,
+                 '포 포인츠 바이 쉐라톤': 8, 'JW 메리어트': 7, '럭셔리 컬렉션': 7, '웨스틴': 7,
+                 '오토그래프 컬렉션': 8, '페어필드 바이 메리어트': 10, '메리어트': 11, 'AC 호텔': 4,
+                 '알로프트': 3, '목시': 3, '쉐라톤': 11, '에디션': 3,
+                 '메리어트 이그제큐티브 아파트먼트': 2, '르메르디앙': 2, '트리뷰트 포트폴리오': 5,
+                 '디자인 호텔스': 5, '포인트 플렉스 바이 쉐라톤': 3}
 # 한·일 원본 CSV 기대치(2026-11-17 수집) — 유실·중복 방지용 고정값. 2026-11-23에 한국 30곳을
 #   더하면서 k11~k40 이 이 목록에 섞이지 않도록 원본 22곳 id 만 골라 검사한다. 신규 30곳은 아래
 #   EXPECT_KR30 으로 따로 고정한다.
@@ -573,6 +575,12 @@ SG7L_IDS = {'m%02d' % i for i in range(56, 63)}
 #   포인트 0칸 3곳(NANSI 12월 31일만 판매 후 중단 · OOLAC 12/18 개관 · POMEA)은 보간하지 않는다.
 EXPECT_OC23 = {'hotels': 23, 'cash': 7250, 'points': 6263}
 OC23_IDS = {'m%02d' % i for i in range(63, 86)}
+# 2026-11-23 일본 1차 30곳(m86~m115) — 현금 10,026칸 · 아워드 포인트 9,534칸 / 30×365=10,950칸
+#   30곳 모두 포인트 캘린더 값이 있다(0칸 호텔 없음). null 은 보간하지 않는다.
+#   UKBCY(코트야드 고베)는 2027-07-04 이후 150일 결번, UKYAK(오토그래프 교토)는 2027-10-01~11-30
+#   61일 전면 결번 — 5번이 직접 로드·도시검색·다음 달 뷰로 확인한 실제 미개방이라 결번 그대로 둔다.
+EXPECT_JP30 = {'hotels': 30, 'cash': 10026, 'points': 9534}
+JP30_IDS = {'m%02d' % i for i in range(86, 116)}
 # 아워드 포인트 캘린더가 전 기간 미게시인 호텔(코드) — 「포인트 칸 없음」 검사에서 뺀다.
 #   k09 여의도 파크 센터 MEA · NANSI 12월 31일만 판매 · OOLAC 12/18 개관 · POMEA
 NO_POINT_CODES = {'NANSI', 'OOLAC', 'POMEA'}
@@ -4936,7 +4944,16 @@ def check_tabs(db):
             or ocp != EXPECT_OC23['points']:
         problems.append('오세아니아 23곳 수치 %s (기대 %s)' % (
             {'hotels': len(oc), 'cash': occ, 'points': ocp}, EXPECT_OC23))
-    for h in kj + kr30 + sg8 + sg7 + sg7l + oc:
+    # 2026-11-23 — 일본 1차 30곳(m86~m115)도 칸 수를 고정해 둔다(유실·보간 방지)
+    jp30 = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'] in JP30_IDS]
+    jp30c = sum(1 for h in jp30 for v in (h.get('rates') or {}).values()
+                if isinstance(v, (int, float)))
+    jp30p = sum(1 for h in jp30 for v in (h.get('points') or {}).values() if isinstance(v, int))
+    if len(jp30) != EXPECT_JP30['hotels'] or jp30c != EXPECT_JP30['cash'] \
+            or jp30p != EXPECT_JP30['points']:
+        problems.append('일본 30곳 수치 %s (기대 %s)' % (
+            {'hotels': len(jp30), 'cash': jp30c, 'points': jp30p}, EXPECT_JP30))
+    for h in kj + kr30 + sg8 + sg7 + sg7l + oc + jp30:
         if h['id'] == 'k09' or h.get('code') in NO_POINT_CODES:
             continue
         if not h.get('points'):

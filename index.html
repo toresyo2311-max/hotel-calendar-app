@@ -8635,23 +8635,59 @@ function pmWon(n){return n==null?'—':KR(n)+'마일'}
 function pmProg(key){return PMD.progMap[key]||null}
 
 /* ── 공식 링크 — 휴대폰에서는 앱으로, 없으면 공식 웹으로 ────────────────────
-   에어프랑스·KLM 플라이 블루만 공식 앱 딥링크를 쓴다.
-   · 안드로이드: intent://…package=<구글 플레이의 공식 앱 패키지> + S.browser_fallback_url=<공식 웹>
+   에어프랑스·KLM 플라이 블루만 공식 앱 인텐트를 쓴다.
+   · 안드로이드: 클릭 순간 intent://…package=<구글 플레이 공식 앱 패키지> · action VIEW · category BROWSABLE ·
+     S.browser_fallback_url=<누른 링크와 같은 공식 웹> 로 앱을 한 번 시도하고, 1.2초 안에 화면이 넘어가지 않으면
+     공식 웹으로 자동 이동한다(인앱 WebView·홈 화면 앱이 intent:// 를 무시해도 먹통이 되지 않는다).
      → 앱이 있으면 앱이 열리고, 없으면 크롬이 공식 웹으로 이어 준다.
    · 아이폰·데스크톱: 공식 웹 주소 그대로(새 탭). 아이폰은 유니버설 링크가 있으면 사파리가 앱으로 넘긴다.
    패키지 이름은 구글 플레이 'Air France - Book a flight'(AIRFRANCE S.A.) 페이지에서 확인한 값이다. */
 var PM_AF_APP='com.airfrance.android.dinamoprd';
 var PM_AF_WEB='https://wwws.airfrance.co.kr/';
+var PM_AF_LINK='https://www.airfrance.com/home';   /* 에어프랑스 앱의 공식 App Link 주소 */
 function pmUA(ua){return String(ua==null?navigator.userAgent:ua)}
-function pmAppHref(p,ua){
-  var web=(p&&p.url)||'';
-  if(!p||p.key!=='flyingblue')return web;
-  if(!/Android/i.test(pmUA(ua)))return web;
-  return 'intent://'+PM_AF_WEB.replace(/^https?:\/\//,'')
-    +'#Intent;scheme=https;package='+PM_AF_APP
-    +';S.browser_fallback_url='+encodeURIComponent(PM_AF_WEB)+';end';
-}
+/* 링크(href)는 언제나 '공식 웹(https)' 주소다. 크롬·사파리·카톡/피클 인앱 WebView·홈 화면
+   바로가기 어디서 눌러도 기본 링크가 살아 있어야 '눌러도 아무 반응 없음'이 생기지 않는다.
+   안드로이드에서 앱을 먼저 열어 보는 일은 아래 클릭 처리(pmAfOpen)가 따로 맡는다. */
+function pmAppHref(p){return (p&&p.url)||''}
+/* 앱 링크(플라이 블루·안드로이드)는 스크립트가 없는 환경에서도 같은 탭으로 열리게 _self,
+   나머지는 기존처럼 새 탭(_blank). */
 function pmAppTarget(p){return (p&&p.key==='flyingblue'&&/Android/i.test(pmUA()))?'_self':'_blank'}
+function pmAppAttr(p){return (p&&p.key==='flyingblue')?' data-pm-app="af"':''}
+/* 인텐트 — 패키지뿐 아니라 action(VIEW)·category(BROWSABLE)·App Link 호스트까지 넣어야
+   안드로이드가 앱 화면을 찾는다. 앱이 없으면 크롬이 이어 갈 주소(S.browser_fallback_url)도 넘긴다. */
+function pmAfIntent(web){
+  var fb=web||PM_AF_WEB;                            /* 앱이 없으면 크롬이 이어 갈 주소 = 누른 링크와 같은 곳 */
+  return 'intent://'+PM_AF_LINK.replace(/^https?:\/\//,'')
+    +'#Intent;scheme=https;action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE'
+    +';package='+PM_AF_APP+';S.browser_fallback_url='+encodeURIComponent(fb)+';end';
+}
+/* 안드로이드 클릭 — 앱을 먼저 시도하고, 1.2초 안에 화면이 넘어가지 않으면(=인앱 WebView 등이
+   intent:// 를 조용히 무시한 경우) 공식 웹으로 스스로 넘어간다. 그래서 절대 먹통이 되지 않는다. */
+function pmAfOpen(web){
+  var left=false,mark=function(){left=true};
+  function done(){
+    document.removeEventListener('visibilitychange',mark);
+    window.removeEventListener('pagehide',mark);
+    window.removeEventListener('blur',mark);
+  }
+  document.addEventListener('visibilitychange',mark);
+  window.addEventListener('pagehide',mark);
+  window.addEventListener('blur',mark);
+  try{window.location.href=pmAfIntent(web)}catch(err){}
+  setTimeout(function(){
+    done();
+    if(left||document.hidden)return;               /* 앱이 열려 화면을 떠났다 → 웹으로 보내지 않는다 */
+    try{window.location.href=web||PM_AF_WEB}catch(err){}
+  },1200);
+}
+document.addEventListener('click',function(e){
+  var a=(e.target&&e.target.closest)?e.target.closest('a[data-pm-app="af"]'):null;
+  if(!a)return;
+  if(!/Android/i.test(pmUA()))return;              /* 아이폰·데스크톱은 기본 링크(새 탭) 그대로 */
+  e.preventDefault();
+  pmAfOpen(a.getAttribute('href'));
+});
 function pmDest(code){return PMD.destMap[code]||null}
 function pmDestName(code){
   var d=pmDest(code);
@@ -8966,7 +9002,7 @@ function pmRenderList(){
         }).join('')+'</div>'
         +'<div class="foot"><span class="seen">최근 확인 '+esc(r[2])+'</span>'
         +'<span class="pm-footbtns"><button type="button" class="pm-open" data-pm-day="'+esc(r[1])+'">날짜 상세</button>'
-        +'<a class="go" href="'+esc(pmAppHref(p))+'" target="'+pmAppTarget(p)+'" rel="noopener"'+(p.key==='flyingblue'?' title="'+esc(p.name+' 공식 앱 또는 공식 웹으로 엽니다')+'"':'')+'>'+esc(p.urlLabel||'공식 예약')+'</a></span></div>'
+        +'<a class="go" href="'+esc(pmAppHref(p))+'" target="'+pmAppTarget(p)+'" rel="noopener"'+pmAppAttr(p)+(p.key==='flyingblue'?' title="'+esc(p.name+' 공식 앱 또는 공식 웹으로 엽니다')+'"':'')+'>'+esc(p.urlLabel||'공식 예약')+'</a></span></div>'
         +'</article>';
     }).join('')+'</div>';
 }
@@ -9206,7 +9242,7 @@ function pmProgramsBlock(){
   if(!ws.length)return '';
   return '<div class="pm-ds-gh">공식 사이트에서 직접 조회</div>'+pmAppsNote()
     +'<div class="pm-ds-sites">'+ws.map(function(p){
-        return '<a class="pm-ds-site" href="'+esc(pmAppHref(p))+'" target="'+pmAppTarget(p)+'" rel="noopener"'+(p.key==='flyingblue'?' title="'+esc(p.name+' 공식 앱 또는 공식 웹으로 엽니다')+'"':'')+'>'
+        return '<a class="pm-ds-site" href="'+esc(pmAppHref(p))+'" target="'+pmAppTarget(p)+'" rel="noopener"'+pmAppAttr(p)+(p.key==='flyingblue'?' title="'+esc(p.name+' 공식 앱 또는 공식 웹으로 엽니다')+'"':'')+'>'
           +'<b>'+esc(p.short||p.name)+'</b>'
           +'<span>'+esc(p.name)+' · '+esc(p.allianceName||'')+'</span>'
           +'<i>공식 발권 ↗</i></a>';
@@ -9247,7 +9283,7 @@ function pmRoundBlock(ds){
 }
 function pmAppsNote(){
   return /Android/i.test(pmUA())
-    ? '<p class="pm-ds-apphint">안드로이드에서는 <b>플라이 블루</b>를 누르면 에어프랑스 공식 앱이 설치된 경우 앱으로, 없으면 공식 웹으로 열립니다.</p>'
+    ? '<p class="pm-ds-apphint">안드로이드에서는 <b>플라이 블루</b>를 누르면 에어프랑스 공식 앱이 설치된 경우 앱으로 열리고, 앱이 없거나 앱이 열리지 않는 화면(인앱 브라우저 등)에서는 공식 웹으로 자동 이동합니다.</p>'
     : '';
 }
 function pmOpenSheet(ds){
@@ -9290,7 +9326,7 @@ function pmOpenSheet(ds){
                   return '<span class="cb '+c.k+'">'+esc(pmCabinShort(c))+' <b>'+KR(c.miles)+'</b> <i>'+esc(pmStopsText(c.stops))+'</i></span>';
                 }).join('')+'</div>'
               +'<div class="pm-ds-meta"><span class="seen">최근 확인 '+esc(r[2])+'</span>'
-              +'<a class="pm-ds-go" href="'+esc(pmAppHref(p))+'" target="'+pmAppTarget(p)+'" rel="noopener">'+esc(p.urlLabel||'공식 사이트')+' ↗</a></div>'
+              +'<a class="pm-ds-go" href="'+esc(pmAppHref(p))+'" target="'+pmAppTarget(p)+'" rel="noopener"'+pmAppAttr(p)+'>'+esc(p.urlLabel||'공식 사이트')+' ↗</a></div>'
               +'</div>';
           }).join('')
         +'</div>';

@@ -5697,7 +5697,7 @@ function heroBenefitsHtml(h,cur){
     else if(st.tab==='accor'&&rhrMode()){rows.push('<b>Red Hot Rooms 참여 '+KR(filteredHotels().filter(h=>rhOf(h)).length)+'곳</b>의 원화 환산 시작가를 날짜별로 비교');rows.push('ALL Accor+ Explorer 회원 전용 · 오퍼 투숙 기간 밖은 —');}
     else if(st.tab==='accor'){rows.push('<b>'+KR(n)+'곳</b>의 '+(N0>1?N0+'박 1박 최저가 합계':'1박 최저가·Stay Plus 결제액·레드핫')+' 비교');rows.push('지역 칩으로 중국(APC)·국내·동남아·기타 해외를 골라 봅니다');}
     else if(st.tab==='ihg'){rows.push('<b>'+KR(n)+'곳</b>의 현금(세금·수수료 포함)과 IHG 포인트를 함께 표시'+(N0>1?' · '+N0+'박 합계 기준':''));rows.push('IHG 공홈 비로그인 회원가 · 포인트는 IHG One Rewards');}
-    else {rows.push('<b>'+KR(n)+'곳</b>의 현금가와 아워드 포인트를 함께 표시'+(N0>1?' · '+N0+'박 합계 기준':''));rows.push((st.tab==='marriott'?'기존 62곳은 세금 포함 검색가 · 2026-11-22에 더한 한국 30곳은 세금 별도 요금 캘린더':'세금·수수료 포함 검색가')+' · 포인트는 원 단위');}
+    else {rows.push('<b>'+KR(n)+'곳</b>의 현금가와 아워드 포인트를 함께 표시'+(N0>1?' · '+N0+'박 합계 기준':''));rows.push((st.tab==='marriott'?'기존 62곳은 세금 포함 검색가 · 2026-11-22에 더한 한국 30곳과 싱가포르 8곳은 세금 별도 요금 캘린더':'세금·수수료 포함 검색가')+' · 포인트는 원 단위');}
   }else{
     if(st.tab==='lux'){
       rows.push(h.vip?'<b>VIP 요금</b> 공개 호텔 · 세금 포함 표시가':(Object.keys(h.rates||{}).length?'<b>예약 사이트 직접 조회</b> 요금 · 세금 포함':'<b>요금 조회 대기</b> — 아직 잰 요금이 없습니다'));

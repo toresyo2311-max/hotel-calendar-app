@@ -49,6 +49,23 @@
    ```
    `sw.js` 의 `VERSION`(z숫자)을 올린 뒤 `git pull --rebase origin main` → `git push` → GitHub Pages `built` 확인.
 
+## 2-1. 매일 04:00 자동 갱신이 실제로 쓰는 길 (2026-11-23 추가)
+
+```
+# 36개 화면(9프로그램 × 출발·도착 × PUS·ICN)에서 「. CSV」를 눌러 내려받은 뒤
+python3 tools/partner_tab/grab_csv.py {dep|arr} {슬러그} {PUS|ICN}   # 방금 받은 CSV → downloads/collect/
+python3 tools/partner_tab/refresh_from_csv.py                        # collect/ → raw/*.txt
+python3 tools/build_partner_tab.py --json-only                       # raw/ → JSON 2개 (화면 블록은 그대로)
+```
+
+- `grab_csv.py` 는 파일 이름이 프로그램마다 같아 겹치므로 CSV 안의 `Mileage Program`·출발/도착 공항 값으로
+  확인한 뒤에만 옮긴다. 내려받기가 늦게 끝나면 몇 초 뒤 다시 부르면 된다.
+- `refresh_from_csv.py` 는 그날 CSV 에 없는 (날짜,도시) 를 버려서 팔린 좌석이 남지 않게 하고,
+  공항 홈페이지 실측분(`flyingblue` 부산 YNT·NKG, `delta` 부산 NKG)만 보존한다(스크립트 안 `PRESERVE`).
+- **`--json-only` 없이 빌더를 돌리면** ⑧ 탭의 💎 마일리지 가치·구매가 비교표(`mlv`)가 지워진다 —
+  그 블록은 아직 `tools/mileage_tab/section.html` 에 없고 index.html 에만 있다.
+- 조회 사이트에서 0건인 화면(asiamiles·british·jal 의 부산 등)은 CSV 를 받지 않고 원자료를 빈 파일로 둔다.
+
 ## 3. 화면 연결 요약
 
 - ⑧ 마일리지발권 탭의 **출발지**(부산 PUS / 인천 ICN) × **방향**(`부산 출발 PUS→` / `부산 도착 →PUS`, `인천 출발 ICN→` / `인천 도착 →ICN`)

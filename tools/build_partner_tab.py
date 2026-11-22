@@ -13,8 +13,13 @@
 한 탭(⑧ 마일리지발권)에서 같은 달력·같은 날짜 시트로 본다. 그래서 이 빌더는 JSON 만
 다시 만들고, 화면 블록은 tools/build_mileage_tab.py 에 맡긴다(아래 main 참고).
 
-    python3 tools/build_partner_tab.py            # JSON 두 개 + ⑧ 탭 블록 재생성
-    python3 tools/build_partner_tab.py --check    # 쓰지 않고 상태만
+    python3 tools/build_partner_tab.py             # JSON 두 개 + ⑧ 탭 블록 재생성
+    python3 tools/build_partner_tab.py --check     # 쓰지 않고 상태만
+    python3 tools/build_partner_tab.py --json-only # JSON 두 개만(화면 블록은 그대로)
+
+주의: 화면 블록(tools/mileage_tab/*)은 2026-11-22 통합 이후 index.html 에 직접 덧붙인
+💎 마일리지 가치·구매가 비교표(mlv) 를 아직 담고 있지 않다. 그 상태에서 블록을 다시 채우면
+비교표가 지워지므로, 일일 자료 갱신은 --json-only 로 JSON 만 다시 만들고 화면은 건드리지 않는다.
 """
 import datetime
 import glob
@@ -256,6 +261,10 @@ def main(argv):
                  data['counts']['programs'], data['counts']['dests']))
         for c in data['coverage']:
             print('      %-28s %5d %s' % (c['name'], c['rows'], c['note']))
+
+    if '--json-only' in argv:
+        print('(--json-only: index.html 화면 블록은 그대로 둡니다)')
+        return 0
 
     # 화면(index.html)은 ⑧ 마일리지발권 탭 하나가 이 자료를 읽는다 —
     # 2026-11-22 통합 이후 ⑨ 외항사 마일 탭은 따로 두지 않는다. 탭 블록은

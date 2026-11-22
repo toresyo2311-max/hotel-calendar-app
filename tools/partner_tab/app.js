@@ -1,4 +1,4 @@
-/* ── ⑧ 외항사 마일 탭 ─────────────────────────────────────
+/* ── ⑨ 외항사 마일 탭 ─────────────────────────────────────
    부산/김해(PUS)와 인천(ICN)을 떠나는 노선의 '보너스(마일) 좌석'을 항공사
    마일리지 프로그램별로 모아 둔 스냅샷입니다. 조회 사이트는 날짜·노선마다 등급별로 '예약 가능/불가'와 필요 마일,
    직항·경유 편수까지만 알려 줍니다. 좌석 수량·세금·수수료는 조회 사이트에 없어
@@ -175,6 +175,7 @@ function renderPartner(){
   pmRenderProgs();
   pmRenderDests();
   pmRenderBest();
+  pmCalcInit();
   pmRenderView();
   pmRenderCal();
   pmRenderList();
@@ -668,11 +669,19 @@ function pmOpenSheet(ds){
             var cs=x.cs.filter(function(c){return pms.cabin==='all'||c.k===pms.cabin})
                        .filter(function(c){return !pms.direct||c.stops===0});
             if(!cs.length)cs=x.cs;
+            /* 계산기에 넣을 값 — 지금 고른 등급·질항 필터 안의 최저 마일 */
+            var pick=cs[0]||null;
+            cs.forEach(function(c){if(pick&&c.miles<pick.miles)pick=c});
+            var side=pms.dir?'back':'go',sideKo=pms.dir?'오는 편':'가는 편';
+            var putBtn=(pick?'<button type="button" class="pm-ds-put" data-pm-calc-put="'+side+'"'
+                +' data-pm-calc-miles="'+pick.miles+'"'
+                +' data-pm-calc-name="'+esc(pmDestName(r[3])+' '+(p.short||p.name)+' '+pmCabinLabel(pick))+'"'
+                +' title="'+esc(pmCabinLabel(pick)+' '+KR(pick.miles)+'마일을 '+sideKo+'에 넣습니다')+'">🧮 '+sideKo+'에</button>':'');
             return '<div class="pm-ds-row">'
               +'<div class="pm-ds-pg"><b>'+esc(p.short||p.name)+'</b><span>'+esc(p.allianceName||'')+'</span></div>'
               +'<div class="pm-ds-cab">'+cs.map(function(c){
                   return '<span class="cb '+c.k+'">'+esc(pmCabinShort(c))+' <b>'+KR(c.miles)+'</b> <i>'+esc(pmStopsText(c.stops))+'</i></span>';
-                }).join('')+'</div>'
+                }).join('')+putBtn+'</div>'
               +'<div class="pm-ds-meta"><span class="seen">최근 확인 '+esc(r[2])+'</span>'
               +'<a class="pm-ds-go" href="'+esc(pmAppHref(p))+'" target="'+pmAppTarget(p)+'" rel="noopener">'+esc(p.urlLabel||'공식 사이트')+' ↗</a></div>'
               +'</div>';
@@ -694,6 +703,209 @@ function pmCloseSheet(){
   el.classList.remove('show');
   el.setAttribute('aria-hidden','true');
 }
+
+/* ══ 🧮 마일리지 계산기 ═════════════════════════════════════════
+   가는 편·오는 편 마일과 인원으로 총 필요 마일을, 현금 항공권 가격으로 1마일당
+   원화 가치를 계산한다. 값은 이 기기(localStorage)에만 저장하고, 날짜 상세 시트의
+   「🧮 가는 편에 / 오는 편에」 버튼으로 그 행의 최저 마일을 그대로 채운다. */
+var PM_CALC_KEY='teambusan.pmcalc.v1';
+var PM_CALC={trip:'rt',pax:1,go:0,back:0,have:0,tax:0,cash:0,open:true};
+var PM_CALC_READY=false,PM_CALC_FLASH_T=null;
+
+function pmNum(v){
+  var n=parseInt(String(v==null?'':v).replace(/[^0-9]/g,''),10);
+  return isNaN(n)?0:n;
+}
+function pmCalcEl(id){return document.getElementById(id)}
+function pmCalcLoad(){
+  if(PM_CALC_READY)return PM_CALC;
+  PM_CALC_READY=true;
+  try{
+    var raw=window.localStorage.getItem(PM_CALC_KEY);
+    if(raw){
+      var o=JSON.parse(raw)||{};
+      if(o.trip==='ow'||o.trip==='rt')PM_CALC.trip=o.trip;
+      var pax=pmNum(o.pax);if(pax>=1&&pax<=9)PM_CALC.pax=pax;
+      PM_CALC.go=pmNum(o.go);PM_CALC.back=pmNum(o.back);
+      PM_CALC.have=pmNum(o.have);PM_CALC.tax=pmNum(o.tax);PM_CALC.cash=pmNum(o.cash);
+      if(o.open===false)PM_CALC.open=false;
+    }
+  }catch(e){}
+  return PM_CALC;
+}
+function pmCalcSave(){
+  try{window.localStorage.setItem(PM_CALC_KEY,JSON.stringify(PM_CALC))}catch(e){}
+}
+/* 폼에 값을 되쓴다 — 지금 입력 중인 칸은 건드리지 않는다(커서가 튀지 않게) */
+function pmCalcPaintNum(id,n){
+  var el=pmCalcEl(id);
+  if(el&&document.activeElement!==el)el.value=n?KR(n):'';
+}
+function pmCalcPaint(){
+  pmCalcLoad();
+  var trip=pmCalcEl('pmCalcTrip');
+  if(trip){
+    [].forEach.call(trip.querySelectorAll('button'),function(b){
+      var on=b.getAttribute('data-pm-trip')===PM_CALC.trip;
+      b.classList.toggle('on',on);
+      b.setAttribute('aria-pressed',on?'true':'false');
+    });
+  }
+  var pax=pmCalcEl('pmCalcPax');if(pax)pax.value=String(PM_CALC.pax);
+  pmCalcPaintNum('pmCalcGo',PM_CALC.go);
+  pmCalcPaintNum('pmCalcBack',PM_CALC.back);
+  pmCalcPaintNum('pmCalcHave',PM_CALC.have);
+  pmCalcPaintNum('pmCalcTax',PM_CALC.tax);
+  pmCalcPaintNum('pmCalcCash',PM_CALC.cash);
+  var ow=PM_CALC.trip==='ow';
+  var bf=pmCalcEl('pmCalcBackF');if(bf)bf.classList.toggle('off',ow);
+  var bi=pmCalcEl('pmCalcBack');if(bi)bi.disabled=ow;
+  pmCalcOut();
+}
+function pmCalcOut(){
+  var out=pmCalcEl('pmCalcOut'),sum=pmCalcEl('pmCalcSum');
+  if(!out)return;
+  var tripKo=PM_CALC.trip==='ow'?'편도':'왕복';
+  var per=PM_CALC.go+(PM_CALC.trip==='rt'?PM_CALC.back:0);
+  var total=per*PM_CALC.pax;
+  var eff=PM_CALC.cash-PM_CALC.tax;
+  var value=(PM_CALC.cash>0&&eff>0&&total>0)?((eff*PM_CALC.pax)/total):null;
+  var html='';
+  if(sum)sum.textContent=tripKo+' · '+PM_CALC.pax+'명'+(total?' · '+KR(total)+'마일':' · 마일을 넣어 주세요')+(value!=null?' · '+(Math.round(value*10)/10).toFixed(1)+'원/마일':'');
+  if(!total){
+    html='<div class="pm-calc-empty">가는 편 마일을 적으면 총 필요 마일을 계산합니다. '
+      +'달력에서 날짜를 눌러 열린 상세에서 <b>「🧮 가는 편에」·「오는 편에」</b>를 누르면 그 행의 마일이 그대로 들어옵니다.</div>';
+    out.innerHTML=html;
+    return;
+  }
+  var sub='1인 '+KR(per)+'마일'+(PM_CALC.trip==='rt'
+    ?'(가는 '+KR(PM_CALC.go)+' + 오는 '+KR(PM_CALC.back)+')'
+    :'(가는 편만)')+' × '+PM_CALC.pax+'명';
+  html='<div class="pm-co-main"><div class="pm-co-big">'+KR(total)+'<small>마일</small></div>'
+    +'<div class="pm-co-sub">'+esc(sub)+'</div></div><div class="pm-co-rows">';
+  /* 보유 마일 — 부족/잔여 */
+  if(PM_CALC.have>0){
+    var rest=PM_CALC.have-total;
+    html+='<div class="pm-co-row"><span class="k">보유 마일</span>'
+      +(rest>=0?'<b class="ok">'+KR(rest)+'마일 남음</b><span class="f">보유 '+KR(PM_CALC.have)+'마일로 가능</span>'
+               :'<b class="lack">'+KR(-rest)+'마일 부족</b><span class="f">보유 '+KR(PM_CALC.have)+'마일</span>')
+      +'</div>';
+  }else{
+    html+='<div class="pm-co-row"><span class="k">보유 마일</span><b class="dim">넣으면 부족·잔여를 계산합니다</b></div>';
+  }
+  /* 1마일당 원화 가치 */
+  if(PM_CALC.cash>0){
+    if(value==null){
+      html+='<div class="pm-co-row"><span class="k">1마일당 원화 가치</span><b class="dim">비교 가격이 세금보다 낮아 계산하지 않았습니다</b></div>';
+    }else{
+      var vTxt=(Math.round(value*10)/10).toFixed(1);
+      var good=value>=15;
+      html+='<div class="pm-co-row"><span class="k">1마일당 원화 가치</span><b>'+vTxt+'원/마일</b>'
+        +'<i class="pm-co-badge'+(good?'':' low')+'">'+(good?'15원/마일 이상 · 마일 쪽이 유리한 편':'15원/마일 미만 · 현금 구매가 나을 수 있음')+'</i></div>'
+        +'<div class="pm-co-row"><span class="f">현금 '+KR(PM_CALC.cash)+' − 유류·세금 '+KR(PM_CALC.tax)+' = '+KR(eff)+'원 ÷ 1인 '+KR(per)+'마일'
+        +(PM_CALC.pax>1?' · 세금 뺀 현금 기준 총 '+KR(Math.round(eff*PM_CALC.pax))+'원어치':'')
+        +' · 15원/마일은 단순 참고값</span></div>';
+    }
+  }else{
+    html+='<div class="pm-co-row"><span class="k">1마일당 원화 가치</span><b class="dim">비교 현금 항공권 가격을 넣으면 계산합니다</b></div>';
+  }
+  html+='</div><div class="pm-co-foot"><button type="button" id="pmCalcClear">입력 지우기</button></div>';
+  out.innerHTML=html;
+}
+function pmCalcInit(){
+  pmCalcLoad();
+  var el=pmCalcEl('pmCalc');
+  if(!el)return;
+  if(el.tagName==='DETAILS'){
+    el.open=PM_CALC.open!==false;
+    if(!el.__pmTog){
+      el.__pmTog=true;
+      el.addEventListener('toggle',function(){
+        PM_CALC.open=el.open;pmCalcSave();
+        if(el.open)pmCalcPaint();
+      });
+    }
+  }
+  pmCalcPaint();
+}
+/* 날짜 상세 시트의 버튼으로 그 행의 마일을 가는 편 / 오는 편에 넣는다 */
+function pmCalcPut(side,miles,name){
+  if(!miles)return;
+  pmCalcLoad();
+  if(side==='back'){PM_CALC.trip='rt';PM_CALC.back=miles}else{PM_CALC.go=miles}
+  PM_CALC.open=true;
+  pmCalcSave();pmCalcPaint();
+  var el=pmCalcEl('pmCalc');
+  if(el){
+    if(el.tagName==='DETAILS')el.open=true;
+    if(el.scrollIntoView)el.scrollIntoView({block:'center',behavior:'smooth'});
+  }
+  pmCloseSheet();
+  var fl=pmCalcEl('pmCalcFlash');
+  if(fl){
+    fl.textContent=(side==='back'?'오는 편':'가는 편')+'에 '+KR(miles)+'마일을 넣었습니다'
+      +(name?' · '+name:'')+(side==='back'?' (왕복으로 바꿨습니다)':'');
+    fl.classList.add('on');
+    clearTimeout(PM_CALC_FLASH_T);
+    PM_CALC_FLASH_T=setTimeout(function(){
+      var cur=pmCalcEl('pmCalcFlash');
+      if(cur){cur.classList.remove('on');cur.textContent=''}
+    },3600);
+  }
+}
+/* 계산기 입력 — 타이핑 중에는 칸을 다시 쓰지 않고 결과만 새로 그린다 */
+document.addEventListener('input',function(e){
+  var t=e.target;
+  if(!t||!t.id||!t.closest||!t.closest('#pmCalc'))return;
+  var map={pmCalcGo:'go',pmCalcBack:'back',pmCalcHave:'have',pmCalcTax:'tax',pmCalcCash:'cash'};
+  var k=map[t.id];
+  if(!k)return;
+  pmCalcLoad();
+  PM_CALC[k]=pmNum(t.value);
+  pmCalcOut();
+  pmCalcSave();
+});
+/* 칸을 벗어나면 1,000 단위 쉼표로 정리 */
+document.addEventListener('focusout',function(e){
+  var t=e.target;
+  if(!t||!t.id||!t.closest||!t.closest('#pmCalc'))return;
+  var map={pmCalcGo:1,pmCalcBack:1,pmCalcHave:1,pmCalcTax:1,pmCalcCash:1};
+  if(map[t.id])t.value=pmNum(t.value)?KR(pmNum(t.value)):'';
+});
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t&&t.id==='pmCalcPax'){
+    pmCalcLoad();
+    var n=pmNum(t.value);
+    PM_CALC.pax=(n>=1&&n<=9)?n:1;
+    pmCalcSave();pmCalcPaint();
+  }
+});
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(!t||!t.closest)return;
+  if(t.closest('#pmCalc')){
+    var tb=t.closest('[data-pm-trip]');
+    if(tb){
+      pmCalcLoad();
+      PM_CALC.trip=tb.getAttribute('data-pm-trip')==='ow'?'ow':'rt';
+      pmCalcSave();pmCalcPaint();
+      return;
+    }
+    if(t.closest('#pmCalcClear')){
+      pmCalcLoad();
+      PM_CALC.go=0;PM_CALC.back=0;PM_CALC.have=0;PM_CALC.tax=0;PM_CALC.cash=0;
+      pmCalcSave();pmCalcPaint();
+      var fl=pmCalcEl('pmCalcFlash');if(fl){fl.classList.remove('on');fl.textContent=''}
+      return;
+    }
+  }
+  var put=t.closest('[data-pm-calc-put]');
+  if(put){
+    e.preventDefault();
+    pmCalcPut(put.getAttribute('data-pm-calc-put'),pmNum(put.getAttribute('data-pm-calc-miles')),put.getAttribute('data-pm-calc-name')||'');
+  }
+});
 
 /* 보기 전환 · 월 바로가기 · 날짜 칸 · 시트 닫기 */
 document.addEventListener('click',function(e){

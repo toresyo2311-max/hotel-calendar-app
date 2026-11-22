@@ -1,4 +1,4 @@
-/* ── ⑧ 외항사 마일리지(부산) ─────────────────────────────────── */
+/* ── ⑨ 외항사 마일리지(부산) ─────────────────────────────────── */
 .pm-panel{padding:0}
 .pm-banner{background:#f4f1ff;border:1px solid #ddd4fb;border-radius:12px;padding:10px 12px;font-size:11.5px;line-height:1.55;color:#3f3960}
 .pm-banner b{color:#4c1d95}
@@ -186,3 +186,54 @@
 .pm-cell.out{background:transparent;border-style:dashed;border-color:#eef0f5;cursor:default}
 .pm-cell.out .d{color:#cfd2da}
 .pm-cell .m{white-space:nowrap;overflow:hidden;text-overflow:clip}
+
+/* ── 🧮 마일리지 계산기 ───────────────────────────────────────── */
+.pm-calc{border:1px solid #ddd4fb;background:linear-gradient(180deg,#faf7ff 0%,#fff 62%);border-radius:12px;margin-top:8px;padding:0;overflow:hidden}
+.pm-calc>summary{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;padding:8px 11px;cursor:pointer;list-style:none;background:#f4f1ff;border-bottom:1px solid transparent}
+.pm-calc[open]>summary{border-bottom-color:#e6dcfc}
+.pm-calc>summary::-webkit-details-marker{display:none}
+.pm-calc>summary::after{content:'▾';margin-left:auto;font-size:10px;color:#7c3aed;line-height:1.2}
+.pm-calc[open]>summary::after{content:'▴'}
+.pm-calc>summary b{font-size:11.5px;font-weight:800;color:#241d3a}
+.pm-calc>summary span{font-size:10px;font-weight:700;color:#6b6484;font-variant-numeric:tabular-nums;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.pm-calc>summary:focus-visible{outline:2px solid #7c3aed;outline-offset:-2px}
+.pm-calc-body{padding:9px 10px 10px}
+.pm-calc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(122px,1fr));gap:7px}
+.pm-cf{display:flex;flex-direction:column;gap:3px;min-width:0}
+.pm-cf-wide{grid-column:1/-1}
+.pm-cf-lab{font-size:9.5px;font-weight:800;color:#6b6484;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+.pm-cf-lab i{font-style:normal;font-weight:600;color:#9a94b0;font-size:8.5px;margin-left:2px}
+.pm-cf input,.pm-cf select{width:100%;min-width:0;font:inherit;font-size:11px;font-weight:700;color:#241d3a;border:1px solid #ded9ef;border-radius:8px;padding:5px 7px;background:#fff;font-variant-numeric:tabular-nums}
+.pm-cf input::placeholder{font-weight:500;color:#b3aec4}
+.pm-cf input:focus,.pm-cf select:focus{outline:2px solid #c4b5fd;outline-offset:-1px;border-color:#c4b5fd}
+.pm-cf input:disabled{background:#f7f6fb;color:#b3aec4;border-color:#ece9f6}
+.pm-cf.off .pm-cf-lab{color:#b3aec4}
+.pm-calc-flash{display:none;margin:0;font-size:10px;font-weight:700;color:#4c1d95;line-height:1.5;background:#f1e9ff;border-radius:7px;padding:4px 8px}
+.pm-calc-flash.on{display:block;margin-top:7px}
+.pm-calc-out{margin-top:8px;border:1px solid #e6e2f3;border-radius:10px;background:#fff;padding:8px 10px}
+.pm-calc-empty{font-size:10.5px;line-height:1.6;color:#6b6484}
+.pm-calc-empty b{color:#4c1d95}
+.pm-co-main{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.pm-co-big{font-size:21px;font-weight:900;letter-spacing:-.04em;color:#4c1d95;font-variant-numeric:tabular-nums;line-height:1.15}
+.pm-co-big small{font-size:10.5px;font-weight:800;margin-left:2px;color:#6b6484}
+.pm-co-sub{font-size:10px;color:#6b6484;line-height:1.5;font-weight:600;font-variant-numeric:tabular-nums;min-width:0}
+.pm-co-rows{margin-top:6px;border-top:1px dashed #e6e2f3;padding-top:6px;display:grid;gap:4px}
+.pm-co-row{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;font-size:10.5px;line-height:1.5;min-width:0}
+.pm-co-row .k{font-weight:700;color:#6b6484;flex:0 0 auto}
+.pm-co-row b{font-weight:800;font-variant-numeric:tabular-nums;color:#3f3960}
+.pm-co-row b.ok{color:#1f6b2f}
+.pm-co-row b.lack{color:#b45309}
+.pm-co-row b.dim{font-weight:600;color:#9a94b0}
+.pm-co-row .f{font-size:9.5px;font-weight:600;color:#8b86a3;font-variant-numeric:tabular-nums;line-height:1.5;min-width:0}
+.pm-co-badge{font-style:normal;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px;background:#eef7ee;color:#1f6b2f;border:1px solid #d6ebd8;white-space:nowrap}
+.pm-co-badge.low{background:#fdf5ee;color:#8a4a10;border-color:#f5dfc9}
+.pm-co-foot{margin-top:6px;display:flex;justify-content:flex-end}
+.pm-co-foot button{font:inherit;font-size:9.5px;font-weight:700;color:#6b6484;background:#fff;border:1px solid #ded9ef;border-radius:7px;padding:3px 8px;cursor:pointer}
+.pm-co-foot button:hover{border-color:#c4b5fd;background:#faf8ff}
+.pm-calc-note{margin:7px 0 0;font-size:9.5px;line-height:1.55;color:#8b86a3}
+.pm-ds-put{font:inherit;font-size:9.5px;font-weight:800;color:#4c1d95;background:#fff;border:1px dashed #c4b5fd;border-radius:6px;padding:2px 6px;cursor:pointer;white-space:nowrap;line-height:1.5}
+.pm-ds-put:hover{background:#f3ecff;border-style:solid}
+@media(max-width:760px){
+  .pm-calc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pm-co-big{font-size:19px}
+}

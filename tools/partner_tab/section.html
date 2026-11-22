@@ -1,4 +1,4 @@
-  <section id="pmPanel" class="pm-panel" hidden aria-label="⑧ 외항사 마일 — 부산(PUS)·인천(ICN) 출발 9개 프로그램 보너스 좌석">
+  <section id="pmPanel" class="pm-panel" hidden aria-label="⑨ 외항사 마일 — 부산(PUS)·인천(ICN) 출발 9개 프로그램 보너스 좌석">
     <div class="pm-banner" id="pmBanner"></div>
     <div class="pm-kpi" id="pmKpi"></div>
 
@@ -28,6 +28,54 @@
       <div class="pm-line pm-scroll" id="pmProgs" role="group" aria-label="프로그램 선택"></div>
       <div class="pm-line pm-scroll" id="pmDests" role="group" aria-label="도시 선택"></div>
     </div>
+
+    <!-- 🧮 마일리지 계산기 — 왕복·인원 필요 마일과 1마일당 원화 가치.
+         값은 이 기기(localStorage)에만 저장하고, 날짜 상세 시트의 「가는 편/오는 편에」 버튼으로 채울 수 있다. -->
+    <details class="pm-calc" id="pmCalc" open>
+      <summary><b>🧮 마일리지 계산기</b><span id="pmCalcSum">왕복 · 1명 · 마일을 넣어 주세요</span></summary>
+      <div class="pm-calc-body">
+        <div class="pm-calc-grid">
+          <div class="pm-cf">
+            <span class="pm-cf-lab">여정</span>
+            <div class="pm-seg" id="pmCalcTrip" role="group" aria-label="편도·왕복">
+              <button type="button" data-pm-trip="rt" class="on" aria-pressed="true">왕복</button>
+              <button type="button" data-pm-trip="ow" aria-pressed="false">편도</button>
+            </div>
+          </div>
+          <div class="pm-cf">
+            <label class="pm-cf-lab" for="pmCalcPax">탑승 인원</label>
+            <select id="pmCalcPax" aria-label="탑승 인원">
+              <option value="1">1명</option><option value="2">2명</option><option value="3">3명</option>
+              <option value="4">4명</option><option value="5">5명</option><option value="6">6명</option>
+              <option value="7">7명</option><option value="8">8명</option><option value="9">9명</option>
+            </select>
+          </div>
+          <div class="pm-cf">
+            <label class="pm-cf-lab" for="pmCalcGo">가는 편 마일</label>
+            <input id="pmCalcGo" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 75,000" aria-label="가는 편 마일">
+          </div>
+          <div class="pm-cf" id="pmCalcBackF">
+            <label class="pm-cf-lab" for="pmCalcBack">오는 편 마일</label>
+            <input id="pmCalcBack" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 75,000" aria-label="오는 편 마일">
+          </div>
+          <div class="pm-cf">
+            <label class="pm-cf-lab" for="pmCalcHave">보유 마일 <i>선택</i></label>
+            <input id="pmCalcHave" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 120,000" aria-label="보유 마일">
+          </div>
+          <div class="pm-cf">
+            <label class="pm-cf-lab" for="pmCalcTax">유류·세금(1인) <i>선택</i></label>
+            <input id="pmCalcTax" type="text" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="유류·세금 1인">
+          </div>
+          <div class="pm-cf pm-cf-wide">
+            <label class="pm-cf-lab" for="pmCalcCash">비교 현금 항공권 가격(1인, 세금 포함) <i>선택</i></label>
+            <input id="pmCalcCash" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 890,000" aria-label="비교 현금 항공권 가격 1인">
+          </div>
+        </div>
+        <p class="pm-calc-flash" id="pmCalcFlash" aria-live="polite"></p>
+        <div class="pm-calc-out" id="pmCalcOut" aria-live="polite"></div>
+        <p class="pm-calc-note">필요 마일 = (가는 편 + 오는 편) × 인원입니다. 1마일당 원화 가치는 (현금가 − 유류·세금) ÷ 1인 필요 마일로, 마일로 살 때 세금을 뺀 현금 지출이 마일 1장당 얼마어치인지 보는 값입니다. 유류·세금은 현금 가격과 같은 1인 기준으로 넣어 주세요. 실제 좌석 수량·세금·발권 수수료는 항공사 예약 화면 값이 다를 수 있습니다.</p>
+      </div>
+    </details>
 
     <div class="pm-block" id="pmBest"></div>
 

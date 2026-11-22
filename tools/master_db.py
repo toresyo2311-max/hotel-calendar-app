@@ -52,8 +52,9 @@ WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 
 # 탭별 기대 호텔 수 — ① 호텔럭스 161곳(2026-11-20 파라다이스 호텔 부산 제외) · ② 중올플 289곳
-# (참여 287 + 기존 미참여·자격없음 2) · ③ 아코르 247곳(국내 30 + 동남아 196 + 한·중·일 21) · ④ 메리어트 62곳 · 총 759곳
-EXPECT_TABS = {'lux': 161, 'china': 289, 'domestic': 247, 'marriott': 62}
+# (참여 287 + 기존 미참여·자격없음 2) · ③ 아코르 265곳(국내 30 + 동남아 196 + 한·중·일 21
+# + 레드핫으로 새로 넣은 해외 18곳) · ④ 메리어트 62곳 · 총 777곳
+EXPECT_TABS = {'lux': 161, 'china': 289, 'domestic': 265, 'marriott': 62}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 중올플 APC — 참여 282 + 기존 2 = 284곳 · 12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715
 EXPECT_APC = {'hotels': 289, 'participating': 287, 'dec_available': 210,
@@ -63,8 +64,12 @@ EXPECT_APC = {'hotels': 289, 'participating': 287, 'dec_available': 210,
 # ③ 아코르 · Stay Plus & SNU — 국내 4곳 + 한·중·일 페어몬트·소피텔 21곳(365일)
 # 2026-11-22 — 동남아(태국 102 · 베트남 55 · 싱가포르 39) 196곳을 a52~a247 로 더해 247곳.
 #   'new' 는 id 가 a 로 시작하는 호텔 수(= 기존 해외 21 + 동남아 196 = 217)다.
+# 2026-11-22 — Red Hot Rooms 로 해외 18곳(a248~a265)을 더해 265곳. 이 18곳은 365일 요금이 없고
+#   레드핫 시작가(`redhotRates`)만 있다. 'new' 는 217 + 18 = 235.
 EXPECT_ACCOR3 = {
-    'hotels': 247, 'new': 217,
+    'hotels': 265, 'new': 235,
+    # Red Hot Rooms — 2026-11-22 오퍼 목록 32건 · 참여 호텔 32곳(기존 14 + 신규 18) · 창 안 날짜 1,909칸
+    'redhot': {'offers': 32, 'hotels': 32, 'cells': 1909},
     'priced': {'C1B5': 0, 'A7Z9': 124, 'A5G7': 263, '8167': 357, 'B6R8': 362},
     'snu_rows': 43, 'snu_cities': 8,
 }
@@ -288,7 +293,7 @@ def check_apc(db):
 
 
 def check_accor3(db):
-    """③ 아코르 · Stay Plus & SNU — 21곳 365일 · 우한 이상값 제외 · alsoIn 양방향 · SNU 표."""
+    """③ 아코르 · Stay Plus & SNU — 21곳 365일 · 우한 이상값 제외 · alsoIn 양방향 · SNU 표 · 레드핫."""
     problems = []
     dom = [h for h in db['hotels'] if h.get('group') == 'domestic']
     if len(dom) != EXPECT_ACCOR3['hotels']:
@@ -297,9 +302,13 @@ def check_accor3(db):
     new = [h for h in dom if h['id'].startswith('a')]
     if len(new) != EXPECT_ACCOR3['new']:
         problems.append('③ 신규 %d곳 (기대 %d곳)' % (len(new), EXPECT_ACCOR3['new']))
+    rh_hotels = [h for h in dom if h.get('redhot')]
     for h in dom:
         rates = h.get('rates') or {}
-        if len(rates) != 365:
+        # 2026-11-22 — 레드핫으로 새로 넣은 18곳은 365일 요금 없이 레드핫 시작가만 있다.
+        #   그 밖의 호텔은 지금까지처럼 365칸을 요구한다.
+        only_redhot = bool(h.get('redhot')) and not rates
+        if not only_redhot and len(rates) != 365:
             problems.append('③ %s 날짜 칸 %d개' % (h['id'], len(rates)))
         for v in rates.values():
             if v is not None and (not isinstance(v, int) or v <= 0):
@@ -329,6 +338,67 @@ def check_accor3(db):
         p = (ids.get(hid) or {}).get('program') or {}
         if p.get('stayplus') is not sp or p.get('snu') is not snu:
             problems.append('③ %s program %s (기대 stayplus=%s snu=%s)' % (hid, p, sp, snu))
+    # ── Red Hot Rooms — 원천(오퍼 목록)에 적힌 값만 있는지 ──────────────────
+    if len(rh_hotels) != EXPECT_ACCOR3['redhot']['hotels']:
+        problems.append('③ 레드핫 참여 호텔 %d곳 (기대 %d곳)' % (len(rh_hotels), EXPECT_ACCOR3['redhot']['hotels']))
+    offer_ids, rh_codes, rh_cells = set(), set(), 0
+    for h in rh_hotels:
+        r = h['redhot']
+        for k in ('offerId', 'title', 'code', 'currency', 'priceText', 'krw', 'stayText',
+                  'bookUntil', 'offerUrl', 'status'):
+            if r.get(k) in (None, ''):
+                problems.append('③ %s 레드핫 %s 없음' % (h['id'], k))
+        # 객실 타입은 오퍼 원문이 비어 있는 경우가 있다(페어몬트 싱가포르) — 키가 있는지만 본다
+        if 'rooms' not in r:
+            problems.append('③ %s 레드핫 rooms 없음' % h['id'])
+        if r.get('code') != h.get('code'):
+            problems.append('③ %s 레드핫 코드 %r ≠ 호텔 코드 %r' % (h['id'], r.get('code'), h.get('code')))
+        if not isinstance(r.get('krw'), int) or r['krw'] <= 0:
+            problems.append('③ %s 레드핫 원화 시작가 이상: %r' % (h['id'], r.get('krw')))
+        if r.get('currency') not in ('VND', 'IDR', 'USD', 'PHP', 'SGD', 'AUD', 'JPY', 'THB', 'MYR'):
+            problems.append('③ %s 레드핫 통화 이상: %r' % (h['id'], r.get('currency')))
+        if r['offerId'] in offer_ids:
+            problems.append('③ 레드핫 오퍼 id 중복: %s' % r['offerId'])
+        offer_ids.add(r['offerId'])
+        rh_codes.add(h.get('code'))
+        m = r.get('redhotRates') or h.get('redhotRates') or {}
+        rates = h.get('redhotRates') or {}
+        if r.get('status') == 'ended':
+            if rates:
+                problems.append('③ %s 레드핫 종료 오퍼인데 날짜 %d칸' % (h['id'], len(rates)))
+        elif not rates:
+            problems.append('③ %s 레드핫 진행 오퍼인데 날짜 없음' % h['id'])
+        for d, v in rates.items():
+            rh_cells += 1
+            if not (WINDOW_START <= d <= WINDOW_END):
+                problems.append('③ %s 레드핫 날짜 %s 창 밖' % (h['id'], d))
+                break
+            if not isinstance(v, int) or v <= 0:
+                problems.append('③ %s 레드핫 %s 값 이상: %r' % (h['id'], d, v))
+                break
+            if v != r.get('krw'):
+                problems.append('③ %s 레드핫 %s 값 %r ≠ 시작가 %r' % (h['id'], d, v, r.get('krw')))
+                break
+        if len(rates) != r.get('dates'):
+            problems.append('③ %s 레드핫 dates %r ≠ 실제 %d칸' % (h['id'], r.get('dates'), len(rates)))
+        if r.get('exceptDates'):
+            bad = [d for d in r['exceptDates'] if d in rates]
+            if bad:
+                problems.append('③ %s 레드핫 제외일이 날짜에 남아 있음: %s' % (h['id'], bad[:3]))
+        if not str(r.get('offerUrl') or '').startswith('https://www.accorplus.com/offers/'):
+            problems.append('③ %s 레드핫 오퍼 주소 이상: %s' % (h['id'], r.get('offerUrl')))
+        if h.get('rates'):
+            # 기존 호텔 — 레드핫을 더해도 365일 요금·Stay Plus 는 그대로여야 한다
+            if len(h['rates']) != 365:
+                problems.append('③ %s 레드핫 추가 후 요금 칸 %d개' % (h['id'], len(h['rates'])))
+    if len(offer_ids) != EXPECT_ACCOR3['redhot']['offers']:
+        problems.append('③ 레드핫 오퍼 %d건 (기대 %d건)' % (len(offer_ids), EXPECT_ACCOR3['redhot']['offers']))
+    if rh_cells != EXPECT_ACCOR3['redhot']['cells']:
+        problems.append('③ 레드핫 칸 %d개 (기대 %d개)' % (rh_cells, EXPECT_ACCOR3['redhot']['cells']))
+    for h in dom:
+        if not (h.get('rates') or {}) and not h.get('redhot'):
+            problems.append('③ %s 요금도 레드핫도 없음' % h['id'])
+
     accor = db.get('accor') or {}
     program = accor.get('program') or {}
     if program.get('stayplusExpiry') != '2027-09-30' or program.get('snuExpiry') != '2027-12-31':
@@ -356,7 +426,7 @@ def check_accor3(db):
 
 # 예약 링크(href) 호스트 — 화면에 보이는 글자가 아니라 날짜 칸이 여는 주소이므로
 # 출처 문구 검사에서 제외한다. 그 밖의 출처 표기는 그대로 검사한다.
-LINK_HOSTS = ('marriott.com', 'ritzcarlton.com', 'all.accor.com', 'accor.com',
+LINK_HOSTS = ('marriott.com', 'ritzcarlton.com', 'all.accor.com', 'accor.com', 'accorplus.com',
               'hotelux.com', 'trip.com', 'weixin.qq.com', 'americanexpress.com',
               'ttang.com', 'modetour.com', 'ybtour.co.kr', 'hanatour.com', 'tikitikit.kr')
 
@@ -4572,6 +4642,8 @@ def stats_of(db, flights, tt=None):
         tabs[h.get('group')] = tabs.get(h.get('group'), 0) + 1
     routes = flights.get('routes') or []
     deals = sum(len(r.get('deals') or []) for r in routes)
+    redhot_cells = sum(len(h.get('redhotRates') or {}) for h in hotels)
+    redhot_hotels = sum(1 for h in hotels if h.get('redhot'))
     dates = set()
     for h in hotels:
         dates.update((h.get('rates') or {}).keys())
@@ -4587,6 +4659,8 @@ def stats_of(db, flights, tt=None):
         'deals': deals,
         'pus_deals': len(((tt or {}).get('deals')) or []),
         'pus_routes': len({d.get('code') for d in ((tt or {}).get('deals') or [])}),
+        'redhot_hotels': redhot_hotels,
+        'redhot_cells': redhot_cells,
         'priced_per_hotel': {h['id']: sum(1 for v in (h.get('rates') or {}).values() if v is not None)
                              for h in hotels},
         'cells_per_hotel': {h['id']: len(h.get('rates') or {}) for h in hotels},
@@ -4621,7 +4695,8 @@ def cmd_extract(args):
         'voucherExpiry': dbmeta.get('voucherExpiry'),
         'extended': dbmeta.get('extended'),
         'counts': {k: st[k] for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus',
-                                      'routes', 'deals', 'snu', 'pus_deals', 'pus_routes')},
+                                      'routes', 'deals', 'snu', 'pus_deals', 'pus_routes',
+                                      'redhot_hotels', 'redhot_cells')},
         'sources': dbmeta.get('sources') or [],
         'hotels': hotels,
         'flights': flights,
@@ -4780,7 +4855,7 @@ def cmd_verify(args, quiet=False):
     st = stats_of({'hotels': hotels, 'accor': parts['domestic'].get('accor')}, flights, tt)
     expect = master.get('counts') or {}
     for k in ('hotels', 'tabs', 'cells', 'priced', 'na', 'stayplus', 'routes', 'deals', 'snu',
-              'pus_deals', 'pus_routes'):
+              'pus_deals', 'pus_routes', 'redhot_hotels', 'redhot_cells'):
         if k in expect and expect[k] != st[k]:
             problems.append('counts.%s 불일치: master=%s index=%s' % (k, expect[k], st[k]))
     if st['date_min'] != WINDOW_START or st['date_max'] != WINDOW_END or st['dates'] != 365:
@@ -4792,7 +4867,7 @@ def cmd_verify(args, quiet=False):
         grp = (by_id.get(hid) or {}).get('group')
         if n > 365:
             problems.append('%s 날짜 칸 %d개 (창 365일 초과)' % (hid, n))
-        elif grp != 'lux' and n != 365:
+        elif grp != 'lux' and n != 365 and not ((by_id.get(hid) or {}).get('redhot') and n == 0):
             problems.append('%s 날짜 칸 %d개 (365 이어야 함)' % (hid, n))
         for d in ((by_id.get(hid) or {}).get('rates') or {}):
             if not (WINDOW_START <= d <= WINDOW_END):

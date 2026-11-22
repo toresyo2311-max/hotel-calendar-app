@@ -61,7 +61,9 @@ WINDOW_END = '2027-11-30'
 #   2026-11-23에 싱가포르 8곳(m41~m48)을 더해 100곳이 됐다 — 동남아 8(싱가포르).
 #   2026-11-23에 싱가포르 중반 7곳(m49~m55)을 더해 107곳이 됐다 — 동남아 15(싱가포르).
 #   2026-11-23에 싱가포르 마지막 7곳(m56~m62)을 더해 114곳이 됐다 — 동남아 22(싱가포르 완결).
-EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 114}
+#   2026-11-23에 오세아니아 1차 23곳(m63~m85)을 더해 137곳이 됐다 — 오세아니아 23(호주 12 · 멜버른 8 ·
+#   골드코스트 3 · 피지 3 · 오클랜드 2 · 포트모르즈비 2 · 보라보라 2 · 괌 1 · 아피아 1).
+EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 137}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
 #   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
@@ -541,12 +543,12 @@ def check_sources(text_blob):
     return ['출처 문구에 금지된 사이트 이름: %s' % ', '.join(hits)] if hits else []
 
 
-EXPECT_BRANDS = {'리츠칼튼': 25, '세인트레지스': 15, 'W': 11, '코트야드 바이 메리어트': 8,
-                 '포 포인츠 바이 쉐라톤': 7, 'JW 메리어트': 5, '럭셔리 컬렉션': 5, '웨스틴': 4,
-                 '오토그래프 컬렉션': 6, '페어필드 바이 메리어트': 3, '메리어트': 3, 'AC 호텔': 2,
-                 '알로프트': 3, '목시': 2, '쉐라톤': 3, '에디션': 3,
-                 '메리어트 이그제큐티브 아파트먼트': 1, '르메르디앙': 1, '트리뷰트 포트폴리오': 4,
-                 '디자인 호텔스': 3}
+EXPECT_BRANDS = {'리츠칼튼': 26, '세인트레지스': 16, 'W': 12, '코트야드 바이 메리어트': 9,
+                 '포 포인츠 바이 쉐라톤': 8, 'JW 메리어트': 7, '럭셔리 컬렉션': 5, '웨스틴': 6,
+                 '오토그래프 컬렉션': 6, '페어필드 바이 메리어트': 3, '메리어트': 6, 'AC 호텔': 4,
+                 '알로프트': 3, '목시': 2, '쉐라톤': 9, '에디션': 3,
+                 '메리어트 이그제큐티브 아파트먼트': 2, '르메르디앙': 2, '트리뷰트 포트폴리오': 4,
+                 '디자인 호텔스': 4}
 # 한·일 원본 CSV 기대치(2026-11-17 수집) — 유실·중복 방지용 고정값. 2026-11-23에 한국 30곳을
 #   더하면서 k11~k40 이 이 목록에 섞이지 않도록 원본 22곳 id 만 골라 검사한다. 신규 30곳은 아래
 #   EXPECT_KR30 으로 따로 고정한다.
@@ -566,6 +568,14 @@ SG7_IDS = {'m%02d' % i for i in range(49, 56)}
 #   포인트 미게시 호텔은 없다(7곳 모두 아워드 포인트 캘린더 값이 있다). null 은 보간하지 않는다.
 EXPECT_SG7L = {'hotels': 7, 'cash': 2393, 'points': 2363}
 SG7L_IDS = {'m%02d' % i for i in range(56, 63)}
+# 2026-11-23 오세아니아 1차 23곳(m63~m85) — 현금 7,250칸 · 아워드 포인트 6,263칸 / 23×365=8,395칸
+#   제외 2곳: NANWI(웨스틴 피지 골프 · 호텔 페이지 404 미취급) · NANTI(쉐라톤 나디 토코리키 · 판매 중단).
+#   포인트 0칸 3곳(NANSI 12월 31일만 판매 후 중단 · OOLAC 12/18 개관 · POMEA)은 보간하지 않는다.
+EXPECT_OC23 = {'hotels': 23, 'cash': 7250, 'points': 6263}
+OC23_IDS = {'m%02d' % i for i in range(63, 86)}
+# 아워드 포인트 캘린더가 전 기간 미게시인 호텔(코드) — 「포인트 칸 없음」 검사에서 뺀다.
+#   k09 여의도 파크 센터 MEA · NANSI 12월 31일만 판매 · OOLAC 12/18 개관 · POMEA
+NO_POINT_CODES = {'NANSI', 'OOLAC', 'POMEA'}
 # ① HoteLux 탭과 호텔이 겹치는 ⑤ 항목(요금 출처가 달라 둘 다 수록) — alsoIn 으로 교차 표시
 EXPECT_OVERLAP = ({'k01', 'k02', 'k04', 'k05', 'k20', 'k26', 'j01', 'j04', 'j10', 'j11', 'j12'}
                   | SG8_IDS
@@ -4918,8 +4928,18 @@ def check_tabs(db):
             or sg7lp != EXPECT_SG7L['points']:
         problems.append('싱가포르 마지막 7곳 수치 %s (기대 %s)' % (
             {'hotels': len(sg7l), 'cash': sg7lc, 'points': sg7lp}, EXPECT_SG7L))
-    for h in kj + kr30 + sg8 + sg7 + sg7l:
-        if not h.get('points') and h['id'] != 'k09':
+    # 2026-11-23 — 오세아니아 1차 23곳(m63~m85)도 칸 수를 고정해 둔다(유실·보간 방지)
+    oc = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'] in OC23_IDS]
+    occ = sum(1 for h in oc for v in (h.get('rates') or {}).values() if isinstance(v, (int, float)))
+    ocp = sum(1 for h in oc for v in (h.get('points') or {}).values() if isinstance(v, int))
+    if len(oc) != EXPECT_OC23['hotels'] or occ != EXPECT_OC23['cash'] \
+            or ocp != EXPECT_OC23['points']:
+        problems.append('오세아니아 23곳 수치 %s (기대 %s)' % (
+            {'hotels': len(oc), 'cash': occ, 'points': ocp}, EXPECT_OC23))
+    for h in kj + kr30 + sg8 + sg7 + sg7l + oc:
+        if h['id'] == 'k09' or h.get('code') in NO_POINT_CODES:
+            continue
+        if not h.get('points'):
             problems.append('%s 포인트 칸 없음' % h['id'])
         if h['id'] in EXPECT_OVERLAP and not h.get('alsoIn'):
             problems.append('%s 는 ① 탭과 겹치므로 alsoIn 필요' % h['id'])

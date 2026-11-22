@@ -832,6 +832,7 @@ function pmCalcInit(){
 function pmCalcPut(side,miles,name){
   if(!miles)return;
   pmCalcLoad();
+  var wasOw=PM_CALC.trip==='ow';
   if(side==='back'){PM_CALC.trip='rt';PM_CALC.back=miles}else{PM_CALC.go=miles}
   PM_CALC.open=true;
   pmCalcSave();pmCalcPaint();
@@ -844,7 +845,7 @@ function pmCalcPut(side,miles,name){
   var fl=pmCalcEl('pmCalcFlash');
   if(fl){
     fl.textContent=(side==='back'?'오는 편':'가는 편')+'에 '+KR(miles)+'마일을 넣었습니다'
-      +(name?' · '+name:'')+(side==='back'?' (왕복으로 바꿨습니다)':'');
+      +(name?' · '+name:'')+(side==='back'&&wasOw?' (왕복으로 바꿨습니다)':'');
     fl.classList.add('on');
     clearTimeout(PM_CALC_FLASH_T);
     PM_CALC_FLASH_T=setTimeout(function(){

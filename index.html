@@ -8932,11 +8932,12 @@ function pmRenderList(){
     }).join('')+'</div>';
 }
 
+function pmWord(t){return String(t==null?'':t).replace(/원천/g,'조회 사이트')}
 function pmRenderNote(){
   var el=document.getElementById('pmNote');
   if(!el)return;
   var m=pmMeta();
-  var cov=(m.coverage||[]).map(function(c){return esc(c.name)+' '+KR(c.rows)+(c.note?' ('+esc(c.note)+')':'')});
+  var cov=(m.coverage||[]).map(function(c){return esc(pmWord(c.name))+' '+KR(c.rows)+(c.note?' ('+esc(pmWord(c.note))+')':'')});
   var have=(m.coverage||[]).filter(function(c){return c.rows>0}).length;
   var all=(m.coverage||[]).length||9;
   el.innerHTML='<details class="notefold">'

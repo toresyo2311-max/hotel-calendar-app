@@ -140,7 +140,7 @@ function pmRenderKpi(){
   var cheapest=null;
   dirRows.forEach(function(r){
     var b=pmBestCabin(r,pms.cabin);
-    if(b&&(!cheapest||b.miles<cheapest.miles))cheapest={r:r,c:b};
+    if(b&&(!cheapest||b.miles<cheapest.miles))cheapest={r:r,c:b,p:pmProg(r[0])};
   });
   var withData=Object.keys(progs).length;
   el.innerHTML=''
@@ -148,7 +148,7 @@ function pmRenderKpi(){
     +'<div><span>보너스 좌석 행</span><b>'+KR(dirRows.length)+'</b><i>'+(pms.dir?'부산 도착':'부산 출발')+' 방향</i></div>'
     +'<div><span>도시</span><b>'+KR(Object.keys(dests).length)+'</b><i>필터로 좁힐 수 있습니다</i></div>'
     +'<div class="new"><span>가장 적은 마일</span><b>'+(cheapest?KR(cheapest.c.miles):'—')+'</b><i>'
-    +(cheapest?esc(pmDestName(cheapest.r[3]))+' · '+esc(cheapest.p.short||cheapest.p.name)+' '+esc(pmCabinShort(cheapest.c)):'—')+'</i></div>';
+    +(cheapest?esc(pmDestName(cheapest.r[3]))+' · '+esc((cheapest.p&&(cheapest.p.short||cheapest.p.name))||'')+' '+esc(pmCabinShort(cheapest.c)):'—')+'</i></div>';
 }
 
 function pmRenderDir(){

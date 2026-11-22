@@ -162,9 +162,6 @@ def main(argv):
         print('  %-28s %4d %s' % (c['name'], c['rows'], c['note']))
 
     src = open(INDEX, encoding='utf-8').read()
-    if 'pmPanel' in src and NAV_START in src:
-        print('index.html: 이미 ⑧ 탭이 들어 있습니다 — 연결은 건너뜁니다')
-        return 0
 
     def asset(n):
         with open(os.path.join(ASSETS, n), encoding='utf-8') as fp:

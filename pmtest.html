@@ -38,14 +38,19 @@ function measure(){
 var tries=0;
 function go(){
   tries++;
+  if(tries>12){out.textContent='시간 초과 — 탭을 열지 못했습니다';return}
   try{
     var w=f.contentWindow,panel=w.document.getElementById('pmPanel');
-    if(tries<6&&(!panel||panel.hidden)){w.location.hash='#tab=partner-mileage';setTimeout(go,700);return}
+    if(!panel){setTimeout(go,600);return}
+    if(panel.hidden){
+      if(typeof w.activate==='function')w.activate('partner-mileage');
+      setTimeout(go,700);return;
+    }
     measure();
-  }catch(e){setTimeout(go,700)}
+  }catch(e){setTimeout(go,600)}
 }
-f.addEventListener('load',go);
-setTimeout(go,1500);
+f.addEventListener('load',function(){setTimeout(go,400)});
+setTimeout(go,1200);
 </script>
 </body>
 </html>

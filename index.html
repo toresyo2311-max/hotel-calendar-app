@@ -3206,7 +3206,7 @@ function rhLines(h,dt){
   out+=row('객실 타입',esc(r.rooms||'오퍼에 표시되지 않음'));
   if(r.exceptDates&&r.exceptDates.length)out+=row('제외일',r.exceptDates.map(d=>esc(fullDate(d))).join(' · '));
   if(r.exceptText)out+=row('제외일',esc(r.exceptText));
-  out+=row('이용 조건','<b>ALL Accor+ Explorer 회원 전용</b> — 체크인 때 회원 카드를 제시해야 합니다(오퍼 약관)'+(r.tax?' · 세금 표기 원문 “'+esc(r.tax)+'”':''));
+  out+=row('이용 조건','<b>ALL Accor+ Explorer 회원 전용</b> — 체크인 때 회원 카드를 제시해야 합니다(오퍼 약관)'+(' · '+(r.tax?'세금 표기 원문 “'+esc(r.tax)+'”':'세금 별도 표기 없음(원문 가격 그대로)')));
   out+=row('링크',rhOfferBtn(h,'rhr-link')+'<a class="rhr-link bk2 bkx" href="'+esc(bkAccorUrl(h.code,dt,1))+'" target="_blank" rel="noopener">아코르 공홈 예약('+esc(fullDate(dt))+') ↗</a>');
   out+='<div class="rhr-note">시작가는 오퍼에 적힌 1박 시작가입니다 — 세금·봉사료는 표기(++, +++, net)에 따릅니다. 실제 결제 금액·잔여 객실은 예약 화면에서 확인하세요.</div></div>';
   return out;
@@ -4064,7 +4064,7 @@ function openDetail(dt){
       const r=rhOf(h)||{};
       tag='<span class="tag">레드핫</span>'+(r.offerSavePct?'<span class="tag">오퍼 최대 '+r.offerSavePct+'% 할인</span>':'');
       if(v==null)sub=(rhHasDates(h)?'이 날짜는 레드핫 투숙 기간('+(r.stayText||'—')+') 밖입니다':'이 호텔의 레드핫 오퍼가 끝났습니다 — 투숙 기간 '+(r.stayText||'—'));
-      else sub='레드핫 시작가 '+r.priceText+(r.listText?' · 정상가 '+r.listText+(r.discountPct!=null?' (정상가 대비 −'+r.discountPct+'%)':''):' · 정상가 미표시')+' · 세금 표기 원문 “'+(r.tax||'—')+'”';
+      else sub='레드핫 시작가 '+r.priceText+(r.listText?' · 정상가 '+r.listText+(r.discountPct!=null?' (정상가 대비 −'+r.discountPct+'%)':''):' · 정상가 미표시')+(r.tax?' · 세금 표기 원문 “'+r.tax+'”':' · 세금 별도 표기 없음');
     }else if(st.tab==='marriott'){
       const c=cashOf(h,dt),p=ptsOf(h,dt);
       tag='<span class="tag">'+esc(h.brand)+'</span>'+(h.alsoIn?'<span class="tag">① VIP 탭에도</span>':'');
@@ -4098,8 +4098,8 @@ function openDetail(dt){
     const acts='<div class="deal-acts">'
       +(v!=null?(h.group==='china'
         ?'<button type="button" class="deal-book" data-wx-hotel="'+h.id+'" data-wx-date="'+dt+'" data-wx-nights="'+N+'" title="'+esc(h.name+' · '+fullDate(dt)+' 체크인 위챗 예약')+'">예약 ↗</button>'
-        :(rhrMode()?rhOfferBtn(h,'deal-book')+bkBookHtml(h,dt,N,'deal-book'):bkBookHtml(h,dt,N,'deal-book')))
-        :(rhrMode()?rhOfferBtn(h,'deal-book'):''))
+        :bkBookHtml(h,dt,N,'deal-book'))
+        :'')
       +planBtn('h|'+h.id+'|'+dt+'|'+N,planHotelText(h,dt,N))
       +cmpBtn(cmpHotelItem(h,dt,N))
       +'</div>';

@@ -136,6 +136,7 @@ __res.filtered=function(){return String(filteredHotels().length)};
 __res.monthHi=function(){return getEl('monthHighlight').innerHTML};
 __res.csv=function(){try{exportCsv();return 'ok'}catch(e){return 'ERR: '+(e&&e.stack||e)}};
 __res.zones=function(){return getEl('zoneChips').innerHTML};
+__res.apcDay=function(d){try{var h=apcDayHotel(d);return h?(h.id+' accor='+Boolean(h.accor)+' zone='+h.zone):'null'}catch(e){return 'ERR: '+(e&&e.stack||e)}};
 __res.nights=function(n){try{st.nights=Number(n);render();return 'ok'}catch(e){return 'ERR: '+(e&&e.stack||e)}};
 __res.prog=function(v){try{st.prog=v;render();return 'ok'}catch(e){return 'ERR: '+(e&&e.stack||e)}};
 __res.brand=function(v){try{st.brand=v;render();return 'ok'}catch(e){return 'ERR: '+(e&&e.stack||e)}};
@@ -207,6 +208,7 @@ def main():
     run('setMode("cash")', 'cash')
     print('  cn cash — APC 배지:', ctx.eval('__res.has("days","APC ")'), '· 위챗 칸:', ctx.eval('__res.count("days","wx-cell")'))
     run('setMode("apc")', 'apc')
+    print('  apc zone (기대 cn):', ctx.eval('__res.state().zone'), '· 대표 호텔:', ctx.eval('__res.apcDay("2026-12-01")'))
     print('  apc — 가능 칸:', ctx.eval('__res.count("days","APC 가능")'), '· month:', ctx.eval('__res.monthHi()')[:80])
     print('  apc filtered:', ctx.eval('__res.filtered()'))
     print('  apc detail — APC 문구:', end=' ')

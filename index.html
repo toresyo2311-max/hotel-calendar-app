@@ -3261,6 +3261,17 @@ function apcDaySummary(dt){const hs=filteredHotels().filter(h=>h.accor);let a=0,
  for(const h of hs){const s=apcStateOf(h,dt);if(s==='a')a++;else if(s==='n')n++;else if(s==='u')u++;else x++;
   const c=cashOf(h,dt);if(c!=null&&(cash==null||c<cash))cash=c}
  return {a:a,n:n,u:u,x:x,total:hs.length,cash:cash}}
+/* APC 모드 달력 칸이 위챗 예약 창으로 넘길 호텔 — APC 카드만 고른다(다른 지역 호텔이 잡히지 않게).
+   호텔을 하나 골랐으면 그 호텔, 아니면 그날 '가능' 인 APC 카드 가운데 현금이 가장 싼 곳. */
+function apcDayHotel(dt){
+  if(st.hotel!=='all'){const h=filteredHotels()[0];return (h&&apcH(h))?h:null}
+  let best=null,bs=9,bp=Infinity;
+  for(const h of filteredHotels()){if(!apcH(h))continue;
+   const s=apcStateOf(h,dt),rank=s==='a'?0:(s==='n'?2:1),c=cashOf(h,dt);
+   if(rank<bs||(rank===bs&&c!=null&&c<bp)){best=h;bs=rank;bp=c!=null?c:Infinity}
+  }
+  return best;
+}
 function apcObservedAt(h){const t=Object.values(h.accor_apc_t||{});if(!t.length)return null;const m=t.slice().sort().pop();return m.slice(0,10)+' '+m.slice(11,16)}
 function apcObservedAll(){let best=null;for(const h of groupHotels()){const v=apcObservedAt(h);if(v&&(!best||v>best))best=v}return best}
 function apcBadgeFor(s){return s?'<span class="apc '+APCCLS[s]+'">'+APCTXT[s]+'</span>':''}
@@ -3791,7 +3802,7 @@ function renderCalendar(S){
         const main=only?(APCWORD[s]||'—'):((sum.a>0)?sum.a+'곳':(sum.u+sum.x>=sum.total?'—':'0곳'));
         const badge=only?apcBadgeFor(s):(sum.a>0?'<span class="apc yes">APC 가능</span>':(sum.u+sum.x>=sum.total?(sum.x>=sum.total?'<span class="apc none">미참여</span>':'<span class="apc unk">미확인</span>'):'<span class="apc no">불가</span>'));
         const cls='cal-day '+(ok?'apcok ':'')+((st.apcDaysOnly&&!ok)?'apc-off ':'')+(dow===0?'sunday ':dow===6?'saturday ':'')+(st.selectedDay===date?'selected-day':'');
-        const cellH=dayHotel(date)||(only?filteredHotels()[0]:null);
+        const cellH=apcDayHotel(date);
         const apcInner='<span class="daynum">'+Number(date.slice(-2))+'</span><span class="dayprice">'+main+'</span>'+(sum.cash!=null?'<span class="daycash">'+shortWon(sum.cash)+'</span>':'')+badge;
         cells+=cellH?('<button type="button" class="'+cls+' wx-cell" data-wx-hotel="'+cellH.id+'" data-wx-date="'+date+'" aria-label="'+fullDate(date)+' APC '+main+' · 위챗 예약 열기" title="'+fullDate(date)+' · 위챗 예약 창이 열립니다">'+apcInner+'</button>')
           :('<button type="button" class="'+cls+'" data-date="'+date+'" aria-label="'+fullDate(date)+' APC '+main+'" title="'+date+' APC 상세">'+apcInner+'</button>');
@@ -4093,6 +4104,8 @@ function setHotel(id){id=resolveHotelId(id);st.hotel=id;
   if(h&&!Object.values(h.rates||{}).some(v=>v!=null)&&Object.keys(h.stayplus2||{}).length)st.mode='sp2';}
  render()}
 function switchMode(mode){st.mode=mode;if(mode!=='cash'&&st.nights>1)st.nights=1;
+ /* APC 무료숙박은 중국(APC) 카드에만 있는 자료다 — 이 모드로 들어가면 그 지역으로 맞춘다 */
+ if(mode==='apc'&&st.tab==='accor'&&st.zone!=='cn'){st.zone='cn';st.city='all';st.hotel='all'}
  /* 레드핫으로 들어가면 참여 호텔만(레드핫 필터), 나오면 필터를 푼다 */
  if(mode==='rhr'){if(st.prog!=='rhr')st.prog='rhr'}else if(st.prog==='rhr')st.prog='all';
  /* 고른 지역에 그 모드의 호텔이 하나도 없으면 전체 지역으로 넓힌다(빈 화면 방지) */

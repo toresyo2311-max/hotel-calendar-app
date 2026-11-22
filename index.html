@@ -7995,7 +7995,7 @@ if(/[?&]diag=1(&|$)/.test(location.search+location.hash)){
    ✈️+🏨 콤보는 ①~③ 호텔과 ⑥ 항공이 모두 필요하므로 없는 것만 병렬로 받는다. */
 const DATA_ROOT='data/app/';
 /* 발렛 자료는 카드사 안내가 바뀔 때만 갱신되므로 배포마다 캐시를 비운다(브라우저 HTTP 캐시 10분 회피) */
-const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22b',mileage:'2026-11-22z2257','mileage-pt':'2026-11-22z2257',accor:'2026-11-22z52',marriott:'2026-11-23z86',hyatt:'2026-11-23z83',ihg:'2026-11-22z65',festival:'2026-11-22a'};
+const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22b',mileage:'2026-11-22z2257','mileage-pt':'2026-11-22z2257',accor:'2026-11-22z52',marriott:'2026-11-23z87',hyatt:'2026-11-23z83',ihg:'2026-11-22z65',festival:'2026-11-22a'};
 const PART_FILE={lux:'tab1_vip.json',accor:'tab2_accor.json',marriott:'tab4_marriott.json',hyatt:'tab10_hyatt.json',ihg:'tab11_ihg.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json',forest:'tab7_forest.json',mileage:'tab8_mileage.json','mileage-pt':'tab9_partner_mileage.json',festival:'tab12_festival.json'};
 const HOTEL_TABS=['lux','accor','marriott','hyatt','ihg'];
 /* ✈️+🏨 콤보가 쓰는 호텔 = ①~④ (④ 하얏트 · ⑤ IHG 는 콤보 계산에 넣지 않는다) */

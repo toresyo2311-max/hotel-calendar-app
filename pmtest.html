@@ -35,8 +35,17 @@ function measure(){
     },900);
   }catch(e){out.textContent='측정 실패: '+e}
 }
-f.addEventListener('load',measure);
-setTimeout(measure,2600);
+var tries=0;
+function go(){
+  tries++;
+  try{
+    var w=f.contentWindow,panel=w.document.getElementById('pmPanel');
+    if(tries<6&&(!panel||panel.hidden)){w.location.hash='#tab=partner-mileage';setTimeout(go,700);return}
+    measure();
+  }catch(e){setTimeout(go,700)}
+}
+f.addEventListener('load',go);
+setTimeout(go,1500);
 </script>
 </body>
 </html>

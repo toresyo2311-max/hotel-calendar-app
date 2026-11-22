@@ -95,6 +95,7 @@ CITY = {
     'HKT': '푸껫', 'KIJ': '니가타', 'PHL': '필라델피아', 'SAI': '시엠림',
     'VCE': '베네치아', 'RMQ': '타이중', 'YNZ': '옌청', 'CNX': '치앙마이',
     'KMG': '쿤밍', 'KOJ': '가고시마', 'RUH': '리야드', 'JED': '제다',
+    'KTM': '카트만두', 'NGS': '나가사키', 'PKX': '베이징/다싱',
     'AOJ': '아오모리', 'KMJ': '구마모토', 'UKB': '고베', 'OKA': '오키나와',
     'KMQ': '고마쓰', 'OIT': '오이타', 'DYG': '장자제',
 }
@@ -105,7 +106,7 @@ NOTE_PUS = {
     'smiles': '',
     'virgin': '',
     'delta': '경유편 다수 포함',
-    'united': '부산 자료 4건뿐',
+    'united': '부산 출발은 싱가포르(SIN) 노선만 추적',
     'aeroplan': '',
     'asiamiles': '원천에 부산 자료 없음 — 공홈 직접 조회',
     'british': '원천에 부산 자료 없음 — 공홈 직접 조회',
@@ -127,12 +128,12 @@ NOTE_ICN = {
 ORIGINS = [
     dict(code='PUS', name='부산', full='부산/김해(PUS)', file='tab9_partner_mileage.json',
          src='항공사 마일리지 프로그램 9곳 보너스 좌석 실측(부산/김해 PUS)',
-         sweep=('2026-11-22', '2026-12-26'), notes=NOTE_PUS,
-         dirNote='부산 출발(PUS→) 방향만 수집 — 부산 도착(→PUS)은 다음 수집에서 채웁니다'),
+         sweep=('2026-11-22', '2027-11-21'), notes=NOTE_PUS,
+         dirNote='부산 출발(PUS→) 방향만 수집 — 부산 도착(→PUS) 방향은 다음 수집에서 채웁니다'),
     dict(code='ICN', name='인천', full='인천(ICN)', file='tab9_partner_mileage_icn.json',
          src='항공사 마일리지 프로그램 9곳 보너스 좌석 실측(인천 ICN)',
-         sweep=('2026-11-22', '2027-01-21'), notes=NOTE_ICN,
-         dirNote='인천 출발(ICN→) 방향만 수집 — 인천 도착(→ICN)은 다음 수집에서 채웁니다'),
+         sweep=('2026-11-22', '2027-11-21'), notes=NOTE_ICN,
+         dirNote='인천 출발(ICN→) 방향만 수집 — 인천 도착(→ICN) 방향은 다음 수집에서 채웁니다'),
 ]
 
 
@@ -162,8 +163,10 @@ def parse_raw(path):
     return out
 
 
-def full_date(mmdd):
-    mm, dd = mmdd.split('-')
+def full_date(s):
+    if len(s) == 10 and s[4] == '-':
+        return s                      # YYYY-MM-DD 전체 날짜는 그대로
+    mm, dd = s.split('-')
     year = 2026 if int(mm) >= 11 else 2027
     return '%d-%s-%s' % (year, mm, dd)
 

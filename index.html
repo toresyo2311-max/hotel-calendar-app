@@ -690,6 +690,8 @@ button.fl-plink{font-family:inherit;line-height:1.35;cursor:pointer}
 .fl-sort button.on{background:var(--card);color:var(--violet-d);box-shadow:0 1px 4px rgba(27,18,43,.12)}
 .fl-toolbar .fl-extras,.tt-toolbar .fl-extras{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .fl-note{font-size:9.5px;color:var(--muted2);font-weight:600}
+/* ⑤ 좁은 화면: 권역 칩 묶음이 반쪽 칸에 갇혀 세 줄로 접히던 것 — 한 줄 전체 폭을 쓰게 한다 */
+@media (max-width:700px){.fl-toolbar .fl-regions{grid-column:1/-1}}
 .snapshot{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));gap:8px;margin:10px 0 12px}
 .snapshot div{border:1px solid var(--line2);border-radius:9px;padding:8px 10px;background:#fbfaff;line-height:1.55;font-size:10px;color:var(--muted)}
 .snapshot b{display:block;font-size:10px;color:var(--ink2);margin-bottom:3px;letter-spacing:-.01em}
@@ -1708,6 +1710,420 @@ html.locked #lockGate{display:flex}
 @media (prefers-reduced-motion:reduce){
  .lockgate.shake .lockcard{animation:none}
 }
+
+/* ════════════════════════════════════════════════════════════════════════════
+   디자인 시스템 v2 — 2026-11-22
+   목적: 색·타입·깊이·모서리·모션을 하나의 규칙으로 묶는다. 365일 요금 달력이라는
+   데이터 밀도는 그대로 두고, 읽는 순서(제목 → 숫자 → 단서)만 또렷하게 만든다.
+   원칙
+   1) 색은 기존 딥 플럼 + 바이올렛 정체성을 이어 간다. 새 팔레트를 들이지 않는다.
+   2) 숫자는 자리수가 흔들리지 않게 tabular. 가격·날짜·마일·퍼센트 모두 같은 규칙.
+   3) 깊이는 3단계만 — e1(카드) · e2(가리키면 떠오름) · e3(시트·모달).
+   4) 모서리는 6(칸) · 10(버튼·입력) · 14(패널) · 18(시트) · 999(알약) 다섯 값만.
+   5) 움직임은 사람이 가리키거나 누를 때만. prefers-reduced-motion 이면 전부 멈춘다.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. 토큰 ──────────────────────────────────────────────────────────────── */
+:root{
+  /* 표면·글자 — 플럼 쪽으로 살짝 기운 회색으로 통일, muted2 는 4.5:1 위로 올린다 */
+  --plum:#1a1029;--plum2:#241739;--plum3:#2d1d47;
+  --ink:#1a1430;--ink2:#2c2444;--muted:#514a68;--muted2:#6b6484;
+  --line:#e5e1ef;--line2:#efecf7;--bg:#f7f6fb;--card:#ffffff;
+  --surface-2:#fbfaff;--surface-3:#f4f2fb;
+  /* 강조 — 기존 바이올렛 계열 유지 */
+  --violet:#6d28d9;--violet-d:#5b21b6;--violet-l:#7c3aed;
+  --lav:#efe9ff;--lav2:#c7b6fb;--lav3:#ded2fe;
+  /* 의미색 — 특가(초록)·주의(호박)·경고(붉은 자주) */
+  --ok:#12694a;--ok-bg:#eef8f2;--ok-line:#bfe3cf;
+  --warn:#8a5a1b;--warn-bg:#fdf6ea;--warn-line:#efdfc2;
+  --bad:#a0304f;--bad-bg:#fdf0f4;--bad-line:#f2cfda;
+  --red:#7b1f5e;--rose:#f8eef4;--blue:#5b21b6;--bluepale:#f2edfd;--teal:#5b21b6;--mint:#f1ecfd;
+  /* 달력 가격대 5단계 — 이웃 칸이 구분되도록 간격을 고르게 */
+  --h1:#4a1c92;--h2:#7434e0;--h3:#bba7f6;--h4:#e6dcfd;--h5:#faf8ff;
+  /* 깊이 3단계 + 초점 링 */
+  --e1:0 1px 2px rgba(26,16,41,.05),0 2px 6px rgba(26,16,41,.04);
+  --e2:0 2px 5px rgba(26,16,41,.07),0 10px 22px rgba(26,16,41,.07);
+  --e3:0 10px 28px rgba(20,10,36,.16),0 34px 68px rgba(20,10,36,.20);
+  --shadow:0 1px 2px rgba(26,16,41,.05),0 6px 16px rgba(26,16,41,.05);
+  --ring:0 0 0 2px #fff,0 0 0 4px rgba(124,58,237,.5);
+  --radius:14px;
+  --ease:cubic-bezier(.2,.6,.25,1);
+}
+
+/* ── 2. 타이포그래피·숫자·줄바꿈 ──────────────────────────────────────────── */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;text-rendering:optimizeLegibility}
+/* 한국어는 어절 안에서 끊기지 않게 — 제목·설명·카드 이름에만 적용(표 숫자는 제외) */
+.section-intro h2,.subline,.rank-name,.rank-meta,.hero-hotel,.hero-meta,.glance-head h3,
+.notice h3,.notice p,.insight-card h3,.side-head h3,.fr-card-name,.vt-name,.lg-name,
+.pm-card .top b,.tt-rt-name,.bkgo b,.modal-head h3{word-break:keep-all}
+.section-intro h2,.glance-head h3,.fl-block-head h3,.hero-hotel{text-wrap:balance}
+.subline,.hint,.notice p,.notice li,.tt-banner,.pm-banner{text-wrap:pretty}
+.fl-pmeta,.fl-promo b,.dealsub,.fl-ppname,.fl-dday,.hero-meta,.rank-meta,.pm-card .pg,.tt-fd-meta,
+.notice li,.snapshot div,.footlegend,.lockdesc{word-break:keep-all}
+
+/* ── 3. 표면·깊이·모서리 ──────────────────────────────────────────────────── */
+.rank-panel,.side,.mainpanel,.insight-card,.notice,.snu-panel,.glance,.hero2,
+.fl-block,.fl-toolbar,.vt-hero,.vt-wallet,.vt-manage{border-color:var(--line);box-shadow:var(--shadow)}
+.month-card,.fr-card,.vt-hotel,.pm-card{border-color:var(--line);box-shadow:0 1px 2px rgba(26,16,41,.04)}
+.month-card.cur{border-color:var(--lav2);box-shadow:0 0 0 2px rgba(199,182,251,.35),var(--e1)}
+.dialog,.wxcard{box-shadow:var(--e3)}
+.dataloading{background:rgba(20,14,34,.44)}
+.dl-box{border-radius:18px;box-shadow:var(--e3);border:1px solid var(--line)}
+.dl-spin{border-color:var(--lav3);border-top-color:var(--violet)}
+.dl-retry{background:var(--violet-d);border-color:var(--violet-d);border-radius:10px}
+.dl-retry:hover{background:var(--violet)}
+
+/* ── 4. 헤더 · 브랜드 · 지표 · 잠금 ───────────────────────────────────────── */
+.topbar{background:linear-gradient(158deg,#180e26 0%,#211535 56%,#2a1a44 100%);
+  box-shadow:inset 0 -1px 0 rgba(199,182,251,.14)}
+.brand-mark{border-radius:10px;background:linear-gradient(150deg,#8b5cf6,#4c1d95);
+  box-shadow:0 6px 16px rgba(76,29,149,.5),inset 0 1px 0 rgba(255,255,255,.22);font-size:15px}
+.brand-name{letter-spacing:-.035em}
+.brand-sub{color:#b6a8d6;letter-spacing:.17em}
+.topbar-metrics>div{min-width:64px}
+.topbar-metrics b{font-size:18px;letter-spacing:-.045em}
+.topbar-metrics span{font-size:10.5px;color:#b0a2cd;letter-spacing:.01em}
+.offline{color:#e7e0ff;border-color:rgba(199,182,251,.34);background:rgba(124,58,237,.24);
+  border-radius:999px;letter-spacing:.01em}
+.lockagain{border-radius:999px;font-weight:800;letter-spacing:-.01em;
+  transition:background .16s var(--ease),border-color .16s var(--ease),color .16s var(--ease)}
+.lockagain:hover{background:rgba(124,58,237,.42);color:#fff;border-color:rgba(199,182,251,.55)}
+.lockagain:focus-visible{outline:2px solid #cfc2ff;outline-offset:2px}
+
+/* ── 5. 탭 ────────────────────────────────────────────────────────────────── */
+.tab{border-radius:10px 10px 0 0;color:#c8bce4;letter-spacing:-.01em;
+  transition:background .16s var(--ease),color .16s var(--ease),border-color .16s var(--ease)}
+.tab:hover{background:rgba(199,182,251,.12);color:#fff}
+.tab:active{background:rgba(199,182,251,.2)}
+.tab:focus-visible{outline:2px solid #d7ccff;outline-offset:-2px}
+.tab b{font-variant-numeric:tabular-nums;letter-spacing:0}
+@media (min-width:761px){
+  .tab.active{color:var(--plum);font-weight:800;box-shadow:inset 0 2px 0 var(--violet-l)}
+  .tab.active b{background:var(--lav);color:var(--violet-d)}
+}
+
+/* ── 6. 탭 소개 · 조회 기준 ───────────────────────────────────────────────── */
+.section-intro h2{font-size:20px;letter-spacing:-.045em;line-height:1.3;color:var(--plum)}
+.subline{font-size:12px;line-height:1.68;color:var(--muted);max-width:80ch}
+.time-pill{border-radius:10px;background:var(--surface-2);color:var(--muted2);
+  font-weight:700;line-height:1.5}
+.time-pill b,.time-pill strong{color:var(--ink2)}
+.combo-jump,.sharebtn{border-radius:10px;min-height:34px;font-weight:800;
+  transition:background .16s var(--ease),border-color .16s var(--ease),transform .12s var(--ease),box-shadow .16s var(--ease)}
+.combo-jump:hover,.sharebtn:hover{border-color:var(--violet-l);background:#f6f1ff;box-shadow:var(--e1)}
+.combo-jump:active,.sharebtn:active{transform:translateY(1px)}
+
+/* ── 7. 요약 카드(TOP 5 · 프로모션) — 목록 읽기를 먼저 정돈 ──────────────── */
+.rank-head{padding-bottom:9px;margin-bottom:2px;border-bottom:1px solid var(--line2)}
+.rank-head h3{font-size:13.5px;letter-spacing:-.035em;color:var(--ink)}
+.rank-label{font-size:10px;letter-spacing:0;color:var(--muted2)}
+.rank-item{min-height:44px;padding:9px 0;gap:10px;border-top:1px solid var(--line2);
+  transition:background .14s var(--ease),box-shadow .14s var(--ease)}
+.rank-n{font-size:10.5px;color:var(--muted2);letter-spacing:.01em}
+.rank-name{font-size:12.5px;letter-spacing:-.02em}
+.rank-meta{font-size:10px;margin-top:2px;line-height:1.45}
+.rank-num{font-size:14px;letter-spacing:-.03em;color:var(--ink)}
+.rank-num.red{color:var(--violet-d)}
+@media (hover:hover){
+  .rank-item:hover{background:#f8f5ff}
+  .rank-item.rank-click:hover{background:#f6f2ff;box-shadow:inset 2px 0 0 var(--violet-l)}
+  .rank-item.rank-click:active{background:#efe9ff}
+  .rank-item.rank-click:hover .rank-num:after{transform:translateX(2px)}
+}
+.rank-item.rank-click:focus-visible{outline:2px solid var(--violet-l);outline-offset:-2px;border-radius:8px}
+.rank-item.rank-click .rank-num:after{transition:transform .16s var(--ease);display:inline-block}
+.hint{font-size:11px;line-height:1.65;color:var(--muted)}
+.rank-empty{font-size:11.5px;color:var(--muted2)}
+
+/* ── 8. 조회 바 · 필터 칩 · 세그먼트 ─────────────────────────────────────── */
+.field label{font-size:10px;color:var(--muted2);letter-spacing:.01em}
+.field select{height:38px;border-radius:10px;font-size:12px;font-weight:700;color:var(--ink);
+  border-color:var(--line);transition:border-color .16s var(--ease),box-shadow .16s var(--ease)}
+.field select:hover{border-color:var(--lav2)}
+.field select:focus-visible{border-color:var(--violet-l);outline:2px solid rgba(124,58,237,.28);outline-offset:0}
+.toggle{border-radius:999px;padding:6px 11px 6px 9px;font-size:10.5px;font-weight:700;
+  transition:background .16s var(--ease),border-color .16s var(--ease),color .16s var(--ease)}
+.toggle:hover{border-color:var(--lav2);color:var(--violet-d)}
+.toggle:has(input:checked){background:var(--lav);border-color:var(--lav2);color:var(--violet-d);font-weight:800}
+.mode-control{border-radius:11px;background:var(--surface-3);border-color:var(--line);padding:3px}
+.mode-button{border-radius:8px;min-height:32px;font-weight:700;color:var(--muted);
+  transition:background .16s var(--ease),color .16s var(--ease),box-shadow .16s var(--ease)}
+.mode-button:hover{color:var(--violet-d);background:rgba(255,255,255,.6)}
+.mode-button.selected{background:var(--card);color:var(--violet-d);font-weight:800;box-shadow:var(--e1)}
+.chip{border-radius:999px;padding:4px 9px;font-size:10px;font-weight:800;
+  transition:background .16s var(--ease),border-color .16s var(--ease),color .16s var(--ease)}
+@media (hover:hover){.chip:hover{border-color:var(--lav2);color:var(--violet-d)}}
+.chip.ok{background:var(--lav);border-color:var(--lav2);color:var(--violet-d)}
+.fav-only,.stat-pill,.fr-views,.fl-seg,.fl-sort,.pm-seg{border-radius:999px}
+.fav-only{min-height:32px;font-weight:700;
+  transition:background .16s var(--ease),border-color .16s var(--ease),color .16s var(--ease)}
+.fav-only:hover{border-color:#efc978;color:#7a5100}
+.stat-strip{gap:6px}
+.stat-pill{padding:4px 9px;font-size:10px;font-weight:700;color:var(--ink2);line-height:1.5}
+.stat-pill.hintpill{background:var(--surface-2)}
+.action-btn,.minibtn,.cmp-add,.tt-go,.fl-plink,.vt-go,.fr-reset,.tt-more button{
+  transition:background .16s var(--ease),border-color .16s var(--ease),color .16s var(--ease),transform .12s var(--ease)}
+.action-btn{min-height:34px;border-radius:10px;font-weight:800;padding:8px 12px}
+.action-btn:hover:not(:disabled),.minibtn:hover,.cmp-add:hover,.vt-go:hover,.fr-reset:hover{
+  background:var(--lav);border-color:var(--lav2);color:var(--violet-d)}
+.action-btn:active:not(:disabled),.minibtn:active,.cmp-add:active{transform:translateY(1px)}
+
+/* ── 9. 호텔 요약 카드(히어로) ───────────────────────────────────────────── */
+.hero-left{background:radial-gradient(120% 120% at 100% 0%,#f5f1ff 0%,#ffffff 62%)}
+.hero-eyebrow{font-size:9.5px;letter-spacing:.14em;color:var(--violet-d)}
+.hero-hotel{font-size:19.5px;letter-spacing:-.045em;color:var(--plum)}
+.hero-meta{font-size:11px;line-height:1.6}
+.hero-price .p{font-size:31px;letter-spacing:-.05em}
+.hero-price .u{font-size:10.5px}
+.hero-right{background:var(--surface-2)}
+.benefit-title{letter-spacing:.12em;color:var(--violet-d)}
+.benefit-list li{font-size:11px;line-height:1.55}
+.benefit-list li:before{color:var(--lav2)}
+.benefit-note{font-size:9.5px;color:var(--muted2)}
+.deal-book,.bkgo,.flbk-go{border-radius:10px;font-weight:800;
+  transition:background .16s var(--ease),border-color .16s var(--ease),box-shadow .16s var(--ease),transform .12s var(--ease)}
+.deal-book:hover{background:var(--lav3);border-color:var(--violet-l)}
+.deal-book:active{transform:translateY(1px)}
+
+/* ── 10. 달력 — 칸 하나의 읽기 순서: 날짜 → 가격 → 단서 ──────────────────── */
+.legend-steps{border-radius:9px;border-color:var(--line)}
+.legend-steps .step{font-size:9.5px;font-weight:800;padding:6px 9px;letter-spacing:-.01em}
+.legend-cap{font-size:9.5px;letter-spacing:.02em}
+.month-rail button{border-radius:999px;padding:5px 11px;font-size:10.5px;font-weight:700;
+  transition:background .16s var(--ease),border-color .16s var(--ease),color .16s var(--ease),box-shadow .16s var(--ease)}
+.month-rail button:hover{border-color:var(--lav2);color:var(--violet-d);background:#f8f5ff}
+.month-rail button.on{background:var(--plum);border-color:var(--plum);box-shadow:0 2px 8px rgba(26,16,41,.22)}
+.calendar-title h3{font-size:17.5px;letter-spacing:-.045em}
+.calendar-title .meta{font-size:10px;color:var(--muted2)}
+.nav-month button{border-radius:9px;transition:background .16s var(--ease),border-color .16s var(--ease),color .16s var(--ease)}
+.nav-month button:active:not(:disabled){transform:translateY(1px)}
+.calendar-context{font-size:10px;color:var(--muted)}
+.month-card{border-radius:14px;padding:12px 12px 10px}
+.mo-title{font-size:13px;letter-spacing:-.035em}
+.mo-sub{font-size:9.5px;color:var(--muted2)}
+.weekhead span{font-size:9px;font-weight:800;color:var(--muted2);letter-spacing:.01em}
+.weekhead span:first-child{color:#9c4d72}
+.cal-day{border-radius:6px;transition:transform .12s var(--ease),box-shadow .12s var(--ease),background .12s var(--ease),border-color .12s var(--ease)}
+.daynum{font-size:10px;opacity:.78;letter-spacing:0}
+.cal-day.sunday .daynum{color:#9c4d72}
+.dayprice{font-size:10.5px;letter-spacing:-.03em}
+.cal-day.hm1,.cal-day.hm2{box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+@media (hover:hover){
+  .cal-day:hover:not(:disabled):not(.empty){transform:translateY(-1px);box-shadow:var(--e2);z-index:1}
+  .cal-day.hm1:hover:not(:disabled),.cal-day.hm2:hover:not(:disabled){box-shadow:0 8px 18px rgba(58,22,112,.28)}
+}
+.cal-day:focus-visible{outline:2px solid var(--violet-l);outline-offset:1px}
+.cal-day.selected-day{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--violet)}
+.cal-day.low{box-shadow:inset 0 0 0 2px var(--violet-d)}
+/* 특가 칸은 배경을 덮지 않는다 — 배경을 밝은 색으로 바꾸면 가격대 색(hm1·hm2)이 준 흰 글자가
+   밝은 배경 위에서 사라져, 정작 가장 싼 날의 날짜·가격이 안 보였다(예전 규칙의 문제).
+   원래 .cal-day.deal 이 걸어 둔 그라데이션을 여기서 되돌리고(background-image:none), 테두리와
+   '특가' 표시만 얹어 글자색은 가격대 규칙을 그대로 따르게 둔다. */
+.cal-day.deal{border-color:var(--ok-line);background-image:none}
+.cal-day.deal .daydeal{color:var(--ok);background:var(--ok-bg);border-color:var(--ok-line);border-radius:5px}
+/* 예약처가 둘인 칸의 '⇄' 표시는 오른쪽 아래로 — '특가' 표시와 같은 자리에서 겹치던 것을 나눈다 */
+button.dual-cell::after{top:auto;bottom:1px;right:2px}
+.cal-day.deal .daydeal{font-size:8px;padding:0 3px;line-height:1.5}
+/* APC 무료숙박 가능일(연보라 배경)도 같은 이유로 글자를 어둡게 고정한다 */
+.cal-day.apcok,.cal-day.apcok .daynum,.cal-day.apcok .dayprice,.cal-day.apcok .daytail{color:var(--ink2)}
+.daytail{letter-spacing:0}
+.daymiss{font-size:9.5px;letter-spacing:-.02em}
+.calendar-bottom{margin-top:12px}
+.footlegend{font-size:10px;color:var(--muted2);line-height:1.6}
+
+/* ── 11. 인사이트 · KPI ──────────────────────────────────────────────────── */
+.ins-head{padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line2)}
+.ins-head h3{font-size:12.5px;letter-spacing:-.025em}
+.ins-head span{font-size:10px;color:var(--muted2)}
+.kpi{border-radius:10px;padding:9px 10px 8px;background:var(--surface-2);border-color:var(--line)}
+.kpi span{font-size:9.5px;color:var(--muted2);letter-spacing:0}
+.kpi b{font-size:14.5px;letter-spacing:-.04em}
+.kpi i{font-size:9px;color:var(--muted2)}
+.kpi.pos b{color:var(--violet-d)}
+.pos-badge{border-radius:999px;padding:2px 7px;font-size:9px}
+.chart-head h4{font-size:11px;letter-spacing:-.02em}
+.chart-head span{font-size:9px;color:var(--muted2)}
+.chart .axis{stroke:#e9e5f4}
+.chart .lbl{fill:#6b6484}
+.chart-note{font-size:9.5px;line-height:1.6;color:var(--muted2)}
+
+/* ── 12. 한눈에 보기 · 안내 카드 ─────────────────────────────────────────── */
+.glance-head{padding-bottom:10px}
+.glance-head h3{font-size:14.5px;letter-spacing:-.035em}
+.g-sub{font-size:9.5px;letter-spacing:.1em;color:var(--violet-d)}
+.g-row{padding:7px 0}
+.g-d{font-size:11.5px}
+.g-m{font-size:9.5px;color:var(--muted2)}
+.g-p{font-size:12.5px;letter-spacing:-.03em}
+.g-stat{border-radius:10px;background:var(--surface-2);padding:9px 10px}
+.g-stat span{font-size:9px;color:var(--muted2)}
+.g-stat b{font-size:13px}
+.g-note{font-size:9.5px;color:var(--muted2);line-height:1.65}
+.notice{padding:16px 18px}
+.notice h3{font-size:13px;letter-spacing:-.025em;padding-bottom:8px;margin-bottom:10px}
+.notice p,.notice li{font-size:11.5px;line-height:1.75;color:var(--muted)}
+.notice summary{font-size:11.5px;color:var(--violet-d)}
+.note-mark{border-radius:7px;background:var(--lav);color:var(--violet-d)}
+.note-text{font-size:11.5px;color:var(--muted);line-height:1.72}
+.smallfooter{font-size:10.5px;color:var(--muted2);line-height:1.8}
+.side-head h3{font-size:12.5px}
+.side-head small{font-size:10px;color:var(--muted2)}
+.hotel-choice{border-radius:9px;min-height:34px;transition:background .14s var(--ease),color .14s var(--ease)}
+@media (hover:hover){.hotel-choice:hover{background:#f6f2ff}}
+.hotel-choice.selected{background:var(--lav);color:var(--violet-d);box-shadow:inset 2px 0 0 var(--violet-l)}
+.hotel-choice .name{font-size:11.5px}
+.hotel-choice .price{font-size:10.5px;letter-spacing:-.02em}
+.side-foot{font-size:9.5px;line-height:1.65}
+
+/* ── 13. 예약처 선택 시트 · 모달 ─────────────────────────────────────────── */
+.modal{background:rgba(20,10,36,.58)}
+.dialog{width:min(100%,660px);border-radius:18px;animation:sheetIn .2s var(--ease) both}
+@keyframes sheetIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--line)}
+.modal-head h3{font-size:15.5px;letter-spacing:-.035em}
+.modal-head p{font-size:10.5px;color:var(--muted2);line-height:1.5}
+.modal-body{padding:8px 20px 22px}
+.close{width:32px;height:32px;border-radius:10px;font-size:15px;color:var(--muted);
+  transition:background .16s var(--ease),color .16s var(--ease)}
+.close:hover{background:var(--lav);color:var(--violet-d)}
+.deal{padding:13px 4px;border-bottom:1px solid var(--line2);transition:background .14s var(--ease)}
+@media (hover:hover){.deal:hover{background:#faf8ff}}
+.dealname{font-size:12.5px;letter-spacing:-.02em}
+.dealsub{font-size:10.5px;line-height:1.6;color:var(--muted2)}
+.dealprice{font-size:15.5px;letter-spacing:-.035em}
+.tag{border-radius:5px;padding:2px 6px;font-size:9px;font-weight:800}
+.wxcard{border-radius:18px;padding:20px 20px 18px}
+.wxcard h3{font-size:15.5px;letter-spacing:-.035em}
+.wxacts .wxcopy,.wxacts .wxopen{border-radius:11px;font-weight:800;transition:background .16s var(--ease),border-color .16s var(--ease),transform .12s var(--ease)}
+.wxacts .wxcopy:active,.wxacts .wxopen:active{transform:translateY(1px)}
+.wxguide{border-radius:11px;background:var(--h5);font-size:11px;line-height:1.75}
+.bkprice{border-radius:11px;background:var(--surface-2);font-size:12px}
+.bkacts{gap:9px}
+.bkgo{border-radius:12px;padding:13px 14px}
+.bkgo b{font-size:13.5px;letter-spacing:-.025em}
+.bkgo span{font-size:10.5px;line-height:1.55}
+@media (hover:hover){.bkgo:hover{border-color:var(--violet-l);background:#f6f1ff;box-shadow:var(--e1)}}
+.bkgo.prim{background:linear-gradient(150deg,#7c3aed 0%,#5b21b6 100%);box-shadow:0 8px 20px rgba(91,33,182,.28)}
+@media (hover:hover){.bkgo.prim:hover{background:linear-gradient(150deg,#8b5cf6 0%,#6d28d9 100%);box-shadow:0 10px 24px rgba(91,33,182,.34)}}
+.bkgo:active{transform:translateY(1px)}
+.bkgo .bkcharge{margin-top:8px;padding-top:7px}
+.flbk-go{border-radius:12px;padding:13px 14px}
+.flbk-go.prim{background:linear-gradient(150deg,#7c3aed 0%,#5b21b6 100%);box-shadow:0 8px 20px rgba(91,33,182,.28)}
+
+/* ── 14. 항공 · 땡처리 · 마일리지 표 ─────────────────────────────────────── */
+.fl-block{padding:15px 16px 16px}
+.fl-block-head h3{font-size:14.5px;letter-spacing:-.03em}
+.fl-block-head .meta{font-size:10px;color:var(--muted2)}
+.fl-seg,.fl-sort{background:var(--surface-3)}
+.fl-seg button,.fl-sort button{transition:background .16s var(--ease),color .16s var(--ease),box-shadow .16s var(--ease)}
+.fl-seg button.on,.fl-sort button.on{box-shadow:var(--e1);color:var(--violet-d)}
+.fl-matrix-scroll{border-radius:12px}
+/* ⑤ 노선별 최저가 분포 — 302×110 viewBox 를 카드 폭(1265px)까지 늘리면 막대 숫자·축 글자가 4배로
+   커져 글자가 그림을 덮었다. 그래프는 왼쪽 고정 폭, 요약 두 칸은 오른쪽으로 나란히 둔다. */
+#flDist svg{max-width:100%}
+@media (min-width:761px){
+  #flDist{grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px;align-items:start}
+  #flDist .g-stats{margin-top:0}
+}
+.fl-matrix thead th{background:#f6f4fc;color:var(--muted2);font-size:9.5px;padding:7px 4px}
+.fl-matrix tbody th.fl-route{background:var(--surface-2);font-size:10.5px}
+.fl-cell{border-radius:8px;padding:7px 3px;transition:background .14s var(--ease),box-shadow .14s var(--ease)}
+@media (hover:hover){.fl-cell:hover{background:#f5f2fe}}
+.fl-cell.fl-best{background:var(--lav);box-shadow:inset 0 0 0 1.5px var(--lav2)}
+.fl-pcard{border-radius:11px;background:var(--surface-2);padding:10px 11px}
+.tt-kpi,.fr-kpi>div{border-radius:11px}
+.tt-kpi span,.fr-kpi span{font-size:9.5px;color:var(--muted2)}
+.tt-kpi i,.fr-kpi i{color:var(--muted)}
+.tt-table{border-radius:11px}
+.tt-thead{background:#f6f4fc}
+.tt-thead span{font-size:9px;color:var(--muted2);letter-spacing:0}
+.tt-trow,.tt-drow{transition:background .14s var(--ease)}
+@media (hover:hover){.tt-trow:hover,.tt-drow:hover{background:#f6f2ff}}
+.tt-cell{font-size:10.5px}
+.tt-cell.price{font-size:12px}
+.tt-cell.price.low{color:var(--violet-d)}
+.tt-banner{border-radius:11px;background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn);font-size:11px}
+.tt-banner b{color:#6f4a12}
+.tt-banner.ok{background:var(--lav);border-color:var(--lav2);color:var(--violet-d)}
+.tt-banner.ok b{color:var(--violet-d)}
+.tt-feed-more{border-radius:9px;font-weight:800;transition:background .16s var(--ease),border-color .16s var(--ease)}
+.tt-feed-more:hover{background:var(--lav);border-color:var(--violet-l)}
+.pm-banner{border-radius:12px;background:var(--lav);border-color:var(--lav2);font-size:11.5px;color:var(--ink2)}
+.pm-kpi>div{border-radius:11px}
+.pm-card{border-radius:12px}
+.pm-bcard{border-radius:11px}
+.fresh-chip,.cb-badge,.tt-flag,.fl-via,.apc,.tag{border-radius:5px}
+.fr-card{border-radius:12px}
+.fr-banner{border-radius:11px}
+.vt-hero{border-radius:15px}
+.vt-kpi{border-radius:11px}
+.vt-hotel{border-radius:13px}
+.vt-chip,.vt-mode,.vt-mfilters button{border-radius:999px}
+
+/* ── 15. 공통 알림 · 떠 있는 막대 ────────────────────────────────────────── */
+.toast{border-radius:12px;box-shadow:var(--e3);font-size:12px}
+.cmpbar{border-radius:999px;box-shadow:var(--e3)}
+.cmpbar button{border-radius:999px}
+.alertbar{border-radius:11px}
+
+/* ── 16. 데스크톱(1180px 이상) 여백 정돈 — 그 아래 폭의 규칙은 건드리지 않는다 ── */
+@media (min-width:1180px){
+  .topbar-in{padding-top:22px;gap:24px}
+  .page{padding-top:20px}
+  .rank-panel{padding:16px 18px 14px}
+  .mainpanel{padding:16px 17px 18px}
+  .insight-card{padding:14px 15px}
+  .glance{padding:16px 18px}
+  .side{padding:13px}
+  .hero-left{padding:18px 20px 17px}
+  .hero-right{padding:17px 18px}
+  .section-intro{margin:0 0 16px;align-items:flex-end}
+  .monthgrid{gap:14px}
+}
+
+/* ── 17. 좁은 화면(430px 이하) — 폭이 정해진 칸은 그대로, 글자만 올린다 ──── */
+@media (max-width:430px){
+  .section-intro h2{font-size:17px;letter-spacing:-.04em}
+  .subline{font-size:11px;line-height:1.65}
+  .time-pill{font-size:10px}
+  .rank-panel{padding:13px 13px 11px}
+  .rank-name{font-size:11.5px}
+  .rank-num{font-size:13px}
+  .rank-meta{font-size:9.5px}
+  .rank-head h3{font-size:12.5px}
+  .kpi span{font-size:9px}
+  .kpi b{font-size:13.5px}
+  .hint,.notice p,.notice li{font-size:10.5px}
+  .stat-pill{font-size:9.5px;padding:3px 8px}
+  .field select{height:36px;font-size:11.5px}
+  .mode-button{font-size:10.5px}
+  .month-card{border-radius:12px;padding:9px 8px 7px}
+  .legend-steps .step{font-size:8.5px;padding:5px 6px}
+  .month-rail button{font-size:9.5px;padding:4px 8px}
+  .daynum{font-size:9.5px}
+  .dayprice{font-size:9.5px}
+  .calendar-title h3{font-size:15.5px}
+  .modal-head{padding:14px 16px}
+  .modal-body{padding:6px 16px 20px}
+  .dialog{border-radius:18px 18px 0 0}
+  .bkgo{padding:13px 14px}
+  .bkgo b{font-size:13.5px}
+  .bkgo span{font-size:11px}
+}
+
+/* ── 18. 움직임 존중 — 켜져 있으면 전부 제자리 ────────────────────────────── */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{
+    animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;transition-delay:0ms!important;
+  }
+  .cal-day:hover,.rank-item:hover,.bkgo:hover,.action-btn:hover,.minibtn:hover{transform:none!important}
+  .dialog{animation:none}
+  .rank-item.rank-click:hover .rank-num:after{transform:none}
+}
+
 </style>
 </head>
 <body>

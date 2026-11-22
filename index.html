@@ -9570,7 +9570,9 @@ function mlKERowHtml(route,ds){
   var note=keNote(route.code,MLS.dir,ds.slice(0,7));
   var cab='',put='',pick=null,state='';
   if(note){
-    state='<span class="ml-ke-state">'+esc((MGD.noService||[]).indexOf(route.code)>=0?'미운항 — 대한항공 부산발 직항 없음':'하계 스케줄 미개시 — 이 달은 조회 불가')+'</span>';
+    state='<span class="ml-ke-state">'+esc((MGD.noService||[]).indexOf(route.code)>=0
+      ?'조회 불가 — 부산발 직항 미운항으로 분류된 노선'
+      :'하계 스케줄 미개시 — 이 달은 조회 불가')+'</span>';
   }else if(v==null){
     state='<span class="ml-ke-state">이 날 미수집</span>';
   }else if(v&16){
@@ -10175,6 +10177,14 @@ function mlTabBadge(){
 document.addEventListener('click',function(e){
   var t=e.target;
   if(!t||!t.closest)return;
+  /* 🧮 계산기에 넣기 — 날짜 시트 안의 버튼이라 시트 처리보다 먼저 본다 */
+  var put=t.closest('[data-ml-calc-put]');
+  if(put){
+    e.preventDefault();
+    mlCalcPut(put.getAttribute('data-ml-calc-put'),mlNum(put.getAttribute('data-ml-calc-miles')),
+      put.getAttribute('data-ml-calc-name')||'',put.getAttribute('data-ml-calc-prog')||'');
+    return;
+  }
   var sheet=mlSheetEl();
   if(sheet&&sheet.classList.contains('show')&&t.closest('#mlSheet')){
     var flb=t.closest('[data-ml-flip]');
@@ -10219,13 +10229,6 @@ document.addEventListener('click',function(e){
       b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');
     });
     mlRenderCal();mlRenderList();return;
-  }
-  var put=t.closest('[data-ml-calc-put]');
-  if(put){
-    e.preventDefault();
-    mlCalcPut(put.getAttribute('data-ml-calc-put'),mlNum(put.getAttribute('data-ml-calc-miles')),
-      put.getAttribute('data-ml-calc-name')||'',put.getAttribute('data-ml-calc-prog')||'');
-    return;
   }
   if(t.closest('#mlCalc')){
     var tb=t.closest('[data-ml-trip]');

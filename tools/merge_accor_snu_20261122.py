@@ -156,11 +156,34 @@ def note_of(h, status, in_brand, o):
     return base
 
 
+def orig_notes(path):
+    """이 작업 전 master_db.json(예: git show <커밋>:data/master_db.json)의 SNU 메모.
+
+    여러 번 돌려도 메모가 겹쳐 붙지 않도록, 관측 메모는 언제나 이 원본에서만 가져온다.
+    """
+    if not path:
+        return {}
+    db = json.load(open(path, encoding='utf-8'))
+    out = {}
+    for h in db['hotels']:
+        if h.get('group') != 'accor':
+            continue
+        n = (h.get('program') or {}).get('snuNote')
+        if n:
+            out[h['id']] = n
+    return out
+
+
 def main(argv):
     dry = '--dry-run' in argv
+    orig = None
+    for i, a in enumerate(argv):
+        if a == '--orig' and i + 1 < len(argv):
+            orig = argv[i + 1]
     db = json.load(open(MASTER, encoding='utf-8'))
     off = json.load(open(OFFICIAL, encoding='utf-8'))
     by_code, by_name = build_index(off)
+    oldnotes = orig_notes(orig)
 
     accor = [h for h in db['hotels'] if h.get('group') == 'accor']
     stats = collections.Counter()
@@ -174,13 +197,16 @@ def main(argv):
         old_snu = (h.get('program') or {}).get('snu')
         status, in_brand, o = classify(h, by_code, by_name)
         note = note_of(h, status, in_brand, o)
-        old_note = (h.get('program') or {}).get('snuNote')
-        # 예전 메모(창별 SNU 요금 관측 등)는 지우지 않고 뒤에 붙인다
-        if old_note and ('창' in old_note or '미노출' in old_note) and old_note not in note:
-            row = dict(h.get('snu') or {})
+        # 예전 메모(창별 SNU 요금 관측 등)는 지우지 않고 row['observed'] 에 따로 남긴다.
+        #   원본(--orig)이 있으면 그 파일의 메모만 쓰고, 없으면 지금 값 가운데 이 작업이 쓴 문구가 아닌 것만 쓴다.
+        old_note = oldnotes.get(h['id'])
+        if old_note is None:
+            old_note = (h.get('program') or {}).get('snuNote')
+        row = dict(h.get('snu') or {})
+        row.pop('observed', None)
+        if old_note and ('창' in old_note or '미노출' in old_note) and not re.match(r'^SNU (참여|미참여|확인 불가)', old_note) \
+                and old_note not in note:
             row['observed'] = old_note
-        else:
-            row = dict(h.get('snu') or {})
         row.update({'status': status, 'brand': in_brand, 'checked': CHECKED, 'note': note})
         if o:
             row['officialName'] = o[0]['name']

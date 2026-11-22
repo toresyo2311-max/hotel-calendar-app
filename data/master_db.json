@@ -1,7 +1,7 @@
 {
  "schema": "hotel-calendar-app/master-db",
  "version": 1,
- "generated_at": "2026-11-22T21:42:52+09:00",
+ "generated_at": "2026-11-22T21:49:34+09:00",
  "source": {
   "file": "index.html",
   "commit": "2aa2a24",
@@ -65995,18 +65995,18 @@
    "program": {
     "stayplus": true,
     "snu": true,
-    "snuNote": "SNU 참여 — 아코르 공식 참여 호텔(2026-11-22 확인) · SNU 참여 — 아코르 공식 참여 호텔(2026-11-22 확인) · SNU 참여 — 브랜드 원칙엔 없는 예외 호텔(아코르 공식 참여 목록, 2026-11-22) · SNU 참여 — 브랜드 원칙엔 없는 예외 호텔(아코르 공식 참여 목록, 2026-11-22) · SNU 2박 6창 가능 — 71.2만(1/27)~103.7만(3/5)·12/4만 미노출",
+    "snuNote": "SNU 참여 — 아코르 공식 참여 호텔(2026-11-22 확인) · SNU 2박 6창 가능 — 71.2만(1/27)~103.7만(3/5)·12/4만 미노출",
     "snuBrand": true
    },
    "alsoIn": "h31",
    "zone": "kr",
    "snu": {
-    "observed": "SNU 참여 — 아코르 공식 참여 호텔(2026-11-22 확인) · SNU 참여 — 브랜드 원칙엔 없는 예외 호텔(아코르 공식 참여 목록, 2026-11-22) · SNU 참여 — 브랜드 원칙엔 없는 예외 호텔(아코르 공식 참여 목록, 2026-11-22) · SNU 2박 6창 가능 — 71.2만(1/27)~103.7만(3/5)·12/4만 미노출",
     "status": "participating",
     "brand": true,
     "checked": "2026-11-22",
     "note": "SNU 참여 — 아코르 공식 참여 호텔(2026-11-22 확인)",
-    "officialName": "Sofitel Ambassador Seoul Hotel & Serviced Residences"
+    "officialName": "Sofitel Ambassador Seoul Hotel & Serviced Residences",
+    "observed": "SNU 2박 6창 가능 — 71.2만(1/27)~103.7만(3/5)·12/4만 미노출"
    }
   },
   {
@@ -68900,18 +68900,18 @@
    "program": {
     "stayplus": true,
     "snu": true,
-    "snuNote": "SNU 참여 — 아코르 공식 참여 호텔(2026-11-22 확인) · SNU 참여 — 아코르 공식 참여 호텔(2026-11-22 확인) · SNU 참여 — 브랜드 원칙엔 없는 예외 호텔(아코르 공식 참여 목록, 2026-11-22) · SNU 참여 — 브랜드 원칙엔 없는 예외 호텔(아코르 공식 참여 목록, 2026-11-22) · SNU 7창 전부 미노출 — Stay Plus는 평일 2박 위주",
+    "snuNote": "SNU 참여 — 아코르 공식 참여 호텔(2026-11-22 확인) · SNU 7창 전부 미노출 — Stay Plus는 평일 2박 위주",
     "snuBrand": true
    },
    "alsoIn": "h39",
    "zone": "kr",
    "snu": {
-    "observed": "SNU 참여 — 아코르 공식 참여 호텔(2026-11-22 확인) · SNU 참여 — 브랜드 원칙엔 없는 예외 호텔(아코르 공식 참여 목록, 2026-11-22) · SNU 참여 — 브랜드 원칙엔 없는 예외 호텔(아코르 공식 참여 목록, 2026-11-22) · SNU 7창 전부 미노출 — Stay Plus는 평일 2박 위주",
     "status": "participating",
     "brand": true,
     "checked": "2026-11-22",
     "note": "SNU 참여 — 아코르 공식 참여 호텔(2026-11-22 확인)",
-    "officialName": "Fairmont Ambassador Seoul"
+    "officialName": "Fairmont Ambassador Seoul",
+    "observed": "SNU 7창 전부 미노출 — Stay Plus는 평일 2박 위주"
    }
   },
   {

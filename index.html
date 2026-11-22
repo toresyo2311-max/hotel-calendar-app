@@ -3003,8 +3003,10 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
 
     <!-- 🧮 마일리지 계산기 — 왕복·인원 필요 마일과 1마일당 원화 가치.
          값은 이 기기(localStorage)에만 저장하고, 날짜 상세 시트의 「가는 편/오는 편에」 버튼으로 채운다.
-         대한항공·외항사 행 모두 같은 버튼을 쓴다. 보기(통합 달력·왕복 후보·좌석 변동·공제표)와 상관없이 늘 위에 둔다. -->
-    <details class="pm-calc" id="mlCalc" open>
+         대한항공·외항사 행 모두 같은 버튼을 쓴다. 보기(통합 달력·왕복 후보·좌석 변동·공제표)와 상관없이 늘 위에 둔다.
+         접이식 폴더 — 처음에는 접힌 채로 헤더만 보이고, 헤더(요약줄)를 누르면 펼쳐진다.
+         시트에서 「가는 편에/오는 편에」를 누르면 이 폴더가 저절로 펼쳐지고 그 자리로 스크롤한다. -->
+    <details class="pm-calc" id="mlCalc">
       <summary><b>🧮 마일리지 계산기</b><span id="mlCalcSum">왕복 · 1명 · 마일을 넣어 주세요</span></summary>
       <div class="pm-calc-body">
         <div class="pm-calc-grid">
@@ -9969,7 +9971,7 @@ function mlCloseSheet(){
    그 프로그램의 참고 가치와 나란히 보여 준다. 날짜 상세 시트의 「🧮 가는 편에 / 오는 편에」를 누르면
    그 행의 프로그램이 자동으로 골라지고 마일이 그대로 들어온다. 값은 이 기기(localStorage)에만 저장. */
 var ML_CALC_KEY='teambusan.mlcalc.v2';
-var ML_CALC={trip:'rt',pax:1,go:0,back:0,tax:0,cash:0,open:true,prog:'ke',byProg:{}};
+var ML_CALC={trip:'rt',pax:1,go:0,back:0,tax:0,cash:0,open:false,prog:'ke',byProg:{}};
 var ML_CALC_READY=false,ML_CALC_FLASH_T=null;
 var ML_CALC_RATE_DEFAULT=15;
 
@@ -10011,7 +10013,8 @@ function mlCalcLoad(){
       var pax=mlNum(o.pax);if(pax>=1&&pax<=9)ML_CALC.pax=pax;
       ML_CALC.go=mlNum(o.go);ML_CALC.back=mlNum(o.back);
       ML_CALC.tax=mlNum(o.tax);ML_CALC.cash=mlNum(o.cash);
-      if(o.open===false)ML_CALC.open=false;
+      /* open 은 저장만 하고 되살리지 않는다 — 탭에 들어오면 늘 접힌 채로 시작하고,
+         한 번 펼친 것은 이 화면을 쓰는 동안(ML_CALC.open) 그대로 유지한다. */
       if(o.prog)ML_CALC.prog=String(o.prog);
       var bp=o.byProg||{};
       for(var k in bp){
@@ -10081,9 +10084,13 @@ function mlCalcOut(){
   var eff=ML_CALC.cash-ML_CALC.tax;
   var value=(ML_CALC.cash>0&&eff>0&&total>0)?((eff*ML_CALC.pax)/total):null;
   var rate=slot.rate||0;
-  if(sum)sum.textContent=progName+' · '+tripKo+' · '+ML_CALC.pax+'명'
-    +(total?' · '+KR(total)+'마일':' · 마일을 넣어 주세요')
-    +(value!=null?' · '+(Math.round(value*10)/10).toFixed(1)+'원/마일':'');
+  if(sum){
+    var st=progName+' · '+tripKo+' · '+ML_CALC.pax+'명'
+      +(total?' · '+KR(total)+'마일':' · 마일을 넣어 주세요');
+    if(slot.have>0)st+=' · 보유 '+KR(slot.have);
+    if(value!=null)st+=' · '+(Math.round(value*10)/10).toFixed(1)+'원/마일';
+    sum.textContent=st;
+  }
   if(!total){
     out.innerHTML='<div class="pm-calc-empty">가는 편 마일을 적으면 총 필요 마일을 계산합니다. '
       +'달력에서 날짜를 눌러 열린 상세에서 <b>「🧮 가는 편에」·「오는 편에」</b>를 누르면 그 행의 마일이 들어오고 '
@@ -10160,6 +10167,8 @@ function mlCalcPut(side,miles,name,prog){
   if(el){
     if(el.tagName==='DETAILS')el.open=true;
     if(el.scrollIntoView)el.scrollIntoView({block:'center',behavior:'smooth'});
+    var sm=el.querySelector('summary');
+    if(sm&&sm.focus){try{sm.focus({preventScroll:true})}catch(err){}}
   }
   mlCloseSheet();
   var fl=mcEl('mlCalcFlash');

@@ -1,0 +1,64 @@
+/* ── ⑧ 외항사 마일리지(부산) ─────────────────────────────────── */
+.pm-panel{padding:0}
+.pm-banner{background:#f4f1ff;border:1px solid #ddd4fb;border-radius:12px;padding:10px 12px;font-size:11.5px;line-height:1.55;color:#3f3960}
+.pm-banner b{color:#4c1d95}
+.pm-banner .pm-b2{display:block;margin-top:4px;color:#5b5578;font-size:10.5px;line-height:1.5}
+.pm-kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:8px 0}
+.pm-kpi>div{background:#fff;border:1px solid #e6e2f3;border-radius:10px;padding:8px 10px;min-width:0}
+.pm-kpi span{display:block;font-size:10px;color:#77718f}
+.pm-kpi b{display:block;font-size:16px;line-height:1.25;color:#241d3a;font-weight:800}
+.pm-kpi i{display:block;font-size:9.5px;color:#8b86a3;font-style:normal;margin-top:2px;line-height:1.35}
+.pm-kpi .new b{color:#b45309}
+.pm-ctrl{background:#fff;border:1px solid #e6e2f3;border-radius:12px;padding:8px 10px}
+.pm-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0;min-width:0}
+.pm-lab{font-size:10.5px;font-weight:700;color:#6b6580;min-width:34px}
+.pm-scroll{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;padding-bottom:3px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+.pm-scroll::-webkit-scrollbar{height:4px}
+.pm-scroll::-webkit-scrollbar-thumb{background:#ddd8ec;border-radius:3px}
+.pm-seg{display:inline-flex;border:1px solid #d9d3ee;border-radius:9px;overflow:hidden;background:#faf9fe}
+.pm-seg button{border:0;background:transparent;font:inherit;font-size:10.5px;font-weight:700;color:#5b5578;padding:5px 9px;cursor:pointer;white-space:nowrap}
+.pm-seg button.on{background:#7c3aed;color:#fff}
+.pm-seg button b{font-weight:700;opacity:.85}
+.pm-panel .chip{border:1px solid #ded9ef;background:#fff;border-radius:999px;font:inherit;font-size:10.5px;font-weight:600;color:#4a4463;padding:4px 9px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+.pm-panel .chip.on{background:#241d3a;border-color:#241d3a;color:#fff}
+.pm-panel .chip.off{color:#b6bac1;border-color:#eceaf4}
+.pm-panel .chip b{font-weight:700;opacity:.8;margin-left:1px}
+.pm-panel select{font:inherit;font-size:10.5px;border:1px solid #ded9ef;border-radius:8px;padding:4px 6px;background:#fff;color:#3f3960;max-width:100%}
+.pm-block{margin-top:8px}
+.pm-bhead,.pm-lhead{display:flex;align-items:baseline;gap:6px;font-size:11px;font-weight:800;color:#241d3a;margin:2px 2px 6px}
+.pm-bhead span,.pm-lhead span{font-size:10px;font-weight:600;color:#8b86a3}
+.pm-bcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+.pm-bcard{display:block;text-align:left;border:1px solid #e6e2f3;background:#fff;border-radius:10px;padding:7px 9px;font:inherit;cursor:pointer;min-width:0}
+.pm-bcard:hover{border-color:#c4b5fd;background:#faf8ff}
+.pm-bcard .d{display:block;font-size:10.5px;font-weight:700;color:#3f3960;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm-bcard .m{display:block;font-size:15px;font-weight:800;color:#7c3aed;line-height:1.2}
+.pm-bcard .s{display:block;font-size:9.5px;color:#6b6580;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm-bcard .t{display:block;font-size:9px;color:#9aa0a6}
+.pm-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:7px}
+.pm-card{border:1px solid #e6e2f3;background:#fff;border-radius:11px;padding:8px 10px;min-width:0}
+.pm-card .top{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.pm-card .top b{font-size:12px;color:#241d3a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm-card .dt{font-size:10.5px;color:#6b6580;font-weight:700;flex:0 0 auto}
+.pm-card .pg{font-size:10.5px;color:#4a4463;font-weight:600;margin-top:1px}
+.pm-card .pg span{font-weight:500;color:#9aa0a6;font-size:9.5px;margin-left:3px}
+.pm-card .cab{display:flex;flex-wrap:wrap;gap:4px;margin:5px 0}
+.pm-card .cb{display:inline-flex;align-items:baseline;gap:3px;border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:700;background:#f4f1ff;color:#4c1d95;border:1px solid #e2d9fb}
+.pm-card .cb b{font-size:10.5px}
+.pm-card .cb i{font-style:normal;font-weight:500;color:#7c6fa8;font-size:9px}
+.pm-card .cb.e{background:#eef7ee;border-color:#d6ebd8;color:#1f6b2f}
+.pm-card .cb.p{background:#eef4fb;border-color:#d5e3f4;color:#1d4f7c}
+.pm-card .cb.b{background:#f4f1ff;border-color:#e2d9fb;color:#4c1d95}
+.pm-card .cb.f{background:#fdf1e7;border-color:#f5dfc9;color:#8a4a10}
+.pm-card .foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:4px}
+.pm-card .seen{font-size:9.5px;color:#9aa0a6}
+.pm-card .go{font-size:10px;font-weight:700;color:#fff;background:#7c3aed;border-radius:7px;padding:3px 8px;text-decoration:none;white-space:nowrap}
+.pm-card .go:hover{background:#6d28d9}
+.pm-empty{border:1px dashed #ddd8ec;border-radius:11px;padding:16px;text-align:center;font-size:11px;color:#6b6580;line-height:1.6;background:#fcfbff}
+.pm-note{font-size:10px;color:#6b6580;line-height:1.6;margin:8px 2px 0}
+.pm-note b{color:#3f3960}
+@media(max-width:760px){
+  .pm-kpi{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pm-bcards{grid-template-columns:repeat(auto-fill,minmax(128px,1fr))}
+  .pm-cards{grid-template-columns:minmax(0,1fr)}
+  .pm-dirline{gap:5px}
+}

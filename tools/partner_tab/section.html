@@ -1,0 +1,30 @@
+  <section id="pmPanel" class="pm-panel" hidden aria-label="⑧ 외항사 마일리지(부산) — 9개 프로그램 부산 보너스 좌석">
+    <div class="pm-banner" id="pmBanner"></div>
+    <div class="pm-kpi" id="pmKpi"></div>
+
+    <div class="pm-ctrl">
+      <div class="pm-line pm-dirline">
+        <span class="pm-lab">방향</span>
+        <div class="pm-seg" id="pmDir" role="group" aria-label="방향"></div>
+        <button type="button" class="chip" id="pmDirect" aria-pressed="false" title="직항편만 남깁니다">직항만</button>
+        <select id="pmCabin" aria-label="좌석 등급">
+          <option value="all">모든 등급</option>
+          <option value="e">이코노미</option>
+          <option value="p">프리미엄 이코노미</option>
+          <option value="b">비즈니스</option>
+          <option value="f">퍼스트</option>
+        </select>
+        <select id="pmSort" aria-label="정렬">
+          <option value="miles">마일 낮은 순</option>
+          <option value="date">날짜 순</option>
+        </select>
+      </div>
+      <div class="pm-line" id="pmAlliance" role="group" aria-label="동맹 선택"></div>
+      <div class="pm-line pm-scroll" id="pmProgs" role="group" aria-label="프로그램 선택"></div>
+      <div class="pm-line pm-scroll" id="pmDests" role="group" aria-label="도시 선택"></div>
+    </div>
+
+    <div class="pm-block" id="pmBest"></div>
+    <div class="pm-block" id="pmList"></div>
+    <p class="pm-note" id="pmNote"></p>
+  </section>

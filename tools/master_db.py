@@ -4,7 +4,7 @@
 
 데이터는 두 층으로 나뉜다.
 
-  · `data/master_db.json` — 병합 도구(merge_*.py)가 고치는 **정본**. 호텔 759곳 × 365일 ·
+  · `data/master_db.json` — 병합 도구(merge_*.py)가 고치는 **정본**. 호텔 789곳 × 365일 ·
     항공 47개 노선 · ⑥ 땡처리 상품을 한 파일에 담는다(바뀌지 않음).
   · `data/app/*.json` — 앱이 탭에 들어갈 때 `fetch` 로 받는 **탭별 배포본**(지연 로딩).
       tab1_vip.json(①) · tab2_accor.json(② 아코르 + SNU rows)
@@ -53,10 +53,12 @@ PART_ADDRESS = dict(PART_TABS)
 WINDOW_START = '2026-12-01'
 WINDOW_END = '2027-11-30'
 
-# 탭별 기대 호텔 수 — ① 호텔럭스 161곳 · ② 아코르 536곳 · ③ 메리어트 62곳 · 총 759곳
+# 탭별 기대 호텔 수 — ① 호텔럭스 161곳 · ② 아코르 536곳 · ③ 메리어트 92곳 · 총 789곳
 #   ② 아코르 = 중국(APC) 291(중올플 289 + 아코르 카드 가운데 중국 2) + 국내 30 + 동남아 196
 #   + 기타 해외 19.  중올플 289 + 아코르 265 = 554 가운데 같은 호텔 18곳을 한 카드로 합친 수다.
-EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 62}
+#   ③ 메리어트 = 중국·홍콩·마카오 40 + 한국 40 + 일본 12. 2026-11-23에 한국 30곳(k11~k40)을 더했다
+#   (5번 실측 marriott-kr-31 · SELAK 더 플라자 서울은 2026-09-30 영업 종료라 제외).
+EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 92}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
 #   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
@@ -536,13 +538,21 @@ def check_sources(text_blob):
     return ['출처 문구에 금지된 사이트 이름: %s' % ', '.join(hits)] if hits else []
 
 
-EXPECT_BRANDS = {'리츠칼튼': 24, '세인트레지스': 14, 'W': 10, 'JW 메리어트': 4,
-                 '럭셔리 컬렉션': 2, '에디션': 2, '웨스틴': 2, '메리어트': 1,
-                 '오토그래프 컬렉션': 1, '메리어트 이그제큐티브 아파트먼트': 1, '르메르디앙': 1}
-# 한·일 원본 CSV 기대치(2026-11-17 수집) — 유실·중복 방지용 고정값
+EXPECT_BRANDS = {'리츠칼튼': 24, '세인트레지스': 14, 'W': 10, '코트야드 바이 메리어트': 7,
+                 '포 포인츠 바이 쉐라톤': 5, 'JW 메리어트': 4, '럭셔리 컬렉션': 3, '웨스틴': 3,
+                 '오토그래프 컬렉션': 3, '페어필드 바이 메리어트': 3, '메리어트': 2, 'AC 호텔': 2,
+                 '알로프트': 2, '목시': 2, '쉐라톤': 2, '에디션': 2,
+                 '메리어트 이그제큐티브 아파트먼트': 1, '르메르디앙': 1, '트리뷰트 포트폴리오': 1,
+                 '디자인 호텔스': 1}
+# 한·일 원본 CSV 기대치(2026-11-17 수집) — 유실·중복 방지용 고정값. 2026-11-23에 한국 30곳을
+#   더하면서 k11~k40 이 이 목록에 섞이지 않도록 원본 22곳 id 만 골라 검사한다. 신규 30곳은 아래
+#   EXPECT_KR30 으로 따로 고정한다.
 EXPECT_KJ = {'hotels': 22, 'cash': 6800, 'points': 6629}
+KJ_IDS = {'k%02d' % i for i in range(1, 11)} | {'j%02d' % i for i in range(1, 13)}
+# 2026-11-22 실측 한국 신규 30곳(k11~k40) — 현금 9,862칸 · 아워드 포인트 9,704칸 / 30×365=10,950칸
+EXPECT_KR30 = {'hotels': 30, 'cash': 9862, 'points': 9704}
 # ① HoteLux 탭과 호텔이 겹치는 ⑤ 항목(요금 출처가 달라 둘 다 수록) — alsoIn 으로 교차 표시
-EXPECT_OVERLAP = {'k01', 'k02', 'k04', 'k05', 'j01', 'j04', 'j10', 'j11', 'j12'}
+EXPECT_OVERLAP = {'k01', 'k02', 'k04', 'k05', 'k20', 'k26', 'j01', 'j04', 'j10', 'j11', 'j12'}
 # 원래부터 두 탭에 있던 중복(③ Stay Plus ↔ ① HoteLux) — 새 중복과 구분하기 위한 허용 목록
 KNOWN_DUP = {('dB200', 'h39')}
 
@@ -4851,13 +4861,21 @@ def check_tabs(db):
         problems.append('메리어트 브랜드 구성 %s (기대 %s)' % (brands, EXPECT_BRANDS))
 
     # ⑤ 한·일 22곳: 현금·포인트 칸 수와 교차 참조
-    kj = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'][0] in 'kj']
+    kj = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'] in KJ_IDS]
     cash = sum(1 for h in kj for v in (h.get('rates') or {}).values() if v is not None)
     pts = sum(1 for h in kj for v in (h.get('points') or {}).values() if isinstance(v, int))
     if len(kj) != EXPECT_KJ['hotels'] or cash != EXPECT_KJ['cash'] or pts != EXPECT_KJ['points']:
         problems.append('한·일 22곳 수치 %s (기대 %s)' % (
             {'hotels': len(kj), 'cash': cash, 'points': pts}, EXPECT_KJ))
-    for h in kj:
+    # 2026-11-23 — 한국 신규 30곳(k11~k40)도 칸 수를 고정해 둔다(유실·보간 방지)
+    kr30 = [h for h in db['hotels'] if h.get('group') == 'marriott'
+            and h['id'][0] == 'k' and h['id'] not in KJ_IDS]
+    c30 = sum(1 for h in kr30 for v in (h.get('rates') or {}).values() if v is not None)
+    p30 = sum(1 for h in kr30 for v in (h.get('points') or {}).values() if isinstance(v, int))
+    if len(kr30) != EXPECT_KR30['hotels'] or c30 != EXPECT_KR30['cash'] or p30 != EXPECT_KR30['points']:
+        problems.append('한국 신규 30곳 수치 %s (기대 %s)' % (
+            {'hotels': len(kr30), 'cash': c30, 'points': p30}, EXPECT_KR30))
+    for h in kj + kr30:
         if not h.get('points') and h['id'] != 'k09':
             problems.append('%s 포인트 칸 없음' % h['id'])
         if h['id'] in EXPECT_OVERLAP and not h.get('alsoIn'):

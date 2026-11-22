@@ -89,7 +89,7 @@
 .pm-cell{display:block;width:100%;min-height:42px;border:1px solid #eceae0;border-radius:7px;background:#fff;padding:2px 3px;font:inherit;text-align:left;cursor:pointer;overflow:hidden}
 .pm-cell .d{display:block;font-size:9px;font-weight:800;color:#8b86a3;line-height:1.1}
 .pm-cell .m{display:block;font-size:10px;font-weight:800;color:#241d3a;line-height:1.25;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
-.pm-cell .s{display:block;font-size:8px;font-weight:700;color:#8b86a3;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm-cell .s{display:block;font-size:8px;font-weight:700;color:#8b86a3;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:clip}
 .pm-cell .t{display:block;font-size:8px;font-weight:800;color:#b6bac1;margin-top:3px}
 .pm-cell.sun .d{color:#c2410c}
 .pm-cell.sat .d{color:#1b4bd8}
@@ -156,7 +156,7 @@
 @media(max-width:760px){
   .pm-cell{min-height:38px;padding:2px 2px}
   .pm-cell .d{font-size:8.5px}
-  .pm-cell .m{font-size:9.5px}
+  .pm-cell .m{font-size:9px;letter-spacing:-.03em}
   .pm-cell .s{font-size:7.5px}
   .pm-cal{border-spacing:1.5px}
   .pm-ds-row{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"pg meta" "cab cab";gap:3px 6px}
@@ -167,3 +167,4 @@
 }
 .pm-cell.out{background:transparent;border-style:dashed;border-color:#eef0f5;cursor:default}
 .pm-cell.out .d{color:#cfd2da}
+.pm-cell .m{white-space:nowrap;overflow:hidden;text-overflow:clip}

@@ -59,7 +59,9 @@ KEEP_PAIRS = {
 EXPECT_ORDER = ['MSCHC', 'MCTAL', 'AMMHB', 'TLVIL', 'JRSHA', 'BEYLE', 'MNABA',
                 'CROHC', 'CAISZ', 'CPTST', 'JNBHI', 'NBOIR', 'ACCRA', 'DARDS']
 
-# 특이사항 — 원자료 note 뒤에 사유를 덧붙여 보존한다
+# 특이사항 — 원자료 note 뒤에 사유를 덧붙여 보존한다.
+# JRSHA · CROHC 는 2027-11-07 에도 값이 있어(원자료 그대로) 예약창 미오픈 구간을 11-08 부터로 적는다.
+FIX_TAIL = {'JRSHA': True, 'CROHC': True}
 EXTRA_NOTE = {
     'JRSHA': ' IHG 공홈 OPENING SOON — 2027-05-15 개관. 개관일부터 현금 99일만 값이 있고(2027-05-15~2027-11-07), 포인트는 전 기간 없습니다.',
     'CROHC': ' 달력 셀 값은 세금·수수료 포함 표시값 그대로입니다.',
@@ -133,7 +135,10 @@ def main():
         pc = numeric(points['$v'])
         assert rc == h['cells']['cash'] and pc == h['cells']['points'], (h['code'], rc, pc, h['cells'])
         assert (h.get('note') or ''), h['code']
-        note = h['note'] + EXTRA_NOTE.get(h['code'], '')
+        raw = h['note']
+        if FIX_TAIL.get(h['code']):
+            raw = raw.replace('2027-11-07~30은 예약창 미오픈(null).', '2027-11-08~30은 예약창 미오픈(null).')
+        note = raw + EXTRA_NOTE.get(h['code'], '')
         added.append({
             'id': 'i%02d' % n,
             'group': 'ihg',

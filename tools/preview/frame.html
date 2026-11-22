@@ -27,9 +27,13 @@
 <script>
   var q = new URLSearchParams(location.search);
   var tab = q.get('tab') || 'lux';
+  /* ?v=... 를 주소에 붙이면 index.html 요청에도 같은 값을 붙인다 — CDN(미리보기 서버)이 예전 문서를
+     물고 있을 때 새 화면을 보기 위한 것이다. 앱은 해시(#tab=)만 읽으므로 값이 붙어도 동작은 같다. */
+  var v = q.get('v');
+  var url = '../../index.html' + (v ? '?v=' + v : '') + '#tab=' + tab;
   var d = document.getElementById('d'), m = document.getElementById('m');
-  d.src = '../../index.html#tab=' + tab;
-  m.src = '../../index.html#tab=' + tab;
+  d.src = url;
+  m.src = url;
   d.onload = function () { if (q.get('y')) d.contentWindow.scrollTo(0, +q.get('y')); };
   m.onload = function () { if (q.get('m')) m.contentWindow.scrollTo(0, +q.get('m')); };
   document.getElementById('bar').addEventListener('click', function (e) {

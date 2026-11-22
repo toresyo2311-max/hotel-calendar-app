@@ -10,7 +10,7 @@
 
 넣는 자리(마커로 감싸 두어 다시 돌려도 중복되지 않는다):
     CSS      : '/* ── 반응형' 앞
-    NAV      : ⑥ 땡처리 버튼 블록 뒤
+    NAV      : 탭 바 맨 끝 — 🅿️ 발렛 버튼 뒤(한진님 2026-11-22 "휴양림은 젤뒤로")
     SECTION  : 발렛 패널 앞
     TABS     : const tabs={...} 의 valet 항목 앞
     JS       : render(); 호출 앞
@@ -159,7 +159,7 @@ def main(argv):
         src = fp.read()
     before = len(src)
 
-    src, s_nav = put(src, NAV_START, NAV_END, NAV_HTML, '<!-- /TT:NAV -->', before=False)
+    src, s_nav = put(src, NAV_START, NAV_END, NAV_HTML, '  </nav>', before=True)
     src, s_sec = put(src, SEC_START, SEC_END, asset('section.html'), '  <section id="valetPanel"')
     src, s_css = put(src, CSS_START, CSS_END, asset('tab.css'), '/* ── 반응형 ─')
     src, s_js = put(src, JS_START, JS_END, asset('app.js'), 'function activate(tab){')

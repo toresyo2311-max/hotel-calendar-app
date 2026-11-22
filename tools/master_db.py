@@ -76,6 +76,8 @@ EXPECT_ACCOR = {
     'redhot': {'offers': 32, 'hotels': 32, 'cells': 1909},
     'priced': {'C1B5': 0, 'A7Z9': 124, 'A5G7': 263, '8167': 357, 'B6R8': 362},
     'snu_rows': 43, 'snu_cities': 8,
+    # SNU 참여 상태 — 2026-11-22 아코르 공식 「참여 호텔」 목록과 전수 대조한 결과
+    'snu_counts': {'participating': 184, 'hotelExcluded': 30, 'brandExcluded': 320, 'unverified': 2},
     # 통합하며 중국 카드가 사라진 18곳 — 사라진 id 는 data/id_alias_accor.json 의 매핑대로 남은 카드로 간다
     'merged': {'ap052': 'aB9G8', 'ap063': 'aB953', 'ap075': 'a5949', 'ap088': 'a6824',
                'ap101': 'aB733', 'ap118': 'a8102', 'ap125': 'aB8Y3', 'ap140': 'a8167',
@@ -83,7 +85,9 @@ EXPECT_ACCOR = {
                'ap216': 'a8719', 'ap224': 'a7970', 'ap237': 'aC4U2', 'ap241': 'a8873',
                'ap251': 'a9567', 'cA7Z9': 'aA7Z9'},
 }
-EXPECT_DOMESTIC_PROGRAM = {'dB220': (True, True), 'dB200': (True, False),
+# 2026-11-22 — 페어몬트 앰배서더 서울(dB200)은 아코르 공식 SNU 참여 호텔이다. 예전엔 확인한 7개 창에
+#   SNU 요금이 안 떠서 snu=False 로 적었는데, 그건 「요금 미노출」이지 「미참여」가 아니다. 그래서 True 로 바로잡았다.
+EXPECT_DOMESTIC_PROGRAM = {'dB220': (True, True), 'dB200': (True, True),
                            'dA3N6': (True, False), 'dC2G2': (True, False)}
 # 출처 문구에 사이트 이름을 쓰지 않는다
 FORBIDDEN = ('accorcards', 'ittaeda', 'roame', '트립닷컴', '호텔럭스', 'hotelux',
@@ -376,6 +380,39 @@ def check_accor(db):
         p = (ids.get(hid) or {}).get('program') or {}
         if p.get('stayplus') is not sp or p.get('snu') is not snu:
             problems.append('③ %s program %s (기대 stayplus=%s snu=%s)' % (hid, p, sp, snu))
+    # ── SNU 참여 상태 — 아코르 공식 「참여 호텔」 목록(2026-11-22)과 전수 대조한 결과 ──
+    #    네 상태(참여·개별 미참여·브랜드 미참여·확인 불가)가 536곳 모두에 있고,
+    #    program 이 있는 카드는 program.snu 와 결론이 같아야 한다.
+    snu_cnt = {'participating': 0, 'hotel_excluded': 0, 'brand_excluded': 0, 'unverified': 0}
+    for h in dom:
+        s = h.get('snu')
+        if not isinstance(s, dict) or s.get('status') not in snu_cnt:
+            problems.append('② %s snu 상태 없음/이상: %r' % (h['id'], s))
+            continue
+        snu_cnt[s['status']] += 1
+        if not isinstance(s.get('brand'), bool) or not s.get('note'):
+            problems.append('② %s snu brand/note 빠짐' % h['id'])
+        if not str(s.get('checked') or '').startswith('2026-'):
+            problems.append('② %s snu 확인일 이상: %r' % (h['id'], s.get('checked')))
+        if 'program' in h:
+            p = h.get('program') or {}
+            if bool(p.get('snu')) != (s['status'] == 'participating'):
+                problems.append('② %s program.snu %r ≠ snu.status %s' % (h['id'], p.get('snu'), s['status']))
+    want = EXPECT_ACCOR['snu_counts']
+    if snu_cnt['participating'] != want['participating']:
+        problems.append('② SNU 참여 %d곳 (기대 %d곳)' % (snu_cnt['participating'], want['participating']))
+    for k, key in (('hotel_excluded', 'hotelExcluded'), ('brand_excluded', 'brandExcluded'),
+                   ('unverified', 'unverified')):
+        if snu_cnt[k] != want[key]:
+            problems.append('② SNU %s %d곳 (기대 %d곳)' % (k, snu_cnt[k], want[key]))
+    _prog = (db.get('accor') or {}).get('program') or {}
+    if (_prog.get('snuCounts') or {}) != {'hotels': len(dom), 'participating': want['participating'],
+                                          'hotelExcluded': want['hotelExcluded'],
+                                          'brandExcluded': want['brandExcluded'],
+                                          'unverified': want['unverified']}:
+        problems.append('② SNU 집계 문구가 자료와 다름: %r' % (_prog.get('snuCounts'),))
+    if 'SNU' not in str(_prog.get('snuBrands') or ''):
+        problems.append('② SNU 브랜드 기준 문구 없음')
     # ── Red Hot Rooms — 원천(오퍼 목록)에 적힌 값만 있는지 ──────────────────
     if len(rh_hotels) != EXPECT_ACCOR['redhot']['hotels']:
         problems.append('③ 레드핫 참여 호텔 %d곳 (기대 %d곳)' % (len(rh_hotels), EXPECT_ACCOR['redhot']['hotels']))

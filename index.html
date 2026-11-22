@@ -3997,7 +3997,7 @@ function renderCalendar(S){
       if(st.tab==='accor'&&blackout&&only){tail='<span class="daytail excluded">약관 제외일</span>'}
       else if(hasPointsTab()){
         if(st.pmode==='points'&&e&&e.p!=null&&N===1){const c=e.h?cashOf(e.h,date):null;if(c!=null)sub='<span class="daycash">'+shortWon(c)+'</span>'}
-        else if(st.pmode==='both'){const bp=only?(e&&e.h?ptsOf(e.h,date):null):bestPoints(date);if(bp!=null)sub='<span class="daypoints">'+shortP(bp)+'</span>'}
+        else if(st.pmode==='both'){const oh=only?((e&&e.h)||filteredHotels()[0]||null):null;const bp=only?(oh?ptsOf(oh,date):null):bestPoints(date);if(bp!=null)sub='<span class="daypoints">'+shortP(bp)+'</span>'}
         if(!only&&e&&e.h)tail='<span class="daytail name-tail">'+esc(e.h.name)+'</span>';
       }else if(st.tab==='accor'&&!apcModeOn()&&(st.zone==='cn'||st.mode==='apc')){
         if(only){if(apcH(filteredHotels()[0]))tail=apcBadgeFor(apcStateOf(filteredHotels()[0],date))}

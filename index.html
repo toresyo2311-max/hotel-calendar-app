@@ -5036,7 +5036,7 @@ function openWxSheet(hid,dt,nights){
 function closeWxSheet(){const el=wxSheetEl();if(!el)return;el.classList.remove('show');el.setAttribute('aria-hidden','true')}
 /* ── 예약처 선택 시트 — 예약처가 둘인 호텔은 달력 날짜를 누르면 바로 열지 않고 고르게 한다 ──
    2026-11-21 한진님 요청("메리엇 달력 클릭하면 바로 들어가지는데 호럭하고 메리엇 어느것 들어갈지 선택후 연결되게").
-   대상: ① 호텔럭스(메리어트·아코르·하얏트 계열 = 공홈 짝 있음) · ② 아코르(LUX_REF_ACC 있음) · ④ 메리엇(luxTwinOfMar 있음).
+   대상: ① 호텔럭스(메리어트·아코르·하얏트·IHG 계열 = 공홈 짝 있음) · ② 아코르(LUX_REF_ACC 있음) · ④ 메리엇(luxTwinOfMar 있음) · ⑤ IHG(LUX_REF_IHG 있음).
    한 쪽 링크만 있는 호텔은 지금처럼 <a href>로 바로 열린다. */
 const bkSheetEl=()=>document.getElementById('bkSheet');
 const BK_ALT_CACHE=new Map();
@@ -5053,10 +5053,11 @@ function bkHasAlt(h){
   if(!h||h.fhr)return false;
   if(BK_ALT_OK.has(h.id))return BK_ALT_OK.get(h.id);
   let v=false;
-  if(h.group==='lux')v=Boolean(marriottBrandName(h)||accorBrandName(h)||hyattBrandName(h));
+  if(h.group==='lux')v=Boolean(marriottBrandName(h)||accorBrandName(h)||hyattBrandName(h)||IHG_TWIN[h.id]);
   else if(h.group==='marriott')v=Boolean(luxTwinOfMar(h));
   else if(h.group==='hyatt')v=Boolean(h.vip_id||(h.links&&h.links.hlx));
   else if(h.group==='accor')v=Boolean(luxRefOf(h));
+  else if(h.group==='ihg')v=Boolean(luxRefOf(h));
   BK_ALT_OK.set(h.id,v);return v;
 }
 function bkPrimDesc(h){  if(!h)return '';
@@ -8156,7 +8157,7 @@ if(/[?&]diag=1(&|$)/.test(location.search+location.hash)){
    ✈️+🏨 콤보는 ①~③ 호텔과 ⑥ 항공이 모두 필요하므로 없는 것만 병렬로 받는다. */
 const DATA_ROOT='data/app/';
 /* 발렛 자료는 카드사 안내가 바뀔 때만 갱신되므로 배포마다 캐시를 비운다(브라우저 HTTP 캐시 10분 회피) */
-const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22b',mileage:'2026-11-23z94','mileage-pt':'2026-11-23z94',accor:'2026-11-22z52',marriott:'2026-11-23z97',hyatt:'2026-11-23z99',ihg:'2026-11-23z103',festival:'2026-11-22a'};
+const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22b',mileage:'2026-11-23z94','mileage-pt':'2026-11-23z94',accor:'2026-11-22z52',marriott:'2026-11-23z97',hyatt:'2026-11-23z99',ihg:'2026-11-23z104',festival:'2026-11-22a'};
 const PART_FILE={lux:'tab1_vip.json',accor:'tab2_accor.json',marriott:'tab4_marriott.json',hyatt:'tab10_hyatt.json',ihg:'tab11_ihg.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json',forest:'tab7_forest.json',mileage:'tab8_mileage.json','mileage-pt':'tab9_partner_mileage.json',festival:'tab12_festival.json'};
 const HOTEL_TABS=['lux','accor','marriott','hyatt','ihg'];
 /* ✈️+🏨 콤보가 쓰는 호텔 = ①~④ (④ 하얏트 · ⑤ IHG 는 콤보 계산에 넣지 않는다) */

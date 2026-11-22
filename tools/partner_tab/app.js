@@ -140,7 +140,7 @@ function pmRenderKpi(){
   var cheapest=null;
   dirRows.forEach(function(r){
     var b=pmBestCabin(r,pms.cabin);
-    if(b&&(!cheapest||b.miles<cheapest.miles))cheapest={r:r,c:b,p:pmProg(r[0])};
+    if(b&&(!cheapest||b.miles<cheapest.c.miles))cheapest={r:r,c:b,p:pmProg(r[0])};
   });
   var withData=Object.keys(progs).length;
   el.innerHTML=''

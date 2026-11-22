@@ -685,6 +685,19 @@ button.fl-plink{font-family:inherit;line-height:1.35;cursor:pointer}
 .logfold[open]>summary:before{content:"\25BE"}
 .logfold>summary small{font-weight:600;color:var(--muted);font-size:10px}
 .logbody{margin-top:10px;max-height:460px;overflow:auto;padding:0 6px 0 9px;border-left:2px solid var(--line2)}
+/* 하단 안내·자료 기준 접기 — 기본은 접힌 한 줄, 누르면 펼친다 */
+.notefold{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+.notefold>summary{cursor:pointer;display:inline-flex;align-items:center;gap:7px;max-width:100%;font-size:11.5px;font-weight:800;color:var(--violet-d);border:1px solid var(--line);background:#f8f6fd;border-radius:10px;padding:8px 12px;list-style:none;line-height:1.45}
+.notefold>summary::-webkit-details-marker{display:none}
+.notefold>summary:before{content:"\25B8";font-size:9px;flex:0 0 auto}
+.notefold[open]>summary:before{content:"\25BE"}
+.notefold[open]>summary{margin-bottom:10px}
+.notefold>summary small{font-weight:600;color:var(--muted);font-size:10px}
+.notefold[open] .note-grid,.notefold[open]>section{margin-top:0}
+@media(max-width:430px){.notefold>summary{font-size:11px;padding:7px 10px}}
+.notefold .pm-notebody{font-size:10.5px;line-height:1.75;color:#4a4463;padding:0 2px}
+.notefold .pm-notebody b{color:#241d3a}
+.notefold .pm-notebody p{margin:6px 0 0}
 .fl-sort{display:inline-flex;gap:3px;padding:3px;border:1px solid var(--line);background:#f6f4fb;border-radius:9px}
 .fl-sort button{border:0;background:transparent;border-radius:7px;padding:4px 8px;font-size:10px;font-weight:700;color:var(--muted);white-space:nowrap}
 .fl-sort button.on{background:var(--card);color:var(--violet-d);box-shadow:0 1px 4px rgba(27,18,43,.12)}
@@ -2359,7 +2372,10 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
       <div class="rank-head"><h3>도시별 최저 총액</h3><span class="rank-label">같은 달 · 같은 패턴 기준 · 눌러서 그 도시만 보기</span></div>
       <div class="cb-citygrid" id="cbCities"></div>
     </section>
-    <section class="notice" id="cbNotes"></section>
+    <details class="notefold" id="cbNotesFold">
+      <summary>📑 콤보 계산 기준 · 읽는 법 <small>✈️+🏨 항공+숙박</small></summary>
+      <section class="notice" id="cbNotes"></section>
+    </details>
   </section>
   <section id="flightPanel" class="flight-panel" hidden aria-label="부산 출발 항공 특가">
     <div class="fl-summary">
@@ -2426,7 +2442,9 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
       <div class="fl-matrix-scroll"><table class="fl-matrix" id="flMatrix"></table></div>
     </div>
 
-    <div class="note-grid">
+    <details class="notefold" id="flNotes">
+      <summary>📑 조회 기준 · 금액 읽는 법 · 예약 전 확인사항 <small>⑤ 항공 · 갱신 이력 포함</small></summary>
+      <div class="note-grid">
 <section class="notice"><h3>조회 기준과 금액 읽는 법</h3>
         <div class="note-row"><span class="note-mark">₩</span><span class="note-text"><strong>성인 1인 왕복 총액</strong> · 유류할증료·공항시설사용료·세금 포함 예약 사이트 표시가(KRW).</span></div>
         <div class="note-row"><span class="note-mark">◷</span><span class="note-text">2026-11-17 <strong>12:17~18:20 · 13:20~23:20 KST</strong> 예약 사이트 조회 결과를 중복 없이 합쳤습니다: 12월 698건 + 2027년 1월 보완1·2·3차 460조합(신규 439건, 기존 21조합은 <strong>최신 조회값으로 갱신</strong>) + 당일치기 156건 + <strong>2027년 2월 2·3·4주 360칸</strong>(신규 345건, 기존 후쿠오카 15칸은 최신 조회값으로 갱신) = <strong>1,638건</strong>(2026.12~2027.02 합계). 2026-11-18 담당자 조회 4건(필리핀 4개 노선 180칸 · 동남아 4개 노선 178칸 · 일본 7개 노선 90칸 · 2027년 3월 1주차 120칸)도 같은 기준(성인 1인 왕복 총액 · 유류·세금 포함)으로 더했습니다.</span></div>
@@ -2516,7 +2534,8 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
         </ul>
         </div></details>
       </section>
-    </div>
+      </div>
+    </details>
   </section>
 
 <!-- TT:SECTION -->
@@ -2600,10 +2619,13 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
       <div class="tt-table" id="ttList"></div>
     </div>
 
-    <div class="note-grid">
-      <section class="notice"><h3>조회 기준과 금액 읽는 법</h3><div id="ttBasis"></div></section>
-      <section class="notice"><h3>예약 전에 꼭 확인하세요</h3><div id="ttCaution"></div></section>
-    </div>
+    <details class="notefold" id="ttNotes">
+      <summary>📑 조회 기준 · 금액 읽는 법 · 예약 전 확인사항 <small>⑥ 땡처리</small></summary>
+      <div class="note-grid">
+        <section class="notice"><h3>조회 기준과 금액 읽는 법</h3><div id="ttBasis"></div></section>
+        <section class="notice"><h3>예약 전에 꼭 확인하세요</h3><div id="ttCaution"></div></section>
+      </div>
+    </details>
   </section>
 <!-- /TT:SECTION -->
 <!-- FOREST:SECTION -->
@@ -2700,10 +2722,13 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
       <div class="fr-gfoot" id="frGridFoot"></div>
     </div>
 
-    <div class="note-grid">
-      <section class="notice"><h3>조회 기준과 표시 읽는 법</h3><div id="frBasis"></div></section>
-      <section class="notice"><h3>예약 전에 확인하세요</h3><div id="frCaution"></div></section>
-    </div>
+    <details class="notefold" id="frNotes">
+      <summary>📑 조회 기준 · 표시 읽는 법 · 예약 전 확인사항 <small>🌲 휴양림</small></summary>
+      <div class="note-grid">
+        <section class="notice"><h3>조회 기준과 표시 읽는 법</h3><div id="frBasis"></div></section>
+        <section class="notice"><h3>예약 전에 확인하세요</h3><div id="frCaution"></div></section>
+      </div>
+    </details>
   </section>
 <!-- /FOREST:SECTION -->
 <!-- MILEAGE:SECTION -->
@@ -2874,7 +2899,7 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
     <div class="pm-block" id="pmCal"></div>
     <div class="pm-block" id="pmList"></div>
 
-    <p class="pm-note" id="pmNote"></p>
+    <div class="pm-note" id="pmNote"></div>
   </section>
 
   <!-- 날짜 상세 — 달력 칸·목록 카드를 누르면 열린다. 프로그램별·노선별·등급별 필요 마일, 직항/경유, 최근 확인 시각과
@@ -2959,10 +2984,13 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
         <button type="button" class="vt-more" id="lgUseReset">올해·이번 달 사용 기록 초기화</button>
         <span class="vt-note" id="lgUseNote"></span>
       </div>
-      <div class="note-grid" style="margin-top:14px">
-        <section class="notice"><h3>라운지 자료 읽는 법</h3><div id="lgNotice1"></div></section>
-        <section class="notice"><h3>출국 전에 확인하세요</h3><div id="lgNotice2"></div></section>
-      </div>
+      <details class="notefold" id="lgNotes">
+        <summary>📑 라운지 자료 읽는 법 · 출국 전 확인사항 <small>🛫 공항 라운지</small></summary>
+        <div class="note-grid" style="margin-top:14px">
+          <section class="notice"><h3>라운지 자료 읽는 법</h3><div id="lgNotice1"></div></section>
+          <section class="notice"><h3>출국 전에 확인하세요</h3><div id="lgNotice2"></div></section>
+        </div>
+      </details>
     </div><!-- /vtLoungeView -->
 
     <div class="vt-manage" id="vtManage" hidden>
@@ -2981,23 +3009,32 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
       <div class="vt-mrows" id="vtMRows"></div>
     </div>
 
-    <div class="note-grid" id="vtHotelNotes">
-      <section class="notice"><h3>자료 읽는 법</h3><div id="vtNotice1"></div></section>
-      <section class="notice"><h3>방문 전에 확인하세요</h3><div id="vtNotice2"></div></section>
-    </div>
+    <details class="notefold" id="vtHotelNotes">
+      <summary>📑 자료 읽는 법 · 방문 전 확인사항 <small>🅿️ 호텔 발렛</small></summary>
+      <div class="note-grid">
+        <section class="notice"><h3>자료 읽는 법</h3><div id="vtNotice1"></div></section>
+        <section class="notice"><h3>방문 전에 확인하세요</h3><div id="vtNotice2"></div></section>
+      </div>
+    </details>
   </section>
-  <div class="note-grid" id="hotelNotes">
-    <section class="notice"><h3>조회 기준과 금액 읽는 법</h3><div id="basis"></div></section>
-    <section class="notice"><h3>예약 전에 꼭 확인하세요</h3><div id="caution"></div></section>
-  </div>
-  <section class="snapshot" id="snapshotBox" aria-label="자료 기준과 조회 조건">
-    <div><b>자료 기준</b>① VIP·FHR 2026-11-17 01:13(140곳) + 2026-11-20 07:30~13:55 · 14:10~14:45 · 14:49~16:05 · 15:51~16:23 · 16:31~17:09 · 17:15~17:53 · 17:58~18:33 · 18:41~19:24 · 19:34~20:13 · 2026-11-21 KST(예약 사이트 직접 조회 21곳 전부 2026-12-01~2027-11-30 365일 완결 — 월도프·만다린 07:15~09:50, 카펠라·하얏트 리젠시 다낭·인터컨티넨탈 다낭은 2027-04~11월분 추가 조회 11:45~13:55) · ② APC 확인 2026-11-16 / 현금 2026-11-17 · ③ 국내·한·중·일 2026-11-16~20 / 동남아 196곳 2026-11-21 20:50~21:25 KST · ④ 현금 2026-11-17 · 아워드 포인트 2026-11-17(한·일 22곳) + 2026-11-21(중국 40곳 365일 조회) · ⑤ 항공 2026-11-17~21 · ⑥ 땡처리 2026-11-22 04:31~05:40 KST</div>
+  <details class="notefold" id="hotelNotes">
+    <summary>📑 조회 기준 · 금액 읽는 법 · 예약 전 확인사항 <small>호텔 탭 공통</small></summary>
+    <div class="note-grid">
+      <section class="notice"><h3>조회 기준과 금액 읽는 법</h3><div id="basis"></div></section>
+      <section class="notice"><h3>예약 전에 꼭 확인하세요</h3><div id="caution"></div></section>
+    </div>
+  </details>
+  <details class="notefold snapshotfold" id="snapshotBox">
+    <summary>📋 조회 기준 · 환율 안내 보기 <small>자료 기준 · 조회 조건 · 반올림</small></summary>
+    <div class="snapshot" aria-label="자료 기준과 조회 조건">
+    <div><b>자료 기준</b>① VIP·FHR 2026-11-17(140곳) · 2026-11-20~21 예약 사이트 직접 조회 21곳(365일 완결) · ② APC 2026-11-16 / 현금 2026-11-17 · ③ 국내·한·중·일 2026-11-16~20 / 동남아 196곳 2026-11-21 · ④ 현금 2026-11-17 / 아워드 포인트 2026-11-17(한·일 22곳) · 2026-11-21(중국 40곳) · ⑤ 항공 2026-11-17~21 · ⑥ 땡처리 2026-11-22 04:31~05:40 · ⑦ 마일리지 2026-11-22 01:30 · ⑧ 외항사 2026-11-22 12:43 KST</div>
     <div><b>호텔 조회 조건</b>성인 2인 1실 · 1박 · <em>세금·수수료 포함</em> 표시가. ④ 중국 40곳은 <em>무료취소</em>를 켠 최저 총액, 한·일 22곳은 검색 최저가입니다. ③ 서울 Stay Plus 결제액은 세전입니다.</div>
     <div><b>항공 조회 조건</b>성인 <em>1인 왕복 총액</em> · 유류할증료·공항시설사용료·세금 포함 표시가(KRW). ⑤는 출발일·귀국일·패턴별 조회값, ⑥은 상품에 적힌 날짜 그대로입니다.</div>
     <div><b>환율·반올림</b>① 해외 요금은 <em>USD 1 = ₩1,336.02</em>(2026-11-17) 고정 환산 후 100원 단위, ③ 페어몬트·소피텔은 만 원 단위, ④는 K/M 표시입니다. ①~④ 해외 호텔 상세 카드에는 <em>2026-11-19 참고 환율</em>로 환산한 현지 통화(약 ¥34,692)를 함께 적습니다 — JPY 100 = ₩835.92 · HK$1 = ₩169.75 · MOP 1 = ₩164.80 · CN¥1 = ₩199.56 · ฿1 = ₩39.22 · ₫1 = ₩0.0518 · S$1 = ₩1,033.06 · US$1 = ₩1,331.56 · A$1 = ₩895.46.</div>
     <div><b>값이 없는 칸</b>—(NA)는 요금 미공개이며 매진·미오픈과 구분하지 않습니다(① 은 아직 확인하지 않은 날짜·호텔도 —). ⑤는 판매 없음 · 요금 미공개 · 미오픈 · 미조회(—)를 나눠 적었고, <em>⚠ 이상값</em>는 1박 1천만 원 이상으로 시스템 오류가 의심되는 값입니다(0원·무료 아님).</div>
-  </section>
-  <footer class="smallfooter"><strong>OFFLINE FILE / 2026-11-19 통합판</strong><br>실시간 가격 연결 없음 · 약관 또는 재고 실시간 확인 불가 · 자료 내 날짜별 숫자와 미표시 상태를 그대로 보존. 개인 로그인 정보는 이 파일에 저장하지 않았습니다.<br><strong>본 페이지는 비공식 개인 참고용 정리이며 상업적 목적이 없습니다. 표기된 브랜드·호텔·항공사·예약처와 공식 제휴나 관련이 없습니다.</strong> · <button type="button" class="lock-again-link" id="lockAgainFoot">다시 잠그기</button><details><summary>통합한 원본 자료 <span id="sourceCount">26</span>개 보기</summary><div class="source-list" id="sources"></div></details></footer>
+    </div>
+  </details>
+  <footer class="smallfooter"><strong>TEAM-부산 · 2026-11-22</strong><br>실시간 가격 연결 없음 · 약관 또는 재고 실시간 확인 불가 · 자료 내 날짜별 숫자와 미표시 상태를 그대로 보존. 개인 로그인 정보는 이 파일에 저장하지 않았습니다.<br><strong>본 페이지는 비공식 개인 참고용 정리이며 상업적 목적이 없습니다. 표기된 브랜드·호텔·항공사·예약처와 공식 제휴나 관련이 없습니다.</strong> · <button type="button" class="lock-again-link" id="lockAgainFoot">다시 잠그기</button><details><summary>통합한 원본 자료 <span id="sourceCount">26</span>개 보기</summary><div class="source-list" id="sources"></div></details></footer>
 </div>
 <div class="modal" id="modal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="modal-head"><div><h3 id="dialogTitle"></h3><p id="dialogSub"></p></div><button type="button" class="close" aria-label="닫기" id="modalClose">×</button></div><div class="modal-body" id="dialogBody"></div></div></div>
 <div class="modal" id="chartModal" aria-hidden="true"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="chartTitle"><div class="modal-head"><div><h3 id="chartTitle">📈 가격 추이</h3><p id="chartSub"></p></div><button type="button" class="close" aria-label="닫기" id="chartClose">×</button></div><div class="modal-body">
@@ -8562,8 +8599,8 @@ document.addEventListener('click',function(e){
 // PARTNER:JS
 /* ── ⑧ 외항사 마일 탭 ─────────────────────────────────────
    부산/김해(PUS)와 인천(ICN)을 떠나는 노선의 '보너스(마일) 좌석'을 항공사
-   마일리지 프로그램별로 모아 둔 스냅샷입니다. 원천은 날짜·노선마다 등급별로 '예약 가능/불가'와 필요 마일,
-   직항·경유 편수까지만 알려 줍니다. 좌석 수량·세금·수수료는 원천에 없어
+   마일리지 프로그램별로 모아 둔 스냅샷입니다. 조회 사이트는 날짜·노선마다 등급별로 '예약 가능/불가'와 필요 마일,
+   직항·경유 편수까지만 알려 줍니다. 좌석 수량·세금·수수료는 조회 사이트에 없어
    표시하지 않습니다(항공사 예약 화면에서 확인).
    예약은 언제나 각 프로그램의 공식 사이트로 보냅니다. */
 var PMD={meta:null,programs:[],dests:[],rows:[],ready:false,progMap:{},destMap:{},byProg:{}};
@@ -8735,9 +8772,9 @@ function pmRenderBanner(){
     +' · 목표 <b>1년 '+KR(allDays)+'일</b>('+esc(w.from)+'~'+esc(w.to)+')'
     +' · 실측 수집 <b>'+KR(colDays)+'일</b>('+esc(w.cFrom)+'~'+esc(w.cTo)+') · '+esc(dirTxt)+' · '+KR(cnt)+'건'
     +'<span class="pm-b2">보너스 좌석은 실시간으로 변동됩니다. 예약 전 <b>각 항공사 공식 사이트에서 재확인</b>해 주세요. '
-    +'원천은 노선·날짜마다 등급별 <b>예약 가능 여부와 필요 마일</b>만 알려 주며, 좌석 수량·세금·수수료는 알려 주지 않아 표시하지 않습니다. '
-    +'표시된 마일은 원천이 그 등급에 보여 준 <b>최저값</b>이고, 경유편은 편수로 구분합니다. '
-    +(colDays<allDays?'<b>'+esc(w.cTo)+'</b> 이후 '+KR(allDays-colDays)+'일은 원천이 비로그인 화면에 열어 주지 않아 <b>미수집</b>입니다 — 달력에 빗금으로 표시하고 값을 채우지 않았습니다(추측·보간 없음). 각 항공사 공식 사이트에서 직접 조회해 주세요.':'')+'</span>';
+    +'조회 사이트는 노선·날짜마다 등급별 <b>예약 가능 여부와 필요 마일</b>만 알려 주며, 좌석 수량·세금·수수료는 알려 주지 않아 표시하지 않습니다. '
+    +'표시된 마일은 조회 사이트가 그 등급에 보여 준 <b>최저값</b>이고, 경유편은 편수로 구분합니다. '
+    +(colDays<allDays?'<b>'+esc(w.cTo)+'</b> 이후 '+KR(allDays-colDays)+'일은 조회 사이트가 비로그인 화면에 열어 주지 않아 <b>미수집</b>입니다 — 달력에 빗금으로 표시하고 값을 채우지 않았습니다(추측·보간 없음). 각 항공사 공식 사이트에서 직접 조회해 주세요.':'')+'</span>';
 }
 
 function pmRenderKpi(){
@@ -8754,7 +8791,7 @@ function pmRenderKpi(){
   });
   var withData=Object.keys(progs).length;
   el.innerHTML=''
-    +'<div><span>수집 프로그램</span><b>'+KR(withData)+'</b><i>9개 중 · 나머지는 원천에 '+esc(pmOName())+' 자료 없음</i></div>'
+    +'<div><span>수집 프로그램</span><b>'+KR(withData)+'</b><i>9개 중 · 나머지는 조회 사이트에 '+esc(pmOName())+' 자료 없음</i></div>'
     +'<div><span>보너스 좌석 행</span><b>'+KR(dirRows.length)+'</b><i>'+esc(pmOName())+(pms.dir?' 도착':' 출발')+' 방향</i></div>'
     +'<div><span>도시</span><b>'+KR(Object.keys(dests).length)+'</b><i>필터로 좁힐 수 있습니다</i></div>'
     +'<div class="new"><span>가장 적은 마일</span><b>'+(cheapest?KR(cheapest.c.miles):'—')+'</b><i>'
@@ -8900,9 +8937,15 @@ function pmRenderNote(){
   if(!el)return;
   var m=pmMeta();
   var cov=(m.coverage||[]).map(function(c){return esc(c.name)+' '+KR(c.rows)+(c.note?' ('+esc(c.note)+')':'')});
-  el.innerHTML='<b>수집 범위</b> — '+(cov.length?cov.join(' · '):'—')
-    +'<br>원천은 프로그램마다 '+esc(pmOName())+' 노선을 얼마나 추적하는지가 다릅니다. 자료가 0건인 프로그램은 <b>보너스 좌석이 없다는 뜻이 아니라, 그 원천이 '+esc(pmOName())+' 노선을 추적하지 않는다는 뜻</b>입니다 — 해당 항공사 공식 사이트에서 직접 조회해 주세요.'
-    +'<br>국내선(김포·제주)은 국제선 여행과 성격이 달라 이 화면에서 뺐습니다. 필요 마일은 원천 표시값이며, 같은 노선이라도 날짜·경유 편수·판매 조건에 따라 달라집니다. 세금·수수료는 마일과 별도입니다.';
+  var have=(m.coverage||[]).filter(function(c){return c.rows>0}).length;
+  var all=(m.coverage||[]).length||9;
+  el.innerHTML='<details class="notefold">'
+    +'<summary>📑 안내 및 조회 범위 보기 <small>'+all+'개 프로그램 중 자료 있는 곳 '+have+'곳 · 읽는 법</small></summary>'
+    +'<div class="pm-notebody">'
+    +'<b>수집 범위</b> — '+(cov.length?cov.join(' · '):'—')
+    +'<p>조회 사이트마다 '+esc(pmOName())+' 노선을 얼마나 추적하는지가 다릅니다. 자료가 0건인 프로그램은 <b>보너스 좌석이 없다는 뜻이 아니라, 그 조회 사이트가 '+esc(pmOName())+' 노선을 추적하지 않는다는 뜻</b>입니다 — 해당 항공사 공식 사이트에서 직접 조회해 주세요.</p>'
+    +'<p>국내선(김포·제주)은 국제선 여행과 성격이 달라 이 화면에서 뺐습니다. 필요 마일은 조회 사이트에 표시된 값이며, 같은 노선이라도 날짜·경유 편수·판매 조건에 따라 달라집니다. 세금·수수료는 마일과 별도입니다.</p>'
+    +'</div></details>';
 }
 
 /* ── 이벤트 ───────────────────────────────────────────────── */
@@ -8940,7 +8983,7 @@ document.addEventListener('change',function(e){
    연결해 주고 정보 볼 수 있도록".
    · 목표 창 = meta.dateFrom~dateTo(365일), 실제 수집 구간 = meta.collectedFrom~collectedTo.
      수집 구간 밖의 날은 값이 아니라 '미수집(공홈 조회)'으로 그린다 — 보간하지 않는다.
-   · 수집 구간 안에서 그 날 표시가 없는 칸은 '—'(원천 표시 없음)이다. 둘을 섞지 않는다. */
+   · 수집 구간 안에서 그 날 표시가 없는 칸은 '—'(조회 사이트에 표시 없음)이다. 둘을 섞지 않는다. */
 
 function pmP2(n){return (n<10?'0':'')+n}
 function pmWin(){
@@ -9046,7 +9089,7 @@ function pmRenderCal(){
   el.innerHTML=strip+grids
     +'<div class="pm-legend">'
     +'<span class="lg"><i class="pm-cell has e">7,000</i>최저 마일(등급 색: <b class="e">이코</b> <b class="p">프이</b> <b class="b">비즈</b> <b class="f">퍼스트</b>)</span>'
-    +'<span class="lg"><i class="pm-cell none">—</i>원천 표시 없음</span>'
+    +'<span class="lg"><i class="pm-cell none">—</i>조회 사이트에 표시 없음</span>'
     +'<span class="lg"><i class="pm-cell miss">미수집</i>수집 구간 밖</span>'
     +'</div>';
 }
@@ -9084,7 +9127,7 @@ function pmMonthGrid(mo,map,w,today){
         var list=map[ds]||[];
         if(!list.length){
           cls.push('none');inner+='<span class="t">—</span>';
-          aria+=' · 원천 표시 없음';
+          aria+=' · 조회 사이트에 표시 없음';
         }else{
           rows++;
           var st=pmDayStat(list);
@@ -9133,16 +9176,16 @@ function pmOpenSheet(ds){
   var col=pmInRange(ds,w.cFrom,w.cTo);
   var dirTxt=pmDirText(pms.dir);
   document.getElementById('pmDsTitle').textContent=pmDateLong(ds);
-  document.getElementById('pmDsSub').innerHTML=esc(dirTxt+' · '+pmCondText()+' · 원천 기준 '+((pmMeta()||{}).observedLabel||'—'));
+  document.getElementById('pmDsSub').innerHTML=esc(dirTxt+' · '+pmCondText()+' · 조회 기준 '+((pmMeta()||{}).observedLabel||'—'));
   var body='';
   if(!col){
     body='<div class="pm-ds-warn"><b>이 날짜는 아직 수집하지 않았습니다.</b><br>'
-      +'원천이 비로그인 화면에 앞으로 '+KR(pmDaysBetween(w.cFrom,w.cTo))+'일('+esc(w.cFrom)+'~'+esc(w.cTo)+')만 열어 주어, '
+      +'조회 사이트가 비로그인 화면에 앞으로 '+KR(pmDaysBetween(w.cFrom,w.cTo))+'일('+esc(w.cFrom)+'~'+esc(w.cTo)+')만 열어 주어, '
       +esc(ds)+' 은 조회하지 못했습니다. 값을 추측해 채우지 않았습니다 — 아래 공식 사이트에서 직접 조회해 주세요.</div>'
       +pmProgramsBlock();
   }else if(!list.length){
-    body='<div class="pm-ds-warn"><b>이 날짜에는 원천에 표시된 보너스 좌석이 없습니다.</b><br>'
-      +'원천이 이 노선·날짜에 보너스 좌석을 보여 주지 않았습니다(좌석이 없다는 뜻과 조회되지 않았다는 뜻을 원천이 구분해 주지 않습니다). '
+    body='<div class="pm-ds-warn"><b>이 날짜에는 조회 사이트에 표시된 보너스 좌석이 없습니다.</b><br>'
+      +'조회 사이트가 이 노선·날짜에 보너스 좌석을 보여 주지 않았습니다(좌석이 없다는 뜻과 조회되지 않았다는 뜻을 조회 사이트가 구분해 주지 않습니다). '
       +'아래 공식 사이트에서 직접 확인해 주세요.</div>'
       +pmProgramsBlock();
   }else{
@@ -9173,8 +9216,8 @@ function pmOpenSheet(ds){
     }).join('');
   }
   document.getElementById('pmDsBody').innerHTML=body;
-  document.getElementById('pmDsNote').innerHTML='필요 마일은 원천이 그 등급에 표시한 값이고, 같은 노선이라도 날짜·경유 편수·판매 조건에 따라 달라집니다. '
-    +'세금·수수료는 마일과 별도이며 좌석 수량은 원천에 없어 표시하지 않습니다. 예약 전 <b>항공사 공식 사이트에서 재확인</b>해 주세요.';
+  document.getElementById('pmDsNote').innerHTML='필요 마일은 조회 사이트가 그 등급에 표시한 값이고, 같은 노선이라도 날짜·경유 편수·판매 조건에 따라 달라집니다. '
+    +'세금·수수료는 마일과 별도이며 좌석 수량은 조회 사이트에 없어 표시하지 않습니다. 예약 전 <b>항공사 공식 사이트에서 재확인</b>해 주세요.';
   el.classList.add('show');
   el.setAttribute('aria-hidden','false');
   var close=document.getElementById('pmDsClose');
@@ -9241,9 +9284,9 @@ function activate(tab){
    · 마감이 지난 항목은 지우지 않고 남겨 두어도 화면에는 나오지 않는다(기록용). */
 const PROMOS=[
  {id:'jeju-jp-winter', title:"일본 전 노선 특가 · 코드 '일본겨울방학'", start:'2026-11-13T10:00+09:00', end:'2026-11-24T17:00+09:00',
-  meta:'사용 11/13 10:00~<strong>11/24 17:00</strong> · 탑승 11/16~2027-02-28 · 최대 20%<br>부산–후쿠오카 편도 86,800원~ · 오사카 96,800원~ · 나리타 121,500원~ (왕복 17만원대 가능성)'},
+  meta:'사용 11/13 10:00~<strong>11/24 17:00</strong> · 탑승 11/16~2027-02-28 · 최대 20% 할인<br>부산–후쿠오카 편도 86,800원~ · 오사카 96,800원~ · 나리타 121,500원~ (왕복 17만원대 가능성)'},
  {id:'jeju-alzza', title:"알짜노선 빅세일 · 코드 '알짜노선빅세일'", start:'2026-11-12T00:00+09:00', end:'2026-11-18T23:59+09:00',
-  meta:'사용 11/12~<strong>11/18</strong> · 탑승 11/12~2027-01-31 · 최대 20%<br>부산–상하이 편도 101,800원~ · 부산–타이베이 121,500원~'},
+  meta:'사용 11/12~<strong>11/18</strong> · 탑승 11/12~2027-01-31 · 최대 20% 할인<br>부산–상하이 편도 101,800원~ · 부산–타이베이 121,500원~'},
  {id:'airbusan-winter', title:'동남아·사이판 윈터페스타 · 에어부산 11월 특가', start:'2026-11-01T00:00+09:00', end:'2026-11-18T23:59+09:00',
   meta:'윈터페스타 예매 <strong>~11/18</strong>(부산–방콕 편도 187,100원~) · 에어부산 11월 특가 <strong>11/17 마감</strong>(부산–광저우 149,900원~, 12/2 취항). 코드는 OTA 예약에 적용되지 않습니다.'}
 ];

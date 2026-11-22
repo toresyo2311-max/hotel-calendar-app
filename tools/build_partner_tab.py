@@ -59,7 +59,7 @@ CITY = {
     'DLC': '다롄', 'TSN': '톈진', 'HKG': '홍콩', 'BKK': '방콕', 'DAD': '다낭',
     'CXR': '나트랑', 'HAN': '하노이', 'SGN': '호찌민', 'SIN': '싱가포르',
     'KUL': '쿠알라룸푸르', 'MNL': '마닐라', 'GUM': '괌', 'DEL': '델리',
-    'BLR': '벵갈루루', 'CGK': '자카르타', 'NBO': '나이로비',
+    'BLR': '벵갈루루', 'CGK': '자카르타', 'NBO': '나이로비', 'YNT': '옌타이',
 }
 DOMESTIC = {'GMP', 'CJU'}
 
@@ -139,7 +139,7 @@ def main(argv):
     # 창은 목표 1년(365일). 실제로 수집한 구간은 따로 적어, 달력이 둘을 섞지 않게 한다.
     # 자료에 행이 없는 날(좌석 없음)까지 포함해 '조회한 구간'을 적으려면 수집을 돌린 범위를 상수로 둔다.
     # → 다음 수집이 뒤 구간까지 닿으면 SWEEP_TO 를 그날까지 올린다.
-    SWEEP_FROM, SWEEP_TO = '2026-11-22', '2027-01-21'
+    SWEEP_FROM, SWEEP_TO = '2026-11-22', '2026-12-26'
     collected_from = min([r[1] for r in rows] + [SWEEP_FROM]) if rows else SWEEP_FROM
     collected_to = max([r[1] for r in rows] + [SWEEP_TO]) if rows else SWEEP_TO
     d_from = datetime.date.fromisoformat(collected_from)

@@ -771,10 +771,11 @@ button.fl-plink{font-family:inherit;line-height:1.35;cursor:pointer}
 .fs-detail p{margin:0 0 8px;font-size:10px;line-height:1.65;color:var(--muted)}
 .fs-detail .fs-close{float:right;border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 8px;font-size:9.5px;font-weight:800;color:var(--muted)}
 .fs-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
-.fs-day{border:1px solid var(--line2);border-radius:7px;background:#fff;min-height:46px;padding:3px 4px;font-size:9px;display:flex;flex-direction:column;gap:1px;min-width:0}
+.fs-day{border:1px solid var(--line2);border-radius:7px;background:#fff;min-height:54px;padding:3px 4px;font-size:9px;display:flex;flex-direction:column;gap:1px;min-width:0}
 .fs-day.blank{border:0;background:transparent}
 .fs-day .d{font-weight:800;color:var(--muted);font-size:9.5px}
-.fs-day .n{font-weight:800;color:#8a3a0c;font-size:10px;font-variant-numeric:tabular-nums}
+.fs-day .n{font-weight:800;color:#8a3a0c;font-size:11px;font-variant-numeric:tabular-nums;line-height:1.1}
+.fs-day .t{font-size:7.5px;font-weight:700;color:#b9a08c;line-height:1.1}
 .fs-day.has{background:#fff6ee;border-color:#f3ddc7;cursor:pointer}
 .fs-day.sel{border-color:#a33d10;box-shadow:inset 0 0 0 1px #a33d10}
 .fs-day.sun .d{color:#c0392b}
@@ -4400,6 +4401,7 @@ function render(){
   if(st.tab==='mileage'){renderMileage();hashSync();return}
   if(st.tab==='partner-mileage'){renderPartner();hashSync();return}
   if(st.tab==='festival'){renderFestival();hashSync();return}
+  if(st.tab==='festival'){renderFestival();hashSync();return}
   setFlightMode(false);
   renderFilters();renderRanking();retitleNights();renderPtTop();
   SER=dayLowSeries();
@@ -7831,6 +7833,16 @@ function hashBuild(){
       if(fst.view!=='list')add('fsv',fst.view);
       if(fst.q)add('fsq',fst.q);
     }
+  }else if(st.tab==='festival'){
+    if(typeof fst!=='undefined'){
+      if(fst.region!=='all')add('fsr',fst.region);
+      if(fst.month!=='all')add('fsm',fst.month);
+      if(fst.cat!=='all')add('fsc',fst.cat);
+      if(fst.status!=='live')add('fss',fst.status);
+      if(fst.sort!=='soon')add('fso',fst.sort);
+      if(fst.view!=='list')add('fsv',fst.view);
+      if(fst.q)add('fsq',fst.q);
+    }
   }else if(st.tab==='flight'){
     if(fl.route!=='all')add('route',fl.route);
     if(fl.pattern!=='all')add('pattern',fl.pattern);
@@ -7931,6 +7943,16 @@ function applyHashState(p){
       if(g('frq'))frs.q=g('frq');
       if(['list','cal','grid'].indexOf(g('frv'))>=0)frs.view=g('frv');
       if(g('frf'))frs.forest=g('frf');
+    }
+  }else if(tab==='festival'){
+    if(typeof fst!=='undefined'){
+      if(g('fsr'))fst.region=g('fsr');
+      if(/^\d{4}-\d{2}$/.test(g('fsm')||''))fst.month=g('fsm');
+      if(g('fsc'))fst.cat=g('fsc');
+      if(['live','ongoing','upcoming','past','all'].indexOf(g('fss'))>=0)fst.status=g('fss');
+      if(['soon','region','name','long'].indexOf(g('fso'))>=0)fst.sort=g('fso');
+      if(['list','cal','month'].indexOf(g('fsv'))>=0)fst.view=g('fsv');
+      if(g('fsq'))fst.q=g('fsq');
     }
   }else if(tab==='festival'){
     if(typeof fst!=='undefined'){
@@ -8848,20 +8870,25 @@ function renderFsCal(){
   for(let i=0;i<pad;i++)html+='<div class="fs-day blank"></div>';
   for(let d=1;d<=days;d++){
     const iso=r[0].slice(0,8)+String(d).padStart(2,'0');
-    const n=pool.filter(function(it){return fsOverlap(it,iso,iso)}).length;
+    let n=0,st=0;
+    for(let i=0;i<pool.length;i++){if(fsOverlap(pool[i],iso,iso)){n++;if(pool[i].s===iso)st++}}
     const dow=fsD(iso).getUTCDay();
     html+='<div class="fs-day'+(n?' has':'')+(fst.day===iso?' sel':'')+(dow===0?' sun':dow===6?' sat':'')+'"'
-      +(n?'':'' )+(n?' data-fs-day="'+iso+'" role="button" tabindex="0"':'')+'>'
-      +'<span class="d">'+d+'</span>'+(n?'<span class="n">'+n+'<small>곳</small></span>':'')+'</div>';
+      +(n?' data-fs-day="'+iso+'" role="button" tabindex="0"':'')+'>'
+      +'<span class="d">'+d+'</span>'
+      +(st?'<span class="n">'+st+'<small> 시작</small></span>':'')
+      +(st?(n>st?'<span class="t">+'+KR(n-st)+' 이어짐</span>':''):(n?'<span class="t">'+KR(n)+' 이어짐</span>':''))
+      +'</div>';
   }
   $('fsDays').innerHTML=html;
-  $('fsCalSub').textContent=monlabel(m)+' · 이 달 '+KR(pool.filter(function(it){return fsOverlap(it,r[0],r[1])}).length)+'곳(진행 중·예정) · 날짜 칸을 누르면 그 날 축제가 아래에 나옵니다';
+  $('fsCalSub').textContent=monlabel(m)+' · 이 달 '+KR(pool.filter(function(it){return fsOverlap(it,r[0],r[1])}).length)+'곳(진행 중·예정) · 큰 숫자는 그 날 시작하는 축제, 「이어짐」은 앞서 시작해 이어지는 축제입니다 — 날짜 칸을 누르면 그 날 종일 목록이 나옵니다';
   renderFsDayList(pool);
 }
 function renderFsDayList(pool){
   const box=$('fsDayList');
   if(!fst.day){box.innerHTML='';return}
-  const list=pool.filter(function(it){return fsOverlap(it,fst.day,fst.day)});
+  const list=pool.filter(function(it){return fsOverlap(it,fst.day,fst.day)})
+    .sort(function(a,b){return (a.s===fst.day?0:1)-(b.s===fst.day?0:1)||a._len-b._len||(a.s<b.s?-1:1)});
   const head='<div class="fs-mhead">'+fullDate(fst.day)+' ('+weekday(fst.day)+') · '+KR(list.length)+'곳</div>';
   box.innerHTML=head+(list.length?list.map(function(it){return fsRowHtml(it)}).join('')
     :'<div class="fs-empty">이 날은 조건에 맞는 축제가 없습니다.</div>');

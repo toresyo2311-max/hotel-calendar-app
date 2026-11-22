@@ -3628,7 +3628,7 @@ function addMonth(iso,n){const [y,m]=iso.split('-').map(Number);const d=new Date
 function daysOf(month){const [y,m]=month.split('-').map(Number);const last=new Date(Date.UTC(y,m,0)).getUTCDate();return Array.from({length:last},(_,i)=>month+'-'+String(i+1).padStart(2,'0'))}
 function groupHotels(){return allHotels.filter(h=>h.group===st.tab)}
 /* ⑤ IHG 지역 칩 5종 — 칩 값 → 그 칩이 묶는 region 이름들(2026-11-23 중동·아프리카 추가) */
-const IHG_ZONE_LAB={asia:'아시아·오세아니아',eu:'유럽',na:'북미·중남미',me:'중동',af:'아프리카'};
+const IHG_ZONE_LAB={all:'전체',asia:'아시아·오세아니아',eu:'유럽',na:'북미·중남미',me:'중동',af:'아프리카'};
 function ihgZoneRegions(z){
  if(z==='asia')return ['한국','일본','대만','중국','홍콩·마카오','동남아','오세아니아'];
  if(z==='eu')return ['유럽'];
@@ -3731,7 +3731,7 @@ function renderHeader(){const t=tabs[st.tab];$('sectionTitle').textContent=t.tit
  }
  if($('ihgChips')){$('ihgChips').style.display=(st.tab==='ihg')?'flex':'none';
   const ih=groupHotels(),ic={all:ih.length};
-  Object.keys(IHG_ZONE_LAB).forEach(k=>{const rg=ihgZoneRegions(k);ic[k]=ih.filter(h=>rg.indexOf(h.region)>=0).length});
+  Object.keys(IHG_ZONE_LAB).forEach(k=>{if(k==='all'){ic[k]=ih.length;return}const rg=ihgZoneRegions(k);ic[k]=ih.filter(h=>rg.indexOf(h.region)>=0).length});
   document.querySelectorAll('#ihgChips [data-ihgzone]').forEach(b=>{const v=b.dataset.ihgzone;b.innerHTML=esc(IHG_ZONE_LAB[v]||v)+' <b>'+KR(ic[v]||0)+'</b>';const on=v===(st.ihgzone||'all');b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});
  }
  if($('accorProg')){$('accorProg').style.display=ctl?'flex':'none';
@@ -8176,7 +8176,7 @@ if(/[?&]diag=1(&|$)/.test(location.search+location.hash)){
    ✈️+🏨 콤보는 ①~③ 호텔과 ⑥ 항공이 모두 필요하므로 없는 것만 병렬로 받는다. */
 const DATA_ROOT='data/app/';
 /* 발렛 자료는 카드사 안내가 바뀔 때만 갱신되므로 배포마다 캐시를 비운다(브라우저 HTTP 캐시 10분 회피) */
-const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22b',mileage:'2026-11-23z94','mileage-pt':'2026-11-23z94',accor:'2026-11-22z52',marriott:'2026-11-23z97',hyatt:'2026-11-23z99',ihg:'2026-11-23z109',festival:'2026-11-22a'};
+const DATA_BUST={valet:'2026-11-20k',lounge:'2026-11-20b',forest:'2026-11-22b',mileage:'2026-11-23z94','mileage-pt':'2026-11-23z94',accor:'2026-11-22z52',marriott:'2026-11-23z97',hyatt:'2026-11-23z99',ihg:'2026-11-23z110',festival:'2026-11-22a'};
 const PART_FILE={lux:'tab1_vip.json',accor:'tab2_accor.json',marriott:'tab4_marriott.json',hyatt:'tab10_hyatt.json',ihg:'tab11_ihg.json',flight:'tab5_flights.json',tt:'tab6_ttang.json',valet:'valet.json',lounge:'lounge.json',forest:'tab7_forest.json',mileage:'tab8_mileage.json','mileage-pt':'tab9_partner_mileage.json',festival:'tab12_festival.json'};
 const HOTEL_TABS=['lux','accor','marriott','hyatt','ihg'];
 /* ✈️+🏨 콤보가 쓰는 호텔 = ①~④ (④ 하얏트 · ⑤ IHG 는 콤보 계산에 넣지 않는다) */

@@ -38,9 +38,11 @@ OUT = os.path.join(ROOT, 'data', 'app', 'tab12_festival.json')
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36'
 
 KST = dt.timezone(dt.timedelta(hours=9))
-# 자료 범위 — 2026년 축제 전체와 2027년까지 확인된 일정
-WIN_START = dt.date(2026, 1, 1)
-WIN_END = dt.date(2027, 12, 31)
+
+
+def window(today):
+    """자료 범위 — 올해 1월 1일부터 내년 12월 31일까지(해가 바뀌면 저절로 따라간다)."""
+    return dt.date(today.year, 1, 1), dt.date(today.year + 1, 12, 31)
 
 SIDO_ORDER = ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종',
               '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주']
@@ -266,6 +268,7 @@ def fetch_detail(slug):
 def build(args):
     now = dt.datetime.now(KST)
     today = now.date()
+    win_start, win_end = window(today)
     stats = {'base': 0, 'cards': 0, 'shifted': 0, 'skipped': 0, 'detail': 0, 'detail_miss': 0}
 
     home = http_get(BASE + '/')
@@ -283,7 +286,7 @@ def build(args):
 
     for x in data:
         s, e = ymd(x.get('start')), ymd(x.get('end'))
-        if not s or not e or e < WIN_START or s > WIN_END:
+        if not s or not e or e < win_start or s > win_end:
             continue
         put({
             'n': clean(x.get('title')),
@@ -321,7 +324,7 @@ def build(args):
                     # 해를 옮긴 일정은 작년 시기를 옮긴 것일 뿐이라 '확정'으로 적지 않는다
                     c2['conf'] = False
                 c = c2
-            if c['end'] < WIN_START or c['start'] > WIN_END:
+            if c['end'] < win_start or c['start'] > win_end:
                 continue
             it = {
                 'n': c['name'], 's': c['start'].isoformat(), 'e': c['end'].isoformat(),
@@ -426,7 +429,7 @@ def build(args):
         'schema': 'festival-tab-v1',
         'generated': now.isoformat(timespec='seconds'),
         'basis': '전국 축제 일정 — 한국관광공사 TourAPI 등록 축제와 주최 측 발표 일정을 모아 정리',
-        'window': [WIN_START.isoformat(), WIN_END.isoformat()],
+        'window': [win_start.isoformat(), win_end.isoformat()],
         'counts': {
             'total': len(items), 'live': len(active), 'ongoing': len(ongoing),
             'upcoming': len(active) - len(ongoing), 'past': len(items) - len(active),
@@ -435,8 +438,8 @@ def build(args):
         },
         'regions': regions,
         'cats': cats,
-        'months': ['%04d-%02d' % (y, m) for y in (2026, 2027) for m in range(1, 13)
-                   if WIN_START <= dt.date(y, m, 1) <= WIN_END],
+        'months': ['%04d-%02d' % (y, m) for y in (win_start.year, win_end.year) for m in range(1, 13)
+                   if win_start <= dt.date(y, m, 1) <= win_end],
         'items': items,
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)

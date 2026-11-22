@@ -1,119 +1,192 @@
-  <section id="mgPanel" class="mg-panel" hidden aria-label="⑦ 마일리지(부산) — 부산 출발 보너스 좌석과 필요 마일">
-    <div class="mg-banner" id="mgBanner"></div>
-    <div class="mg-kpi" id="mgKpi"></div>
+  <section id="mgPanel" class="mg-panel ml-panel" hidden aria-label="⑧ 마일리지발권 — 대한항공(스카이패스) 부산 14개 노선과 외항사 마일리지 9개 프로그램 보너스 좌석">
+    <div class="pm-banner" id="mlBanner"></div>
+    <div class="pm-kpi" id="mlKpi"></div>
 
-    <div class="mg-views" id="mgViews" role="tablist" aria-label="마일리지 보기">
-      <button type="button" data-mg-view="cal" class="on" role="tab" aria-selected="true">📅 노선별 12개월 달력</button>
-      <button type="button" data-mg-view="round" role="tab" aria-selected="false">🔁 왕복 후보</button>
-      <button type="button" data-mg-view="new" role="tab" aria-selected="false">🆕 새로 열린 좌석 <b id="mgNewBadge" hidden>0</b></button>
-      <button type="button" data-mg-view="calc" role="tab" aria-selected="false">🧮 마일 계산기</button>
+    <div class="mg-views" id="mlViews" role="tablist" aria-label="마일리지발권 보기">
+      <button type="button" data-ml-view="cal" class="on" role="tab" aria-selected="true">📅 통합 달력</button>
+      <button type="button" data-ml-view="round" role="tab" aria-selected="false">🔁 대한항공 왕복 후보</button>
+      <button type="button" data-ml-view="new" role="tab" aria-selected="false">🆕 대한항공 좌석 변동 <b id="mlNewBadge" hidden>0</b></button>
+      <button type="button" data-ml-view="chart" role="tab" aria-selected="false">🧮 대한항공 공제표</button>
     </div>
 
-    <div class="mg-block" id="mgViewCal">
-      <div class="mg-routes" id="mgRoutes" role="group" aria-label="노선 선택"></div>
-      <div class="mg-calbar">
-        <button type="button" class="nav" id="mgPrev" aria-label="이전 달">‹</button>
-        <span class="mg-mon" id="mgMon">—</span>
-        <button type="button" class="nav" id="mgNext" aria-label="다음 달">›</button>
-        <span class="mg-sp"></span>
-        <select id="mgDir" aria-label="방향">
-          <option value="0" selected>가는 편 부산→현지</option>
-          <option value="1">오는 편 현지→부산</option>
-        </select>
-        <select id="mgGrade" aria-label="등급 필터">
-          <option value="all">모든 등급</option>
-          <option value="1">일반석 보너스만</option>
-          <option value="2">프레스티지 보너스만</option>
-          <option value="4">프레스티지 승급만</option>
-        </select>
-        <select id="mgSort" aria-label="정렬">
-          <option value="date">날짜순</option>
-          <option value="miles">마일 적은 순</option>
-        </select>
+    <!-- 🧮 마일리지 계산기 — 왕복·인원 필요 마일과 1마일당 원화 가치.
+         값은 이 기기(localStorage)에만 저장하고, 날짜 상세 시트의 「가는 편/오는 편에」 버튼으로 채운다.
+         대한항공·외항사 행 모두 같은 버튼을 쓴다. 보기(통합 달력·왕복 후보·좌석 변동·공제표)와 상관없이 늘 위에 둔다. -->
+    <details class="pm-calc" id="mlCalc" open>
+      <summary><b>🧮 마일리지 계산기</b><span id="mlCalcSum">왕복 · 1명 · 마일을 넣어 주세요</span></summary>
+      <div class="pm-calc-body">
+        <div class="pm-calc-grid">
+          <div class="pm-cf pm-cf-wide">
+            <label class="pm-cf-lab" for="mlCalcProg">프로그램 <i>보유 마일·참고 가치를 프로그램별로 저장</i></label>
+            <select id="mlCalcProg" aria-label="마일리지 프로그램"></select>
+          </div>
+          <div class="pm-cf">
+            <span class="pm-cf-lab">여정</span>
+            <div class="pm-seg" id="mlCalcTrip" role="group" aria-label="편도·왕복">
+              <button type="button" data-ml-trip="rt" class="on" aria-pressed="true">왕복</button>
+              <button type="button" data-ml-trip="ow" aria-pressed="false">편도</button>
+            </div>
+          </div>
+          <div class="pm-cf">
+            <label class="pm-cf-lab" for="mlCalcPax">탑승 인원</label>
+            <select id="mlCalcPax" aria-label="탑승 인원">
+              <option value="1">1명</option><option value="2">2명</option><option value="3">3명</option>
+              <option value="4">4명</option><option value="5">5명</option><option value="6">6명</option>
+              <option value="7">7명</option><option value="8">8명</option><option value="9">9명</option>
+            </select>
+          </div>
+          <div class="pm-cf">
+            <label class="pm-cf-lab" for="mlCalcGo">가는 편 마일</label>
+            <input id="mlCalcGo" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 75,000" aria-label="가는 편 마일">
+          </div>
+          <div class="pm-cf" id="mlCalcBackF">
+            <label class="pm-cf-lab" for="mlCalcBack">오는 편 마일</label>
+            <input id="mlCalcBack" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 75,000" aria-label="오는 편 마일">
+          </div>
+          <div class="pm-cf">
+            <label class="pm-cf-lab" for="mlCalcHave">보유 마일 <i>이 프로그램</i></label>
+            <input id="mlCalcHave" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 120,000" aria-label="보유 마일">
+          </div>
+          <div class="pm-cf">
+            <label class="pm-cf-lab" for="mlCalcRate">1마일 참고 가치 <i>원/마일 · 이 프로그램</i></label>
+            <input id="mlCalcRate" type="text" inputmode="decimal" autocomplete="off" placeholder="15" aria-label="1마일 참고 가치 원">
+          </div>
+          <div class="pm-cf">
+            <label class="pm-cf-lab" for="mlCalcTax">유류·세금(1인) <i>선택</i></label>
+            <input id="mlCalcTax" type="text" inputmode="numeric" autocomplete="off" placeholder="0" aria-label="유류·세금 1인">
+          </div>
+          <div class="pm-cf pm-cf-wide">
+            <label class="pm-cf-lab" for="mlCalcCash">비교 현금 항공권 가격(1인, 세금 포함) <i>선택</i></label>
+            <input id="mlCalcCash" type="text" inputmode="numeric" autocomplete="off" placeholder="예: 890,000" aria-label="비교 현금 항공권 가격 1인">
+          </div>
+        </div>
+        <p class="pm-calc-flash" id="mlCalcFlash" aria-live="polite"></p>
+        <div class="pm-calc-out" id="mlCalcOut" aria-live="polite"></div>
+        <p class="pm-calc-note">필요 마일 = (가는 편 + 오는 편) × 인원입니다. <b>보유 마일</b>과 <b>1마일 참고 가치</b>는 고른 프로그램마다 따로 저장합니다(대한항공·외항사마다 마일 가치가 달라서). 1마일당 원화 가치는 (현금가 − 유류·세금) ÷ 1인 필요 마일로, 마일로 살 때 세금을 뺀 현금 지출이 마일 1장당 얼마어치인지 보는 값입니다 — 이 값을 그 프로그램의 참고 가치와 나란히 보세요. 유류·세금은 현금 가격과 같은 1인 기준으로 넣어 주세요. 실제 좌석 수량·세금·발권 수수료는 항공사 예약 화면 값이 다를 수 있습니다.</p>
       </div>
-      <table class="mg-cal" id="mgCal" aria-label="노선별 보너스 좌석 달력">
-        <thead><tr><th class="sun">일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th class="sat">토</th></tr></thead>
-        <tbody id="mgCalBody"></tbody>
-      </table>
-      <div class="mg-legend" id="mgLegend">
-        <span><span class="bd e">E</span> 일반석 보너스</span>
-        <span><span class="bd p">P</span> 프레스티지 보너스</span>
-        <span><span class="bd u">U</span> 프레스티지 승급</span>
-        <span>무표시 = 원천에 없음</span>
-        <span>점선 = 미수집 / 원천 미제공</span>
+    </details>
+
+    <div class="ml-block" id="mlViewCal">
+      <div class="pm-ctrl">
+        <div class="pm-line pm-dirline">
+          <span class="pm-lab">출발지</span>
+          <div class="pm-seg" id="mlOrigin" role="group" aria-label="출발지 선택"></div>
+          <span class="pm-ohint" id="mlOriginHint"></span>
+        </div>
+        <div class="pm-line pm-dirline">
+          <span class="pm-lab">방향</span>
+          <div class="pm-seg" id="mlDir" role="group" aria-label="방향"></div>
+          <button type="button" class="chip" id="mlDirect" aria-pressed="false" title="직항편이 있는 행만 남깁니다(대한항공은 원천이 직항 여부를 알려 주지 않아 함께 빠집니다)">직항만</button>
+          <select id="mlCabin" aria-label="좌석 등급">
+            <option value="all">모든 등급</option>
+            <option value="e">이코노미 · 일반석</option>
+            <option value="p">프리미엄 이코노미</option>
+            <option value="b">비즈니스 · 프레스티지</option>
+            <option value="f">퍼스트</option>
+          </select>
+          <select id="mlSort" aria-label="정렬">
+            <option value="miles">마일 낮은 순</option>
+            <option value="date">날짜 순</option>
+          </select>
+        </div>
+        <div class="pm-line" id="mlAlliance" role="group" aria-label="동맹 선택"></div>
+        <div class="pm-line pm-scroll" id="mlProgs" role="group" aria-label="프로그램 선택"></div>
+        <div class="pm-line pm-scroll" id="mlDests" role="group" aria-label="도시 선택"></div>
       </div>
-      <p class="mg-note" id="mgCalNote"></p>
+
+      <div class="pm-block" id="mlBest"></div>
+
+      <div class="pm-viewbar">
+        <div class="pm-seg" id="mlListSwitch" role="group" aria-label="보기 방식">
+          <button type="button" data-ml-list="cal" class="on" aria-pressed="true">📅 달력</button>
+          <button type="button" data-ml-list="list" aria-pressed="false">☰ 목록</button>
+        </div>
+        <p class="pm-vhint">달력의 날짜 칸을 누르면 그 날 도시별로 <b>대한항공과 외항사 9개 프로그램의 필요 마일</b>이 한 시트에 나란히 열립니다 — 같은 날·같은 노선을 바로 견줘 보세요. 각 행의 <b>🧮 가는 편에 / 오는 편에</b>를 누르면 위 계산기에 그 마일이 들어갑니다.</p>
+      </div>
+
+      <div class="pm-block" id="mlCal"></div>
+      <div class="pm-block" id="mlList"></div>
     </div>
 
-    <div class="mg-block" id="mgViewRound" hidden>
+    <div class="mg-block" id="mlViewRound" hidden>
+      <div class="mg-routes" id="mlKeRoutes" role="group" aria-label="대한항공 노선 선택"></div>
       <div class="mg-toolbar">
         <span>숙박</span>
-        <select id="mgNights" aria-label="숙박 일수">
+        <select id="mlNights" aria-label="숙박 일수">
           <option value="1">1박</option>
           <option value="2" selected>2박</option>
           <option value="3">3박</option>
           <option value="4">4박</option>
         </select>
-        <button type="button" class="chip" id="mgWeekend" aria-pressed="false" title="가는 편이 금·토요일인 후보만 남깁니다">주말 포함</button>
+        <button type="button" class="chip" id="mlWeekend" aria-pressed="false" title="가는 편이 금·토요일인 후보만 남깁니다">주말 포함</button>
         <span class="mg-sp" style="flex:1"></span>
-        <span id="mgRoundCount"></span>
+        <span id="mlRoundCount"></span>
       </div>
-      <div class="mg-list" id="mgRoundList"></div>
-      <p class="mg-note" id="mgRoundNote"></p>
+      <div class="mg-list" id="mlRoundList"></div>
+      <p class="mg-note" id="mlRoundNote"></p>
     </div>
 
-    <div class="mg-block" id="mgViewNew" hidden>
+    <div class="mg-block" id="mlViewNew" hidden>
       <div class="mg-toolbar">
         <span>직전 수집과 비교</span>
-        <select id="mgNewKind" aria-label="변화 종류">
+        <select id="mlNewKind" aria-label="변화 종류">
           <option value="all">전체</option>
           <option value="new">새로 열린 좌석</option>
           <option value="gone">사라진 좌석</option>
         </select>
-        <span id="mgNewCount"></span>
+        <span id="mlNewCount"></span>
       </div>
-      <div id="mgNewBody"></div>
-      <p class="mg-note" id="mgNewNote"></p>
+      <div id="mlNewBody"></div>
+      <p class="mg-note" id="mlNewNote"></p>
     </div>
 
-    <div class="mg-block" id="mgViewCalc" hidden>
+    <div class="mg-block" id="mlViewChart" hidden>
       <div class="mg-calc">
         <div class="mg-form">
-          <div class="row"><label for="mgMiles">보유 마일</label><input id="mgMiles" type="text" inputmode="numeric" value="70000" aria-label="보유 마일"></div>
-          <div class="row"><label for="mgCabin">등급</label>
-            <select id="mgCabin" aria-label="등급">
+          <div class="row"><label for="mlChartHave">보유 마일</label><input id="mlChartHave" type="text" inputmode="numeric" value="70000" aria-label="보유 마일"></div>
+          <div class="row"><label for="mlChartCabin">등급</label>
+            <select id="mlChartCabin" aria-label="등급">
               <option value="eco">일반석 보너스</option>
               <option value="pre" selected>프레스티지 보너스</option>
               <option value="first">일등석</option>
             </select>
           </div>
-          <div class="row"><label for="mgRegion">여정</label>
-            <select id="mgRegion" aria-label="여정">
+          <div class="row"><label for="mlChartRegion">여정</label>
+            <select id="mlChartRegion" aria-label="여정">
               <option value="jp_cn_ne">부산 → 일본·중국·동북아</option>
               <option value="sea_guam">부산 → 동남아·괌</option>
               <option value="sw_asia">부산 → 서남아</option>
               <option value="us_eu_me_oc">부산 → 미주·유럽·중동·대양주</option>
             </select>
           </div>
-          <div class="row"><label for="mgTrip">여정 형태</label>
-            <select id="mgTrip" aria-label="여정 형태">
+          <div class="row"><label for="mlChartTrip">여정 형태</label>
+            <select id="mlChartTrip" aria-label="여정 형태">
               <option value="rt" selected>왕복</option>
               <option value="ow">편도</option>
             </select>
           </div>
-          <div class="row"><label for="mgSeason">시즌</label>
-            <select id="mgSeason" aria-label="시즌">
+          <div class="row"><label for="mlChartSeason">시즌</label>
+            <select id="mlChartSeason" aria-label="시즌">
               <option value="off" selected>평수기</option>
               <option value="peak">성수기</option>
             </select>
           </div>
         </div>
-        <div class="mg-out" id="mgCalcOut"></div>
+        <div class="mg-out" id="mlChartOut"></div>
       </div>
-      <p class="mg-note" id="mgCalcNote"></p>
+      <p class="mg-note" id="mlChartNote"></p>
     </div>
+
+    <div class="pm-note" id="mlNote"></div>
   </section>
 
-  <dialog id="mgSheet" aria-label="보너스 좌석 상세">
-    <div class="mg-sh" id="mgSheetBody"></div>
-  </dialog>
+  <!-- 날짜 상세 — 달력 칸·목록 카드를 누르면 열린다. 도시마다 대한항공 행과 외항사 행을 함께 놓고,
+       등급별 필요 마일·직항/경유(외항사)·최근 확인 시각·공식 발권 링크·계산기에 넣기 버튼을 담는다.
+       (모양은 앱 공통 시트 .wxsheet/.wxcard 를 그대로 쓴다) -->
+  <div class="wxsheet" id="mlSheet" aria-hidden="true"><div class="wxcard pm-ds" role="dialog" aria-modal="true" aria-labelledby="mlDsTitle">
+    <h3 id="mlDsTitle">날짜 상세</h3>
+    <p class="pm-ds-sub" id="mlDsSub"></p>
+    <div class="pm-ds-body" id="mlDsBody"></div>
+    <p class="pm-ds-note" id="mlDsNote"></p>
+    <button type="button" class="wxclose" id="mlDsClose">닫기</button>
+  </div></div>

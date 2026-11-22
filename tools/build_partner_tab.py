@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""⑧ 외항사 마일 — 부산(PUS)·인천(ICN) 출발 보너스 좌석 탭.
+"""외항사 9개 프로그램 보너스 좌석 — 부산(PUS)·인천(ICN) 자료 재생성.
 
 자료: tools/partner_tab/raw/{슬러그}_dep_{PUS|ICN}*.txt (브라우저로 직접 확인한 표를 옮긴 것)
       한 줄 = MM-DD|마지막확인|도착코드|이코|프이|비즈|퍼스트
       등급 값은 "" 또는 "직항편수:마일" (예: 0:9000 = 직항 9,000마일)
 출력: data/app/tab9_partner_mileage.json      (부산 PUS — 9개 프로그램)
       data/app/tab9_partner_mileage_icn.json  (인천 ICN — 같은 9개 프로그램)
-      index.html 의 NAV·SECTION·CSS·JS 블록과는 한 번만 연결한다.
+      그리고 ⑧ 마일리지발권 탭 블록(tools/mileage_tab/*)을 index.html 에 다시 채운다.
 
-    python3 tools/build_partner_tab.py            # JSON 두 개 만들고 index.html 연결
-    python3 tools/build_partner_tab.py --check    # 넣지 않고 상태만
+2026-11-22 통합 이후 ⑨ 외항사 마일 탭은 따로 두지 않는다 — 대한항공(스카이패스)과
+한 탭(⑧ 마일리지발권)에서 같은 달력·같은 날짜 시트로 본다. 그래서 이 빌더는 JSON 만
+다시 만들고, 화면 블록은 tools/build_mileage_tab.py 에 맡긴다(아래 main 참고).
+
+    python3 tools/build_partner_tab.py            # JSON 두 개 + ⑧ 탭 블록 재생성
+    python3 tools/build_partner_tab.py --check    # 쓰지 않고 상태만
 """
 import datetime
 import glob
@@ -20,17 +24,9 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-INDEX = os.path.join(ROOT, 'index.html')
 ASSETS = os.path.join(ROOT, 'tools', 'partner_tab')
 RAW = os.path.join(ASSETS, 'raw')
 APPDIR = os.path.join(ROOT, 'data', 'app')
-
-NAV_START, NAV_END = '<!-- PARTNER:NAV -->', '<!-- /PARTNER:NAV -->'
-SEC_START, SEC_END = '<!-- PARTNER:SECTION -->', '<!-- /PARTNER:SECTION -->'
-CSS_START, CSS_END = '/* PARTNER:CSS */', '/* /PARTNER:CSS */'
-JS_START, JS_END = '// PARTNER:JS', '// /PARTNER:JS'
-
-KEY = 'partner-mileage'
 
 PROGRAMS = [
     # key, 슬러그(원자료 파일 접두), 표시 이름, 짧은 이름, 동맹, 동맹 이름, 공식 예약 주소
@@ -248,10 +244,8 @@ def build_origin(cfg, now):
 def main(argv):
     check = '--check' in argv
     now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9)))
-    built = {}
     for cfg in ORIGINS:
         data = build_origin(cfg, now)
-        built[cfg['code']] = data
         out = os.path.join(APPDIR, cfg['file'])
         if not check:
             os.makedirs(APPDIR, exist_ok=True)
@@ -263,130 +257,13 @@ def main(argv):
         for c in data['coverage']:
             print('      %-28s %5d %s' % (c['name'], c['rows'], c['note']))
 
-    pus = built['PUS']
-    icn = built['ICN']
-    src = open(INDEX, encoding='utf-8').read()
-
-    def asset(n):
-        with open(os.path.join(ASSETS, n), encoding='utf-8') as fp:
-            return fp.read().rstrip('\n')
-
-    def put(text, start, end, body, anchor, before=True):
-        if start in text and end in text:
-            a = text.index(start)
-            b = text.index(end, a) + len(end)
-            return text[:a] + start + '\n' + body + '\n' + end + text[b:], 'replaced'
-        if anchor not in text:
-            raise SystemExit('앵커를 찾지 못했습니다: %r' % anchor[:60])
-        i = text.index(anchor)
-        block = start + '\n' + body + '\n' + end
-        if before:
-            return text[:i] + block + '\n' + text[i:], 'inserted'
-        j = i + len(anchor)
-        return text[:j] + '\n' + block + text[j:], 'inserted'
-
-    NAV_HTML = ('    <button class="tab" data-tab="%s" type="button" aria-label="외항사 마일 — 부산(PUS)·인천(ICN) 출발·도착 9개 프로그램 보너스 좌석">'
-                '<span class="t-full">⑧ 외항사 마일</span>'
-                '<span class="t-short" aria-hidden="true">⑧ 외항사</span> <b>%d</b></button>'
-                % (KEY, pus['counts']['rows']))
-
-    TABS_ENTRY = ("'%s':{title:'⑧ 외항사 마일 — 부산(PUS)·인천(ICN) 9개 프로그램 보너스 좌석',"
-                  "sub:'에어프랑스 플라잉블루 · 골 스마일즈 · 버진 애틀랜틱 · 델타 스카이마일즈 · 유나이티드 마일리지플러스 · "
-                  "에어캐나다 에어로플랜 · 캐세이 아시아 마일즈 · 영국항공 아비오스 · JAL 마일지뱅크 9곳을 "
-                  "출발지(부산 PUS / 인천 ICN)와 방향(부산·인천에서 떠나는 편 / 부산·인천으로 돌아오는 편)을 골라 "
-                  "1년(365일) 달력 · 이코노미/프리미엄/비즈니스/퍼스트로 나눠 보여 줍니다. "
-                  "달력의 날짜 칸을 누르면 그 날의 프로그램별·등급별 필요 마일과 공식 발권 링크가 열리고, 같은 시트에서 "
-                  "같은 날 반대 방향(왕복 짝)의 최저 마일을 바로 확인해 방향을 바꿔 볼 수 있습니다. "
-                  "조회 사이트가 열어 준 구간 밖은 미수집으로 표시합니다. 각 행의 예약 버튼은 해당 프로그램의 공식 사이트로 엽니다. "
-                  "조회 사이트에 좌석 수량·세금·수수료가 없어 표시하지 않습니다. / 예약 전 항공사 공식 사이트에서 재확인',"
-                  "checked:'수집 기준: %s · 9개 프로그램 실측 · 부산 %s~%s %s건(출발 %s · 도착 %s) · 인천 %s~%s %s건(출발 %s · 도착 %s)',start:'%s',end:'%s'}"
-                  % (KEY, now.strftime('%Y-%m-%d %H:%M KST'),
-                     pus['collectedFrom'], pus['collectedTo'], format(pus['counts']['rows'], ','),
-                     format(pus['counts']['rowsOut'], ','), format(pus['counts']['rowsIn'], ','),
-                     icn['collectedFrom'], icn['collectedTo'], format(icn['counts']['rows'], ','),
-                     format(icn['counts']['rowsOut'], ','), format(icn['counts']['rowsIn'], ','),
-                     (pus['collectedFrom'] or '2026-11')[:7],
-                     (pus['dateTo'] or '2027-11')[:7]))
-
-    SHORT_ENTRY = ("'%s':{sub:'9개 프로그램 · 부산(PUS)·인천(ICN) 출발·도착 보너스 좌석',"
-                   "checked:'조회 기준: %s KST'}" % (KEY, now.strftime('%Y.%m.%d %H:%M')))
-
-    HOOKS = [
-        ('setDealPanels',
-         "const cng=document.querySelector('.note-grid');",
-         "const pp=document.getElementById('pmPanel');if(pp)pp.hidden=which!=='%s';"
-         "const cng=document.querySelector('.note-grid');" % KEY),
-        ('render() 디스패치',
-         "if(st.tab==='mileage'){renderMileage();hashSync();return}",
-         "if(st.tab==='mileage'){renderMileage();hashSync();return}\n"
-         "  if(st.tab==='%s'){renderPartner();hashSync();return}" % KEY),
-        ('DATA_READY', "mileage:false};", "mileage:false,'%s':false};" % KEY),
-        ('PART_FILE', "mileage:'tab8_mileage.json'},",
-         "mileage:'tab8_mileage.json','%s':'tab9_partner_mileage.json'}," % KEY),
-    ]
-
-    before = len(src)
-    src, s_nav = put(src, NAV_START, NAV_END, NAV_HTML, '<!-- /MILEAGE:NAV -->', False)
-    src, s_sec = put(src, SEC_START, SEC_END, asset('section.html'), '  <section id="valetPanel"')
-    src, s_css = put(src, CSS_START, CSS_END, asset('tab.css'), '/* ── 반응형 ─')
-    src, s_js = put(src, JS_START, JS_END, asset('app.js'), 'function activate(tab){')
-
-    if "'%s':{title:'⑧" % KEY not in src:
-        anchor = 'valet:{title:'
-        if anchor not in src:
-            raise SystemExit('const tabs 의 valet 항목을 찾지 못했습니다')
-        i = src.index(anchor)
-        src = src[:i] + TABS_ENTRY + ',' + src[i:]
-        s_tabs = 'inserted'
-    else:
-        # 이미 있으면 제목·설명·기준 문구를 이번 빌드 값으로 맞춘다(디자인 v2 이후 이름·문구 통일)
-        src, n1 = re.subn(r"'%s':\{title:'.*?\},valet:" % KEY, TABS_ENTRY + ",valet:", src,
-                          count=1, flags=re.S)
-        s_tabs = 'updated' if n1 else 'already'
-    src, n2 = re.subn(r"'%s':\{sub:'[^']*',checked:'[^']*'\}" % KEY, SHORT_ENTRY, src, count=1)
-    s_short = 'updated' if n2 else 'already'
-
-    hooks = []
-    # 캐시 키(DATA_BUST)는 반드시 이번 빌드 값으로 올린다 — 이미 ⑧ 키가 있어도 값을 갱신한다
-    src, nb = re.subn(r"'%s':'[^']*'" % KEY, "'%s':'2026-11-22z49'" % KEY, src, count=1)
-    hooks.append(('DATA_BUST', 'updated' if nb else 'missing'))
-    # 자료 로더 — ⑧ 가지가 없을 때만 붙인다(있으면 그대로 둔다)
-    if "else if(tab==='%s'){" % KEY not in src:
-        old = "    }else if(tab==='mileage'){\n      Object.assign(MGD,data);mgPrep();\n      if(st.tab==='mileage')renderMileage();\n    }"
-        new = old + ("\n    }else if(tab==='%s'){\n      Object.assign(PMD,data);pmPrep();\n"
-                     "      if(st.tab==='%s')renderPartner();\n    }" % (KEY, KEY))
-        if old not in src:
-            raise SystemExit('연결 고리를 찾지 못했습니다: loadPart')
-        src = src.replace(old, new, 1)
-        hooks.append(('loadPart', 'patched'))
-    else:
-        hooks.append(('loadPart', 'already'))
-
-    for name, old, new in HOOKS:
-        if new in src:
-            hooks.append((name, 'already'))
-            continue
-        # 다른 탭의 캐시 키가 올라가 old 문자열이 사라져도, ⑧ 키가 이미 있으면 이미 연결된 것이다
-        if name == 'PART_FILE' and "'%s':" % KEY in src:
-            hooks.append((name, 'already'))
-            continue
-        if old not in src:
-            raise SystemExit('연결 고리를 찾지 못했습니다: %s\n  %r' % (name, old[:100]))
-        src = src.replace(old, new, 1)
-        hooks.append((name, 'patched'))
-
-    print('nav     %s\nsection %s\ncss     %s\njs      %s\ntabs    %s\nshort   %s'
-          % (s_nav, s_sec, s_css, s_js, s_tabs, s_short))
-    for n, s in hooks:
-        print('hook    %-16s %s' % (n, s))
-    print('index.html %d → %d bytes' % (before, len(src)))
-    if check:
-        print('(--check: 쓰지 않았습니다)')
-        return 0
-    with open(INDEX, 'w', encoding='utf-8') as fp:
-        fp.write(src)
-    print('index.html 갱신 완료')
-    return 0
+    # 화면(index.html)은 ⑧ 마일리지발권 탭 하나가 이 자료를 읽는다 —
+    # 2026-11-22 통합 이후 ⑨ 외항사 마일 탭은 따로 두지 않는다. 탭 블록은
+    # tools/build_mileage_tab.py 가 마커 사이에 다시 채우므로 그 빌더만 부른다.
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import build_mileage_tab
+    print('── ⑧ 마일리지발권 탭 블록 재생성')
+    return build_mileage_tab.main(['--check'] if check else [])
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@
    세금·수수료는 원천에 없어 표시하지 않습니다(항공사 예약 화면에서 확인).
    예약은 언제나 각 프로그램의 공식 사이트로 보냅니다. */
 var PMD={meta:null,programs:[],dests:[],rows:[],ready:false,progMap:{},destMap:{},byProg:{}};
-var pms={dir:0,alliance:'all',prog:'all',dest:'all',cabin:'all',direct:false,sort:'miles'};
+var pms={dir:0,alliance:'all',prog:'all',dest:'all',cabin:'all',direct:false,sort:'miles',view:'cal'};
 
 function pmMeta(){return PMD||{}}
 function pmKey(o){return o?o.key:''}
@@ -113,6 +113,8 @@ function renderPartner(){
   pmRenderProgs();
   pmRenderDests();
   pmRenderBest();
+  pmRenderView();
+  pmRenderCal();
   pmRenderList();
   pmRenderNote();
 }
@@ -120,14 +122,17 @@ function renderPartner(){
 function pmRenderBanner(){
   var b=document.getElementById('pmBanner');
   if(!b)return;
-  var m=pmMeta();
+  var m=pmMeta(),w=pmWin();
   var dirTxt=pms.dir?'부산 도착(→ PUS)':'부산 출발(PUS →)';
   var cnt=(PMD.rows||[]).length;
+  var colDays=pmDaysBetween(w.cFrom,w.cTo),allDays=pmDaysBetween(w.from,w.to);
   b.innerHTML='<b>'+esc(m.sourceLabel||'항공사 마일리지 프로그램별 보너스 좌석')+'</b> · 기준 <b>'+esc(m.observedLabel||'—')+'</b>'
-    +' · 앞으로 '+KR(m.windowDays||60)+'일('+esc(m.dateFrom||'')+'~'+esc(m.dateTo||'')+') · '+esc(dirTxt)+' · '+KR(cnt)+'건'
+    +' · 목표 <b>1년 '+KR(allDays)+'일</b>('+esc(w.from)+'~'+esc(w.to)+')'
+    +' · 실측 수집 <b>'+KR(colDays)+'일</b>('+esc(w.cFrom)+'~'+esc(w.cTo)+') · '+esc(dirTxt)+' · '+KR(cnt)+'건'
     +'<span class="pm-b2">보너스 좌석은 실시간으로 변동됩니다. 예약 전 <b>각 항공사 공식 사이트에서 재확인</b>해 주세요. '
     +'원천은 노선·날짜마다 등급별 <b>예약 가능 여부와 필요 마일</b>만 알려 주며, 좌석 수량·세금·수수료는 알려 주지 않아 표시하지 않습니다. '
-    +'표시된 마일은 원천이 그 등급에 보여 준 <b>최저값</b>이고, 경유편은 편수로 구분합니다.</span>';
+    +'표시된 마일은 원천이 그 등급에 보여 준 <b>최저값</b>이고, 경유편은 편수로 구분합니다. '
+    +(colDays<allDays?'<b>'+esc(w.cTo)+'</b> 이후 '+KR(allDays-colDays)+'일은 원천이 비로그인 화면에 열어 주지 않아 <b>미수집</b>입니다 — 달력에 빗금으로 표시하고 값을 채우지 않았습니다(추측·보간 없음). 각 항공사 공식 사이트에서 직접 조회해 주세요.':'')+'</span>';
 }
 
 function pmRenderKpi(){
@@ -255,14 +260,15 @@ function pmRenderList(){
       var r=x.r,p=x.p;
       var cs=x.cs.filter(function(c){return pms.cabin==='all'||c.k===pms.cabin})
         .filter(function(c){return !pms.direct||c.stops===0});
-      return '<article class="pm-card">'
+      return '<article class="pm-card" data-pm-day="'+esc(r[1])+'" title="눌러서 이 날짜 상세 보기">'
         +'<div class="top"><b>'+esc(pmDestName(r[3]))+'</b><span class="dt">'+esc(pmDateKo(r[1]))+'</span></div>'
         +'<div class="pg">'+esc(p.name)+'<span>'+esc(p.allianceName||'')+'</span></div>'
         +'<div class="cab">'+cs.map(function(c){
           return '<span class="cb '+c.k+'">'+esc(pmCabinShort(c))+' <b>'+KR(c.miles)+'</b> <i>'+esc(pmStopsText(c.stops))+'</i></span>';
         }).join('')+'</div>'
         +'<div class="foot"><span class="seen">최근 확인 '+esc(r[2])+'</span>'
-        +'<a class="go" href="'+esc(p.url)+'" target="_blank" rel="noopener">'+esc(p.urlLabel||'공식 예약')+'</a></div>'
+        +'<span class="pm-footbtns"><button type="button" class="pm-open" data-pm-day="'+esc(r[1])+'">날짜 상세</button>'
+        +'<a class="go" href="'+esc(p.url)+'" target="_blank" rel="noopener">'+esc(p.urlLabel||'공식 예약')+'</a></span></div>'
         +'</article>';
     }).join('')+'</div>';
 }
@@ -292,7 +298,7 @@ document.addEventListener('click',function(e){
     var v=ds.getAttribute('data-pm-dest');
     pms.dest=(v==='all'||pms.dest===v)?'all':v;
     renderPartner();
-    var list=document.getElementById('pmList');
+    var list=document.getElementById(pms.view==='cal'?'pmCal':'pmList');
     if(list&&pms.dest!=='all'&&list.scrollIntoView)list.scrollIntoView({block:'start',behavior:'smooth'});
     return;
   }
@@ -304,3 +310,283 @@ document.addEventListener('change',function(e){
   if(t.id==='pmCabin'){pms.cabin=t.value;renderPartner()}
   else if(t.id==='pmSort'){pms.sort=t.value;renderPartner()}
 });
+
+/* ══ 달력 보기 ══════════════════════════════════════════════════════════════
+   2026-11-22 한진님 지시: "달력 형식으로 1년치 한눈에" + "달력 날짜를 누르면 각 항공사
+   연결해 주고 정보 볼 수 있도록".
+   · 목표 창 = meta.dateFrom~dateTo(365일), 실제 수집 구간 = meta.collectedFrom~collectedTo.
+     수집 구간 밖의 날은 값이 아니라 '미수집(공홈 조회)'으로 그린다 — 보간하지 않는다.
+   · 수집 구간 안에서 그 날 표시가 없는 칸은 '—'(원천 표시 없음)이다. 둘을 섞지 않는다. */
+
+function pmP2(n){return (n<10?'0':'')+n}
+function pmWin(){
+  var m=pmMeta()||{};
+  var from=m.dateFrom||'',to=m.dateTo||from;
+  return {from:from,to:to,cFrom:m.collectedFrom||from,cTo:m.collectedTo||to};
+}
+function pmDaysBetween(a,b){
+  if(!a||!b)return 0;
+  var x=new Date(a+'T00:00:00Z'),y=new Date(b+'T00:00:00Z');
+  return Math.round((y-x)/86400000)+1;
+}
+function pmToday(){
+  var d=new Date();
+  return d.getFullYear()+'-'+pmP2(d.getMonth()+1)+'-'+pmP2(d.getDate());
+}
+function pmDateLong(ds){
+  var d=new Date(ds+'T12:00:00Z');
+  var wd=['일','월','화','수','목','금','토'][d.getUTCDay()];
+  return d.getUTCFullYear()+'년 '+(d.getUTCMonth()+1)+'월 '+d.getUTCDate()+'일('+wd+')';
+}
+function pmInRange(ds,a,b){return !!a&&!!b&&ds>=a&&ds<=b}
+
+/* 창의 달 목록 (2026-11 ~ 2027-11 — 앞뒤가 걸친 달 포함) */
+function pmMonthList(){
+  var w=pmWin();
+  if(!w.from||!w.to)return [];
+  var y=+w.from.slice(0,4),m=+w.from.slice(5,7);
+  var ey=+w.to.slice(0,4),em=+w.to.slice(5,7);
+  var out=[],guard=0;
+  while(guard++<40){
+    out.push(y+'-'+pmP2(m));
+    if(y===ey&&m===em)break;
+    m++;if(m>12){m=1;y++}
+  }
+  return out;
+}
+function pmMonthCovered(mo){
+  var w=pmWin();
+  return !((mo+'-31')<w.cFrom||(mo+'-01')>w.cTo);
+}
+
+/* 지금 필터에 맞는 행을 날짜별로 묶는다 */
+function pmDayMap(){
+  var map={};
+  pmRows().forEach(function(x){(map[x.r[1]]=map[x.r[1]]||[]).push(x)});
+  return map;
+}
+function pmDayStat(list){
+  var min=null,best=null;
+  list.forEach(function(x){
+    if(min==null||x.best.miles<min){min=x.best.miles;best=x.best}
+  });
+  return {min:min,best:best};
+}
+function pmCondText(){
+  var p=pms.prog==='all'?'전체 프로그램':((pmProg(pms.prog)||{}).short||pms.prog);
+  var d=pms.dest==='all'?'전체 도시':pmDestName(pms.dest);
+  var c=pms.cabin==='all'?'모든 등급':pmCabinLabel({k:pms.cabin});
+  return [p,d,c].join(' · ')+(pms.direct?' · 직항만':'');
+}
+
+function pmRenderView(){
+  var el=document.getElementById('pmView');
+  if(el){
+    Array.prototype.forEach.call(el.querySelectorAll('[data-pm-view]'),function(b){
+      var on=b.getAttribute('data-pm-view')===pms.view;
+      b.className=on?'on':'';
+      b.setAttribute('aria-pressed',on?'true':'false');
+    });
+  }
+  var cal=document.getElementById('pmCal'),list=document.getElementById('pmList');
+  if(cal)cal.hidden=pms.view!=='cal';
+  if(list)list.hidden=pms.view!=='list';
+}
+
+/* 12(13)개월 한눈에 — 위에 월별 최저 마일 띠, 아래에 달마다 격자 */
+function pmRenderCal(){
+  var el=document.getElementById('pmCal');
+  if(!el)return;
+  if(pms.view!=='cal'){el.innerHTML='';return}
+  var w=pmWin(),months=pmMonthList();
+  if(!months.length){el.innerHTML='<div class="pm-empty">자료 기간 기준을 읽지 못했습니다.</div>';return}
+  var map=pmDayMap();
+  var monMin={};
+  months.forEach(function(mo){monMin[mo]=null});
+  Object.keys(map).forEach(function(ds){
+    var mo=ds.slice(0,7);
+    if(!(mo in monMin))return;
+    var st=pmDayStat(map[ds]);
+    if(st.min!=null&&(monMin[mo]==null||st.min<monMin[mo]))monMin[mo]=st.min;
+  });
+  var today=pmToday();
+  var strip='<div class="pm-year" role="group" aria-label="월 바로가기 — 달마다 최저 마일">'
+    + months.map(function(mo){
+        var v=monMin[mo],cov=pmMonthCovered(mo);
+        return '<button type="button" class="pm-ym'+(v!=null?' has':'')+(cov?'':' unc')+'" data-pm-jump="'+mo+'"'
+          +' title="'+(cov?(v!=null?mo+' 최저 '+KR(v)+'마일':mo+' 표시 없음'):mo+' 미수집')+'">'
+          +'<b>'+mo.slice(2,4)+'.'+(+mo.slice(5,7))+'</b>'
+          +'<span>'+(cov?(v!=null?KR(v):'—'):'미수집')+'</span></button>';
+      }).join('')+'</div>';
+  var grids=months.map(function(mo){return pmMonthGrid(mo,map,w,today)}).join('');
+  el.innerHTML=strip+grids
+    +'<div class="pm-legend">'
+    +'<span class="lg"><i class="pm-cell has e">7,000</i>최저 마일(등급 색: <b class="e">이코</b> <b class="p">프이</b> <b class="b">비즈</b> <b class="f">퍼스트</b>)</span>'
+    +'<span class="lg"><i class="pm-cell none">—</i>원천 표시 없음</span>'
+    +'<span class="lg"><i class="pm-cell miss">미수집</i>수집 구간 밖</span>'
+    +'</div>';
+}
+
+function pmMonthGrid(mo,map,w,today){
+  var y=+mo.slice(0,4),m=+mo.slice(5,7);
+  var startWd=new Date(Date.UTC(y,m-1,1)).getUTCDay();
+  var days=new Date(Date.UTC(y,m,0)).getUTCDate();
+  var cells=[],k;
+  for(k=0;k<startWd;k++)cells.push(null);
+  for(k=1;k<=days;k++)cells.push(k);
+  var minV=null,collected=0,rows=0;
+  var body='',cur='';
+  cells.forEach(function(d,idx){
+    if(idx%7===0)cur+='<tr>';
+    var wd=idx%7;
+    if(d==null){cur+='<td class="pm-blank"></td>';}
+    else{
+      var ds=mo+'-'+pmP2(d);
+      var cls=['pm-cell'],inner='<span class="d">'+d+'</span>';
+      if(wd===0)cls.push('sun');else if(wd===6)cls.push('sat');
+      var inWin=pmInRange(ds,w.from,w.to),col=inWin&&pmInRange(ds,w.cFrom,w.cTo);
+      var aria=pmDateLong(ds);
+      if(ds===today)cls.push('today');
+      if(!inWin){
+        /* 목표 1년 창 밖(앞뒤로 걸친 달의 남는 날) — 미수집과 구분해 빈칸으로 둔다 */
+        cls.push('out');
+        aria+=' · 1년 창 밖';
+      }else if(!col){
+        cls.push('miss');
+        inner+='<span class="t">미수집</span>';
+        aria+=' · 미수집';
+      }else{
+        collected++;
+        var list=map[ds]||[];
+        if(!list.length){
+          cls.push('none');inner+='<span class="t">—</span>';
+          aria+=' · 원천 표시 없음';
+        }else{
+          rows++;
+          var st=pmDayStat(list);
+          if(minV==null||st.min<minV)minV=st.min;
+          cls.push('has','cb-'+st.best.k);
+          inner+='<span class="m">'+KR(st.min)+'</span>'
+            +'<span class="s">'+(st.best.stops===0?'직항':st.best.stops+'경유')+'</span>';
+          aria+=' · 최저 '+KR(st.min)+'마일 · '+list.length+'건';
+        }
+      }
+      cur+='<td><button type="button" class="'+cls.join(' ')+'" data-pm-day="'+ds+'" aria-label="'+esc(aria)+'"'+(inWin?'':' tabindex="-1"')+'>'+inner+'</button></td>';
+    }
+    if(idx%7===6){cur+='</tr>';body+=cur;cur=''}
+  });
+  if(cur){cur+='</tr>';body+=cur}
+  var sub=!pmMonthCovered(mo)?'미수집'
+    :(minV!=null?'최저 '+KR(minV)+'마일 · '+KR(rows)+'일 표시'
+    :(collected?'표시 없음':'미수집'));  return '<div class="pm-mblock" id="pmM-'+mo+'">'
+    +'<div class="pm-mhead"><b>'+y+'년 '+m+'월</b><span>'+esc(sub)+'</span></div>'
+    +'<table class="pm-cal"><thead><tr>'
+    +'<th class="sun">일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th class="sat">토</th>'
+    +'</tr></thead><tbody>'+body+'</tbody></table></div>';
+}
+
+/* ══ 날짜 상세 시트 ══════════════════════════════════════════════════════════ */
+function pmSheetEl(){return document.getElementById('pmSheet')}
+function pmProgramsBlock(){
+  var ws=(PMD.programs||[]).filter(function(p){
+    if(pms.alliance!=='all'&&p.alliance!==pms.alliance)return false;
+    if(pms.prog!=='all'&&p.key!==pms.prog)return false;
+    return true;
+  });
+  if(!ws.length)return '';
+  return '<div class="pm-ds-gh">공식 사이트에서 직접 조회</div>'
+    +'<div class="pm-ds-sites">'+ws.map(function(p){
+        return '<a class="pm-ds-site" href="'+esc(p.url)+'" target="_blank" rel="noopener">'
+          +'<b>'+esc(p.short||p.name)+'</b>'
+          +'<span>'+esc(p.name)+' · '+esc(p.allianceName||'')+'</span>'
+          +'<i>공식 발권 ↗</i></a>';
+      }).join('')+'</div>';
+}
+function pmOpenSheet(ds){
+  var el=pmSheetEl();
+  if(!el||!ds)return;
+  var w=pmWin(),list=(pmDayMap()[ds]||[]);
+  var col=pmInRange(ds,w.cFrom,w.cTo);
+  var dirTxt=pms.dir?'부산 도착(→ PUS)':'부산 출발(PUS →)';
+  document.getElementById('pmDsTitle').textContent=pmDateLong(ds);
+  document.getElementById('pmDsSub').innerHTML=esc(dirTxt+' · '+pmCondText()+' · 원천 기준 '+((pmMeta()||{}).observedLabel||'—'));
+  var body='';
+  if(!col){
+    body='<div class="pm-ds-warn"><b>이 날짜는 아직 수집하지 않았습니다.</b><br>'
+      +'원천이 비로그인 화면에 앞으로 '+KR(pmDaysBetween(w.cFrom,w.cTo))+'일('+esc(w.cFrom)+'~'+esc(w.cTo)+')만 열어 주어, '
+      +esc(ds)+' 은 조회하지 못했습니다. 값을 추측해 채우지 않았습니다 — 아래 공식 사이트에서 직접 조회해 주세요.</div>'
+      +pmProgramsBlock();
+  }else if(!list.length){
+    body='<div class="pm-ds-warn"><b>이 날짜에는 원천에 표시된 보너스 좌석이 없습니다.</b><br>'
+      +'원천이 이 노선·날짜에 보너스 좌석을 보여 주지 않았습니다(좌석이 없다는 뜻과 조회되지 않았다는 뜻을 원천이 구분해 주지 않습니다). '
+      +'아래 공식 사이트에서 직접 확인해 주세요.</div>'
+      +pmProgramsBlock();
+  }else{
+    var by={};
+    list.forEach(function(x){(by[x.r[3]]=by[x.r[3]]||[]).push(x)});
+    var groups=Object.keys(by).map(function(c){
+      var items=by[c].sort(function(a,b){return a.best.miles-b.best.miles});
+      return {code:c,items:items,min:items[0].best.miles};
+    }).sort(function(a,b){return a.min-b.min});
+    body=groups.map(function(g){
+      return '<div class="pm-ds-route">'
+        +'<div class="pm-ds-rt"><b>'+esc(pmDestName(g.code))+'</b><span>최저 '+KR(g.min)+'마일 · '+KR(g.items.length)+'건</span></div>'
+        +g.items.map(function(x){
+            var r=x.r,p=x.p;
+            var cs=x.cs.filter(function(c){return pms.cabin==='all'||c.k===pms.cabin})
+                       .filter(function(c){return !pms.direct||c.stops===0});
+            if(!cs.length)cs=x.cs;
+            return '<div class="pm-ds-row">'
+              +'<div class="pm-ds-pg"><b>'+esc(p.short||p.name)+'</b><span>'+esc(p.allianceName||'')+'</span></div>'
+              +'<div class="pm-ds-cab">'+cs.map(function(c){
+                  return '<span class="cb '+c.k+'">'+esc(pmCabinShort(c))+' <b>'+KR(c.miles)+'</b> <i>'+esc(pmStopsText(c.stops))+'</i></span>';
+                }).join('')+'</div>'
+              +'<div class="pm-ds-meta"><span class="seen">최근 확인 '+esc(r[2])+'</span>'
+              +'<a class="pm-ds-go" href="'+esc(p.url)+'" target="_blank" rel="noopener">'+esc(p.urlLabel||'공식 사이트')+' ↗</a></div>'
+              +'</div>';
+          }).join('')
+        +'</div>';
+    }).join('');
+  }
+  document.getElementById('pmDsBody').innerHTML=body;
+  document.getElementById('pmDsNote').innerHTML='필요 마일은 원천이 그 등급에 표시한 값이고, 같은 노선이라도 날짜·경유 편수·판매 조건에 따라 달라집니다. '
+    +'세금·수수료는 마일과 별도이며 좌석 수량은 원천에 없어 표시하지 않습니다. 예약 전 <b>항공사 공식 사이트에서 재확인</b>해 주세요.';
+  el.classList.add('show');
+  el.setAttribute('aria-hidden','false');
+  var close=document.getElementById('pmDsClose');
+  if(close&&close.focus)close.focus({preventScroll:true});
+}
+function pmCloseSheet(){
+  var el=pmSheetEl();
+  if(!el)return;
+  el.classList.remove('show');
+  el.setAttribute('aria-hidden','true');
+}
+
+/* 보기 전환 · 월 바로가기 · 날짜 칸 · 시트 닫기 */
+document.addEventListener('click',function(e){
+  var t=e.target;
+  if(!t||!t.closest)return;
+  var sheet=pmSheetEl();
+  if(sheet&&sheet.classList.contains('show')&&t.closest('#pmSheet')){
+    if(t.id==='pmDsClose'||t===sheet)pmCloseSheet();
+    /* 공식 사이트 링크는 새 탭 이동이 끝난 뒤에 닫는다(이동이 취소되지 않게) */
+    if(t.closest('a.pm-ds-go')||t.closest('a.pm-ds-site')){
+      setTimeout(function(){var cur=pmSheetEl();if(cur&&cur.classList.contains('show'))pmCloseSheet()},350);
+    }
+    return;
+  }
+  var vw=t.closest('[data-pm-view]');
+  if(vw){pms.view=vw.getAttribute('data-pm-view');renderPartner();return}
+  var jp=t.closest('[data-pm-jump]');
+  if(jp){
+    var mo=jp.getAttribute('data-pm-jump');
+    var box=document.getElementById('pmM-'+mo);
+    if(box&&box.scrollIntoView)box.scrollIntoView({block:'start',behavior:'smooth'});
+    return;
+  }
+  if(t.closest('a'))return;                       /* 카드·칸 안의 링크는 그대로 새 탭 */
+  var day=t.closest('[data-pm-day]');
+  if(day){e.preventDefault();pmOpenSheet(day.getAttribute('data-pm-day'));return}
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')pmCloseSheet()});

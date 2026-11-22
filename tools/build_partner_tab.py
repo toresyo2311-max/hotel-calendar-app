@@ -136,15 +136,32 @@ def main(argv):
     for r in rows:
         counts[r[0]] = counts.get(r[0], 0) + 1
 
+    # 창은 목표 1년(365일). 실제로 수집한 구간은 따로 적어, 달력이 둘을 섞지 않게 한다.
+    # 자료에 행이 없는 날(좌석 없음)까지 포함해 '조회한 구간'을 적으려면 수집을 돌린 범위를 상수로 둔다.
+    # → 다음 수집이 뒤 구간까지 닿으면 SWEEP_TO 를 그날까지 올린다.
+    SWEEP_FROM, SWEEP_TO = '2026-11-22', '2027-01-21'
+    collected_from = min([r[1] for r in rows] + [SWEEP_FROM]) if rows else SWEEP_FROM
+    collected_to = max([r[1] for r in rows] + [SWEEP_TO]) if rows else SWEEP_TO
+    d_from = datetime.date.fromisoformat(collected_from)
+    d_to = d_from + datetime.timedelta(days=364)
+    next_day = (datetime.date.fromisoformat(collected_to) + datetime.timedelta(days=1)).isoformat()
+
     data = {
-        'schema': 'partner-mileage/1',
+        'schema': 'partner-mileage/2',
         'observedAt': now.strftime('%Y-%m-%d %H:%M KST'),
         'observedLabel': now.strftime('%Y-%m-%d %H:%M KST'),
         'collectedAt': now.isoformat(timespec='seconds'),
         'sourceLabel': '항공사 마일리지 프로그램 9곳 보너스 좌석 실측(부산/김해 PUS)',
-        'windowDays': 60,
-        'dateFrom': min(r[1] for r in rows) if rows else '',
-        'dateTo': '2027-01-21',
+        'windowDays': 365,
+        'dateFrom': collected_from,
+        'dateTo': d_to.isoformat() if d_to else '',
+        'collectedFrom': collected_from,
+        'collectedTo': collected_to,
+        'collectedDays': (datetime.date.fromisoformat(collected_to) - d_from).days + 1 if rows else 0,
+        'windowNote': ('원천은 비로그인 화면에 앞으로 %d일(%s~%s)까지만 열어 줍니다 — 그 뒤 %s~%s는 '
+                       '수집하지 못했고 달력에 미수집으로 표시합니다(보간 없음).'
+                       % ((datetime.date.fromisoformat(collected_to) - d_from).days + 1,
+                          collected_from, collected_to, next_day, d_to.isoformat())) if collected_to < d_to.isoformat() else '',
         'dirNote': '부산 출발(PUS→) 방향만 수집 — 부산 도착(→PUS)은 다음 수집에서 채웁니다',
         'programs': programs,
         'dests': sorted(dests.values(), key=lambda d: d['code']),
@@ -188,11 +205,15 @@ def main(argv):
     TABS_ENTRY = ("'%s':{title:'⑧ 외항사 마일리지(부산) — 9개 프로그램 부산 보너스 좌석',"
                   "sub:'에어프랑스 플라잉블루 · 골 스마일즈 · 버진 애틀랜틱 · 델타 스카이마일즈 · 유나이티드 마일리지플러스 · "
                   "에어캐나다 에어로플랜 · 캐세이 아시아 마일즈 · 영국항공 아비오스 · JAL 마일지뱅크 9곳을 "
-                  "부산/김해(PUS) 출발·도착 · 앞으로 60일 · 이코노미/프리미엄/비즈니스/퍼스트로 나눠 보여 줍니다. "
-                  "도시별 최저 마일과 날짜별 목록을 함께 두고, 각 행의 예약 버튼은 해당 프로그램의 공식 사이트로 엽니다. "
+                  "부산/김해(PUS) 출발·도착 · 1년(365일) 달력 · 이코노미/프리미엄/비즈니스/퍼스트로 나눠 보여 줍니다. "
+                  "달력의 날짜 칸을 누르면 그 날의 프로그램별·등급별 필요 마일과 공식 발권 링크가 열리고, "
+                  "원천이 열어 준 구간 밖은 미수집으로 표시합니다. 각 행의 예약 버튼은 해당 프로그램의 공식 사이트로 엽니다. "
                   "원천에 좌석 수량·세금·수수료가 없어 표시하지 않습니다. / 예약 전 항공사 공식 사이트에서 재확인',"
-                  "checked:'수집 기준: %s · 9개 프로그램 실측(부산 출발 방향)',start:'2026-11',end:'2027-01'}"
-                  % (KEY, now.strftime('%Y-%m-%d %H:%M KST')))
+                  "checked:'수집 기준: %s · 9개 프로그램 실측(부산 출발 방향) · 수집 %s~%s',start:'%s',end:'%s'}"
+                  % (KEY, now.strftime('%Y-%m-%d %H:%M KST'),
+                     collected_from or '-', collected_to or '-',
+                     (collected_from or '2026-11')[:7],
+                     (d_to.isoformat() if d_to else '2027-11')[:7]))
 
     HOOKS = [
         ('setDealPanels',
@@ -204,7 +225,7 @@ def main(argv):
          "if(st.tab==='mileage'){renderMileage();hashSync();return}\n"
          "  if(st.tab==='%s'){renderPartner();hashSync();return}" % KEY),
         ('DATA_READY', "mileage:false};", "mileage:false,'%s':false};" % KEY),
-        ('DATA_BUST', "mileage:'2026-11-22b'};", "mileage:'2026-11-22b','%s':'2026-11-22a'};" % KEY),
+        ('DATA_BUST', "mileage:'2026-11-22b'};", "mileage:'2026-11-22b','%s':'2026-11-22c'};" % KEY),
         ('PART_FILE', "mileage:'tab8_mileage.json'};",
          "mileage:'tab8_mileage.json','%s':'tab9_partner_mileage.json'};" % KEY),
         ('loadPart',
@@ -232,6 +253,10 @@ def main(argv):
     hooks = []
     for name, old, new in HOOKS:
         if new in src:
+            hooks.append((name, 'already'))
+            continue
+        # 다른 탭의 캐시 키가 올라가 old 문자열이 사라져도, ⑧ 키가 이미 있으면 이미 연결된 것이다
+        if name == 'DATA_BUST' and "'%s':" % KEY in src:
             hooks.append((name, 'already'))
             continue
         if old not in src:

@@ -25,6 +25,27 @@
     </div>
 
     <div class="pm-block" id="pmBest"></div>
+
+    <div class="pm-viewbar">
+      <div class="pm-seg" id="pmView" role="group" aria-label="보기 방식">
+        <button type="button" data-pm-view="cal" class="on" aria-pressed="true">📅 달력</button>
+        <button type="button" data-pm-view="list" aria-pressed="false">☰ 목록</button>
+      </div>
+      <p class="pm-vhint">달력의 날짜 칸을 누르면 그 날의 프로그램별·등급별 필요 마일과 공식 발권 링크가 열립니다.</p>
+    </div>
+
+    <div class="pm-block" id="pmCal"></div>
     <div class="pm-block" id="pmList"></div>
+
     <p class="pm-note" id="pmNote"></p>
   </section>
+
+  <!-- 날짜 상세 — 달력 칸·목록 카드를 누르면 열린다. 프로그램별·노선별·등급별 필요 마일, 직항/경유, 최근 확인 시각과
+       각 프로그램 공식 발권 페이지 버튼을 담는다. (모양은 앱 공통 시트 .wxsheet/.wxcard 를 그대로 쓴다) -->
+  <div class="wxsheet" id="pmSheet" aria-hidden="true"><div class="wxcard pm-ds" role="dialog" aria-modal="true" aria-labelledby="pmDsTitle">
+    <h3 id="pmDsTitle">날짜 상세</h3>
+    <p class="pm-ds-sub" id="pmDsSub"></p>
+    <div class="pm-ds-body" id="pmDsBody"></div>
+    <p class="pm-ds-note" id="pmDsNote"></p>
+    <button type="button" class="wxclose" id="pmDsClose">닫기</button>
+  </div></div>

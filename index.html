@@ -2412,6 +2412,11 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
         <button class="mode-button" type="button" data-zone="cn">중국(APC) <b>291</b></button>
         <button class="mode-button" type="button" data-zone="etc">기타 해외 <b>19</b></button>
       </div>
+      <div id="ihgChips" class="mode-control zone-chips" style="display:none" aria-label="지역">
+        <button class="mode-button selected" type="button" data-ihgzone="all">전체 <b>98</b></button>
+        <button class="mode-button" type="button" data-ihgzone="asia">아시아·오세아니아 <b>72</b></button>
+        <button class="mode-button" type="button" data-ihgzone="eu">유럽 <b>26</b></button>
+      </div>
       <div id="accorMode" class="mode-control" style="display:none" aria-label="요금 유형">
         <button class="mode-button selected" type="button" data-mode="cash">1박 최저가</button>
         <button class="mode-button" type="button" data-mode="sp2">Stay Plus 2박</button>
@@ -3410,7 +3415,7 @@ Object.keys(TAB_SHORT).forEach(function(k){
   t.sub=TAB_SHORT[k].sub;t.checked=TAB_SHORT[k].checked;
 });
 const TTANG={"schema":"team-busan/pus-deals/1","observedAt":"","window":{},"channels":[],"deals":[],"coverage":"","coverageOk":false};
-const st={tab:'lux',city:'all',hotel:'all',month:'2026-12',mode:'cash',zone:'all',pmode:'both',hyattSrc:'official',ctier:'all',apcOnly:false,weekend:false,hideBlackouts:false,blk:'show',apcDaysOnly:false,prog:'all',brand:'all',selectedDay:'',favOnly:false,budget:0,nights:1,ticket:'all',cur:'krw',cxl:'all'};
+const st={tab:'lux',city:'all',hotel:'all',month:'2026-12',mode:'cash',zone:'all',ihgzone:'all',pmode:'both',hyattSrc:'official',ctier:'all',apcOnly:false,weekend:false,hideBlackouts:false,blk:'show',apcDaysOnly:false,prog:'all',brand:'all',selectedDay:'',favOnly:false,budget:0,nights:1,ticket:'all',cur:'krw',cxl:'all'};
 const allHotels=DB.hotels;
 /* ══ ★ 즐겨찾기 — 기기 브라우저(localStorage)에만 저장 ═════════════════
    호텔 id 와 항공 노선 코드만 담는다. 서버로 보내지 않고, 저장이 막힌 브라우저
@@ -3628,6 +3633,8 @@ function tierFiltered(){let hs=groupHotels();
   if(st.prog&&st.prog!=='all')hs=hs.filter(h=>{const p=h.program||{};if(st.prog==='snu')return snuOn(h);if(st.prog==='nosnu')return !snuOn(h);if(st.prog==='rhr')return Boolean(h.redhot);if(st.prog==='spdata')return Boolean((h.stayplus2&&Object.keys(h.stayplus2).length)||(h.stayplus3&&Object.keys(h.stayplus3).length));return true});
   if(st.brand&&st.brand!=='all')hs=hs.filter(h=>(h.brand||'기타')===st.brand);
   return hs}
+ /* ⑤ IHG 지역 칩 — 유럽 26곳과 아시아·오세아니아 72곳을 한 번에 가른다(2026-11-23) */
+ if(st.tab==='ihg'&&st.ihgzone&&st.ihgzone!=='all')hs=hs.filter(h=>st.ihgzone==='eu'?h.region==='유럽':h.region!=='유럽');
  return hs}
 function cityFiltered(){let hs=tierFiltered().filter(h=>st.city==='all'||h.city===st.city);
  if(st.ticket!=='all'&&ticketLimit()>0)hs=hs.filter(h=>ticketPassSet().has(h.id));
@@ -3703,6 +3710,10 @@ function renderHeader(){const t=tabs[st.tab];$('sectionTitle').textContent=t.tit
  if($('zoneChips')){$('zoneChips').style.display=ctl?'flex':'none';
   const gh=groupHotels(),zc={all:gh.length};for(const z of ZONE_ORDER)zc[z]=gh.filter(h=>zoneOf(h)===z).length;
   document.querySelectorAll('#zoneChips [data-zone]').forEach(b=>{const v=b.dataset.zone,lab=v==='all'?'전체':(ZONES[v]||v);b.innerHTML=esc(lab)+' <b>'+KR(zc[v]||0)+'</b>';const on=v===st.zone;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});
+ }
+ if($('ihgChips')){$('ihgChips').style.display=(st.tab==='ihg')?'flex':'none';
+  const ih=groupHotels(),ic={all:ih.length,asia:ih.filter(h=>h.region!=='유럽').length,eu:ih.filter(h=>h.region==='유럽').length};
+  document.querySelectorAll('#ihgChips [data-ihgzone]').forEach(b=>{const v=b.dataset.ihgzone;b.innerHTML=esc(v==='all'?'전체':(v==='eu'?'유럽':'아시아·오세아니아'))+' <b>'+KR(ic[v]||0)+'</b>';const on=v===(st.ihgzone||'all');b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});
  }
  if($('accorProg')){$('accorProg').style.display=ctl?'flex':'none';
   const dm=groupHotels(),pg={all:dm.length,snu:dm.filter(snuOn).length,nosnu:dm.filter(h=>!snuOn(h)).length,spdata:dm.filter(h=>Boolean((h.stayplus2&&Object.keys(h.stayplus2).length)||(h.stayplus3&&Object.keys(h.stayplus3).length))).length,rhr:dm.filter(h=>Boolean(h.redhot)).length};
@@ -4402,6 +4413,8 @@ function render(){
 function resetStateFor(tab){st.tab=tab;st.city='all';st.hotel='all';st.favOnly=false;st.budget=0;st.mode='cash';st.zone='all';st.pmode='both';st.ctier='all';st.apcOnly=false;st.blk='show';st.apcDaysOnly=false;st.prog='all';st.brand='all';st.month=tabs[tab].default||tabs[tab].start;st.selectedDay='';st.weekend=false;st.hideBlackouts=false;st.nights=1;st.ticket='all';if($('weekendOnly'))$('weekendOnly').checked=false;if($('apcDaysOnly'))$('apcDaysOnly').checked=false;if($('blackoutMode'))$('blackoutMode').value='show';if($('accorBrand'))$('accorBrand').value='all';if($('apcOnly'))$('apcOnly').checked=false}
 function setTab(tab){resetStateFor(tab);if(tab==='combo'&&cb.month!==st.month)cb.month=st.month;activate(tab)}
 function setCity(city){st.city=city;st.hotel='all';
+ /* ⑤ IHG — 도시를 고르면 지역 칩은 '전체'로 풀어, 지역과 도시가 서로 물리는 빈 화면을 만들지 않는다 */
+ if(st.tab==='ihg'&&city!=='all')st.ihgzone='all';
  /* 현금 요금이 하나도 없는 도시(서울 등)를 고르면 Stay Plus 결제액으로 넘겨 준다 — 자료에 있는 값만 보고 판단한다 */
  if(st.tab==='accor'&&st.mode==='cash'){const hs=groupHotels().filter(h=>city==='all'||h.city===city);
   if(hs.length&&!hs.some(h=>Object.values(h.rates||{}).some(v=>v!=null))&&hs.some(h=>Object.keys(h.stayplus2||{}).length))st.mode='sp2';}
@@ -4528,6 +4541,7 @@ $('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if
 $('snuChips').addEventListener('click',e=>{const b=e.target.closest('[data-snu-city]');if(!b)return;snuCity=b.dataset.snuCity;renderSNU()});
 $('citySelect').addEventListener('change',e=>setCity(e.target.value));$('hotelSelect').addEventListener('change',e=>setHotel(e.target.value));$('hotelList').addEventListener('click',e=>{const b=e.target.closest('[data-hotel]');if(b)setHotel(b.dataset.hotel)});$('accorMode').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b)switchMode(b.dataset.mode)});
 $('zoneChips').addEventListener('click',e=>{const b=e.target.closest('[data-zone]');if(!b)return;st.zone=b.dataset.zone;st.city='all';st.hotel='all';if(st.zone!=='cn'&&st.mode!=='apc')st.apcOnly=false;render()});
+$('ihgChips').addEventListener('click',e=>{const b=e.target.closest('[data-ihgzone]');if(!b)return;st.ihgzone=b.dataset.ihgzone;st.city='all';st.hotel='all';render()});
 $('chinaTier').addEventListener('click',e=>{const b=e.target.closest('[data-ctier]');if(b){st.ctier=b.dataset.ctier;st.city='all';st.hotel='all';render()}});
 $('apcOnly').addEventListener('change',e=>{st.apcOnly=e.target.checked;st.city='all';st.hotel='all';render()});
 $('apcDaysOnly').addEventListener('change',e=>{st.apcDaysOnly=e.target.checked;render()});

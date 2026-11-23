@@ -2349,6 +2349,9 @@ p.hint,.chart-note,.mg-note,.ml-note,.pm-note,.pm-vhint,.pm-ds-note,.pm-ds-apphi
 .foldbox .hero2{margin:0}
 .foldbox .fl-summary{padding:10px}
 .foldbox .tt-feed{border:0;box-shadow:none;margin:0;padding:10px}
+.foldbox .snu-panel,.foldbox .pt-top{border:0;box-shadow:none;margin:0;padding:10px}
+details.foldbox:has(>[hidden]),details.foldbox:has(>[style*="display: none"]),
+details.foldbox:has(>[style*="display:none"]){display:none}
 </style>
 </head>
 <body>
@@ -2428,6 +2431,7 @@ p.hint,.chart-note,.mg-note,.ml-note,.pm-note,.pm-vhint,.pm-ds-note,.pm-ds-apphi
     <div class="intro-acts"><button type="button" class="combo-jump" id="comboJump" title="부산 출발 항공(⑥·⑦) + ①~③ 같은 도시 호텔 숙박을 한 화면에서 조합해 총액으로 비교합니다">🛫+🏨 항공+호텔 조합</button><button type="button" class="sharebtn" id="shareBtn" title="지금 보이는 탭·호텔·날짜·필터를 그대로 담은 주소를 복사합니다">🔗 링크 복사</button><span class="time-pill" id="checktime">조회 기준: 2026.11.16</span></div>
   </section>
 
+  <details class="foldbox" id="snuFold"><summary>🇫🇷 SNU 2박 후보 · 절감 TOP</summary>
   <section id="snuPanel" class="snu-panel" hidden aria-label="SNU · Stay Plus 인사이트">
     <div class="snu-cards" id="snuCards"></div>
     <div class="snu-head"><h3>SNU 2박 후보 — 정가 대비 절감</h3><span id="snuSub"></span></div>
@@ -2435,6 +2439,7 @@ p.hint,.chart-note,.mg-note,.ml-note,.pm-note,.pm-vhint,.pm-ds-note,.pm-ds-apphi
     <div class="snu-list" id="snuList"></div>
     <p class="hint" id="snuHint"></p>
   </section>
+  </details>
 
   <details class="foldbox" id="rankFold"><summary>🏆 12개월 최저가 TOP 5 · 프로모션 혜택</summary>
   <div class="ranking">
@@ -2443,11 +2448,13 @@ p.hint,.chart-note,.mg-note,.ml-note,.pm-note,.pm-vhint,.pm-ds-note,.pm-ds-apphi
   </div>
   </details>
 
+  <details class="foldbox" id="ptTopFold"><summary>🏅 1P당 가치 TOP 10 — 날짜 · 호텔</summary>
   <section id="ptTopBox" class="rank-panel pt-top" hidden aria-label="메리어트 1P당 가치 TOP 10">
     <div class="rank-head"><h3>1P당 가치 TOP 10 — 날짜 · 호텔</h3><span class="rank-label" id="ptTopSub"></span></div>
     <div class="pt-grid" id="ptTop10"></div>
     <p class="hint" id="ptTopHint"></p>
   </section>
+  </details>
 
   <div class="workspace">
     <aside class="side"><div class="side-head"><h3>호텔 바로 선택</h3><small id="hotelCount">24개</small></div><div class="hotel-items" id="hotelList"></div><div class="side-foot">가격 미표시(—)는 무료 숙박이 아닙니다. 호텔을 선택하면 그 호텔의 요금만 남습니다.</div></aside>

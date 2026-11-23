@@ -79,7 +79,10 @@ WINDOW_END = '2027-11-30'
 #   2026-11-24에 대만 2차 4곳(m285~m288)을 더해 288곳이 됐다 — 대만 8(가오슝 3 · 린커우 1 ·
 #   신주 1 · 이란 1 · 자오시 1 · 타오위안 1). 누적 8곳 원본 가운데 앞 4곳은 m281~m284 로 이미
 #   실려 있어 뒤 4곳만 더했다(중복 없음).
-EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 288}
+#   2026-11-24에 대만 3차 3곳(m289~m291)을 더해 291곳이 됐다 — 대만 11(가오슝 3 · 린커우 1 ·
+#   신주 1 · 이란 1 · 자오시 1 · 타오위안 2 · 타이둥 1 · 타이베이 1). 누적 11곳 원본 가운데 앞 8곳은
+#   m281~m288 로 이미 실려 있어 뒤 3곳만 더했다(중복 없음).
+EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 291}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
 #   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
@@ -567,10 +570,10 @@ def check_sources(text_blob):
 #   웨스틴 1곳(이란) · 포 포인츠 1곳(자오시)이 늘었으며, 오세아니아 10곳에서 리츠칼튼(퍼스) · 오토그래프(캔버라) · 알로프트 ·
 #   웨스틴(퍼스) · 코트야드(퍼스 Murdoch) · 쉐라톤(포트더글라스) · 럭셔리 컬렉션(호바트) ·
 #   메리어트(애들레이드) · 포 포인츠 2곳이 늘었다.
-EXPECT_BRANDS = {'리츠칼튼': 28, '세인트레지스': 16, 'W': 14, '코트야드 바이 메리어트': 25,
-                 '포 포인츠 바이 쉐라톤': 14, 'JW 메리어트': 8, '럭셔리 컬렉션': 12, '웨스틴': 16,
+EXPECT_BRANDS = {'리츠칼튼': 28, '세인트레지스': 16, 'W': 15, '코트야드 바이 메리어트': 25,
+                 '포 포인츠 바이 쉐라톤': 14, 'JW 메리어트': 8, '럭셔리 컬렉션': 12, '웨스틴': 17,
                  '오토그래프 컬렉션': 13, '페어필드 바이 메리어트': 34, '메리어트': 23, 'AC 호텔': 5,
-                 '알로프트': 6, '목시': 8, '쉐라톤': 21, '에디션': 3,
+                 '알로프트': 6, '목시': 8, '쉐라톤': 22, '에디션': 3,
                  '메리어트 이그제큐티브 아파트먼트': 2, '르메르디앙': 2, '트리뷰트 포트폴리오': 5,
                  '디자인 호텔스': 12, '포인트 플렉스 바이 쉐라톤': 16, '엘리먼트': 1,
                  '메리어트 베케이션 클럽': 1, '시티 익스프레스': 2, '르네상스': 1}
@@ -652,11 +655,22 @@ TW4_IDS = {'m%d' % i for i in range(281, 285)}
 #   TPEHS·TPESY 는 아워드 포인트가 2027-11-07 부터 현금보다 6일 먼저 끊긴다. null 은 보간하지 않는다.
 EXPECT_TW8 = {'hotels': 8, 'cash': 2442, 'points': 2305}
 TW8_IDS = {'m%d' % i for i in range(281, 289)}
+# 2026-11-24 대만 3차 3곳(m289~m291) — 현금 891칸 · 아워드 포인트 632칸 / 3×365=1,095칸
+#   TPETW(웨스틴 타오위안 Tashee) 341+327 · TTTSI(쉐라톤 타이둥) 209+0 · TPEWH(W 타이베이) 341+305.
+#   TTTSI 는 아워드 포인트 캘린더가 365일 전부 미게시(0칸)이고, 현금은 2027-04-01~07-31 122일이
+#   끊겼다가 2027-08-01 부터 다시 열린다(6번이 전면 판매 중단 후 재개로 확인) — null 은 보간하지 않는다.
+#   TPEWH 는 2026-12-31 20,416,237원이 창 안 최고가이고 2027-05-26~06-03 컴퓨텍스 기간이
+#   795,212~1,512,843원, TPETW 는 2027-11-07 부터 아워드 포인트가 끊긴다. 세 곳 모두
+#   2027-11-13~30 18일이 예약 창 끝(Rate Unavailable)이다.
+EXPECT_TW11 = {'hotels': 3, 'cash': 891, 'points': 632}
+TW11_IDS = {'m%d' % i for i in range(289, 292)}
 # 아워드 포인트 캘린더가 전 기간 미게시인 호텔(코드) — 「포인트 칸 없음」 검사에서 뺀다.
 #   k09 여의도 파크 센터 MEA · NANSI 12월 31일만 판매 · OOLAC 12/18 개관 · POMEA
 NO_POINT_CODES = {'NANSI', 'OOLAC', 'POMEA',
                   # 일본 3·4차 — 아워드 포인트 캘린더 전 기간 미게시
-                  'OSAKO', 'TYOYY', 'TYOMH', 'HKDXF'}
+                  'OSAKO', 'TYOYY', 'TYOMH', 'HKDXF',
+                  # 대만 3차 — 쉐라톤 타이둥 아워드 포인트 캘린더 전 기간 미게시
+                  'TTTSI'}
 # ① HoteLux 탭과 호텔이 겹치는 ⑤ 항목(요금 출처가 달라 둘 다 수록) — alsoIn 으로 교차 표시
 EXPECT_OVERLAP = ({'k01', 'k02', 'k04', 'k05', 'k20', 'k26', 'j01', 'j04', 'j10', 'j11', 'j12'}
                   | SG8_IDS
@@ -5098,7 +5112,17 @@ def check_tabs(db):
             or tw2p != EXPECT_TW8['points']:
         problems.append('대만 8곳 수치 %s (기대 %s)' % (
             {'hotels': len(tw2), 'cash': tw2c, 'points': tw2p}, EXPECT_TW8))
-    for h in kj + kr30 + sg8 + sg7 + sg7l + oc + jp30 + jp30b + oc2 + jp34 + jp34b + oc10 + tw4 + tw2:
+    # 2026-11-24 — 대만 3차 3곳(m289~m291)도 칸 수를 고정해 둔다(유실·보간 방지)
+    tw3 = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'] in TW11_IDS]
+    tw3c = sum(1 for h in tw3 for v in (h.get('rates') or {}).values()
+               if isinstance(v, (int, float)))
+    tw3p = sum(1 for h in tw3 for v in (h.get('points') or {}).values() if isinstance(v, int))
+    if len(tw3) != EXPECT_TW11['hotels'] or tw3c != EXPECT_TW11['cash'] \
+            or tw3p != EXPECT_TW11['points']:
+        problems.append('대만 3차 3곳 수치 %s (기대 %s)' % (
+            {'hotels': len(tw3), 'cash': tw3c, 'points': tw3p}, EXPECT_TW11))
+    for h in kj + kr30 + sg8 + sg7 + sg7l + oc + jp30 + jp30b + oc2 + jp34 + jp34b + oc10 + tw4 + tw2 \
+            + tw3:
         if h['id'] == 'k09' or h.get('code') in NO_POINT_CODES:
             continue
         if not h.get('points'):

@@ -20,6 +20,7 @@ data/app/tab13_kids.json 을 만든다.
 import argparse
 import datetime as dt
 import gzip
+import hashlib
 import json
 import os
 import re
@@ -444,10 +445,21 @@ def src_dream_teach():
     return out
 
 
-# ── 5. 서울특별시 공공서비스예약 · 전시/관람 ──────────────────────────
-def src_seoul_yeyak():
+# ── 5. 서울특별시 공공서비스예약 · 전시/관람(T203) · 문화행사(T204) ────
+# 문화체험(T200) 아래 갈래 중 어린이 체험과 겹치는 두 갈래를 함께 모은다.
+SEOUL_YEYAK_DCODES = (
+    ('T203', '전시/관람'),
+    ('T204', '문화행사'),
+)
+
+
+def seoul_yeyak_dcode(code, sub):
+    """dCode 한 갈래를 끝 페이지까지 넘기며 카드를 읽는다.
+    외부사이트로 넘기는 항목은 fnDetailPage 없이 fnNewPop(외부 주소)로만 열리므로
+    제목은 h4.tit1, 상세는 그 외부 주소를 그대로 쓴다."""
     base = ('https://yeyak.seoul.go.kr/web/search/selectPageListDetailSearchImg.do'
-            '?code=T200&dCode=T203')
+            '?code=T200&dCode=' + code)
+    name = '서울특별시 공공서비스예약 · ' + sub
     out, last = [], 1
     for page in range(1, 31):
         h = FETCH.get('%s&currentPage=%d' % (base, page))
@@ -460,13 +472,24 @@ def src_seoul_yeyak():
             break
         for li in lis:
             a = li.xpath('.//a[contains(@onclick,"fnDetailPage")]')
-            if not a:
-                continue
-            title = a[0].get('title') or txt(a[0])
-            m = re.search(r"fnDetailPage\('([^']+)'", a[0].get('onclick') or '')
-            sid = m.group(1) if m else ''
-            detail = ('https://yeyak.seoul.go.kr/web/reservation/selectReservView.do'
-                      '?rsv_svc_id=' + sid)
+            if a:
+                title = a[0].get('title') or txt(a[0])
+                m = re.search(r"fnDetailPage\('([^']+)'", a[0].get('onclick') or '')
+                sid = m.group(1) if m else ''
+                detail = ('https://yeyak.seoul.go.kr/web/reservation/selectReservView.do'
+                          '?rsv_svc_id=' + sid)
+                kid = sid
+            else:
+                pops = (li.xpath('.//a/@onclick[contains(.,"fnNewPop")]')
+                        or li.xpath('.//*[contains(@class,"txt_more")]/@onclick'))
+                m = re.search(r"(?:fnNewPop\('|location\.href=')([^']+)",
+                              pops[0] if pops else '')
+                if not m:
+                    continue                       # 상세로 갈 길이 없는 카드
+                detail = m.group(1).strip()
+                h4 = li.xpath('.//h4[contains(@class,"tit1")]')
+                title = txt(h4[0]) if h4 else ''
+                kid = 'ext-' + hashlib.md5(detail.encode('utf-8')).hexdigest()[:12]
             labels = [txt(x) for x in li.xpath('.//span[contains(@class,"bd_label")]')]
             status = labels[0] if labels else ''
             fee = labels[1] if len(labels) > 1 else ''
@@ -482,8 +505,8 @@ def src_seoul_yeyak():
                 return (iso(m2.group(1)), iso(m2.group(2))) if m2 else (None, None)
             a_s, a_e = rng('접수기간')
             e_s, e_e = rng('이용기간')
-            it = mk('seoul_yeyak', '서울특별시 공공서비스예약 · 전시/관람', title, detail,
-                    kid=sid, cat=' / '.join(cats), org='서울특별시',
+            it = mk('seoul_yeyak', name, title, detail,
+                    kid=kid, cat=' / '.join(cats), org='서울특별시',
                     target=target, place=place, applyStart=a_s, applyEnd=a_e,
                     start=e_s, end=e_e, status=status, fee=fee, region='서울')
             if it:
@@ -491,6 +514,18 @@ def src_seoul_yeyak():
         if page >= last:
             break
         time.sleep(0.2)
+    return out
+
+
+def src_seoul_yeyak():
+    """두 갈래를 합치되 같은 예약 항목(상세 주소 기준)은 한 번만 담는다."""
+    out, seen = [], set()
+    for code, sub in SEOUL_YEYAK_DCODES:
+        for it in seoul_yeyak_dcode(code, sub):
+            if it['url'] in seen:
+                continue
+            seen.add(it['url'])
+            out.append(it)
     return out
 
 
@@ -929,7 +964,7 @@ SOURCES = [
     ('busan_119', '부산광역시 119 안전체험관', src_busan_119),
     ('dream_teach', '부산 들락날락 · 행사·강좌', src_dream_teach),
     ('dream_dnpa', '부산 들락날락 · 참여 프로그램', src_dream_dnpa),
-    ('seoul_yeyak', '서울특별시 공공서비스예약 · 전시/관람', src_seoul_yeyak),
+    ('seoul_yeyak', '서울특별시 공공서비스예약 · 전시/관람 · 문화행사', src_seoul_yeyak),
     ('gangseo_lib', '부산광역시 강서도서관', src_gangseo_lib),
     ('sciport', '국립부산과학관 · 개인교육프로그램', src_sciport),
     ('yeonje_happy', '연제구 희망교육지원센터', src_yeonje_happy),

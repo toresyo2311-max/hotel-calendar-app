@@ -2334,7 +2334,16 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
 .pm-b2,.fs-b2,.fr-b2,.tt-banner,
 p.hint,.chart-note,.mg-note,.ml-note,.pm-note,.pm-vhint,.pm-ds-note,.pm-ds-apphint,
 .mlv-note,.pm-calc-note,.ml-calnote,.benefit-note,.g-note,.g-sub,.bknote,.side-foot,
-.footlegend{display:none!important}
+.footlegend,.pm-banner{display:none!important}
+
+/* ⑧ 상단 요약 4칸은 모바일에서 한 줄로 압축 — 숫자만 남기고 부연은 뺀다 */
+@media (max-width:640px){
+  .pm-kpi{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:6px 0}
+  .pm-kpi>div{padding:5px 6px}
+  .pm-kpi span{font-size:8.5px}
+  .pm-kpi b{font-size:12.5px}
+  .pm-kpi i{display:none}
+}
 
 /* 큰 요약 패널은 접이식 폴더로 — 눌러야 펼쳐진다 */
 .foldbox{border:1px solid #e6e2f3;background:#fff;border-radius:11px;margin:0 0 10px;overflow:hidden}

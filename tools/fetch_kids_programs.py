@@ -445,11 +445,17 @@ def src_dream_teach():
     return out
 
 
-# ── 5. 서울특별시 공공서비스예약 · 전시/관람(T203) · 문화행사(T204) ────
-# 문화체험(T200) 아래 갈래 중 어린이 체험과 겹치는 두 갈래를 함께 모은다.
+# ── 5. 서울특별시 공공서비스예약 · 문화체험(T200) 7갈래 ──────────────
+# 문화체험(T200) 아래 갈래 가운데 어린이 체험과 겹치는 7갈래를 모두 모은다.
+# (T202 단체봉사는 어린이 체험과 성격이 달라 뺀다. 갈래 이름은 사이트 표기 그대로다.)
 SEOUL_YEYAK_DCODES = (
     ('T203', '전시/관람'),
     ('T204', '문화행사'),
+    ('T205', '교육체험'),
+    ('T206', '농장체험'),
+    ('T207', '공원탐방'),
+    ('T208', '서울형키즈카페'),
+    ('T209', '산림여가'),
 )
 
 
@@ -461,7 +467,7 @@ def seoul_yeyak_dcode(code, sub):
             '?code=T200&dCode=' + code)
     name = '서울특별시 공공서비스예약 · ' + sub
     out, last = [], 1
-    for page in range(1, 31):
+    for page in range(1, 81):          # 교육체험(T205)이 50쪽까지 있다
         h = FETCH.get('%s&currentPage=%d' % (base, page))
         doc = LH.fromstring(h)
         if page == 1:
@@ -518,7 +524,7 @@ def seoul_yeyak_dcode(code, sub):
 
 
 def src_seoul_yeyak():
-    """두 갈래를 합치되 같은 예약 항목(상세 주소 기준)은 한 번만 담는다."""
+    """7갈래를 합치되 같은 예약 항목(상세 주소 기준)은 한 번만 담는다."""
     out, seen = [], set()
     for code, sub in SEOUL_YEYAK_DCODES:
         for it in seoul_yeyak_dcode(code, sub):
@@ -964,7 +970,7 @@ SOURCES = [
     ('busan_119', '부산광역시 119 안전체험관', src_busan_119),
     ('dream_teach', '부산 들락날락 · 행사·강좌', src_dream_teach),
     ('dream_dnpa', '부산 들락날락 · 참여 프로그램', src_dream_dnpa),
-    ('seoul_yeyak', '서울특별시 공공서비스예약 · 전시/관람 · 문화행사', src_seoul_yeyak),
+    ('seoul_yeyak', '서울특별시 공공서비스예약 · 문화체험 7갈래', src_seoul_yeyak),
     ('gangseo_lib', '부산광역시 강서도서관', src_gangseo_lib),
     ('sciport', '국립부산과학관 · 개인교육프로그램', src_sciport),
     ('yeonje_happy', '연제구 희망교육지원센터', src_yeonje_happy),

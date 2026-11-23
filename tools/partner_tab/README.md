@@ -66,6 +66,35 @@ python3 tools/build_partner_tab.py --json-only                       # raw/ → 
   그 블록은 아직 `tools/mileage_tab/section.html` 에 없고 index.html 에만 있다.
 - 조회 사이트에서 0건인 화면(asiamiles·british·jal 의 부산 등)은 CSV 를 받지 않고 원자료를 빈 파일로 둔다.
 
+## 2-2. 부산↔광저우(CAN) — 탐험 화면에 없어 검색 화면으로 받는다 (2026-11-23 추가)
+
+조회 사이트의 **탐험(Explore) 화면은 (프로그램 × 공항)마다 미리 잡아 둔 노선표**를 훑는다.
+그 노선표에 **부산↔광저우 짝이 아예 없어서**, 9개 프로그램 부산 출발·도착 「전체 연도」 내보내기에는
+CAN 줄이 0이고, 광저우 쪽 화면(`departing/CAN`·`arriving/CAN`)에도 PUS 줄이 0이다(2026-11-23 확인).
+반면 **검색 화면**(`/search?origins=…&destinations=…`)은 두 공항을 직접 받아 경유 itinerary 까지 찾아 주고,
+그 「. CSV」는 탐험 CSV 와 **열 구성이 같다**(2026-11-23 확인). 그래서 이 짝만 검색 화면으로 받는다.
+
+```
+# 1) 검색 화면에서 날짜를 「±28일」로 잡고 두 방향을 창으로 이어 붙인다(탐험과 같은 1년 창)
+#    https://seats.aero/search?min_seats=1&applicable_cabin=any&additional_days=true&
+#      additional_days_num=28&max_fees=40000&disable_live_filtering=true&date={중심날짜}&
+#      origins={PUS|CAN}&destinations={CAN|PUS}&view=default
+#    → 「342개 중 342개 실시간 검색 완료」까지 기다린 뒤 「. CSV」
+#    → /workspace/downloads/collect_can/{dep|arr}_{PUS_CAN|CAN_PUS}_{중심날짜}_p28.csv 로 옮긴다
+python3 tools/partner_tab/convert_can_search.py          # collect_can/ → raw/{슬러그}_{dep|arr}_PUS_can.txt
+python3 tools/build_partner_tab.py --json-only           # 화면은 건드리지 않고 JSON 만
+```
+
+- 창은 **±28일(중심±28 = 57일)** 이 최대다. ±60일·±180일은 "실시간 검색 한도를 초과"로 거부되고,
+  캐시에 없는 경로라 결과가 비어 나온다. 한 창이 시간당 실시간 검색 한도의 약 12%를 쓰므로
+  한 시간에 6~7창이 한계 — 1년(365일)을 덮으려면 중심 날짜를 57일 간격으로 7개(방향별) 잡는다.
+- 파일 이름이 `{슬러그}_{dir}_PUS_can.txt` 라서 빌더의 glob(`{슬러그}_{dir}_PUS*.txt`)에 걸리고,
+  매일 갱신이 다시 쓰는 `{슬러그}_{dir}_PUS.txt` 와 다른 파일이라 **지워지지 않는다**.
+- 그래서 **매일 04:00 자동 갱신에는 이 짝이 갱신되지 않는다**(탐험 화면에 없으므로).
+  갱신할 때는 위 1)→convert 절차를 다시 돌린다. 화면 안내 문구(JSON `searchNote`)에 그 사실이 적힌다.
+- 탭이 다루는 9개 프로그램만 넣는다(검색 CSV 에는 JetBlue·Virgin Australia Velocity 처럼
+  탭에 없는 프로그램도 섮여 나온다 — `convert_can_search.py` 가 걸러 낸다).
+
 ## 3. 화면 연결 요약
 
 - ⑧ 마일리지발권 탭의 **출발지**(부산 PUS / 인천 ICN) × **방향**(`부산 출발 PUS→` / `부산 도착 →PUS`, `인천 출발 ICN→` / `인천 도착 →ICN`)
@@ -81,3 +110,6 @@ python3 tools/build_partner_tab.py --json-only                       # raw/ → 
 - 조회 사이트·수집기 이름을 `index.html`·`sw.js`·`data/app/*.json`·`tools/*` 화면 문구에 노출하지 않습니다(화면 문구는 「조회 사이트」).
 - 원자료에 없는 값을 추정해 채우지 않습니다. 0건은 0건으로 적습니다.
 - **⑨ 외항사 마일 탭을 다시 만들지 않습니다** — 화면은 `tools/mileage_tab/` 하나입니다.
+- **`tools/mileage_tab/app.js` 는 index.html 에 들어 있는 사본보다 오래됐습니다** — 💎 가치 비교표(`mlv`)
+  와 계산기 손질분이 index.html 에만 있어서, 블록을 다시 채우면 사라집니다. ⑧ 탭을 고칠 때는
+  index.html 을 직접 고치고, 절대 `build_mileage_tab.py` 로 블록을 다시 채우지 않습니다.

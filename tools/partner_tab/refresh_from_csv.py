@@ -143,6 +143,17 @@ def main(argv):
     with open('/workspace/downloads/collect/_refresh_report.json', 'w', encoding='utf-8') as fp:
         json.dump(report, fp, ensure_ascii=False, indent=1)
     print('TOTAL 줄 %d' % sum(v['out'] for v in report.values()))
+    # 부산↔광저우(CAN) — 탐험 화면에 없는 짝이라 이 갱신이 건드리지 않는 별도 파일.
+    #   지워지지 않고 그대로 남았는지만 알려 준다(갱신은 convert_can_search.py 몫).
+    can = {}
+    for p in glob.glob(os.path.join(RAW, '*_PUS_can.txt')):
+        n = len([r for r in open(p, encoding='utf-8').read().split(';') if r.strip()])
+        can[os.path.basename(p)] = n
+    if can:
+        print('CAN 줄(보존, 갱신 안 함): %s · 합계 %d'
+              % (', '.join('%s %d' % (k, v) for k, v in sorted(can.items())), sum(can.values())))
+    else:
+        print('CAN 줄 없음 — 부산↔광저우는 convert_can_search.py 로 따로 받습니다(README 2-2)')
 
 
 if __name__ == '__main__':

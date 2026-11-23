@@ -104,12 +104,16 @@ CITY = {
 }
 DOMESTIC = {'GMP', 'CJU', 'PUS', 'TAE', 'KWJ', 'CJJ', 'RSU', 'KUV', 'HIN', 'USN', 'WJU', 'MPC', 'KPO', 'YNY', 'ICN', 'SEL'}
 
+# 탐험(Explore) 화면의 노선표에 없어 검색 화면에서 따로 받은 짝.
+#   부산↔광저우(CAN) — tools/partner_tab/convert_can_search.py 가 raw/{슬러그}_{dep|arr}_PUS_can.txt 로 넣는다.
+SEARCH_ONLY = {'PUS': {'code': 'CAN', 'collected': '2026-11-23'}}
+
 NOTE_PUS = {
     'flyingblue': '',
     'smiles': '',
     'virgin': '',
     'delta': '경유편 다수 포함',
-    'united': '부산 쪽은 싱가포르(SIN) 노선만 추적',
+    'united': '부산 쪽은 싱가포르(SIN)·광저우(CAN) 노선만 추적',
     'aeroplan': '',
     'asiamiles': '조회 사이트에 부산 자료 없음 — 공홈 직접 조회',
     'british': '조회 사이트에 부산 자료 없음 — 공홈 직접 조회',
@@ -216,6 +220,24 @@ def build_origin(cfg, now):
     d_to = d_from + datetime.timedelta(days=364)
     next_day = (datetime.date.fromisoformat(collected_to) + datetime.timedelta(days=1)).isoformat()
 
+    # 탐험 화면에 없는 짝(광저우)을 검색 화면에서 따로 받았으면 그 사실을 화면에 적는다.
+    search_note = ''
+    so = SEARCH_ONLY.get(cfg['code'])
+    if so:
+        can = [r for r in rows if r[3] == so['code']]
+        if can:
+            c_out = [r for r in can if r[8] == 0]
+            c_in = [r for r in can if r[8] == 1]
+            cs = min(r[1] for r in can)
+            ce = max(r[1] for r in can)
+            search_note = (
+                '부산↔%s(%s) — 조회 사이트의 탐험 화면에는 이 짝의 노선 줄이 없어, 검색 화면에서 %s에 '
+                '±28일 창을 이어 붙여 1년치를 직접 조회했습니다. 출발(PUS→%s) %d줄 · 귀국(%s→PUS) %d줄, '
+                '%s~%s 값입니다. 매일 04:00 자동 갱신에는 이 짝이 잡히지 않으므로, 다음 갱신 때 같은 방법으로 '
+                '다시 받아야 합니다.'
+                % (CITY.get(so['code'], so['code']), so['code'], so['collected'], so['code'],
+                   len(c_out), so['code'], len(c_in), cs, ce))
+
     return {
         'schema': 'partner-mileage/2',
         'origin': {'code': cfg['code'], 'name': cfg['name'], 'full': cfg['full'],
@@ -235,6 +257,7 @@ def build_origin(cfg, now):
                        % ((datetime.date.fromisoformat(collected_to) - d_from).days + 1,
                           collected_from, collected_to, next_day, d_to.isoformat())) if collected_to < d_to.isoformat() else '',
         'dirNote': cfg['dirNote'],
+        'searchNote': search_note,
         'programs': programs,
         'dests': sorted(dests.values(), key=lambda d: d['code']),
         'rows': rows,

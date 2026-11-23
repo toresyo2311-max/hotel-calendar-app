@@ -32,6 +32,7 @@ import urllib.parse
 import urllib.request
 import http.cookiejar
 import zlib
+from html import unescape
 
 from lxml import html as LH
 
@@ -207,7 +208,7 @@ def num(v):
 
 
 def mk(src, srcname, title, url, **kw):
-    title = clean(title)
+    title = clean(unescape(title))     # 원문 title 속성에 &lt; &middot; 처럼 남은 실체 참조를 글자로 되돌린다
     if not title:
         return None
     it = {

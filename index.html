@@ -812,6 +812,11 @@ button.fl-plink{font-family:inherit;line-height:1.35;cursor:pointer}
 .kd-chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:800;color:var(--muted);white-space:nowrap}
 .kd-chip.on{background:#e6f6f4;border-color:#8fcfc8;color:#0c5d5a}
 .kd-chip i{font-style:normal;font-weight:800;font-variant-numeric:tabular-nums;opacity:.8;margin-left:3px}
+.kd-popchip{border-color:#e0cf9e;background:#fffdf2;color:#7a5200}
+.kd-popchip.on{background:#fbf0d0;border-color:#d8b451;color:#6b4300}
+.kd-popline{color:#0c5d5a;font-weight:800}
+.kd-popline b{color:#0c5d5a}
+.kd-gcard{border-color:#cbe6e2}
 .kd-row{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
 .kd-row select,.kd-row input{min-width:0;border:1px solid var(--line);border-radius:7px;padding:6px 7px;font-size:11px;font-weight:700;color:var(--ink);background:#fff}
 .kd-row select{flex:none;max-width:52%}
@@ -3148,15 +3153,18 @@ details.foldbox:has(>[style*="display:none"]){display:none}
 
     <div class="kd-filters">
       <div class="kd-chips" id="kdStatusChips" role="group" aria-label="접수 상태"></div>
+      <div class="kd-chips" id="kdKidChips" role="group" aria-label="아이 나이"></div>
       <div class="kd-chips" id="kdRegionChips" role="group" aria-label="지역"></div>
       <div class="kd-chips" id="kdSrcChips" role="group" aria-label="출처"></div>
       <div class="kd-row">
         <select id="kdSort" aria-label="정렬 기준">
+          <option value="pop">⭐ 인기·추천 순</option>
           <option value="deadline">접수 마감 임박 순</option>
           <option value="event">체험일 빠른 순</option>
           <option value="seats">잔여석 많은 순</option>
           <option value="name">이름 순</option>
         </select>
+        <button type="button" class="kd-chip kd-popchip" id="kdPopOnly" aria-pressed="false">⭐ 인기 추천만</button>
         <input id="kdQ" type="search" placeholder="프로그램·기관·장소 검색" aria-label="프로그램 검색">
         <button type="button" class="kd-reset" id="kdReset">초기화</button>
       </div>
@@ -9351,8 +9359,10 @@ if($('fsRegion')){
         접수·예약 가능 — 예약가능·접수중·신청가능·전화접수·대기접수·대기중
         오픈 예정     — 예정·접수준비·접수대기중·신청대기·안내중·안내
         그 밖과 상태가 빈 건은 접수기간 날짜로 가른다(끝났으면 마감, 아직 시작 전이면 오픈 예정).
-   · dateEstimated=true 는 원문에 연도가 없어 연도를 추정해 채운 건이라 「연도 추정」을 달아 둔다. */
-var kd={status:'open',region:'all',src:'all',sort:'deadline',q:'',limit:60,open:-1};
+   · dateEstimated=true 는 원문에 연도가 없어 연도를 추정해 채운 건이라 「연도 추정」을 달아 둔다.
+   · 아이 필터(2026-11-23 추가) — DK 2018-05-10생(만 8세 · 초2) · JH 2020-07-05생(만 6세 · 미취학).
+     원문 「대상」의 나이(만 나이)·학년·생년 글을 읽어 DK 가능 / JH 가능 / 둘 다 가능을 가른다. */
+var kd={status:'open',region:'all',src:'all',kid:'all',sort:'pop',q:'',limit:60,open:-1,popOnly:false};
 var KDD={meta:null,items:[],ready:false,today:''};
 var kdLast=[];
 var KD_OPEN={'예약가능':1,'접수중':1,'신청가능':1,'전화접수':1,'대기접수':1,'대기중':1};
@@ -9360,6 +9370,19 @@ var KD_SOON={'예정':1,'접수준비':1,'접수대기중':1,'신청대기':1,'�
 var KD_LABEL={open:'접수·예약 가능',soon:'오픈 예정',closed:'마감',all:'전체'};
 var KD_ORDER=[['open','접수·예약 가능'],['soon','오픈 예정'],['closed','마감'],['all','전체']];
 var KD_REGION_ORDER=['부산','서울','인천','경기','대구'];
+/* ── 아이 필터 ─────────────────────────────────────────────── */
+var KD_NOW_Y=2026;
+var KD_DK_AGE=8,KD_DK_GRADE=2;      /* 2018-05-10생 — 2026-11-23 기준 만 8세 · 초등 2학년 */
+var KD_JH_AGE=6,KD_JH_GRADE=0;      /* 2020-07-05생 — 2026-11-23 기준 만 6세 · 미취학  */
+var KD_KID=[['all','전체'],['dk','👦 DK (만8·초2)'],['jh','👶 JH (만6·유아)'],['both','👦👶 둘 다 가능']];
+var KD_KID_LABEL={all:'아이 전체',dk:'DK만',jh:'JH만',both:'둘 다 가능'};
+var KD_EXCL=['사전답사','답사','인솔교사','교직원용','교원','교사연수','학부모교육','기관('];
+/* ── 인기·추천 점수 ────────────────────────────────────────── */
+var KD_POP_MIN=70;
+var KD_SRC_POP={busan_119:40,pen_yeyak:34,sciport:32,jobworld:30,incheon_child:26,
+                dream_teach:26,dream_dnpa:24,seoul_yeyak:18,busan_reserve_exprn:14,
+                yeonje_happy:12,busan_reserve_lctre:10,pen_bellib_edu:8,gangseo_lib:8,daegu_yeyak:8};
+var KD_BADW=['사전답사','교직원','인솔교사','학급단체','유의사항','연간일정','안내문','수강시'];
 /* 출처 묶음 — 14개 수집기를 화면에서 고르기 좋은 단위로 묶는다(자료에 없는 출처는 그대로 따로 칩이 된다) <>*/
 var KD_GROUPS=[
   {k:'g119',label:'119안전체험관',srcs:['busan_119']},
@@ -9390,9 +9413,163 @@ function kdRange(a,b){
   if(a.slice(0,4)===b.slice(0,4))return kdFmt(a)+'~'+Number(b.slice(5,7))+'.'+Number(b.slice(8,10));
   return kdFmt(a)+'~'+kdFmt(b);
 }
+function kdDateW(iso){
+  if(!iso)return '';
+  var d=new Date(iso.slice(0,10)+'T12:00:00Z');
+  return kdFmt(iso)+'('+['일','월','화','수','목','금','토'][d.getUTCDay()]+')';
+}
 function kdStamp(iso){
   if(!iso)return '';
   return iso.slice(0,4)+'.'+Number(iso.slice(5,7))+'.'+Number(iso.slice(8,10))+' '+iso.slice(11,16);
+}
+function kdDayDiff(a,b){
+  if(!a||!b)return 9999;
+  var x=Date.parse(a.slice(0,10)+'T00:00:00Z'),y=Date.parse(b.slice(0,10)+'T00:00:00Z');
+  return Math.round((x-y)/86400000);
+}
+/* ── 원문 「대상」 글 해석 ───────────────────────────────────
+   숫자로 적힌 나이(만 나이)·개월·생년·학년과, 말로 적힌 유아·초등·가족·제한없음을 모두 읽어
+   DK·JH가 그 범위 안에 드는지 본다. 학년 눈금은 유아·미취학 0, 초1~6 = 1~6, 중1~3 = 7~9, 고1~3 = 10~12. */
+function kdNorm(s){return String(s==null?'':s).toLowerCase().replace(/[～–—]/g,'-').replace(/\s+/g,'')}
+function kdEach(t,src,fn){
+  var re=new RegExp(src,'g'),m,n=0;
+  while((m=re.exec(t))!==null){
+    fn(m);
+    if(re.lastIndex===m.index)re.lastIndex++;
+    if(++n>120)break;
+  }
+}
+function kdBirth(y){y=parseInt(y,10);return y>=1900?y:(y>26?1900+y:2000+y)}
+function kdAges(t){
+  var out=[],Y=KD_NOW_Y;
+  kdEach(t,'(\\d{1,3})[~-](\\d{1,3})개월',function(m){out.push([+m[1]/12,+m[2]/12])});
+  kdEach(t,'(\\d{1,3})개월',function(m){out.push([+m[1]/12,+m[1]/12])});
+  kdEach(t,'(\\d{1,2})세?[~-](\\d{1,2})세',function(m){
+    var a=+m[1],b=+m[2];if(a<=20&&b<=20)out.push([Math.min(a,b),Math.max(a,b)])});
+  kdEach(t,'(\\d{1,2})세(이상|이후|부터|이하|까지|미만|초과)',function(m){
+    var v=+m[1],k=m[2];if(v>20)return;
+    if(k==='이상'||k==='이후'||k==='부터')out.push([v,99]);
+    else if(k==='이하'||k==='까지')out.push([0,v]);
+    else if(k==='미만')out.push([0,Math.max(0,v-1)]);
+    else out.push([v+1,99]);
+  });
+  kdEach(t,'(\\d{1,2})세',function(m){
+    var v=+m[1];if(v>20)return;
+    var i=m.index,pre=t.charAt(i-1),post=t.charAt(i+m[0].length);
+    if(pre==='~'||pre==='-')return;
+    if(post==='~'||post==='-')return;
+    if(/^(이상|이하|미만|초과|부터|까지)/.test(t.substr(i+m[0].length,2)))return;
+    out.push([v,v]);
+  });
+  kdEach(t,'(\\d{1,2})[,、](\\d{1,2})[,、](\\d{1,2})세',function(m){
+    out.push([+m[1],+m[1]]);out.push([+m[2],+m[2]]);out.push([+m[3],+m[3]])});
+  kdEach(t,'(\\d{1,2})[,、](\\d{1,2})세',function(m){
+    out.push([+m[1],+m[1]]);out.push([+m[2],+m[2]])});
+  kdEach(t,"'?((?:19|20)?\\d{2})년?[~-]'?((?:19|20)?\\d{2})년",function(m){
+    var a=kdBirth(m[1]),b=kdBirth(m[2]);if(a>b){var x=a;a=b;b=x}out.push([Y-b,Y-a])});
+  kdEach(t,"'?((?:19|20)?\\d{2})[~-]'?((?:19|20)?\\d{2})년생",function(m){
+    var a=kdBirth(m[1]),b=kdBirth(m[2]);if(a>b){var x=a;a=b;b=x}out.push([Y-b,Y-a])});
+  kdEach(t,'((?:19|20)\\d{2})년생',function(m){var y=+m[1];out.push([Y-y,Y-y])});
+  kdEach(t,"'?((?:19|20)?\\d{2})[,、]'?((?:19|20)?\\d{2})년생",function(m){
+    var a=kdBirth(m[1]),b=kdBirth(m[2]);out.push([Y-Math.max(a,b),Y-Math.min(a,b)])});
+  return out;
+}
+function kdGrades(t){
+  var out=[],P='초(?:등)?(?:학교|학생)?';
+  kdEach(t,P+'\\s*([1-6])\\s*(?:학년)?\\s*[~-]\\s*(?:'+P+'\\s*)?([1-6])\\s*(?:학년)?',function(m){
+    var a=+m[1],b=+m[2];out.push([Math.min(a,b),Math.max(a,b)])});
+  kdEach(t,P+'\\s*([1-6])\\s*학년\\s*(이상|이후|부터)',function(m){out.push([+m[1],12])});
+  kdEach(t,P+'\\s*([1-6])\\s*학년\\s*[~-]\\s*누구나',function(m){out.push([+m[1],12])});
+  kdEach(t,P+'\\s*([1-6])\\s*학년',function(m){out.push([+m[1],+m[1]])});
+  kdEach(t,'중([1-3])[~-]([1-3])',function(m){out.push([6+ +m[1],6+ +m[2]])});
+  return out;
+}
+function kdKw(t){
+  var out=[];
+  if(/초등/.test(t)&&!/초등[^0-9]{0,2}\d/.test(t))out.push(['elem',[1,6]]);
+  if(/유아|미취학|영유아|어린이집|유치원|취학전/.test(t)&&!/(?:유아|영유아)[^0-9]{0,2}\d/.test(t))out.push(['pre',[0,0]]);
+  if(/어린이(?!집)|아동/.test(t))out.push(['child',[0,6]]);
+  if(t.indexOf('가족')>=0)out.push(['fam',[0,12]]);
+  if(/제한없|전연령|상관없|무관|모든연령/.test(t)||(/누구나/.test(t)&&t.indexOf('~누구나')<0&&t.indexOf('-누구나')<0))out.push(['any',[0,12]]);
+  if(t.indexOf('청소년')>=0)out.push(['teen',[4,12]]);
+  if(/중학생|중등|중학교/.test(t))out.push(['mid',[7,9]]);
+  if(/고등학생|고등학교/.test(t))out.push(['high',[10,12]]);
+  return out;
+}
+/* 돌려주는 값 — 0: 아이 대상 아님 / 1: DK만 / 2: JH만 / 3: 둘 다 / null: 나이·학년 글을 못 찾음 */
+function kdDecide(t,title){
+  var i;
+  for(i=0;i<KD_EXCL.length;i++)if(t.indexOf(KD_EXCL[i])>=0)return 0;
+  if(t.indexOf('단체')>=0&&t.indexOf('가족')<0)return 0;
+  if(title&&title.indexOf('단체')>=0&&t.indexOf('가족')<0&&t.indexOf('동반')<0)return 0;
+  if(/(?:최소|최대)\d+인|\d+인(?:이상|부터|~)/.test(t)&&t.indexOf('가족')<0)return 0;
+  var A=kdAges(t),G=kdGrades(t),K=kdKw(t),fromTitle=false;
+  if(!A.length&&!G.length){
+    var At=kdAges(title||''),Gt=kdGrades(title||'');
+    if(At.length||Gt.length){A=At;G=Gt;fromTitle=true}
+  }
+  if(!A.length&&!G.length&&!K.length)return null;
+  var dk=0,jh=0;
+  for(i=0;i<A.length;i++){
+    if(A[i][0]<=KD_DK_AGE&&KD_DK_AGE<=A[i][1])dk=1;
+    if(A[i][0]<=KD_JH_AGE&&KD_JH_AGE<=A[i][1])jh=1;
+  }
+  for(i=0;i<G.length;i++){
+    if(G[i][0]<=KD_DK_GRADE&&KD_DK_GRADE<=G[i][1])dk=1;
+    if(G[i][0]<=KD_JH_GRADE&&KD_JH_GRADE<=G[i][1])jh=1;
+  }
+  for(i=0;i<K.length;i++){
+    var kind=K[i][0],lo=K[i][1][0],hi=K[i][1][1];
+    if(kind==='elem'&&G.length)continue;
+    if(kind==='child'&&(A.length||G.length))continue;
+    if(fromTitle&&(kind==='elem'||kind==='child'||kind==='fam'||kind==='any'))continue;
+    if(lo<=KD_DK_GRADE&&KD_DK_GRADE<=hi)dk=1;
+    if(lo<=KD_JH_GRADE&&KD_JH_GRADE<=hi)jh=1;
+  }
+  /* 가족·보호자 동반 프로그램은 한 아이만 대상으로 적혀 있어도 두 아이가 함께 갈 수 있다 */
+  if((t.indexOf('가족')>=0||t.indexOf('동반')>=0)&&(dk||jh)){dk=1;jh=1}
+  return (dk?1:0)|(jh?2:0);
+}
+function kdKid(it){
+  if(it._kid!=null)return it._kid;
+  var t=kdNorm(it.target),title=kdNorm(it.title),r=kdDecide(t,title);
+  if(r===null){
+    if(t)r=0;
+    else{
+      r=kdDecide(title+' '+kdNorm(it.cat),'');
+      if(r===null)r=3;          /* 대상 칸이 빈 어린이 기관 프로그램 — 두 아이 모두 */
+    }
+  }
+  it._kid=r;
+  return r;
+}
+function kdKidTxt(it){
+  var m=kdKid(it);
+  if(m===3)return 'DK · JH 둘 다 가능';
+  if(m===1)return 'DK 가능';
+  if(m===2)return 'JH 가능';
+  return '아이 대상 아님';
+}
+function kdPopScore(it){
+  var s=KD_SRC_POP[it.src]||5,i;
+  s+=it._cls==='open'?30:it._cls==='soon'?6:-40;
+  if(it.left!=null){
+    if(it.left===0)s-=20;
+    else{
+      if(it.cap){var r=it.left/it.cap;if(r<=0.10)s+=16;else if(r<=0.25)s+=12;else if(r<=0.50)s+=6}
+      if(it.left<=5)s+=10;
+    }
+  }
+  if(it.fee==='무료')s+=5;
+  if(kdKid(it)===3)s+=6;
+  if(it.target&&it.target.indexOf('제한없음')<0)s+=4;
+  if(it.start){var d=kdDayDiff(it.start,kdToday());if(d<=7)s+=10;else if(d<=30)s+=6;else if(d<=60)s+=3}
+  else s+=2;
+  if(it.region==='부산')s+=8;
+  if(it.cat&&it.cat.indexOf('키즈카페')>=0)s+=8;
+  var tt=(it.title||'')+(it.target||'');
+  for(i=0;i<KD_BADW.length;i++)if(tt.indexOf(KD_BADW[i])>=0){s-=60;break}
+  return s;
 }
 function kdPrep(){
   if(KDD.ready)return;
@@ -9403,6 +9580,8 @@ function kdPrep(){
     it._cls=KD_OPEN[s]?'open':KD_SOON[s]?'soon':(s?'closed':((it.applyEnd&&it.applyEnd<T)?'closed':((it.applyStart&&it.applyStart>T)?'soon':'open')));
     it._q=[it.title,it.org,it.place,it.target,it.cat,it.srcName,it.region,it.fee].filter(Boolean).join(' ').toLowerCase();
     it._grp=kdGroupOf(it.src);
+    it._kid=kdKid(it);
+    it._pop=kdPopScore(it);
   });
   KDD.ready=true;
 }
@@ -9410,12 +9589,22 @@ function kdMatch(it,skip){
   if(skip!=='status'&&kd.status!=='all'&&it._cls!==kd.status)return false;
   if(skip!=='region'&&kd.region!=='all'&&it.region!==kd.region)return false;
   if(skip!=='src'&&kd.src!=='all'&&it._grp!==kd.src)return false;
+  if(skip!=='kid'&&kd.kid!=='all'){
+    var m=it._kid;
+    if(kd.kid==='dk'?!(m&1):kd.kid==='jh'?!(m&2):m!==3)return false;
+  }
+  if(kd.popOnly&&it._pop<KD_POP_MIN)return false;
   if(kd.q){var q=kd.q.trim().toLowerCase();if(q&&it._q.indexOf(q)<0)return false}
   return true;
 }
 function kdSorted(list){
   var out=list.slice(),s=kd.sort;
-  if(s==='event'){var T=kdToday();out.sort(function(a,b){
+  if(s==='pop')out.sort(function(a,b){
+    if(b._pop!==a._pop)return b._pop-a._pop;
+    var x=a.start||'9999-12-31',y=b.start||'9999-12-31';
+    if(x!==y)return x<y?-1:1;
+    return a.title.localeCompare(b.title,'ko')});
+  else if(s==='event'){var T=kdToday();out.sort(function(a,b){
     /* 이미 시작한 상시·기간 프로그램은 「오늘」로 보아 오늘부터 하는 것보다 앞에 둔다 */
     var x=a.start?(a.start<T?T:a.start):'9999-12-31',y=b.start?(b.start<T?T:b.start):'9999-12-31';
     if(x!==y)return x<y?-1:1;return a.title.localeCompare(b.title,'ko')})}
@@ -9445,6 +9634,16 @@ function renderKdFilters(){
     var n=0;items.forEach(function(it){if((p[0]==='all'||it._cls===p[0])&&kdMatch(it,'status'))n++});
     return kdChip(p[1],n,kd.status===p[0],'data-kd-status',p[0],p[0]);
   }).join('');
+  /* 아이 — DK(만8·초2) / JH(만6·유아) / 둘 다 가능 */
+  $('kdKidChips').innerHTML='<span class="lab">아이</span>'+KD_KID.map(function(p){
+    var n=0;items.forEach(function(it){
+      if(!kdMatch(it,'kid'))return;
+      var m=it._kid;
+      if(p[0]==='dk'?!(m&1):p[0]==='jh'?!(m&2):p[0]==='both'?m!==3:false)return;
+      n++;
+    });
+    return kdChip(p[1],n,kd.kid===p[0],'data-kd-kid',p[0],p[0]);
+  }).join('');
   var rc={};
   items.forEach(function(it){if(kdMatch(it,'region')&&it.region)rc[it.region]=(rc[it.region]||0)+1});
   var regs=KD_REGION_ORDER.filter(function(r){return rc[r]}).concat(Object.keys(rc).filter(function(r){return KD_REGION_ORDER.indexOf(r)<0}).sort(function(a,b){return rc[b]-rc[a]}));
@@ -9462,6 +9661,8 @@ function renderKdFilters(){
     +groups.map(function(k){return kdChip(kdGroupLabel(k),sc[k]||0,kd.src===k,'data-kd-src',k,esc(k))}).join('');
   if($('kdSort').value!==kd.sort)$('kdSort').value=kd.sort;
   if($('kdQ').value!==kd.q)$('kdQ').value=kd.q;
+  var pb=$('kdPopOnly');
+  if(pb){pb.className='kd-chip kd-popchip'+(kd.popOnly?' on':'');pb.setAttribute('aria-pressed',String(kd.popOnly))}
 }
 function kdSeats(it){
   if(it.left!=null)return '좌석 '+KR(it.left)+(it.cap!=null?' / '+KR(it.cap):'');
@@ -9487,15 +9688,75 @@ function kdCardHtml(it){
     +(when?'<div class="kd-line"><b>🗓 '+esc(when)+'</b>'+(it.time?' · ⏰ '+esc(it.time):'')+est+'</div>':'')
     +(apply?'<div class="kd-line">📝 접수 '+esc(apply)+(when?'':est)+'</div>':'')
     +(who.length?'<div class="kd-line">'+who.join(' · ')+'</div>':'')
+    +(kd.sort==='pop'?'<div class="kd-line kd-popline">⭐ 추천 '+Math.round(it._pop)+'점 · '+esc(kdKidTxt(it))+'</div>':'')
     +'<div class="kd-acts"><a href="'+esc(it.url)+'" target="_blank" rel="noopener">🔗 예약·신청</a>'
     +'<button type="button" data-kd-open="'+it._i+'">자세히</button>'
     +(seats?'<span class="kd-seats">'+esc(seats)+'</span>':'')+'</div>'
     +'</article>';
 }
+/* 인기·추천 순 — 같은 프로그램(기관+제목, 시각 빼고)의 여러 회차를 한 장으로 묶는다.
+   가장 점수가 높은 회차(대개 가장 가까운 날짜)를 카드 얼굴로 쓰고, 회차 수를 함께 적는다. */
+function kdGroupKey(it){
+  return it.src+'|'+String(it.title||'').replace(/\s*\d{1,2}:\d{2}.*$/,'').trim();
+}
+function kdPopGroups(list){
+  var map={},gs=[];
+  list.forEach(function(it){
+    var k=kdGroupKey(it),g=map[k];
+    if(!g){g={key:k,items:[],best:it,n:0,score:0};map[k]=g;gs.push(g)}
+    g.items.push(it);
+    g.n++;
+    var bx=g.best;
+    if(it._pop>bx._pop||(it._pop===bx._pop&&(it.start||'9999')<(bx.start||'9999')))g.best=it;
+  });
+  gs.forEach(function(g){g.score=g.best._pop+Math.min(8,g.n*0.5)});
+  gs.sort(function(a,b){
+    if(b.score!==a.score)return b.score-a.score;
+    var x=a.best.start||'9999-12-31',y=b.best.start||'9999-12-31';
+    if(x!==y)return x<y?-1:1;
+    return a.best.title.localeCompare(b.best.title,'ko');
+  });
+  return gs;
+}
+function kdGroupTitle(it){
+  return String(it.title||'').replace(/\s*\d{1,2}:\d{2}\s*$/,'').trim()||it.title;
+}
+function kdGroupHtml(g){
+  var it=g.best;
+  var when=it.start?(it.start===it.end?kdDateW(it.start):kdRange(it.start,it.end)):'';
+  var est=it.dateEstimated?'<span class="kd-est">연도 추정</span>':'';
+  var place=[it.org,it.place].filter(Boolean).join(' · ');
+  var who=[];
+  if(it.target)who.push('🧒 '+esc(it.target));
+  if(it.fee)who.push('💰 '+esc(it.fee));
+  var seats=kdSeats(it);
+  return '<article class="kd-card kd-gcard'+(it._cls==='closed'?' closed':'')+'">'
+    +'<div class="kd-ctop"><h3 class="kd-title">'+esc(kdGroupTitle(it))+'</h3><span class="kd-badge '+kdBadgeCls(it)+'">'+esc(it.status||'상태 미표기')+'</span></div>'
+    +(it.region||place?'<div class="kd-line"><b>'+esc(it.region||'')+(it.region?' · ':'')+'</b>'+esc(place)+'</div>':'')
+    +(when?'<div class="kd-line"><b>🗓 '+esc(when)+'</b>'+(it.time?' · ⏰ '+esc(it.time):'')+est+'</div>':'')
+    +(who.length?'<div class="kd-line">'+who.join(' · ')+'</div>':'')
+    +'<div class="kd-line kd-popline">⭐ 추천 '+Math.round(g.score)+'점 · '+esc(kdKidTxt(it))
+      +(g.n>1?' · 같은 프로그램 <b>'+KR(g.n)+'회차</b> 예약 가능':'')+'</div>'
+    +'<div class="kd-acts"><a href="'+esc(it.url)+'" target="_blank" rel="noopener">🔗 예약·신청</a>'
+    +'<button type="button" data-kd-open="'+it._i+'">자세히</button>'
+    +(seats?'<span class="kd-seats">'+esc(seats)+'</span>':'')+'</div>'
+    +'</article>';
+}
+function renderKdPop(list){
+  var gs=kdPopGroups(list),lim=Math.min(kd.limit,gs.length),box=$('kdList');
+  if(!gs.length){
+    box.innerHTML='<div class="kd-empty">조건에 맞는 체험·강좌가 없습니다. 접수상태·아이·지역·출처 칩을 풀거나 검색어를 지워 보세요.</div>';
+  }else{
+    box.innerHTML=gs.slice(0,lim).map(kdGroupHtml).join('');
+  }
+  var more=$('kdMore');
+  if(more){more.hidden=gs.length<=lim;more.textContent='더 보기 ('+KR(lim)+' / '+KR(gs.length)+' 프로그램)'}
+}
 function renderKdCards(list){
+  if(kd.sort==='pop'){renderKdPop(list);return}
   var lim=Math.min(kd.limit,list.length),box=$('kdList');
   if(!list.length){
-    box.innerHTML='<div class="kd-empty">조건에 맞는 체험·강좌가 없습니다. 접수상태·지역·출처 칩을 풀거나 검색어를 지워 보세요.</div>';
+    box.innerHTML='<div class="kd-empty">조건에 맞는 체험·강좌가 없습니다. 접수상태·아이·지역·출처 칩을 풀거나 검색어를 지워 보세요.</div>';
   }else{
     box.innerHTML=list.slice(0,lim).map(kdCardHtml).join('');
   }
@@ -9521,6 +9782,7 @@ function kdOpenDetail(i){
     +kdRow('지역',it.region)
     +kdRow('분류',it.cat)
     +kdRow('대상',it.target)
+    +kdRow('우리 아이',kdKidTxt(it))
     +kdRow('정원',cap)
     +kdRow('잔여',it.left!=null?KR(it.left)+'석':'')
     +kdRow('비용',it.fee)
@@ -9539,12 +9801,17 @@ function renderKdBasis(){
   var est=items.filter(function(it){return it.dateEstimated}).length;
   var free=items.filter(function(it){return it.fee==='무료'}).length;
   var left=items.filter(function(it){return it.left!=null}).length;
+  var nDk=items.filter(function(it){return it._kid&1}).length;
+  var nJh=items.filter(function(it){return it._kid&2}).length;
+  var nBoth=items.filter(function(it){return it._kid===3}).length;
   var el=$('kdBasis');if(!el)return;
   el.innerHTML='<ul class="kd-notelist">'
     +'<li>'+esc(String(srcs.length))+'개 기관 예약 사이트에서 모은 '+KR(items.length)+'건입니다(수집 '+esc(m.generatedAt?kdStamp(m.generatedAt):'-')+' KST).</li>'
     +'<li><b>접수·예약 가능 '+KR(kdClassCount('open'))+'건</b> — 원문 상태가 '+esc('예약가능·접수중·신청가능·전화접수·대기접수·대기중')+'인 건</li>'
     +'<li><b>오픈 예정 '+KR(kdClassCount('soon'))+'건</b> — 원문 상태가 '+esc('예정·접수준비·접수대기중·신청대기·안내중·안내')+'인 건과 아직 접수 시작 전인 건</li>'
     +'<li>상태가 빈 '+KR(items.filter(function(it){return !it.status}).length)+'건은 접수기간 날짜로 나누었습니다.</li>'
+    +'<li><b>👦 DK(2018-05-10생 · 만 8세 · 초2) 가능 '+KR(nDk)+'건 · 👶 JH(2020-07-05생 · 만 6세 · 미취학) 가능 '+KR(nJh)+'건 · 둘 다 가능 '+KR(nBoth)+'건</b> — 원문 「대상」의 나이·학년·생년 글을 읽어 나눴습니다. 「초등 1~3학년」·「8세 이상」·「2018~19년생」은 DK, 「유아」·「6세 이상」·「5~7세」는 JH, 「유아 및 초등」·「전연령」·「제한없음」·「가족」은 둘 다 가능입니다. 사전답사·교직원용·인솔교사·단체 전용은 아이 필터에서 뺐습니다.</li>'
+    +'<li><b>⭐ 인기·추천 점수</b> — 기관 인기(119안전체험관 40 · 부산교육청 34 · 국립부산과학관 32 · 한국잡월드 30 · 인천어린이과학관·들락날락 24~26 · 서울 18 …)에 접수·예약 가능 +30, 잔여율 10% 이하 +16 · 25% 이하 +12 · 50% 이하 +6, 잔여 5석 이하 +10, 무료 +5, 둘 다 가능 +6, 부산 +8, 7일 안 시작 +10을 더하고, 사전답사·교직원·학급단체·유의사항 글은 −60으로 뒤로 보냅니다. 70점 이상을 「⭐ 인기 추천만」으로 봅니다.</li>'
     +'<li>비용을 적어 둔 건 '+KR(items.filter(function(it){return it.fee}).length)+'건(그중 무료 '+KR(free)+') · 잔여석을 숫자로 적어 둔 건 '+KR(left)+'건입니다. 비어 있는 값은 원문에 없어 그 줄을 빼고 지어내지 않았습니다.</li>'
     +'<li>'+KR(est)+'건은 원문에 연도가 없어 연도를 추정해 채운 건이라 「연도 추정」을 달았습니다.</li>'
     +'<li>지난 과정 '+KR(past)+'건은 목록에서 뺐습니다(끝난 지 30일이 지난 건).</li>'
@@ -9572,16 +9839,23 @@ function renderKids(){
   var list=kdFiltered();
   kdLast=list;
   var bits=[KD_LABEL[kd.status]||''].filter(Boolean);
+  if(kd.kid!=='all')bits.push(KD_KID_LABEL[kd.kid]);
   if(kd.region!=='all')bits.push(esc(kd.region));
   if(kd.src!=='all')bits.push(esc(kdGroupLabel(kd.src)));
-  $('kdCount').innerHTML='<b>'+KR(list.length)+'건</b> · '+bits.join(' · ')+(kd.q?' · “'+esc(kd.q)+'”':'');
+  if(kd.popOnly)bits.push('⭐ 인기 추천');
+  var head='<b>'+KR(list.length)+'건</b>';
+  if(kd.sort==='pop'){
+    var gs=kdPopGroups(list);
+    head='<b>'+KR(gs.length)+'개 프로그램</b> · '+KR(list.length)+'회차';
+  }
+  $('kdCount').innerHTML=head+' · '+bits.join(' · ')+(kd.q?' · “'+esc(kd.q)+'”':'');
   renderKdCards(list);
   renderKdBasis();
   var t=tabs.kids;
   if(t){
     var nsrc=((KDD.meta&&KDD.meta.sources)||[]).length;
     $('sectionTitle').textContent=t.title;
-    $('sectionSubtitle').textContent=nsrc+'개 기관 · 전체 '+KR(KDD.items.length)+'건 · 지금 접수·예약 가능 '+KR(kdOpenCount())+'건 · 예약 버튼은 원문 예약 페이지로 열립니다';
+    $('sectionSubtitle').textContent=nsrc+'개 기관 · 전체 '+KR(KDD.items.length)+'건 · 지금 접수·예약 가능 '+KR(kdOpenCount())+'건 · 아이 나이(만 8·만 6)로 골라 보세요';
     $('checktime').textContent='조회 기준: '+kdStamp(KDD.meta&&KDD.meta.generatedAt)+' KST';
   }
   var tb=document.querySelector('[data-tab="kids"] b');
@@ -9595,15 +9869,18 @@ if($('kdPanel')){
     if(e.target.closest('#kdClose')){$('kdDetail').hidden=true;kd.open=-1;return}
     var st=e.target.closest('[data-kd-status]');
     if(st){kd.status=st.getAttribute('data-kd-status');kd.limit=60;kdClose();renderKids();return}
+    var kdC=e.target.closest('[data-kd-kid]');
+    if(kdC){kd.kid=kdC.getAttribute('data-kd-kid');kd.limit=60;kdClose();renderKids();return}
     var rg=e.target.closest('[data-kd-region]');
     if(rg){kd.region=rg.getAttribute('data-kd-region');kd.limit=60;kdClose();renderKids();return}
     var sc=e.target.closest('[data-kd-src]');
     if(sc){kd.src=sc.getAttribute('data-kd-src');kd.limit=60;kdClose();renderKids();return}
+    if(e.target.closest('#kdPopOnly')){kd.popOnly=!kd.popOnly;kd.limit=60;kdClose();renderKids();return}
     var op=e.target.closest('[data-kd-open]');
     if(op){kdOpenDetail(Number(op.getAttribute('data-kd-open')));return}
-    if(e.target.closest('#kdMore')){kd.limit+=60;renderKdCards(kdLast);return}
+    if(e.target.closest('#kdMore')){kd.limit+=(kd.sort==='pop'?30:60);renderKdCards(kdLast);return}
     if(e.target.closest('#kdReset')){
-      kd.status='open';kd.region='all';kd.src='all';kd.q='';kd.sort='deadline';kd.limit=60;kd.open=-1;
+      kd.status='open';kd.region='all';kd.src='all';kd.kid='all';kd.q='';kd.sort='pop';kd.limit=60;kd.open=-1;kd.popOnly=false;
       $('kdDetail').hidden=true;renderKids();return;
     }
   });

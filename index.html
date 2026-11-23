@@ -2307,6 +2307,48 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
   .rank-item.rank-click:hover .rank-num:after{transform:none}
 }
 
+
+/* ── 2026-11-23 한진님 지시 ─────────────────────────────────────────────
+   ⑧ 마일리지발권: 「🧮 마일리지 계산기」와 「💎 항공사 마일 가치·구매가 비교」를
+   「🧮 대한항공 공제표」 버튼 바로 옆 칩으로 옮기고, 둘 다 기본은 접힌 채로 둔다.
+   버튼을 누르면 그 자리에서 아래로 펼쳐지고, 다시 누르면 접힌다.         */
+.mg-topline{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;margin-bottom:9px}
+.mg-topline>.mg-views{display:contents}
+.mg-topline>.mg-fold{margin:0;flex:0 1 auto;max-width:100%;border:1px dashed #cdc0f6;background:#fff;border-radius:9px;overflow:hidden}
+.mg-topline>.mg-fold>summary{padding:7px 11px;background:#f7f5ff;border-radius:8px;gap:5px}
+.mg-topline>.mg-fold>summary b{font-size:11px;font-weight:800;color:#4c1d95}
+.mg-topline>.mg-fold>summary span{display:none}
+.mg-topline>.mg-fold[open]{flex:1 1 100%;border-style:solid;border-color:#d9d0f7;background:linear-gradient(180deg,#fbf9ff 0%,#fff 55%)}
+.mg-topline>.mg-fold[open]>summary{border-radius:11px 11px 0 0;background:#f4f1ff}
+.mg-topline>.mg-fold[open]>summary span{display:inline}
+@media (max-width:640px){
+  .mg-topline>.mg-fold{flex:1 1 auto}
+  .mg-topline>.mg-fold>summary{padding:7px 9px}
+  .mg-topline>.mg-fold>summary b{font-size:10.5px}
+}
+
+/* ── 2026-11-23 한진님 지시: 화면 위쪽을 차지하는 긴 설명글은 감춘다 ─────────
+   건수·기준일·세금 여부 같은 판단용 라벨은 남기고, 읽는 법을 길게 풀어 쓴
+   문단과 안내 배너의 부연 문장만 화면에서 뺀다. DOM에서 지우지 않고
+   display:none 으로만 감춘다 — JS가 textContent를 쓰는 요소가 있다.      */
+.pm-b2,.fs-b2,.fr-b2,.tt-banner,
+p.hint,.chart-note,.mg-note,.ml-note,.pm-note,.pm-vhint,.pm-ds-note,.pm-ds-apphint,
+.mlv-note,.pm-calc-note,.ml-calnote,.benefit-note,.g-note,.g-sub,.bknote,.side-foot,
+.footlegend{display:none!important}
+
+/* 큰 요약 패널은 접이식 폴더로 — 눌러야 펼쳐진다 */
+.foldbox{border:1px solid #e6e2f3;background:#fff;border-radius:11px;margin:0 0 10px;overflow:hidden}
+.foldbox>summary{display:flex;align-items:center;gap:4px;padding:9px 11px;cursor:pointer;list-style:none;
+  font-size:11.5px;font-weight:800;color:#4c1d95;background:#f7f5ff}
+.foldbox>summary::-webkit-details-marker{display:none}
+.foldbox>summary::after{content:'▾';margin-left:auto;color:#7c3aed;font-size:10px;line-height:1}
+.foldbox[open]>summary::after{content:'▴'}
+.foldbox[open]>summary{border-bottom:1px solid #ece7fb}
+.foldbox>summary:focus-visible{outline:2px solid #7c3aed;outline-offset:-2px}
+.foldbox .ranking{margin:0;padding:10px}
+.foldbox .hero2{margin:0}
+.foldbox .fl-summary{padding:10px}
+.foldbox .tt-feed{border:0;box-shadow:none;margin:0;padding:10px}
 </style>
 </head>
 <body>
@@ -2394,10 +2436,12 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
     <p class="hint" id="snuHint"></p>
   </section>
 
+  <details class="foldbox" id="rankFold"><summary>🏆 12개월 최저가 TOP 5 · 프로모션 혜택</summary>
   <div class="ranking">
     <section class="rank-panel"><div class="rank-head"><h3 id="rank1Title">전체 기간 1박 최저가 TOP 5</h3><span class="rank-label" id="rank1Sub">호텔별 최저일</span></div><div id="rank1"></div></section>
     <section class="rank-panel"><div class="rank-head"><h3 id="rank2Title">프로모션 · 주요 혜택</h3><span class="rank-label" id="rank2Sub">확인된 조건 요약</span></div><div id="rank2"></div></section>
   </div>
+  </details>
 
   <section id="ptTopBox" class="rank-panel pt-top" hidden aria-label="메리어트 1P당 가치 TOP 10">
     <div class="rank-head"><h3>1P당 가치 TOP 10 — 날짜 · 호텔</h3><span class="rank-label" id="ptTopSub"></span></div>
@@ -2486,10 +2530,12 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
       <div class="stat-strip" id="hotelStatusStrip" aria-label="이 달 상태 요약"></div>
       <div class="blackout-box" id="blackoutBox" hidden aria-label="약관 제외일 안내"></div>
 
+      <details class="foldbox" id="heroFold"><summary>📌 선택 호텔 요약 · 기간 최저가</summary>
       <section class="hero2" id="heroCard" aria-label="선택 호텔 요약">
         <div class="hero-left" id="heroMain"></div>
         <div class="hero-right" id="heroBenefits"></div>
       </section>
+      </details>
 
       <div class="cal-tools">
         <div class="legend-steps" aria-label="가격대 5단계 범례">
@@ -2567,6 +2613,7 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
     </details>
   </section>
   <section id="flightPanel" class="flight-panel" hidden aria-label="부산 출발 항공 특가">
+    <details class="foldbox" id="flSummaryFold"><summary>✈️ 노선 최저가 TOP 5 · 마감 임박 프로모션</summary>
     <div class="fl-summary">
       <section class="rank-panel">
         <div class="rank-head"><h3>47개 노선 최저가 TOP 5</h3><span class="rank-label" id="flTop5Sub">7,417건 중 노선별 최저</span></div>
@@ -2579,6 +2626,7 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
         <p class="hint" id="flPromoNote"></p>
       </section>
     </div>
+    </details>
 
     <div class="fl-toolbar">
       <div class="fl-regions mode-control" id="flRegion" role="group" aria-label="항공 권역 필터"><button type="button" class="mode-button selected" data-fl-region="all">전체</button><button type="button" class="mode-button" data-fl-region="일본">일본</button><button type="button" class="mode-button" data-fl-region="중국">중국</button><button type="button" class="mode-button" data-fl-region="대만·홍콩">대만·홍콩</button><button type="button" class="mode-button" data-fl-region="동남아">동남아</button><button type="button" class="mode-button" data-fl-region="기타">기타</button></div>
@@ -2734,6 +2782,7 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
     <div class="tt-banner" id="ttBanner" hidden></div>
     <div class="tt-summary" id="ttKpi"></div>
 
+    <details class="foldbox" id="ttFeedFold"><summary>🔻 값이 내린 상품 · 🆕 새로 들어온 특가</summary>
     <section class="rank-panel tt-feed" id="ttFeed" aria-label="오늘의 전일 대비 인하·신규 특가">
       <div class="rank-head"><h3>오늘의 전일 대비 인하 · 신규 특가</h3><span class="rank-label" id="ttFeedSub">이력 불러오는 중…</span></div>
       <div class="tt-feed-grid">
@@ -2750,6 +2799,7 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
       </div>
       <p class="hint" id="ttFeedNote"></p>
     </section>
+    </details>
 
     <div class="tt-split">
       <section class="rank-panel">
@@ -2994,6 +3044,7 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
     <div class="pm-banner" id="mlBanner"></div>
     <div class="pm-kpi" id="mlKpi"></div>
 
+    <div class="mg-topline">
     <div class="mg-views" id="mlViews" role="tablist" aria-label="마일리지발권 보기">
       <button type="button" data-ml-view="cal" class="on" role="tab" aria-selected="true">📅 통합 달력</button>
       <button type="button" data-ml-view="round" role="tab" aria-selected="false">🔁 대한항공 왕복 후보</button>
@@ -3004,9 +3055,9 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
     <!-- 🧮 마일리지 계산기 — 왕복·인원 필요 마일과 1마일당 원화 가치.
          값은 이 기기(localStorage)에만 저장하고, 날짜 상세 시트의 「가는 편/오는 편에」 버튼으로 채운다.
          대한항공·외항사 행 모두 같은 버튼을 쓴다. 보기(통합 달력·왕복 후보·좌석 변동·공제표)와 상관없이 늘 위에 둔다.
-         접이식 폴더 — 처음에는 접힌 채로 헤더만 보이고, 헤더(요약줄)를 누르면 펼쳐진다.
-         시트에서 「가는 편에/오는 편에」를 누르면 이 폴더가 저절로 펼쳐지고 그 자리로 스크롤한다. -->
-    <details class="pm-calc" id="mlCalc">
+         접이식 칩 — 「🧮 대한항공 공제표」 옆에 나란히 두고 기본은 접힘(2026-11-23).
+         시트에서 「가는 편에/오는 편에」를 누르면 이 칩이 저절로 펼쳐지고 그 자리로 스크롤한다. -->
+    <details class="pm-calc mg-fold" id="mlCalc">
       <summary><b>🧮 마일리지 계산기</b><span id="mlCalcSum">왕복 · 1명 · 마일을 넣어 주세요</span></summary>
       <div class="pm-calc-body">
         <div class="pm-calc-grid">
@@ -3062,9 +3113,10 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
 
     <!-- 💎 항공사 마일리지 가치·구매가 비교 — 23개 프로그램.
          센트(¢) 값은 담아 두고 원화는 환율 슬라이더로 다시 계산한다(1마일당 = ¢ × 환율 ÷ 100).
-         이 환율은 달력 칸·날짜 상세 시트의 「통상 약 29.7만원」에도 같이 쓴다. -->
-    <details class="mlv" id="mlVal" open>
-      <summary><b>💎 항공사 마일리지 가치·구매가 비교 (23개)</b><span id="mlvSum">USD 1 = ₩1,346 · 통상가치 높은 순</span></summary>
+         이 환율은 달력 칸·날짜 상세 시트의 「통상 약 29.7만원」에도 같이 쓴다.
+         「🧮 대한항공 공제표」 옆 칩으로 옮기고 기본은 접힘(2026-11-23). -->
+    <details class="mlv mg-fold" id="mlVal">
+      <summary><b>💎 항공사 마일 가치·구매가 (23개)</b><span id="mlvSum">USD 1 = ₩1,346 · 통상가치 높은 순</span></summary>
       <div class="mlv-body" id="mlvBody">
         <div class="mlv-fx">
           <div class="mlv-fx-row">
@@ -3090,6 +3142,7 @@ button.dual-cell::after{top:auto;bottom:1px;right:2px}
         <p class="mlv-note" id="mlvNote">통상 가치는 1마일을 쓸 때 기대되는 원화 값이고, 구매가는 항공사가 마일을 파는 프로모션 단가입니다. <b>구매비율</b>은 구매가 ÷ 통상가치로, 100% 아래면 사는 쪽이, 150%를 넘으면 구매가 불리합니다. 행을 누르면 핵심 발권 포인트가 열립니다. 구매가·통상 가치는 프로모션과 환율에 따라 달라지므로 발권 전 항공사 공식 사이트에서 다시 확인해 주세요.</p>
       </div>
     </details>
+    </div><!-- /mg-topline -->
 
     <div class="ml-block" id="mlViewCal">
       <div class="pm-ctrl">
@@ -4434,7 +4487,15 @@ function render(){
   renderCalendar(SER);renderHero(SER);renderInsights(SER);renderGlance(SER);
   renderNotes();hashSync();
 }
-function resetStateFor(tab){st.tab=tab;st.city='all';st.hotel='all';st.favOnly=false;st.budget=0;st.mode='cash';st.zone='all';st.pmode='both';st.ctier='all';st.apcOnly=false;st.blk='show';st.apcDaysOnly=false;st.prog='all';st.brand='all';st.month=tabs[tab].default||tabs[tab].start;st.selectedDay='';st.weekend=false;st.hideBlackouts=false;st.nights=1;st.ticket='all';if($('weekendOnly'))$('weekendOnly').checked=false;if($('apcDaysOnly'))$('apcDaysOnly').checked=false;if($('blackoutMode'))$('blackoutMode').value='show';if($('accorBrand'))$('accorBrand').value='all';if($('apcOnly'))$('apcOnly').checked=false}
+function mlFoldReset(){                 /* ⑧ 탭에 들어오면 계산기·가치비교 칩은 접힌 채로 시작 */
+  try{
+    var a=document.getElementById('mlCalc'),b=document.getElementById('mlVal');
+    if(a)a.open=false;if(b)b.open=false;
+    if(typeof ML_CALC!=='undefined')ML_CALC.open=false;
+    if(typeof MLV_S!=='undefined')MLV_S.open=false;
+  }catch(e){}
+}
+function resetStateFor(tab){st.tab=tab;st.city='all';st.hotel='all';st.favOnly=false;st.budget=0;st.mode='cash';st.zone='all';st.pmode='both';st.ctier='all';st.apcOnly=false;st.blk='show';st.apcDaysOnly=false;st.prog='all';st.brand='all';st.month=tabs[tab].default||tabs[tab].start;st.selectedDay='';st.weekend=false;st.hideBlackouts=false;st.nights=1;st.ticket='all';if($('weekendOnly'))$('weekendOnly').checked=false;if($('apcDaysOnly'))$('apcDaysOnly').checked=false;if($('blackoutMode'))$('blackoutMode').value='show';if($('accorBrand'))$('accorBrand').value='all';if($('apcOnly'))$('apcOnly').checked=false;if(tab==='mileage')mlFoldReset()}
 function setTab(tab){resetStateFor(tab);if(tab==='combo'&&cb.month!==st.month)cb.month=st.month;activate(tab)}
 function setCity(city){st.city=city;st.hotel='all';
  /* ⑤ IHG — 도시를 고르면 지역 칩은 '전체'로 풀어, 지역과 도시가 서로 물리는 빈 화면을 만들지 않는다 */
@@ -5587,7 +5648,9 @@ const flViaWord=d=>d.via===false?'직항':d.via===true?'경유':'미확인';
 const flMeta=d=>d.airline?flViaWord(d)+' · '+flAir(d):(d.via==null?'항공사·직항 미확인':flViaWord(d)+' · 항공사 미확인');
 const flViaTag=d=>d.via===false?'<span class="fl-via direct">직항</span>':d.via===true?'<span class="fl-via via">경유</span>':'<span class="fl-via unk">미확인</span>';
 function flMemo(d){if(!d.note)return '';const t=String(d.note).split('※')[0].split('—')[0].trim();return t==='경유'||t==='직항'?'':t}
-function setDealPanels(which){$('flightPanel').hidden=which!=='flight';$('ttPanel').hidden=which!=='tt';const vp=document.getElementById('valetPanel');if(vp)vp.hidden=which!=='valet';const cp=document.getElementById('comboPanel');if(cp)cp.hidden=which!=='combo';const fp=document.getElementById('frPanel');if(fp)fp.hidden=which!=='forest';const mp=document.getElementById('mgPanel');if(mp)mp.hidden=which!=='mileage';const sbx=document.getElementById('snapshotBox');if(sbx)sbx.style.display=which==='mileage'?'none':'';const fsp=document.getElementById('fsPanel');if(fsp)fsp.hidden=which!=='festival';const cng=document.querySelector('.note-grid');if(cng)cng.style.display=which==='combo'?'none':'';['.ranking','.workspace'].forEach(function(sel){var el=document.querySelector(sel);if(el)el.style.display=which?'none':''});['glanceBox','hotelNotes','ptTopBox'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=which?'none':''})}
+function setDealPanels(which){$('flightPanel').hidden=which!=='flight';$('ttPanel').hidden=which!=='tt';const vp=document.getElementById('valetPanel');if(vp)vp.hidden=which!=='valet';const cp=document.getElementById('comboPanel');if(cp)cp.hidden=which!=='combo';const fp=document.getElementById('frPanel');if(fp)fp.hidden=which!=='forest';const mp=document.getElementById('mgPanel');if(mp)mp.hidden=which!=='mileage';const sbx=document.getElementById('snapshotBox');if(sbx)sbx.style.display=which==='mileage'?'none':'';const fsp=document.getElementById('fsPanel');if(fsp)fsp.hidden=which!=='festival';const cng=document.querySelector('.note-grid');if(cng)cng.style.display=which==='combo'?'none':'';var rf=document.getElementById('rankFold');if(rf)rf.style.display=which?'none':'';
+  var hf=document.getElementById('heroFold');if(hf)hf.style.display=which?'none':'';
+  ['.ranking','.workspace'].forEach(function(sel){var el=document.querySelector(sel);if(el)el.style.display=which?'none':''});['glanceBox','hotelNotes','ptTopBox'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=which?'none':''})}
 function setFlightMode(on){setDealPanels(on?'flight':'')}
 function renderFlightTop5(){
   const rows=flRouteList().map(r=>{const d=[...r.deals].sort((a,b)=>flEff(a)-flEff(b))[0];return d?{...d,city:r.city,code:r.code}:null}).filter(Boolean).sort((a,b)=>flEff(a)-flEff(b)).slice(0,5);
@@ -10152,9 +10215,9 @@ function mlCalcInit(){
   var el=mcEl('mlCalc');
   if(!el)return;
   if(el.tagName==='DETAILS'){
-    el.open=ML_CALC.open!==false;
     if(!el.__mlTog){
       el.__mlTog=true;
+      el.open=false;                     /* 2026-11-23 — 기본은 항상 접힘 */
       el.addEventListener('toggle',function(){
         ML_CALC.open=el.open;mlCalcSave();
         if(el.open)mlCalcPaint();
@@ -10744,7 +10807,7 @@ function mlvBind(){
   if(!root)return;
   MLV_BOUND=true;
   if(root.tagName==='DETAILS'){
-    root.open=MLV_S.open!==false;
+    root.open=false;                     /* 2026-11-23 — 기본은 항상 접힘 */
     root.addEventListener('toggle',function(){MLV_S.open=root.open;mlvSave()});
   }
   root.addEventListener('input',function(e){

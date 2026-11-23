@@ -9382,7 +9382,7 @@ var KD_POP_MIN=70;
 var KD_SRC_POP={busan_119:40,pen_yeyak:34,sciport:32,jobworld:30,incheon_child:26,
                 dream_teach:26,dream_dnpa:24,seoul_yeyak:18,busan_reserve_exprn:14,
                 yeonje_happy:12,busan_reserve_lctre:10,pen_bellib_edu:8,gangseo_lib:8,daegu_yeyak:8};
-var KD_BADW=['사전답사','교직원','인솔교사','학급단체','유의사항','연간일정','안내문','수강시'];
+var KD_BADW=['사전답사','교직원','인솔교사','학급단체','유의사항','연간일정','안내문','수강시','유치원, 어린이집','유치원·어린이집','유치원ㆍ어린이집'];
 /* 출처 묶음 — 14개 수집기를 화면에서 고르기 좋은 단위로 묶는다(자료에 없는 출처는 그대로 따로 칩이 된다) <>*/
 var KD_GROUPS=[
   {k:'g119',label:'119안전체험관',srcs:['busan_119']},
@@ -9482,6 +9482,9 @@ function kdGrades(t){
   kdEach(t,P+'\\s*([1-6])\\s*학년\\s*[~-]\\s*누구나',function(m){out.push([+m[1],12])});
   kdEach(t,P+'\\s*([1-6])\\s*학년',function(m){out.push([+m[1],+m[1]])});
   kdEach(t,'중([1-3])[~-]([1-3])',function(m){out.push([6+ +m[1],6+ +m[2]])});
+  kdEach(t,P+'\\s*([1-6])\\s*(?:학년)?\\s*[~-]\\s*중(?:등)?(?:학교|학생)?\\s*([1-3])',function(m){out.push([+m[1],6+ +m[2]])});
+  kdEach(t,P+'\\s*([1-6])\\s*(?:학년)?\\s*[~-]\\s*고(?:등)?(?:학교|학생)?\\s*([1-3])',function(m){out.push([+m[1],9+ +m[2]])});
+  kdEach(t,'중(?:등)?(?:학교|학생)?\\s*([1-3])\\s*(?:학년)?\\s*[~-]\\s*고(?:등)?(?:학교|학생)?\\s*([1-3])',function(m){out.push([6+ +m[1],9+ +m[2]])});
   return out;
 }
 function kdKw(t){
@@ -9532,7 +9535,8 @@ function kdDecide(t,title){
 }
 function kdKid(it){
   if(it._kid!=null)return it._kid;
-  var t=kdNorm(it.target),title=kdNorm(it.title),r=kdDecide(t,title);
+  var t=kdNorm(it.target),title=kdNorm(it.title),r=null;
+  if(t)r=kdDecide(t,title);
   if(r===null){
     if(t)r=0;
     else{
@@ -9561,7 +9565,9 @@ function kdPopScore(it){
     }
   }
   if(it.fee==='무료')s+=5;
-  if(kdKid(it)===3)s+=6;
+  var km=kdKid(it);
+  if(km===3)s+=6;
+  if(km===0)s-=30;                 /* 아이 대상이 아닌 건(성인·교직원·기관 전용)은 뒤로 */
   if(it.target&&it.target.indexOf('제한없음')<0)s+=4;
   if(it.start){var d=kdDayDiff(it.start,kdToday());if(d<=7)s+=10;else if(d<=30)s+=6;else if(d<=60)s+=3}
   else s+=2;
@@ -9811,7 +9817,7 @@ function renderKdBasis(){
     +'<li><b>오픈 예정 '+KR(kdClassCount('soon'))+'건</b> — 원문 상태가 '+esc('예정·접수준비·접수대기중·신청대기·안내중·안내')+'인 건과 아직 접수 시작 전인 건</li>'
     +'<li>상태가 빈 '+KR(items.filter(function(it){return !it.status}).length)+'건은 접수기간 날짜로 나누었습니다.</li>'
     +'<li><b>👦 DK(2018-05-10생 · 만 8세 · 초2) 가능 '+KR(nDk)+'건 · 👶 JH(2020-07-05생 · 만 6세 · 미취학) 가능 '+KR(nJh)+'건 · 둘 다 가능 '+KR(nBoth)+'건</b> — 원문 「대상」의 나이·학년·생년 글을 읽어 나눴습니다. 「초등 1~3학년」·「8세 이상」·「2018~19년생」은 DK, 「유아」·「6세 이상」·「5~7세」는 JH, 「유아 및 초등」·「전연령」·「제한없음」·「가족」은 둘 다 가능입니다. 사전답사·교직원용·인솔교사·단체 전용은 아이 필터에서 뺐습니다.</li>'
-    +'<li><b>⭐ 인기·추천 점수</b> — 기관 인기(119안전체험관 40 · 부산교육청 34 · 국립부산과학관 32 · 한국잡월드 30 · 인천어린이과학관·들락날락 24~26 · 서울 18 …)에 접수·예약 가능 +30, 잔여율 10% 이하 +16 · 25% 이하 +12 · 50% 이하 +6, 잔여 5석 이하 +10, 무료 +5, 둘 다 가능 +6, 부산 +8, 7일 안 시작 +10을 더하고, 사전답사·교직원·학급단체·유의사항 글은 −60으로 뒤로 보냅니다. 70점 이상을 「⭐ 인기 추천만」으로 봅니다.</li>'
+    +'<li><b>⭐ 인기·추천 점수</b> — 기관 인기(119안전체험관 40 · 부산교육청 34 · 국립부산과학관 32 · 한국잡월드 30 · 인천어린이과학관·들락날락 24~26 · 서울 18 …)에 접수·예약 가능 +30, 잔여율 10% 이하 +16 · 25% 이하 +12 · 50% 이하 +6, 잔여 5석 이하 +10, 무료 +5, 둘 다 가능 +6, 부산 +8, 7일 안 시작 +10을 더하고, 사전답사·교직원·학급단체·유의사항 글은 −60, 아이 대상이 아닌 건(성인·기관 전용)은 −30으로 뒤로 보냅니다. 70점 이상을 「⭐ 인기 추천만」으로 봅니다.</li>'
     +'<li>비용을 적어 둔 건 '+KR(items.filter(function(it){return it.fee}).length)+'건(그중 무료 '+KR(free)+') · 잔여석을 숫자로 적어 둔 건 '+KR(left)+'건입니다. 비어 있는 값은 원문에 없어 그 줄을 빼고 지어내지 않았습니다.</li>'
     +'<li>'+KR(est)+'건은 원문에 연도가 없어 연도를 추정해 채운 건이라 「연도 추정」을 달았습니다.</li>'
     +'<li>지난 과정 '+KR(past)+'건은 목록에서 뺐습니다(끝난 지 30일이 지난 건).</li>'

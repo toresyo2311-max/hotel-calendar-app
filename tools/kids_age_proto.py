@@ -80,10 +80,14 @@ def grades(t):
         out.append((int(m.group(1)), 12))
     for m in re.finditer(P + r'\s*([1-6])\s*학년', t):
         out.append((int(m.group(1)), int(m.group(1))))
-    for m in re.finditer(r'중[1-3][~-]([1-3])', t):
-        out.append((7, 6 + int(m.group(1))))
-    for m in re.finditer(r'고([1-3])', t):
-        out.append((9 + int(m.group(1)), 9 + int(m.group(1))))
+    for m in re.finditer(r'중([1-3])[~-]([1-3])', t):
+        out.append((6 + int(m.group(1)), 6 + int(m.group(2))))
+    for m in re.finditer(P + r'\s*([1-6])\s*(?:학년)?\s*[~-]\s*중(?:등)?(?:학교|학생)?\s*([1-3])', t):
+        out.append((int(m.group(1)), 6 + int(m.group(2))))
+    for m in re.finditer(P + r'\s*([1-6])\s*(?:학년)?\s*[~-]\s*고(?:등)?(?:학교|학생)?\s*([1-3])', t):
+        out.append((int(m.group(1)), 9 + int(m.group(2))))
+    for m in re.finditer(r'중(?:등)?(?:학교|학생)?\s*([1-3])\s*(?:학년)?\s*[~-]\s*고(?:등)?(?:학교|학생)?\s*([1-3])', t):
+        out.append((6 + int(m.group(1)), 9 + int(m.group(2))))
     return out
 
 def kw(t):
@@ -142,7 +146,9 @@ def decide(t, title=''):
 def classify(it):
     t = norm(it.get('target'))
     title = norm(it.get('title'))
-    dk, jh, why = decide(t, title)
+    dk = jh = None
+    if t:
+        dk, jh, why = decide(t, title)
     if dk is not None:
         return dk, jh, why
     if t:

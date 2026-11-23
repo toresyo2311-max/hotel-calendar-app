@@ -67,7 +67,9 @@ WINDOW_END = '2027-11-30'
 #   고베 5 · 나고야 3 · 가고시마 2 · 가나자와 2 · 나가사키 2 · 가루이자와 1 · 구마모토 1).
 #   2026-11-23에 일본 2차 30곳(m168~m197)을 더해 197곳이 됐다 — 일본 72(기존 42 + 도쿄 15 · 나고야 7 ·
 #   나라 2 · 니세코 2 · 마쓰모토 2 · 닛코 1 · 루스쓰 1).
-EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 197}
+#   2026-11-23에 오세아니아 2차 14곳(m198~m211)을 더해 211곳이 됐다 — 오세아니아 37(기존 23 + 호주 14:
+#   멜버른 3 · 브리즈번 5 · 골드코스트 1 · 시드니 5).
+EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 211}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
 #   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
@@ -548,12 +550,13 @@ def check_sources(text_blob):
     return ['출처 문구에 금지된 사이트 이름: %s' % ', '.join(hits)] if hits else []
 
 
-EXPECT_BRANDS = {'리츠칼튼': 27, '세인트레지스': 16, 'W': 12, '코트야드 바이 메리어트': 16,
-                 '포 포인츠 바이 쉐라톤': 9, 'JW 메리어트': 8, '럭셔리 컬렉션': 8, '웨스틴': 9,
-                 '오토그래프 컬렉션': 10, '페어필드 바이 메리어트': 17, '메리어트': 13, 'AC 호텔': 5,
-                 '알로프트': 4, '목시': 5, '쉐라톤': 13, '에디션': 3,
+EXPECT_BRANDS = {'리츠칼튼': 27, '세인트레지스': 16, 'W': 14, '코트야드 바이 메리어트': 18,
+                 '포 포인츠 바이 쉐라톤': 10, 'JW 메리어트': 8, '럭셔리 컬렉션': 8, '웨스틴': 11,
+                 '오토그래프 컬렉션': 11, '페어필드 바이 메리어트': 17, '메리어트': 15, 'AC 호텔': 5,
+                 '알로프트': 4, '목시': 6, '쉐라톤': 14, '에디션': 3,
                  '메리어트 이그제큐티브 아파트먼트': 2, '르메르디앙': 2, '트리뷰트 포트폴리오': 5,
-                 '디자인 호텔스': 6, '포인트 플렉스 바이 쉐라톤': 7}
+                 '디자인 호텔스': 6, '포인트 플렉스 바이 쉐라톤': 7, '엘리먼트': 1,
+                 '메리어트 베케이션 클럽': 1}
 # 한·일 원본 CSV 기대치(2026-11-17 수집) — 유실·중복 방지용 고정값. 2026-11-23에 한국 30곳을
 #   더하면서 k11~k40 이 이 목록에 섞이지 않도록 원본 22곳 id 만 골라 검사한다. 신규 30곳은 아래
 #   EXPECT_KR30 으로 따로 고정한다.
@@ -590,6 +593,13 @@ JP30_IDS = {'m%02d' % i for i in range(86, 116)}
 #   확인한 실제 판매중단이라 결번 그대로 둔다(null 보간 없음).
 EXPECT_JP30B = {'hotels': 30, 'cash': 9904, 'points': 9233}
 JP30B_IDS = {'m%02d' % i for i in range(168, 198)}
+# 2026-11-23 오세아니아 2차 14곳(m198~m211) — 현금 4,507칸 · 아워드 포인트 4,252칸 / 14×365=5,110칸
+#   호주 14곳(멜버른 3 · 브리즈번 5 · 골드코스트 1 · 시드니 5) 모두 포인트 값이 있다(0칸 없음).
+#   시드니 4곳(SYDWH·SYDMC·SYDXP·SYDAK)은 2027-10-01~11-30 61일, SYDSI 는 2027-10-28~11-30 34일,
+#   멜버른 2곳(MELEL·MELCY)은 2027-10-01~10-24 24일이 결번 — 판매 중단과 예약창 상한을 구분하지 않고
+#   보간하지 않는다.
+EXPECT_OC2 = {'hotels': 14, 'cash': 4507, 'points': 4252}
+OC2_IDS = {'m%02d' % i for i in range(198, 212)}
 # 아워드 포인트 캘린더가 전 기간 미게시인 호텔(코드) — 「포인트 칸 없음」 검사에서 뺀다.
 #   k09 여의도 파크 센터 MEA · NANSI 12월 31일만 판매 · OOLAC 12/18 개관 · POMEA
 NO_POINT_CODES = {'NANSI', 'OOLAC', 'POMEA'}
@@ -603,7 +613,9 @@ EXPECT_OVERLAP = ({'k01', 'k02', 'k04', 'k05', 'k20', 'k26', 'j01', 'j04', 'j10'
                   | {'m56', 'm58'}
                   # 일본 2차 30곳 가운데 ① 호텔럭스와 같은 호텔 4곳(TYOJW↔h41 · TYOAK↔h46 ·
                   #   TYOAM↔h53 · TYOWI↔h60)
-                  | {'m181', 'm187', 'm188', 'm189'})
+                  | {'m181', 'm187', 'm188', 'm189'}
+                  # 오세아니아 2차 14곳 가운데 ① 호텔럭스와 같은 호텔 1곳(SYDWH W 시드니 ↔ h110)
+                  | {'m207'})
 # 원래부터 두 탭에 있던 중복(③ Stay Plus ↔ ① HoteLux) — 새 중복과 구분하기 위한 허용 목록
 KNOWN_DUP = {('dB200', 'h39')}
 
@@ -4976,7 +4988,16 @@ def check_tabs(db):
             or jp30bp != EXPECT_JP30B['points']:
         problems.append('일본 2차 30곳 수치 %s (기대 %s)' % (
             {'hotels': len(jp30b), 'cash': jp30bc, 'points': jp30bp}, EXPECT_JP30B))
-    for h in kj + kr30 + sg8 + sg7 + sg7l + oc + jp30 + jp30b:
+    # 2026-11-23 — 오세아니아 2차 14곳(m198~m211)도 칸 수를 고정해 둔다(유실·보간 방지)
+    oc2 = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'] in OC2_IDS]
+    oc2c = sum(1 for h in oc2 for v in (h.get('rates') or {}).values()
+               if isinstance(v, (int, float)))
+    oc2p = sum(1 for h in oc2 for v in (h.get('points') or {}).values() if isinstance(v, int))
+    if len(oc2) != EXPECT_OC2['hotels'] or oc2c != EXPECT_OC2['cash'] \
+            or oc2p != EXPECT_OC2['points']:
+        problems.append('오세아니아 2차 14곳 수치 %s (기대 %s)' % (
+            {'hotels': len(oc2), 'cash': oc2c, 'points': oc2p}, EXPECT_OC2))
+    for h in kj + kr30 + sg8 + sg7 + sg7l + oc + jp30 + jp30b + oc2:
         if h['id'] == 'k09' or h.get('code') in NO_POINT_CODES:
             continue
         if not h.get('points'):

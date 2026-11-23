@@ -53,6 +53,7 @@ ROUTES = [
     ('HKG', '홍콩', 'jp_cn_ne', 0),
     ('PVG', '상하이/푸둥', 'jp_cn_ne', 0),
     ('TAO', '칭다오', 'jp_cn_ne', 1),
+    ('CAN', '광저우', 'jp_cn_ne', 0),
     ('BKK', '방콕', 'sea_guam', 1),
     ('SIN', '싱가포르', 'sea_guam', 0),
     ('HAN', '하노이', 'sea_guam', 0),

@@ -1425,6 +1425,7 @@ table.fr-g td.c-A.new{box-shadow:inset 0 0 0 2px #e0872f}
   .brand{grid-area:1/1}
   .lockagain{grid-area:1/2;align-self:start;justify-self:end;margin-top:1px}
   .topbar-metrics{grid-area:2/1/3/3;margin-left:0}
+  .statFold{grid-area:2/1/3/3;margin-left:0}
 }
 @media(max-width:430px){
   .tabs{padding:10px 11px 0}
@@ -2361,6 +2362,35 @@ p.hint,.chart-note,.mg-note,.ml-note,.pm-note,.pm-vhint,.pm-ds-note,.pm-ds-apphi
 .foldbox .snu-panel,.foldbox .pt-top{border:0;box-shadow:none;margin:0;padding:10px}
 details.foldbox:has(>[hidden]),details.foldbox:has(>[style*="display: none"]),
 details.foldbox:has(>[style*="display:none"]){display:none}
+
+/* ── 2026-11-23 한진님 지시 「통계도 접어야지」 ───────────────────────────────
+   상단 보라색 헤더의 통계 3칸(통합 호텔 · 달력 요금·상태 · 바우처 가능 요금)과
+   「● 매일 새벽 자동 갱신」 배지를 접이식(details)으로 감싸 기본은 접힌 채
+   한 줄 칩만 남긴다. 칩을 누르면 그 자리에서 통계와 배지가 펼쳐지고, 다시 누르면
+   접힌다. 안의 id(statHotels · statDates · statVoucher)는 그대로라 숫자 갱신 JS 는
+   손대지 않아도 된다.                                                   */
+.statFold{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;min-width:0}
+.statFold>summary{display:inline-flex;align-items:center;gap:5px;list-style:none;cursor:pointer;
+  padding:5px 10px 5px 9px;border-radius:999px;border:1px solid rgba(199,182,251,.32);
+  background:rgba(124,58,237,.22);color:#eae4ff;font-size:10.5px;font-weight:800;
+  letter-spacing:-.01em;line-height:1.25;white-space:nowrap;
+  transition:background .16s var(--ease),border-color .16s var(--ease)}
+.statFold>summary::-webkit-details-marker{display:none}
+.statFold>summary .sf-ico{font-size:10px;line-height:1}
+.statFold>summary::after{content:'\25BE';font-size:9px;line-height:1;color:#cfc2ff;margin-left:1px}
+.statFold[open]>summary::after{content:'\25B4'}
+.statFold>summary:hover{background:rgba(124,58,237,.4);border-color:rgba(199,182,251,.55)}
+.statFold>summary:focus-visible{outline:2px solid #cfc2ff;outline-offset:2px}
+.statFold .topbar-metrics{margin:8px 0 0;justify-content:flex-end}
+/* 휴대폰(≤760px) — 통계·자동 갱신 줄이 칩 한 줄로 줄어 탭이 제목 줄에 바로 붙는다 */
+@media(max-width:760px){
+  .statFold{grid-area:2/1/3/3;margin-left:0;margin-top:-4px;align-items:flex-start}
+  .statFold>summary{padding:4px 9px 4px 8px;font-size:10px}
+  .statFold .topbar-metrics{margin-top:7px;justify-content:flex-start}
+}
+@media(max-width:430px){
+  .statFold>summary{font-size:9.5px;padding:4px 8px 4px 7px}
+}
 </style>
 </head>
 <body>
@@ -2397,12 +2427,15 @@ details.foldbox:has(>[style*="display:none"]){display:none}
         <div class="brand-sub">호텔 · 항공 요금 달력 2026—2027</div>
       </div>
     </div>
-    <div class="topbar-metrics">
-      <div><b id="statHotels">908</b><span>통합 호텔</span></div>
-      <div><b id="statDates">324,850</b><span>달력 요금·상태</span></div>
-      <div><b id="statVoucher">142</b><span>바우처 가능 요금</span></div>
-      <span class="offline">● 매일 새벽 자동 갱신</span>
-    </div>
+    <details class="statFold" id="statFold">
+      <summary title="통계 3칸과 자동 갱신 상태를 펼칩니다"><span class="sf-ico" aria-hidden="true">📊</span><span id="statFoldLabel">908곳 · 324,850칸</span></summary>
+      <div class="topbar-metrics">
+        <div><b id="statHotels">908</b><span>통합 호텔</span></div>
+        <div><b id="statDates">324,850</b><span>달력 요금·상태</span></div>
+        <div><b id="statVoucher">142</b><span>바우처 가능 요금</span></div>
+        <span class="offline">● 매일 새벽 자동 갱신</span>
+      </div>
+    </details>
     <button type="button" class="lockagain" id="lockAgain" title="이 브라우저를 다시 잠급니다 — 다음에 열 때 PIN을 다시 묻습니다">🔒 잠금</button>
   </div>
   <nav class="tabs" aria-label="호텔 · 항공 프로그램" id="tabs">
@@ -3836,9 +3869,13 @@ function renderHeader(){const t=tabs[st.tab];$('sectionTitle').textContent=t.tit
  document.querySelectorAll('[data-mode]').forEach(b=>{const on=b.dataset.mode===st.mode;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on))});
  document.querySelectorAll('[data-pmode]').forEach(b=>{const on=b.dataset.pmode===st.pmode;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',String(on));if(b.dataset.pmode==='points')b.textContent=curPtsName()});
  const DC=DB.counts||{};
- $('statHotels').textContent=KR(DC.hotels!=null?DC.hotels:allHotels.length);
- $('statDates').textContent=KR(DC.cells!=null?DC.cells:allHotels.reduce((n,h)=>n+Object.keys(h.rates||{}).length,0));
- $('statVoucher').textContent=KR(DC.stayplus!=null?DC.stayplus:allHotels.reduce((n,h)=>n+Object.keys(h.stayplus2||{}).length+Object.keys(h.stayplus3||{}).length,0));
+ const nHot=DC.hotels!=null?DC.hotels:allHotels.length;
+ const nCell=DC.cells!=null?DC.cells:allHotels.reduce((n,h)=>n+Object.keys(h.rates||{}).length,0);
+ const nVch=DC.stayplus!=null?DC.stayplus:allHotels.reduce((n,h)=>n+Object.keys(h.stayplus2||{}).length+Object.keys(h.stayplus3||{}).length,0);
+ $('statHotels').textContent=KR(nHot);
+ $('statDates').textContent=KR(nCell);
+ $('statVoucher').textContent=KR(nVch);
+ const sfl=$('statFoldLabel');if(sfl)sfl.textContent=KR(nHot)+'곳 · '+KR(nCell)+'칸';
  const sc=$('sourceCount');if(sc)sc.textContent=DB.sources.length;
  const lg=$('modeLegend');if(lg)lg.innerHTML=hasPointsTab()?('<span><i style="background:#6d28d9"></i>'+curPtsName()+'</span><span><i style="background:#8b86a3"></i>현금'+(st.tab==='hyatt'?(st.hyattSrc==='hlx'?'(호럭)':'(공홈 세후)'):'')+'</span>'):(apcModeOn()?'<span><i style="background:#7c3aed"></i>APC 가능</span><span><i style="background:#d8d2e8"></i>불가</span><span><i style="background:#ddd6fe"></i>미확인</span>':(rhrMode()?'<span><i style="background:#b45309"></i>레드핫 시작가</span>':''));
  if(apcModeOn()){const at=apcObservedAll();$('checktime').textContent='예약 캘린더 확인'+(at?' · '+at+' 기준':'')+' / 현금 2026.11.16~18';}

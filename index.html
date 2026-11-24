@@ -10321,12 +10321,13 @@ function seaApiItems(path,params){
   var opt={cache:'no-store',referrerPolicy:'no-referrer'};
   if(ctl)opt.signal=ctl.signal;
   return fetch(url,opt).then(function(r){
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    return r.json();
-  }).then(function(d){
+    /* 오류 응답(400·403·500)도 본문이 JSON 이면 사유를 읽는다(resultCode 30 인증키 오류 등) */
+    return r.json().then(function(d){return {ok:r.ok,status:r.status,d:d}},function(){return {ok:r.ok,status:r.status,d:null}});
+  }).then(function(r){
     fin();
-    var o=d&&d.OpenAPI_ServiceResponse;
+    var d=r.d,o=d&&d.OpenAPI_ServiceResponse;
     if(o&&o.cmmMsgHeader)throw new Error(seaApiMsg(o.cmmMsgHeader.returnReasonCode,o.cmmMsgHeader.returnAuthMsg));
+    if(!r.ok)throw new Error('HTTP '+r.status);
     var res=(d&&d.response)||{},hd=res.header||{},code=String(hd.resultCode||'');
     if(code==='03')return [];
     if(code!=='00')throw new Error(seaApiMsg(code,hd.resultMsg));

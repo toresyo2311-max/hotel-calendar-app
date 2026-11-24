@@ -321,6 +321,20 @@ def main(argv=None):
         'beaches': rows,
     }
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    # 값이 하나도 안 바뀌었으면 파일을 그대로 둔다(생성 시각만 바뀤 재커밋을 막는다).
+    old = None
+    try:
+        with open(OUT, encoding='utf-8') as f:
+            old = json.load(f)
+    except (OSError, ValueError):
+        old = None
+    if old:
+        a = {k: v for k, v in old.items() if k != 'generated'}
+        b = {k: v for k, v in doc.items() if k != 'generated'}
+        if a == b:
+            if not args.quiet:
+                print('🌊 바다수온 — 바뀐 값 없음(자료 그대로) · %s' % os.path.relpath(OUT, ROOT))
+            return 0
     tmp = OUT + '.tmp'
     with open(tmp, 'w', encoding='utf-8') as f:
         json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))

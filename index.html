@@ -10284,16 +10284,17 @@ function seaKeyNorm(v){v=String(v==null?'':v).trim().replace(/^["']|[\"']$/g,'')
   return v.replace(/\s+/g,'')}
 function seaKeyGet(){try{return String(localStorage.getItem(SEA_KEY_LS)||'').trim()}catch(e){return ''}}
 function seaKeyPut(v){v=seaKeyNorm(v);
+  if(v!==SEAL.key){SEAL.at=0;SEAL.err='';SEAL.errMsg='';SEAL.fc={};SEAL.fcb={}}
   try{if(v)localStorage.setItem(SEA_KEY_LS,v);else localStorage.removeItem(SEA_KEY_LS)}catch(e){}
   SEAL.key=v;return v}
 function seaKeyTail(){var k=SEAL.key||seaKeyGet();return k.length>4?k.slice(-4):''}
 function seaKeyMsg(t,bad){var el=$('seaKeyMsg');if(!el)return;el.textContent=t||'';el.className='sea-keymsg'+(bad?' bad':'')}
 /* #seakey=… 한 번 링크 — 주소창에서 키를 곧바로 지우고 이 기기에만 저장한다 */
-(function seaKeyFromHash(){
+function seaKeyFromHash(){
   try{
-    var h=String(location.hash||'').replace(/^#/,'');if(!h)return;
+    var h=String(location.hash||'').replace(/^#/,'');if(!h)return false;
     var p=new URLSearchParams(h);
-    var raw=p.get('seakey')||p.get('seaKey');if(!raw)return;
+    var raw=p.get('seakey')||p.get('seaKey');if(!raw)return false;
     var k=seaKeyNorm(raw);
     p.delete('seakey');p.delete('seaKey');
     if(k)seaKeyPut(k);
@@ -10301,8 +10302,20 @@ function seaKeyMsg(t,bad){var el=$('seaKeyMsg');if(!el)return;el.textContent=t||
     var s=p.toString();
     window.history.replaceState(null,'',location.pathname+location.search+(s?'#'+s:''));
     window.__SEA_KEY_IN=!!k;
-  }catch(e){}
-})();
+    return true;
+  }catch(e){return false}
+}
+seaKeyFromHash();
+/* 앱을 켜 둔 채 같은 주소로 링크를 누르면 문서를 새로 받지 않고 해시만 바뀐다 — 그때도 키를 받아 둔다 */
+if(typeof window.addEventListener==='function'){
+  window.addEventListener('hashchange',function(){
+    if(!seaKeyFromHash())return;
+    try{
+      var p=hashParams();
+      if(p&&applyHashState(p))activate(st.tab);
+    }catch(e){}
+  });
+}
 function seaApiMsg(code,msg){
   var c=String(code||'');
   if(c==='30')return '등록되지 않은 인증키입니다 — 공공데이터포털에서 활용신청한 키인지 확인해 주세요';

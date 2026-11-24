@@ -8352,6 +8352,8 @@ function hashSameWith(p){
 const ID_ALIAS={"ap052":"aB9G8","ap063":"aB953","ap075":"a5949","ap088":"a6824","ap101":"aB733","ap118":"a8102","ap125":"aB8Y3","ap140":"a8167","ap142":"aB851","ap176":"a2197","ap190":"aC3B5","ap200":"a8529","ap216":"a8719","ap224":"a7970","ap237":"aC4U2","ap241":"a8873","ap251":"a9567","cA7Z9":"aA7Z9"};
 function resolveHotelId(id){return (id&&ID_ALIAS[id])||id}
 function applyHashState(p){
+  /* 🔑 바다수온 #seakey=… — 앱의 주소 정리(hashSync)가 값을 지우기 전에 먼저 받아 둔다 */
+  if(p&&(p.get('seakey')||p.get('seaKey'))){try{seaKeyFromHash()}catch(e){}}
   let tab=p.get('tab');
   if(tab==='partner-mileage')tab='mileage';   /* 2026-11-22 통합 — 옛 ⑨ 외항사 주소는 ⑧ 마일리지발권으로 */
   const legacy=(tab==='china'||tab==='domestic')?tab:null;   /* 2026-11-22 이전 탭 주소 */

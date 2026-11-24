@@ -933,9 +933,31 @@ button.fl-plink{font-family:inherit;line-height:1.35;cursor:pointer}
   .sea-table th{font-size:8px;padding:5px 3px}
   .sea-table td{padding:5px 3px}
 }
+/* 🔑 실시간 연결 — API 키 배지 · 새로고침 버튼 · 입력 상자 */
+.sea-live{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:0 0 7px;min-width:0}
+.sea-keybtn,.sea-refresh{appearance:none;font:inherit;font-size:10px;font-weight:800;letter-spacing:-.02em;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink2);padding:5px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:3px;white-space:nowrap;max-width:100%}
+.sea-keybtn.on{border-color:#7fd1c4;background:#eefaf7;color:#0c5d5a}
+.sea-keybtn.off{border-color:#e8cf94;background:#fff8e8;color:#8a5a12}
+.sea-refresh{border-color:#cfe2ef;background:#f4f9fd;color:#1f4f86}
+.sea-refresh:disabled{opacity:.45;cursor:default}
+.sea-live-note{font-size:9px;font-weight:700;color:var(--muted2);line-height:1.5;flex:1 1 130px;min-width:0}
+.sea-live-note.bad{color:#b5431a}
+.sea-live-note b{color:#0c5d5a;font-weight:800;font-variant-numeric:tabular-nums}
+.sea-keybox{border:1px solid #cfe2ef;border-radius:10px;background:#f4f9fd;padding:8px 9px;margin:0 0 9px;min-width:0}
+.sea-keybox[hidden]{display:none}
+.sea-keybox label{display:block;font-size:9.5px;font-weight:800;color:#0d4c7d;line-height:1.5;margin-bottom:4px}
+.sea-keybox input{width:100%;box-sizing:border-box;font:inherit;font-size:11px;font-weight:600;border:1px solid var(--line);border-radius:7px;padding:7px 8px;background:#fff;color:var(--ink);min-width:0}
+.sea-keybox .sea-keyrow{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.sea-keybox button{appearance:none;font:inherit;font-size:10px;font-weight:800;border:1px solid #2b7bb9;border-radius:7px;background:#2b7bb9;color:#fff;padding:6px 11px;cursor:pointer;white-space:nowrap}
+.sea-keybox button.del{border-color:var(--line);background:#fff;color:var(--muted)}
+.sea-keymsg{font-size:9px;font-weight:700;color:var(--muted);line-height:1.5;margin:5px 0 0}
+.sea-keymsg.bad{color:#b5431a}
+.sea-tag.lv{background:#e6f7f1;color:#0c5d5a}
 @media(max-width:380px){
   .sea-card .sc-t{font-size:15.5px}
   .sea-card .sc-l{font-size:8px}
+  .sea-keybtn,.sea-refresh{font-size:9px;padding:4px 8px}
+  .sea-live-note{font-size:8.5px}
 }
 /* /SEA:CSS */
 /* FOREST:CSS */
@@ -3268,6 +3290,20 @@ details.foldbox:has(>[style*="display:none"]){display:none}
 <!-- /KIDS:SECTION -->
 <!-- SEA:SECTION -->
   <section id="seaPanel" class="sea-panel" hidden aria-label="🌊 바다수온 — 해수욕장 22곳 최신 수온·파고">
+    <div class="sea-live" role="group" aria-label="바다수온 실시간 연결">
+      <button type="button" class="sea-keybtn off" id="seaKeyBtn" aria-expanded="false" aria-controls="seaKeyBox">🔑 API 키 등록</button>
+      <button type="button" class="sea-refresh" id="seaRefresh" title="지금 기상청 서비스에 다시 조회합니다">🔄 실시간 갱신</button>
+      <span class="sea-live-note" id="seaLiveNote" role="status"></span>
+    </div>
+    <form class="sea-keybox" id="seaKeyBox" hidden>
+      <label for="seaKeyInput">공공데이터포털 일반 인증키(64자리) — 이 휴대폰 브라우저에만 저장하고 저장소에는 올리지 않습니다</label>
+      <input id="seaKeyInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="인증키 64자리를 붙여넣으세요">
+      <div class="sea-keyrow">
+        <button type="submit">저장하고 실시간 조회</button>
+        <button type="button" class="del" id="seaKeyDel" hidden>키 삭제</button>
+      </div>
+      <p class="sea-keymsg" id="seaKeyMsg"></p>
+    </form>
     <div class="sea-lead" id="seaLead"></div>
     <div class="sea-h">🏖 부산 7곳 <i>카드를 누르면 아래에 그래프가 열립니다</i></div>
     <div class="sea-busan" id="seaBusan"></div>
@@ -10157,6 +10193,7 @@ function renderSea(){
     }).join('');
     $('seaDetail').innerHTML='<div class="sea-dhead"><h3>'+esc(cur.name)+'</h3>'
       +'<span class="sea-tag">'+esc(cur.region)+'</span>'
+      +(cur.livet?'<span class="sea-tag lv">🌐 실시간</span>':'')
       +'<time>'+esc(seaStamp(cur.latest.t))+' 관측</time></div>'
       +'<div class="sea-figs">'
       +'<div class="sea-fig"><b>'+seaF(cur.latest.wt)+'</b><u>℃</u><em>수온</em>'+seaDeltaTag(cur)+'</div>'
@@ -10166,7 +10203,8 @@ function renderSea(){
       +'<div class="sea-dayleg">'+legs+'</div>'
       +seaFc(cur)
       +'<p class="sea-cap">최근 3일 2시간 간격 수온 — 3일 최저 <b>'+seaF(rg?rg[0]:null)+'℃</b> · 최고 <b>'+seaF(rg?rg[1]:null)+'℃</b>'
-      +(blank?' · 아직 관측 전인 칸 '+blank+'개는 비워 두었습니다':'')+'</p>';
+      +(blank?' · 아직 관측 전인 칸 '+blank+'개는 비워 두었습니다':'')
+      +(cur.livet?' · 마지막 점은 실시간 관측값('+esc(seaHM(cur.livet))+' 관측)입니다':'')+'</p>';
   }else{
     $('seaDetail').innerHTML='<div class="sea-empty">해수욕장을 고르면 그래프가 열립니다.</div>';
   }
@@ -10189,7 +10227,9 @@ function renderSea(){
   var tb=document.querySelector('[data-tab="sea"] b');
   if(tb)tb.textContent=String(SD.beaches.length);
   renderSeaNotes();
+  seaLiveBar();
   hashSync();
+  seaLiveAuto();
 }
 function renderSeaNotes(){
   var g=$('seaBasis');
@@ -10197,6 +10237,7 @@ function renderSeaNotes(){
     g.innerHTML='<p><b>자료</b> — 기상청 전국 해수욕장 날씨 조회서비스가 해수욕장별로 제공하는 수온(℃)·파고(m)·초단기예보(기온·하늘·강수·습도·바람)입니다. '
       +'수집 시각 '+esc(seaStamp(SD.generated))+' KST.</p>'
       +'<p><b>시계열</b> — 2시간 간격(01·03·…·23시) 최근 3일, 해수욕장마다 36칸입니다. 관측이 아직 없는 시각과 값이 비어 있는 시각은 그대로 비우고 앞뒤 값으로 메우지 않습니다(그래프는 그 자리에서 선을 끊습니다).</p>'
+      +'<p><b>실시간</b> — 이 기기에 인증키를 등록하면 탭을 열 때마다 기상청 서비스에 직접 조회해 수온·파고·초단기예보를 새 값으로 바꿉니다. 5분 안에는 자동으로 다시 부르지 않고, 「🔄 실시간 갱신」을 누르면 강제로 다시 부릅니다. 인증키는 이 브라우저(localStorage)에만 저장하며 서버·저장소로 보내지 않습니다. #seakey=… 주소로 한 번 열면 키를 붙여 넣지 않고도 등록됩니다.</p>'
       +'<p><b>표시</b> — 수온은 소수 한 자리로 반올림합니다. 「24시간 전보다」는 마지막 관측값과 12칸(24시간) 앞 값을 견준 차이입니다. 초단기예보는 매시 30분 발표값 가운데 가장 가까운 예보 시각을 적습니다.</p>';
   }
   var c=$('seaCaution');
@@ -10216,6 +10257,288 @@ if($('seaPanel')){
     var id=el.getAttribute('data-sea-pick')||el.getAttribute('data-sea-row');
     if(!id||id===SD.sel)return;
     SD.sel=id;renderSea();
+  });
+}
+/* ── 🔑 실시간 연결 — 이 브라우저가 기상청 전국 해수욕장 날씨 조회서비스에 직접 조회한다 ────
+   · 인증키는 이 기기 브라우저(localStorage)에만 둔다 — index.html·sw.js·data/*.json 같은
+     공개 저장소 파일에는 절대 적지 않는다.
+   · #seakey=… 링크로 열면 한 번만 붙여 키를 등록하고 주소창에서는 곧바로 지운다(history.replaceState).
+   · 같은 값으로 5분 안에 다시 부르지 않는다 — 🔄 실시간 갱신을 누르면 강제 재조회한다.
+   · 받은 값만 쓴다: 응답에 값이 없으면 저장 자료를 그대로 두고, 3시간 넘게 지난 관측은 그래프에 넣지 않는다. */
+var SEA_KEY_LS='teambusan_kma_sea_key';
+var SEA_API_BASE='https://apis.data.go.kr/1360000/BeachInfoservice';
+var SEA_TTL=5*60*1000;
+var SEA_SKY={'1':'맑음','3':'구름많음','4':'흐림'};
+var SEA_PTY={'0':'강수 없음','1':'비','2':'비/눈','3':'눈','4':'소나기','5':'빗방울','6':'빗방울·눈날림','7':'눈날림'};
+var SEAL={key:'',at:0,busy:false,err:'',errMsg:'',ok:0,miss:0,fc:{},fcb:{},p:null};
+function seaPad2(n){return (n<10?'0':'')+n}
+function seaKst(ms){var d=new Date((ms==null?Date.now():ms)+9*3600000);
+  return {y:d.getUTCFullYear(),m:d.getUTCMonth()+1,d:d.getUTCDate(),h:d.getUTCHours(),mi:d.getUTCMinutes()}}
+function seaD8(k){return ''+k.y+seaPad2(k.m)+seaPad2(k.d)}
+function seaClock(ms){if(!ms)return '—';var k=seaKst(ms);return seaPad2(k.h)+':'+seaPad2(k.mi)}
+function seaNum(v){var s=(v==null?'':String(v)).trim();if(!s||s==='-'||s===':')return null;var n=Number(s);return isFinite(n)?n:null}
+function seaTmIso(tm){tm=String(tm||'').replace(/\D/g,'');if(tm.length<12)return '';
+  return tm.slice(0,4)+'-'+tm.slice(4,6)+'-'+tm.slice(6,8)+'T'+tm.slice(8,10)+':'+tm.slice(10,12)}
+function seaKeyNorm(v){v=String(v==null?'':v).trim().replace(/^["']|[\"']$/g,'');
+  if(v.indexOf('%')>=0){try{v=decodeURIComponent(v)}catch(e){}}
+  return v.replace(/\s+/g,'')}
+function seaKeyGet(){try{return String(localStorage.getItem(SEA_KEY_LS)||'').trim()}catch(e){return ''}}
+function seaKeyPut(v){v=seaKeyNorm(v);
+  try{if(v)localStorage.setItem(SEA_KEY_LS,v);else localStorage.removeItem(SEA_KEY_LS)}catch(e){}
+  SEAL.key=v;return v}
+function seaKeyTail(){var k=SEAL.key||seaKeyGet();return k.length>4?k.slice(-4):''}
+function seaKeyMsg(t,bad){var el=$('seaKeyMsg');if(!el)return;el.textContent=t||'';el.className='sea-keymsg'+(bad?' bad':'')}
+/* #seakey=… 한 번 링크 — 주소창에서 키를 곧바로 지우고 이 기기에만 저장한다 */
+(function seaKeyFromHash(){
+  try{
+    var h=String(location.hash||'').replace(/^#/,'');if(!h)return;
+    var p=new URLSearchParams(h);
+    var raw=p.get('seakey')||p.get('seaKey');if(!raw)return;
+    var k=seaKeyNorm(raw);
+    p.delete('seakey');p.delete('seaKey');
+    if(k)seaKeyPut(k);
+    if(!p.get('tab'))p.set('tab','sea');
+    var s=p.toString();
+    window.history.replaceState(null,'',location.pathname+location.search+(s?'#'+s:''));
+    window.__SEA_KEY_IN=!!k;
+  }catch(e){}
+})();
+function seaApiMsg(code,msg){
+  var c=String(code||'');
+  if(c==='30')return '등록되지 않은 인증키입니다 — 공공데이터포털에서 활용신청한 키인지 확인해 주세요';
+  if(c==='22')return '일일 호출 한도를 넘었습니다 — 잠시 뒤 다시 시도해 주세요';
+  if(c==='20'||c==='21')return '기상청 서비스가 잠시 응답하지 않습니다 — 조금 뒤 다시 시도해 주세요';
+  if(c==='10'||c==='11')return '인증키 형식이 맞지 않습니다 — 64자리 키를 그대로 넣어 주세요';
+  return '조회 실패'+(c?'(코드 '+c+')':'')+(msg?' · '+msg:'');
+}
+function seaApiItems(path,params){
+  var q=['serviceKey='+encodeURIComponent(SEAL.key),'pageNo=1','dataType=JSON','numOfRows='+(params.numOfRows||10)];
+  Object.keys(params).forEach(function(k){if(k!=='numOfRows')q.push(k+'='+encodeURIComponent(params[k]))});
+  var url=SEA_API_BASE+'/'+path+'?'+q.join('&');
+  var ctl=(typeof AbortController!=='undefined')?new AbortController():null;
+  var timer=ctl?setTimeout(function(){try{ctl.abort()}catch(e){}},12000):null;
+  var fin=function(){if(timer)clearTimeout(timer)};
+  var opt={cache:'no-store',referrerPolicy:'no-referrer'};
+  if(ctl)opt.signal=ctl.signal;
+  return fetch(url,opt).then(function(r){
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return r.json();
+  }).then(function(d){
+    fin();
+    var o=d&&d.OpenAPI_ServiceResponse;
+    if(o&&o.cmmMsgHeader)throw new Error(seaApiMsg(o.cmmMsgHeader.returnReasonCode,o.cmmMsgHeader.returnAuthMsg));
+    var res=(d&&d.response)||{},hd=res.header||{},code=String(hd.resultCode||'');
+    if(code==='03')return [];
+    if(code!=='00')throw new Error(seaApiMsg(code,hd.resultMsg));
+    var items=((res.body||{}).items||{}).item||[];
+    if(items&&!Array.isArray(items))items=[items];
+    return items;
+  })['catch'](function(e){fin();throw e});
+}
+function seaErrText(e){
+  var m=(e&&e.message)?String(e.message):'';if(!m)return '연결하지 못했습니다';
+  if(/Failed to fetch|NetworkError|load failed/i.test(m))return '네트워크가 막혀 있습니다(연결·광고 차단 확인)';
+  if(/aborted|AbortError/i.test(m))return '응답이 늦어 취소했습니다';
+  return m;
+}
+/* 동시에 너무 많이 부르지 않게 7개씩 나눠 보낸다 */
+function seaPool(tasks,limit){
+  return new Promise(function(done){
+    var n=tasks.length;if(!n)return done([]);
+    var out=new Array(n),i=0,left=n;
+    var run=function(){
+      if(i>=n)return;
+      var k=i++;
+      tasks[k]().then(function(v){out[k]=v},function(){out[k]=null}).then(function(){
+        left--;
+        if(!left)done(out);else run();
+      });
+    };
+    for(var s=0;s<Math.min(limit,n);s++)run();
+  });
+}
+/* 실시간 수온을 그래프의 오늘 칸에 넣는다 — 관측 시각에서 1시간 안쪽 칸에만 */
+function seaGraphLive(b,v,iso){
+  if(!iso)return;
+  var ms=Date.parse(iso.length>16?iso:(iso+'+09:00'));
+  if(isNaN(ms)||Date.now()-ms>3*3600000)return;
+  var di=(SD.days||[]).indexOf(iso.slice(0,10));
+  if(di<0)return;
+  var mo=Number(iso.slice(11,13))*60+Number(iso.slice(14,16)),best=-1,bd=1e9;
+  var ser=b.series||[];
+  for(var i=di*12;i<di*12+12&&i<ser.length;i++){
+    var t=ser[i][0];if(!t)continue;
+    var d2=Math.abs(Number(t.slice(11,13))*60+Number(t.slice(14,16))-mo);
+    if(d2<bd){bd=d2;best=i}
+  }
+  if(best>=0&&bd<=60)ser[best][1]=v;
+}
+function seaLiveRefresh(force){
+  var k=SEAL.key||seaKeyGet();
+  if(!k){SEAL.key='';seaLiveBar();return Promise.resolve(false)}
+  SEAL.key=k;
+  if(SEAL.busy)return SEAL.p||Promise.resolve(false);
+  if(!force&&SEAL.at&&Date.now()-SEAL.at<SEA_TTL){seaLiveBar();return Promise.resolve(false)}
+  if(!(SD.beaches||[]).length)return Promise.resolve(false);
+  SEAL.busy=true;SEAL.err='';SEAL.errMsg='';seaLiveBar();
+  var kk=seaKst(Date.now());
+  var st12=seaD8(kk)+seaPad2(kk.h)+seaPad2(kk.mi),st10=seaD8(kk)+seaPad2(kk.h);
+  var jobs=[];
+  SD.beaches.forEach(function(b){
+    jobs.push(function(){
+      return seaApiItems('getTwBuoyBeach',{numOfRows:1,beach_num:b.code,searchTime:st12}).then(function(it){
+        var o=it[0]||{};return {b:b,k:'wt',v:seaNum(o.tw),tm:o.tm||''}
+      },function(e){if(!SEAL.errMsg)SEAL.errMsg=seaErrText(e);return null});
+    });
+    jobs.push(function(){
+      return seaApiItems('getWhBuoyBeach',{numOfRows:1,beach_num:b.code,searchTime:st10}).then(function(it){
+        var o=it[0]||{};return {b:b,k:'wv',v:seaNum(o.wh),tm:o.tm||''}
+      },function(e){if(!SEAL.errMsg)SEAL.errMsg=seaErrText(e);return null});
+    });
+  });
+  SEAL.p=seaPool(jobs,7).then(function(res){
+    var ok=0,miss=0;
+    (res||[]).forEach(function(r){
+      if(!r||r.v==null){miss++;return}
+      if(r.k==='wt'){
+        r.b.latest.wt=Math.round(r.v*100)/100;
+        var iso=seaTmIso(r.tm);
+        if(iso){r.b.latest.t=iso;r.b.livet=iso;r.b.livev=r.b.latest.wt;seaGraphLive(r.b,r.b.latest.wt,iso)}
+      }else{
+        r.b.latest.wv=Math.round(r.v*10)/10;
+      }
+      ok++;
+    });
+    SEAL.at=Date.now();SEAL.busy=false;SEAL.ok=ok;SEAL.miss=miss;
+    if(!ok)SEAL.err=SEAL.errMsg||'이번 조회에서 값을 받지 못했습니다';
+    if(st.tab==='sea')renderSea();else seaLiveBar();
+    return ok;
+  })['catch'](function(e){
+    SEAL.busy=false;SEAL.at=Date.now();SEAL.err=seaErrText(e);
+    if(st.tab==='sea')renderSea();else seaLiveBar();
+    return 0;
+  });
+  return SEAL.p;
+}
+/* 선택한 해수욕장의 초단기예보 — 매시 30분 발표 가운데 직전 발표를 쓴다 */
+function seaLiveFcst(b,force){
+  if(!b)return Promise.resolve(false);
+  var k=SEAL.key||seaKeyGet();if(!k)return Promise.resolve(false);
+  SEAL.key=k;
+  var c=SEAL.fc[b.id];
+  if(!force&&c&&Date.now()-c.at<SEA_TTL)return Promise.resolve(false);
+  if(SEAL.fcb[b.id])return Promise.resolve(false);
+  SEAL.fcb[b.id]=true;
+  var base=Date.now()-45*60000;
+  var step=function(i){
+    if(i>3)return Promise.resolve(null);
+    var t=seaKst(base-i*3600000);
+    return seaApiItems('getUltraSrtFcstBeach',{numOfRows:120,beach_num:b.code,base_date:seaD8(t),base_time:seaPad2(t.h)+'30'})
+      .then(function(items){return (items&&items.length)?items:null},function(){return null})
+      .then(function(got){return got||step(i+1)});
+  };
+  return step(0).then(function(items){
+    delete SEAL.fcb[b.id];
+    SEAL.fc[b.id]={at:Date.now()};
+    if(!items)return false;
+    var g={};
+    items.forEach(function(it){var key=(it.fcstDate||'')+'|'+(it.fcstTime||'');(g[key]=g[key]||{})[it.category]=it.fcstValue});
+    var keys=Object.keys(g).sort();if(!keys.length)return false;
+    var c1=g[keys[0]],fd=keys[0].split('|');
+    var f={t:(fd[0]&&fd[1])?(fd[0].slice(0,4)+'-'+fd[0].slice(4,6)+'-'+fd[0].slice(6,8)+'T'+fd[1].slice(0,2)+':'+fd[1].slice(2,4)):null,
+      temp:seaNum(c1.T1H),sky:SEA_SKY[String(c1.SKY||'').trim()],pty:SEA_PTY[String(c1.PTY||'').trim()],
+      reh:seaNum(c1.REH),wsd:seaNum(c1.WSD)};
+    var any=false;['temp','sky','pty','reh','wsd'].forEach(function(x){if(f[x]!=null)any=true});
+    if(!any)return false;
+    b.forecast=f;return true;
+  })['catch'](function(){delete SEAL.fcb[b.id];return false}).then(function(ok){
+    if(ok&&st.tab==='sea')renderSea();
+    return ok;
+  });
+}
+/* 배지·상태줄 */
+function seaLiveBar(){
+  var btn=$('seaKeyBtn'),note=$('seaLiveNote'),rf=$('seaRefresh'),box=$('seaKeyBox'),del=$('seaKeyDel');
+  var k=SEAL.key||seaKeyGet();
+  SEAL.key=k;
+  if(btn){
+    btn.className='sea-keybtn '+(k?'on':'off');
+    btn.textContent=k?'🔑 API 키 연결됨':'🔑 API 키 등록';
+    btn.title=k?('인증키 끝 '+seaKeyTail()+' — 눌러서 바꾸거나 지웁니다'):'공공데이터포털 인증키를 넣으면 실시간으로 조회합니다';
+    btn.setAttribute('aria-expanded',(box&&!box.hidden)?'true':'false');
+  }
+  if(del)del.hidden=!k;
+  if(rf)rf.disabled=!k;
+  if(!note)return;
+  var cls='sea-live-note',txt='';
+  if(!k){
+    txt='저장된 자료만 보입니다 — 인증키를 넣으면 탭을 열 때마다 수온·파고를 새로 받습니다';
+  }else if(SEAL.busy){
+    txt='실시간 조회 중… (해수욕장 '+((SD.beaches||[]).length||22)+'곳)';
+  }else if(SEAL.err){
+    txt='실시간 조회 실패 — '+esc(SEAL.err);cls+=' bad';
+  }else if(SEAL.at){
+    txt='실시간 <b>'+seaClock(SEAL.at)+'</b> 갱신 · '+SEAL.ok+'건 반영'+(SEAL.miss?(' · 값 없음 '+SEAL.miss+'건'):'');
+  }else{
+    txt='인증키 등록됨 — 실시간 조회를 기다립니다';
+  }
+  note.className=cls;note.innerHTML=txt;
+}
+/* 탭을 열 때·해수욕장을 바꿀 때 — 5분 규칙 안에서만 자동 조회 */
+function seaLiveAuto(){
+  var k=SEAL.key||seaKeyGet();
+  if(!k)return;
+  if(!SEAL.at||Date.now()-SEAL.at>SEA_TTL)seaLiveRefresh(false);
+  var cur=seaPick();
+  if(cur)seaLiveFcst(cur,false);
+}
+/* 키를 지우면 저장 자료(tab14_sea.json)로 되돌린다 */
+function seaRestoreBase(){
+  return fetch(DATA_ROOT+PART_FILE.sea+'?g=base'+Date.now(),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+    if(typeof hcDecode==='function')d=hcDecode(d);
+    SD.beaches=d.beaches||[];SD.days=d.days||[];SD.generated=d.generated||'';
+    if(SD.beaches.length&&!SD.beaches.some(function(b){return b.id===SD.sel}))SD.sel=SD.beaches[0].id;
+    if(st.tab==='sea')renderSea();
+  })['catch'](function(){});
+}
+if($('seaPanel')){
+  var seaKeyBtnEl=$('seaKeyBtn'),seaRefreshEl=$('seaRefresh'),seaKeyBoxEl=$('seaKeyBox');
+  if(seaKeyBtnEl)seaKeyBtnEl.addEventListener('click',function(){
+    if(!seaKeyBoxEl)return;
+    seaKeyBoxEl.hidden=!seaKeyBoxEl.hidden;
+    var inp=$('seaKeyInput');
+    if(!seaKeyBoxEl.hidden&&inp){
+      inp.value='';
+      inp.placeholder=(SEAL.key||seaKeyGet())?'지금 키(끝 '+seaKeyTail()+')를 바꾸려면 새 인증키를 붙여넣으세요':'인증키 64자리를 붙여넣으세요';
+      try{inp.focus({preventScroll:true})}catch(e){inp.focus()}
+    }
+    seaLiveBar();
+  });
+  if(seaRefreshEl)seaRefreshEl.addEventListener('click',function(){
+    var k=SEAL.key||seaKeyGet();
+    if(!k){
+      if(seaKeyBoxEl){seaKeyBoxEl.hidden=false;var i2=$('seaKeyInput');if(i2){try{i2.focus({preventScroll:true})}catch(e){}}}
+      seaKeyMsg('인증키를 먼저 등록해 주세요.',true);
+      seaLiveBar();return;
+    }
+    seaKeyMsg('');
+    seaLiveRefresh(true);
+  });
+  if(seaKeyBoxEl)seaKeyBoxEl.addEventListener('submit',function(e){
+    e.preventDefault();
+    var v=seaKeyNorm(($('seaKeyInput')||{}).value||'');
+    if(v.length<20){seaKeyMsg('인증키가 너무 짧습니다 — 공공데이터포털 일반 인증키(64자리)를 넣어 주세요.',true);return}
+    seaKeyPut(v);SEAL.at=0;SEAL.err='';SEAL.errMsg='';SEAL.fc={};SEAL.fcb={};
+    seaKeyBoxEl.hidden=true;
+    seaKeyMsg('인증키를 이 기기에 저장했습니다 — 실시간 조회를 시작합니다.');
+    seaLiveRefresh(true);
+  });
+  var seaKeyDelEl=$('seaKeyDel');
+  if(seaKeyDelEl)seaKeyDelEl.addEventListener('click',function(){
+    seaKeyPut('');SEAL.at=0;SEAL.err='';SEAL.errMsg='';SEAL.fc={};SEAL.fcb={};
+    seaKeyMsg('이 기기에서 인증키를 지웠습니다 — 저장된 자료로 표시합니다.');
+    seaLiveBar();
+    seaRestoreBase();
   });
 }
 // /SEA:JS

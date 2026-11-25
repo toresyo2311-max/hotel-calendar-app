@@ -108,6 +108,9 @@ WINDOW_END = '2027-11-30'
 #   2026-11-26 베트남 8차 4곳(SGNJT·SGNBS·SGNBR·SGNMD)을 더해 ③ 340 · 베트남 32 · **통합 1,037곳**.
 EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 340}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
+# ④ 하얏트는 ①②③ 마스터 밖의 별도 정본(data/app/tab10_hyatt.json)이다 — 병합할 때마다 곳수·칸수가
+#   줄지 않았는지 확인한다(2026-11-26 미국 4차-A 24곳 병합 → 275→299곳 · 109,135칸 · 값 97,207칸).
+EXPECT_HYATT = {'hotels': 299, 'cells': 109135, 'priced': 97207}
 # ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
 #   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
 #   현금 요금 보유 44곳(기존 40 + 통합하며 아코르 카드의 365일 요금이 붙은 4곳) · 미수집 245곳
@@ -5476,6 +5479,31 @@ def check_tabs(db):
     return problems
 
 
+def check_hyatt():
+    """④ 하얏트 정본(tab10_hyatt.json) — 곳수·칸수·id/code 중복만 본다(내용 검사는 이 파일 범위 밖)."""
+    path = os.path.join(APP_DIR, 'tab10_hyatt.json')
+    if not os.path.exists(path):
+        return ['④ tab10_hyatt.json 가 없습니다']
+    try:
+        tab = json.loads(_read(path))
+    except Exception as exc:                      # noqa: BLE001
+        return ['④ tab10_hyatt.json 를 읽지 못했습니다: %r' % (exc,)]
+    hs = tab.get('hotels') or []
+    problems = []
+    if len(hs) != EXPECT_HYATT['hotels']:
+        problems.append('④ 하얏트 %d곳 (기대 %d곳)' % (len(hs), EXPECT_HYATT['hotels']))
+    cells = sum(len((h.get('points') or {}).get('$v') or []) for h in hs)
+    priced = sum(1 for h in hs for v in ((h.get('points') or {}).get('$v') or []) if v is not None)
+    if cells != EXPECT_HYATT['cells'] or priced != EXPECT_HYATT['priced']:
+        problems.append('④ 하얏트 칸 %d · 값 %d (기대 %d · %d)' % (
+            cells, priced, EXPECT_HYATT['cells'], EXPECT_HYATT['priced']))
+    if len({h.get('id') for h in hs}) != len(hs):
+        problems.append('④ 하얏트 id 중복')
+    if len({h.get('code') for h in hs}) != len(hs):
+        problems.append('④ 하얏트 code 중복')
+    return problems
+
+
 def cmd_verify(args, quiet=False):
     master = json.loads(_read(MASTER))
     src, dbmeta, _ = read_db_literal()
@@ -5551,6 +5579,7 @@ def cmd_verify(args, quiet=False):
         problems.extend(check_sources(_read(part_path(_name))))
     problems.extend(check_sources(_read(part_path(PART_FLIGHTS))))
     problems.extend(check_sources(_read(part_path(PART_TTANG))))
+    problems.extend(check_hyatt())
     problems.extend(check_flights(flights))
     problems.extend(check_ttang(tt))
     if os.path.exists(os.path.join(APP_DIR, PART_MILEAGE)):

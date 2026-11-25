@@ -130,6 +130,11 @@ button:disabled{cursor:not-allowed;opacity:.3}
 .side-head{display:flex;justify-content:space-between;align-items:center;padding:0 2px 9px;border-bottom:1px solid var(--line2)}
 .side-head h3{margin:0;font-size:12px;font-weight:800;letter-spacing:-.02em}
 .side-head small{font-size:10px;color:var(--muted2)}
+/* 접기/펼치기 머리 버튼 — 데스크톱에서는 숨기고(목록은 늘 펼침) 모바일에서만 쓴다 */
+.side-fold{display:none}
+.sf-k{font-size:9.5px;font-weight:700;color:var(--muted2);flex:none}
+.sf-cur{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;font-weight:800;color:var(--violet-d)}
+.sf-chev{flex:none;font-size:10px;color:var(--muted2);transition:transform .16s var(--ease)}
 .hotel-items{max-height:560px;overflow-y:auto;padding-top:6px;scrollbar-width:thin;scrollbar-color:var(--lav3) transparent}
 .hotel-choice{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;border:0;background:transparent;border-radius:8px;padding:7px 8px;gap:6px}
 .hotel-choice:hover{background:#f4f1fc}
@@ -1483,10 +1488,19 @@ table.fr-g td.c-A.new{box-shadow:inset 0 0 0 2px #e0872f}
   .tabs{padding:13px 15px 0}
   .workspace{grid-template-columns:1fr}
   .side{position:static;padding:10px}
-  .hotel-items{display:flex;gap:5px;overflow-x:auto;max-height:unset;padding-top:8px;white-space:nowrap}
-  .hotel-choice{width:auto;flex-shrink:0;border:1px solid var(--line);padding:6px 9px}
-  .hotel-choice .smalltown{display:none}
-  .hotel-choice .name{max-width:158px}
+  /* '호텔 바로 선택' — 옆으로 흐르던 칩 목록을 접기/펼치기(아코디언)로 바꾸고 펼치면 아래로 쌓는다 */
+  .side-head{flex-wrap:wrap;gap:6px 8px;padding-bottom:7px;border-bottom:0}
+  .side-fold{display:flex;flex:0 0 100%;order:3;align-items:center;gap:7px;width:100%;min-height:34px;padding:7px 10px;border:1px solid var(--line2);border-radius:9px;background:var(--card);cursor:pointer;font:inherit;text-align:left}
+  .side-fold:focus-visible{outline:2px solid var(--violet-l);outline-offset:1px}
+  .side.open .sf-chev{transform:rotate(180deg)}
+  .hotel-items{display:none;max-height:none;overflow:visible;padding-top:0;white-space:normal}
+  .side.open .hotel-items{display:block;max-height:min(56vh,430px);overflow-y:auto;overflow-x:hidden;padding:5px 2px 2px;border-top:1px solid var(--line2);margin-top:7px;scrollbar-width:thin;scrollbar-color:var(--lav3) transparent}
+  .hotel-items .hotel-row{width:100%}
+  .hotel-choice{width:100%;flex:1 1 auto;min-width:0;border:1px solid transparent;padding:7px 8px}
+  .side.open .hotel-choice{border-color:var(--line2)}
+  .hotel-choice .smalltown{display:block}
+  .hotel-choice .name{max-width:none;white-space:normal;line-height:1.32}
+  .hotel-choice .price{flex:none}
   .side-foot{display:none}
   .insights{grid-template-columns:1fr}
   .glance-cols{grid-template-columns:1fr}
@@ -2660,7 +2674,7 @@ details.foldbox:has(>[style*="display:none"]){display:none}
   </details>
 
   <div class="workspace">
-    <aside class="side"><div class="side-head"><h3>호텔 바로 선택</h3><small id="hotelCount">24개</small></div><div class="hotel-items" id="hotelList"></div><div class="side-foot">가격 미표시(—)는 무료 숙박이 아닙니다. 호텔을 선택하면 그 호텔의 요금만 남습니다.</div></aside>
+    <aside class="side" id="hotelSide"><div class="side-head"><h3>호텔 바로 선택</h3><small id="hotelCount">24개</small><button class="side-fold" id="hotelFoldBtn" type="button" aria-expanded="false" aria-controls="hotelList" title="호텔 목록을 접거나 펼칩니다"><span class="sf-k">선택</span><span class="sf-cur" id="hotelCurrent">전체 호텔 비교</span><span class="sf-chev" aria-hidden="true">▾</span></button></div><div class="hotel-items" id="hotelList"></div><div class="side-foot">가격 미표시(—)는 무료 숙박이 아닙니다. 호텔을 선택하면 그 호텔의 요금만 남습니다.</div></aside>
     <main class="mainpanel">
       <div class="querybar">
         <div class="field"><label for="citySelect">도시 / 지역</label><select id="citySelect" aria-label="도시 필터"></select></div>
@@ -4140,6 +4154,10 @@ function renderFilters(){const base=tierFiltered();let cities;
  const hotels=cityFiltered();if(st.hotel!=='all'&&!hotels.some(h=>h.id===st.hotel))st.hotel='all';
  $('hotelSelect').innerHTML='<option value="all">전체 호텔 ('+hotels.length+')</option>'+hotels.map(h=>'<option value="'+h.id+'">'+esc(h.name)+'</option>').join('');$('hotelSelect').value=st.hotel;
  $('hotelCount').textContent=hotels.length+'개';
+ /* 접힌 상태의 머리 버튼에 지금 고른 호텔(또는 전체 비교)이 바로 보이게 적는다 */
+ if($('hotelCurrent')){const selH=st.hotel==='all'?null:hotels.find(h=>h.id===st.hotel);
+  $('hotelCurrent').textContent=selH?(selH.name+' · '+listBadge(selH)):('전체 호텔 비교 · '+hotels.length+'곳');
+  $('hotelCurrent').title=$('hotelCurrent').textContent}
  $('hotelList').innerHTML='<button class="hotel-choice '+(st.hotel==='all'?'selected':'')+'" type="button" data-hotel="all"><span class="name">전체 호텔 비교</span><span class="price">'+hotels.length+'곳</span></button>'
   +(hotels.length?hotels.map(h=>{const z=zoneOf(h);const sub=st.tab==='accor'
     ?(z==='cn'?(h.city+' · '+(ZONES.cn)):(ZONES[z]||'')+' · '+h.city)
@@ -4912,7 +4930,16 @@ function exportCsv(){const hs=filteredHotels(),mode=st.mode;const header=['프�
  const content='\ufeff'+rows.map(r=>r.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob([content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download='hotel-calendar-'+st.tab+'-'+st.month+'-'+mode+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 $('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)setTab(b.dataset.tab)});
 $('snuChips').addEventListener('click',e=>{const b=e.target.closest('[data-snu-city]');if(!b)return;snuCity=b.dataset.snuCity;renderSNU()});
-$('citySelect').addEventListener('change',e=>setCity(e.target.value));$('hotelSelect').addEventListener('change',e=>setHotel(e.target.value));$('hotelList').addEventListener('click',e=>{const b=e.target.closest('[data-hotel]');if(b)setHotel(b.dataset.hotel)});$('accorMode').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b)switchMode(b.dataset.mode)});
+$('citySelect').addEventListener('change',e=>setCity(e.target.value));$('hotelSelect').addEventListener('change',e=>setHotel(e.target.value));
+/* 모바일 '호텔 바로 선택' 접기/펼치기 — 펼치면 호텔 목록이 아래로 쌓이고, 고르면 다시 접힌다 */
+function hotelFoldIsMobile(){try{return window.matchMedia('(max-width:980px)').matches}catch(e){return window.innerWidth<=980}}
+function hotelFoldSet(open){const a=$('hotelSide'),b=$('hotelFoldBtn');if(!a||!b)return;
+ a.classList.toggle('open',!!open);b.setAttribute('aria-expanded',open?'true':'false');
+ if(open){const s=$('hotelList')&&$('hotelList').querySelector('.hotel-choice.selected');if(s&&s.scrollIntoView)try{s.scrollIntoView({block:'nearest'})}catch(e){}}}
+if($('hotelFoldBtn'))$('hotelFoldBtn').addEventListener('click',()=>hotelFoldSet(!$('hotelSide').classList.contains('open')));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&hotelFoldIsMobile()&&$('hotelSide').classList.contains('open'))hotelFoldSet(false)});
+document.addEventListener('click',e=>{const a=$('hotelSide');if(!a||!a.classList.contains('open'))return;if(!a.contains(e.target))hotelFoldSet(false)});
+$('hotelList').addEventListener('click',e=>{const b=e.target.closest('[data-hotel]');if(b){setHotel(b.dataset.hotel);if(hotelFoldIsMobile())hotelFoldSet(false)}});$('accorMode').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b)switchMode(b.dataset.mode)});
 $('zoneChips').addEventListener('click',e=>{const b=e.target.closest('[data-zone]');if(!b)return;st.zone=b.dataset.zone;st.city='all';st.hotel='all';if(st.zone!=='cn'&&st.mode!=='apc')st.apcOnly=false;render()});
 $('ihgChips').addEventListener('click',e=>{const b=e.target.closest('[data-ihgzone]');if(!b)return;st.ihgzone=b.dataset.ihgzone;st.city='all';st.hotel='all';render()});
 $('chinaTier').addEventListener('click',e=>{const b=e.target.closest('[data-ctier]');if(b){st.ctier=b.dataset.ctier;st.city='all';st.hotel='all';render()}});

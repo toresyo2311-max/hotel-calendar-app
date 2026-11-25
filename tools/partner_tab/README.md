@@ -28,7 +28,7 @@
 - `flyingblue_dep_PUS.txt` 의 **부산→옌타이(YNT) 42행**은 공홈에서 직접 확인한 값입니다. 자동 수집이 이 조합을
   덮어쓰지 않도록, 자동 갱신은 (날짜·도시) 단위로 **합집합**으로 합칩니다(아래 4번).
 
-## 2. 수집 절차 (매일 04:00 자동 갱신도 같은 순서)
+## 2. (참고) 브라우저 수집 절차 — 지금은 2-0 API 가 기본
 
 1. `git pull --rebase origin main` — 다른 작업과 충돌을 먼저 막습니다.
 2. 브라우저 프로필의 **조회 사이트 PRO 로그인 세션**을 확인합니다(계정 메뉴에 `PRO` 표시).
@@ -49,7 +49,34 @@
    ```
    `sw.js` 의 `VERSION`(z숫자)을 올린 뒤 `git pull --rebase origin main` → `git push` → GitHub Pages `built` 확인.
 
-## 2-1. 매일 04:00 자동 갱신이 실제로 쓰는 길 (2026-11-23 추가)
+## 2-0. 공식 Partner API 가 기본 길입니다 (2026-11-25 전환)
+
+매일 04:00 자동 갱신은 이제 **브라우저 36개 내려받기 대신 공식 Partner API `GET /search`** 로 받습니다.
+
+```
+python3 tools/partner_tab/fetch_seats_aero_api.py             # 부산·인천 9개 프로그램 전부 (약 8분 · API 239회)
+python3 tools/partner_tab/fetch_seats_aero_api.py --dry-run    # 쓰지 않고 호출·건수만 확인
+python3 tools/build_partner_tab.py --json-only                 # raw/ → JSON 2개 (화면 블록은 그대로)
+```
+
+- 인증 키: 환경변수 `SEATS_AERO_API_KEY` 또는 `/workspace/.secrets/seats_aero_api_key`(권한 600).
+  **키는 저장소에 절대 적지 않습니다**(공개 저장소). 스크립트도 키를 출력하지 않습니다.
+- 호출 구성: `/routes`(프로그램 9곳, 9회) + `/destinations`(부산·인천, 4회) + `/search`
+  (`sources` × 출발지 2 × 방향 2 = 36회 + 1,000건 단위 페이지 넘김). 2026-11-25 실측 **239회**,
+  일 한도 1,000회(UTC 자정 = 한국 09:00 초기화)의 약 24%입니다. 남은 회수는 응답 헤더
+  `X-RateLimit-Remaining` 값으로 스크립트가 보고합니다.
+- `/search` 는 공항 단위 필터가 되므로 방향별 「목적지 후보」를 `/routes`(9곳 합집합) +
+  `/destinations` + 기존 원자료·JSON 에서 모아 한 번에 넘깁니다(놓친 도시가 없게).
+- 값 규칙은 CSV 길과 같습니다: `MileageCost` = 그 등급 최저 마일, `Direct` 참이면 직항(0),
+  아니면 1회 이상 경유(1). `UpdatedAt` 으로 「최근 확인」을 만듭니다.
+- 공항 홈페이지 실측분(`flyingblue` 부산 YNT·NKG, `delta` 부산 NKG)은 API 결과가 0이어도 지우지
+  않습니다(`PRESERVE`). 부산↔광저우(CAN)는 **API 캐시에 이 짝이 없어 0건**이라 아래 2-2절 방식
+  (검색 화면 · 별도 파일)을 그대로 씁니다 — 두 파일은 이 갱신이 건드리지 않습니다.
+- 그래서 매일 04:00 화면 문구(JSON `searchNote`)의 CAN 안내는 그대로 남습니다.
+
+## 2-1. (예전 길 · 비상용) 브라우저 화면에서 36개 CSV 내려받기
+
+API 키가 막히거나(만료·한도 소진) API 장애일 때만 씁니다. 결과 원자료 형식은 같습니다.
 
 ```
 # 36개 화면(9프로그램 × 출발·도착 × PUS·ICN)에서 「. CSV」를 눌러 내려받은 뒤
@@ -107,6 +134,8 @@ python3 tools/build_partner_tab.py --json-only           # 화면은 건드리�
 
 ## 4. 하지 말 것
 
+- **Partner API 키를 저장소·스크립트·화면 문구에 적지 않습니다.** 키는 `/workspace/.secrets/seats_aero_api_key`
+  (권한 600) 또는 환경변수 `SEATS_AERO_API_KEY` 에만 둡니다. 커밋 전 `git diff` 에 `pro_` 문자열이 없는지 확인합니다.
 - 조회 사이트·수집기 이름을 `index.html`·`sw.js`·`data/app/*.json`·`tools/*` 화면 문구에 노출하지 않습니다(화면 문구는 「조회 사이트」).
 - 원자료에 없는 값을 추정해 채우지 않습니다. 0건은 0건으로 적습니다.
 - **⑨ 외항사 마일 탭을 다시 만들지 않습니다** — 화면은 `tools/mileage_tab/` 하나입니다.

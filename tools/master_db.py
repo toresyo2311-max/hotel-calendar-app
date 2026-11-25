@@ -101,7 +101,8 @@ WINDOW_END = '2027-11-30'
 #   신규는 파일 28번(끝) RMQTL 알로프트 타이중 1곳뿐이라 코드로 걸러 더했다(중복 0건).
 #   이로써 ① 161 + ② 536 + ③ 308 = **통합 1,005곳**이 됐다.
 #   2026-11-25 베트남 1차 4곳(CXRJW·CXRWI·VCASI·VCALM)을 더해 ③ 312 · **통합 1,009곳**.
-EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 312}
+#   2026-11-25 베트남 2차 4곳(CXRHT·NHASI·CXRNP·DADMR)을 더해 ③ 316 · 베트남 8 · **통합 1,013곳**.
+EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 316}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
 #   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
@@ -598,10 +599,12 @@ def check_sources(text_blob):
 #   대만 8차 1곳(2026-11-24)에서 알로프트 1곳(타이중)이 늘었다(8→9).
 #   베트남 1차 4곳(2026-11-25)에서 JW 메리어트 1곳(깜라인 · 8→9) · 웨스틴 1곳(깜라인 · 17→18) ·
 #   쉐라톤 1곳(껀터 · 24→25) · 오토그래프 컬렉션 1곳(껀터 · 13→14)이 늘었다.
+#   베트남 2차 4곳(2026-11-25)에서 메리어트 2곳(나트랑 Hon Tre · 다낭 · 24→26) · 쉐라톤 1곳(나트랑 ·
+#   25→26) · 포 포인츠 바이 쉐라톤 1곳(나트랑 — 원자료 브랜드가 `포인트`로 잘려 와 기존 표기로 통일 · 15→16)이 늘었다.
 EXPECT_BRANDS = {'리츠칼튼': 28, '세인트레지스': 16, 'W': 15, '코트야드 바이 메리어트': 27,
-                 '포 포인츠 바이 쉐라톤': 15, 'JW 메리어트': 9, '럭셔리 컬렉션': 12, '웨스틴': 18,
-                 '오토그래프 컬렉션': 14, '페어필드 바이 메리어트': 34, '메리어트': 24, 'AC 호텔': 5,
-                 '알로프트': 9, '목시': 9, '쉐라톤': 25, '에디션': 3,
+                 '포 포인츠 바이 쉐라톤': 16, 'JW 메리어트': 9, '럭셔리 컬렉션': 12, '웨스틴': 18,
+                 '오토그래프 컬렉션': 14, '페어필드 바이 메리어트': 34, '메리어트': 26, 'AC 호텔': 5,
+                 '알로프트': 9, '목시': 9, '쉐라톤': 26, '에디션': 3,
                  '메리어트 이그제큐티브 아파트먼트': 2, '르메르디앙': 5, '트리뷰트 포트폴리오': 7,
                  '디자인 호텔스': 13, '포인트 플렉스 바이 쉐라톤': 16, '엘리먼트': 1,
                  '메리어트 베케이션 클럽': 1, '시티 익스프레스': 2, '르네상스': 2}
@@ -751,6 +754,13 @@ TW28_IDS = {'m308'}
 #   네 곳 모두 포인트 값이 있어 NO_POINT_CODES 등록 대상은 없다. null 은 보간하지 않는다.
 EXPECT_VN1 = {'hotels': 4, 'cash': 1363, 'points': 1354}
 VN1_IDS = {'m%02d' % i for i in range(309, 313)}
+# 2026-11-25 베트남 2차 4곳(m313~m316) — 현금 1,373칸 · 아워드 포인트 1,355칸 / 4×365=1,460칸
+#   CXRHT 344/342(현금 2026-12-10~12-12 · 포인트 2026-12-09~12-12 · 2026-12-26 미게시) ·
+#   NHASI 347/337(포인트 2027-11-07~11-30 24일 미게시) · CXRNP 341/341 · DADMR 341/335.
+#   네 곳 모두 포인트 값이 있어 NO_POINT_CODES 등록 대상은 없다. null 은 보간하지 않는다.
+#   ① 호텔럭스 161곳과 전수 대조 — 겹침 0곳이라 alsoIn·MAR_CROSS 추가 0쌍.
+EXPECT_VN2 = {'hotels': 4, 'cash': 1373, 'points': 1355}
+VN2_IDS = {'m%02d' % i for i in range(313, 317)}
 # 아워드 포인트 캘린더가 전 기간 미게시인 호텔(코드) — 「포인트 칸 없음」 검사에서 뺀다.
 #   k09 여의도 파크 센터 MEA · NANSI 12월 31일만 판매 · OOLAC 12/18 개관 · POMEA
 NO_POINT_CODES = {'NANSI', 'OOLAC', 'POMEA',
@@ -5271,8 +5281,17 @@ def check_tabs(db):
             or vn1p != EXPECT_VN1['points']:
         problems.append('베트남 1차 4곳 수치 %s (기대 %s)' % (
             {'hotels': len(vn1), 'cash': vn1c, 'points': vn1p}, EXPECT_VN1))
+    # 2026-11-25 — 베트남 2차 4곳(m313~m316)도 칸 수를 고정해 둔다(유실·보간 방지)
+    vn2 = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'] in VN2_IDS]
+    vn2c = sum(1 for h in vn2 for v in (h.get('rates') or {}).values()
+               if isinstance(v, (int, float)))
+    vn2p = sum(1 for h in vn2 for v in (h.get('points') or {}).values() if isinstance(v, int))
+    if len(vn2) != EXPECT_VN2['hotels'] or vn2c != EXPECT_VN2['cash'] \
+            or vn2p != EXPECT_VN2['points']:
+        problems.append('베트남 2차 4곳 수치 %s (기대 %s)' % (
+            {'hotels': len(vn2), 'cash': vn2c, 'points': vn2p}, EXPECT_VN2))
     for h in kj + kr30 + sg8 + sg7 + sg7l + oc + jp30 + jp30b + oc2 + jp34 + jp34b + oc10 + tw4 + tw2 \
-            + tw3 + tw4c4 + tw5 + tw6 + tw7 + tw8 + vn1:
+            + tw3 + tw4c4 + tw5 + tw6 + tw7 + tw8 + vn1 + vn2:
         if h['id'] == 'k09' or h.get('code') in NO_POINT_CODES:
             continue
         if not h.get('points'):

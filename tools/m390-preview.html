@@ -25,6 +25,9 @@
 <script>
 (function(){
   var fr=document.getElementById('frame'),out=document.getElementById('out');
+  // ?tab=hyatt 처럼 넘기면 그 탭으로 바로 열린다(점검용)
+  var q=new URLSearchParams(location.search),tab=q.get('tab');
+  if(tab)fr.src='../index.html?preview=390#tab='+encodeURIComponent(tab);
   function w(){return fr.contentWindow}
   fr.addEventListener('load',function(){
     try{var win=w();win.__errs=[];win.addEventListener('error',function(e){win.__errs.push(String(e.message))});}catch(e){}

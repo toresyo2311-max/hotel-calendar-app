@@ -106,7 +106,9 @@ WINDOW_END = '2027-11-30'
 #   2026-11-25 베트남 6차 4곳(HANHS·HANSW·HANHP·HANLP)을 더해 ③ 332 · 베트남 24 · **통합 1,029곳**.
 #   2026-11-26 베트남 7차 4곳(HPHSI·DADHA·DADMC·SGNJS)을 더해 ③ 336 · 베트남 28 · **통합 1,033곳**.
 #   2026-11-26 베트남 8차 4곳(SGNJT·SGNBS·SGNBR·SGNMD)을 더해 ③ 340 · 베트남 32 · **통합 1,037곳**.
-EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 340}
+#   2026-11-26 베트남 9차(마지막) 3곳(SGNSI·SGNAK·SGNFI)을 더해 ③ 343 · 베트남 35 · **통합 1,040곳**
+#   — 베트남 35곳(1~9차) 전량 반영.
+EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 343}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ④ 하얏트는 ①②③ 마스터 밖의 별도 정본(data/app/tab10_hyatt.json)이다 — 병합할 때마다 곳수·칸수가
 #   줄지 않았는지 확인한다(2026-11-26 미국 4차-A 24곳 병합 → 275→299곳 · 109,135칸 · 값 97,207칸).
@@ -622,10 +624,12 @@ def check_sources(text_blob):
 #   베트남 8차 4곳(2026-11-26)에서 JW 메리어트 1곳(사이공 더 아파트먼트 · 12→13) ·
 #   디자인 호텔스 1곳(호찌민 바흐 스위트 · 13→14) · 르네상스 1곳(호찌민 리버사이드 · 3→4) ·
 #   르메르디앙 1곳(사이공 · 5→6)이 늘었다.
+#   베트남 9차 3곳(2026-11-26)에서 쉐라톤 1곳(사이공 그랜드 오페라 · 32→33) ·
+#   오토그래프 컬렉션 1곳(랜드마크 81 · 14→15) · 페어필드 바이 메리어트 1곳(사우스 빈즈엉성 · 35→36)이 늘었다.
 EXPECT_BRANDS = {'리츠칼튼': 28, '세인트레지스': 16, 'W': 15, '코트야드 바이 메리어트': 28,
                  '포 포인츠 바이 쉐라톤': 19, 'JW 메리어트': 13, '럭셔리 컬렉션': 12, '웨스틴': 18,
-                 '오토그래프 컬렉션': 14, '페어필드 바이 메리어트': 35, '메리어트': 29, 'AC 호텔': 5,
-                 '알로프트': 9, '목시': 10, '쉐라톤': 32, '에디션': 3,
+                 '오토그래프 컬렉션': 15, '페어필드 바이 메리어트': 36, '메리어트': 29, 'AC 호텔': 5,
+                 '알로프트': 9, '목시': 10, '쉐라톤': 33, '에디션': 3,
                  '메리어트 이그제큐티브 아파트먼트': 3, '르메르디앙': 6, '트리뷰트 포트폴리오': 7,
                  '디자인 호텔스': 14, '포인트 플렉스 바이 쉐라톤': 16, '엘리먼트': 1,
                  '메리어트 베케이션 클럽': 1, '시티 익스프레스': 2, '르네상스': 4}
@@ -857,6 +861,22 @@ VN7_IDS = {'m%d' % i for i in range(333, 337)}
 #   ① 호텔럭스 161곳과 전수 대조 — 겹침 0곳(① 탭에 호찌민 호텔이 없다)이라 alsoIn·MAR_CROSS 추가 0쌍.
 EXPECT_VN8 = {'hotels': 4, 'cash': 1366, 'points': 629}
 VN8_IDS = {'m%d' % i for i in range(337, 341)}
+# 2026-11-26 베트남 9차(마지막) 3곳(m341~m343) — 현금 1,040칸 · 아워드 포인트 1,031칸 / 3×365=1,095칸
+#   SGNSI(쉐라톤 사이공 그랜드 오페라 호텔) 346/343 · SGNAK(빈펄 랜드마크 81, 오토그래프 컬렉션)
+#   347/341 · SGNFI(페어필드 바이 메리어트 사우스 빈즈엉성) 347/347.
+#   SGNSI 는 2027-03-11 하루만 3,398,187원(다른 날의 10배 이상 · DOM .price-section 재확인, 같은 날 포인트
+#   미게시)이고 2026-12-31 740,883원이다. SGNAK 은 2026-12-31 하루만 740,883원(창 안 최고가),
+#   SGNFI 는 2027-03-09 하루만 110,742원이 최고가다. 세 곳 모두 현금·포인트가 2027-11-12 에 끊겨
+#   2027-11-13~30 18일이 예약 창 끝이다. null 은 보간하지 않는다.
+#   원자료 국문명(`쉐라톤 호찌민 Saigon Grand Opera`·`오토그래프 컬렉션 호찌민 Vinpearl Landmark 81`·
+#   `페어필드 바이 메리어트 호찌민 South Binh Duong`)은 marriott.com/ko 공식 표기(`빈펄 랜드마크 81,
+#   오토그래프 컬렉션`·`페어필드 바이 메리어트 사우스 빈즈엉성`)로 바로잡았고, SGNSI 는 ko 한국어 페이지가
+#   없어 8차 SGNBS 와 같은 카드 관례(브랜드 + 사이공 + 고유명)로 `쉐라톤 사이공 그랜드 오페라 호텔`,
+#   SGNFI 는 공식 ko 페이지가 「빈즈엉성 투언안시」로 적는 실제 소재지에 맞춰 도시를 `빈즈엉` 으로 적었다.
+#   세 곳 모두 포인트 값이 있어 NO_POINT_CODES 등록 대상은 없다.
+#   ① 호텔럭스 161곳과 전수 대조 — 겹침 0곳(① 탭에 호찌민·빈즈엉 호텔이 없다)이라 alsoIn·MAR_CROSS 추가 0쌍.
+EXPECT_VN9 = {'hotels': 3, 'cash': 1040, 'points': 1031}
+VN9_IDS = {'m%d' % i for i in range(341, 344)}
 # 아워드 포인트 캘린더가 전 기간 미게시인 호텔(코드) — 「포인트 칸 없음」 검사에서 뺀다.
 #   k09 여의도 파크 센터 MEA · NANSI 12월 31일만 판매 · OOLAC 12/18 개관 · POMEA
 NO_POINT_CODES = {'NANSI', 'OOLAC', 'POMEA',
@@ -5451,8 +5471,17 @@ def check_tabs(db):
             or vn8p != EXPECT_VN8['points']:
         problems.append('베트남 8차 4곳 수치 %s (기대 %s)' % (
             {'hotels': len(vn8), 'cash': vn8c, 'points': vn8p}, EXPECT_VN8))
+    # 2026-11-26 — 베트남 9차(마지막) 3곳(m341~m343)도 칸 수를 고정해 둔다(유실·보간 방지)
+    vn9 = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'] in VN9_IDS]
+    vn9c = sum(1 for h in vn9 for v in (h.get('rates') or {}).values()
+               if isinstance(v, (int, float)))
+    vn9p = sum(1 for h in vn9 for v in (h.get('points') or {}).values() if isinstance(v, int))
+    if len(vn9) != EXPECT_VN9['hotels'] or vn9c != EXPECT_VN9['cash'] \
+            or vn9p != EXPECT_VN9['points']:
+        problems.append('베트남 9차 3곳 수치 %s (기대 %s)' % (
+            {'hotels': len(vn9), 'cash': vn9c, 'points': vn9p}, EXPECT_VN9))
     for h in kj + kr30 + sg8 + sg7 + sg7l + oc + jp30 + jp30b + oc2 + jp34 + jp34b + oc10 + tw4 + tw2 \
-            + tw3 + tw4c4 + tw5 + tw6 + tw7 + tw8 + vn1 + vn2 + vn3 + vn4 + vn5 + vn6 + vn7 + vn8:
+            + tw3 + tw4c4 + tw5 + tw6 + tw7 + tw8 + vn1 + vn2 + vn3 + vn4 + vn5 + vn6 + vn7 + vn8 + vn9:
         if h['id'] == 'k09' or h.get('code') in NO_POINT_CODES:
             continue
         if not h.get('points'):

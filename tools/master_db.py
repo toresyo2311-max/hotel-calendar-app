@@ -100,7 +100,8 @@ WINDOW_END = '2027-11-30'
 #   이란 1 · 자오시 1 · 타오위안 2 · 타이둥 1 · 타이베이 15 · 타이중 3). 누적 28곳 원본 가운데
 #   신규는 파일 28번(끝) RMQTL 알로프트 타이중 1곳뿐이라 코드로 걸러 더했다(중복 0건).
 #   이로써 ① 161 + ② 536 + ③ 308 = **통합 1,005곳**이 됐다.
-EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 308}
+#   2026-11-25 베트남 1차 4곳(CXRJW·CXRWI·VCASI·VCALM)을 더해 ③ 312 · **통합 1,009곳**.
+EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 312}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
 #   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
@@ -595,10 +596,12 @@ def check_sources(text_blob):
 #   대만 7차 4곳(2026-11-24)에서 트리뷰트 포트폴리오 1곳(Suz Catorze) · 포 포인츠 1곳(타이베이 Bali —
 #   원자료 브랜드가 `포인트`로 잘려 와 기존 표기로 통일) · 르메르디앙 1곳(타이중) · 목시 1곳(타이중)이 늘었다.
 #   대만 8차 1곳(2026-11-24)에서 알로프트 1곳(타이중)이 늘었다(8→9).
+#   베트남 1차 4곳(2026-11-25)에서 JW 메리어트 1곳(깜라인 · 8→9) · 웨스틴 1곳(깜라인 · 17→18) ·
+#   쉐라톤 1곳(껀터 · 24→25) · 오토그래프 컬렉션 1곳(껀터 · 13→14)이 늘었다.
 EXPECT_BRANDS = {'리츠칼튼': 28, '세인트레지스': 16, 'W': 15, '코트야드 바이 메리어트': 27,
-                 '포 포인츠 바이 쉐라톤': 15, 'JW 메리어트': 8, '럭셔리 컬렉션': 12, '웨스틴': 17,
-                 '오토그래프 컬렉션': 13, '페어필드 바이 메리어트': 34, '메리어트': 24, 'AC 호텔': 5,
-                 '알로프트': 9, '목시': 9, '쉐라톤': 24, '에디션': 3,
+                 '포 포인츠 바이 쉐라톤': 15, 'JW 메리어트': 9, '럭셔리 컬렉션': 12, '웨스틴': 18,
+                 '오토그래프 컬렉션': 14, '페어필드 바이 메리어트': 34, '메리어트': 24, 'AC 호텔': 5,
+                 '알로프트': 9, '목시': 9, '쉐라톤': 25, '에디션': 3,
                  '메리어트 이그제큐티브 아파트먼트': 2, '르메르디앙': 5, '트리뷰트 포트폴리오': 7,
                  '디자인 호텔스': 13, '포인트 플렉스 바이 쉐라톤': 16, '엘리먼트': 1,
                  '메리어트 베케이션 클럽': 1, '시티 익스프레스': 2, '르네상스': 2}
@@ -743,6 +746,11 @@ TW27_IDS = {'m%d' % i for i in range(304, 308)}
 #   null 은 보간하지 않는다(6번 대화의 「현금 365/365일」과 달리 실측은 345/344일).
 EXPECT_TW28 = {'hotels': 1, 'cash': 345, 'points': 344}
 TW28_IDS = {'m308'}
+# 2026-11-25 베트남 1차 4곳(m309~m312) — 현금 1,363칸 · 아워드 포인트 1,354칸 / 4×365=1,460칸
+#   CXRJW 341/340(포인트 2027-02-07 미게시) · CXRWI 347/341 · VCASI 347/347 · VCALM 328/326.
+#   네 곳 모두 포인트 값이 있어 NO_POINT_CODES 등록 대상은 없다. null 은 보간하지 않는다.
+EXPECT_VN1 = {'hotels': 4, 'cash': 1363, 'points': 1354}
+VN1_IDS = {'m%02d' % i for i in range(309, 313)}
 # 아워드 포인트 캘린더가 전 기간 미게시인 호텔(코드) — 「포인트 칸 없음」 검사에서 뺀다.
 #   k09 여의도 파크 센터 MEA · NANSI 12월 31일만 판매 · OOLAC 12/18 개관 · POMEA
 NO_POINT_CODES = {'NANSI', 'OOLAC', 'POMEA',
@@ -767,7 +775,9 @@ EXPECT_OVERLAP = ({'k01', 'k02', 'k04', 'k05', 'k20', 'k26', 'j01', 'j04', 'j10'
                   #   TYOAM↔h53 · TYOWI↔h60)
                   | {'m181', 'm187', 'm188', 'm189'}
                   # 오세아니아 2차 14곳 가운데 ① 호텔럭스와 같은 호텔 1곳(SYDWH W 시드니 ↔ h110)
-                  | {'m207'})
+                  | {'m207'}
+                  # 베트남 1차 4곳 가운데 ① 호텔럭스와 같은 호텔 1곳(CXRJW JW 메리어트 깜라인 Bay ↔ h22)
+                  | {'m309'})
 # 원래부터 두 탭에 있던 중복(③ Stay Plus ↔ ① HoteLux) — 새 중복과 구분하기 위한 허용 목록
 KNOWN_DUP = {('dB200', 'h39')}
 
@@ -5252,8 +5262,17 @@ def check_tabs(db):
             or tw8p != EXPECT_TW28['points']:
         problems.append('대만 8차 1곳 수치 %s (기대 %s)' % (
             {'hotels': len(tw8), 'cash': tw8c, 'points': tw8p}, EXPECT_TW28))
+    # 2026-11-25 — 베트남 1차 4곳(m309~m312)도 칸 수를 고정해 둔다(유실·보간 방지)
+    vn1 = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'] in VN1_IDS]
+    vn1c = sum(1 for h in vn1 for v in (h.get('rates') or {}).values()
+               if isinstance(v, (int, float)))
+    vn1p = sum(1 for h in vn1 for v in (h.get('points') or {}).values() if isinstance(v, int))
+    if len(vn1) != EXPECT_VN1['hotels'] or vn1c != EXPECT_VN1['cash'] \
+            or vn1p != EXPECT_VN1['points']:
+        problems.append('베트남 1차 4곳 수치 %s (기대 %s)' % (
+            {'hotels': len(vn1), 'cash': vn1c, 'points': vn1p}, EXPECT_VN1))
     for h in kj + kr30 + sg8 + sg7 + sg7l + oc + jp30 + jp30b + oc2 + jp34 + jp34b + oc10 + tw4 + tw2 \
-            + tw3 + tw4c4 + tw5 + tw6 + tw7 + tw8:
+            + tw3 + tw4c4 + tw5 + tw6 + tw7 + tw8 + vn1:
         if h['id'] == 'k09' or h.get('code') in NO_POINT_CODES:
             continue
         if not h.get('points'):

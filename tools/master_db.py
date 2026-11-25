@@ -105,7 +105,8 @@ WINDOW_END = '2027-11-30'
 #   2026-11-25 베트남 5차 4곳(PQCSR·PQCFI·HANJW·HANBN)을 더해 ③ 328 · 베트남 20 · **통합 1,025곳**.
 #   2026-11-25 베트남 6차 4곳(HANHS·HANSW·HANHP·HANLP)을 더해 ③ 332 · 베트남 24 · **통합 1,029곳**.
 #   2026-11-26 베트남 7차 4곳(HPHSI·DADHA·DADMC·SGNJS)을 더해 ③ 336 · 베트남 28 · **통합 1,033곳**.
-EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 336}
+#   2026-11-26 베트남 8차 4곳(SGNJT·SGNBS·SGNBR·SGNMD)을 더해 ③ 340 · 베트남 32 · **통합 1,037곳**.
+EXPECT_TABS = {'lux': 161, 'accor': 536, 'marriott': 340}
 EXPECT_HOTELS = sum(EXPECT_TABS.values())
 # ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
 #   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
@@ -615,13 +616,16 @@ def check_sources(text_blob):
 #   2곳(하장 · 랑선 · 17→19)이 늘었다.
 #   베트남 7차 4곳(2026-11-26)에서 쉐라톤 1곳(하이퐁 · 31→32) · 르네상스 1곳(다낭 호이안 · 2→3) ·
 #   메리어트 1곳(호이안 · 28→29) · JW 메리어트 1곳(사이공 · 11→12)이 늘었다.
+#   베트남 8차 4곳(2026-11-26)에서 JW 메리어트 1곳(사이공 더 아파트먼트 · 12→13) ·
+#   디자인 호텔스 1곳(호찌민 바흐 스위트 · 13→14) · 르네상스 1곳(호찌민 리버사이드 · 3→4) ·
+#   르메르디앙 1곳(사이공 · 5→6)이 늘었다.
 EXPECT_BRANDS = {'리츠칼튼': 28, '세인트레지스': 16, 'W': 15, '코트야드 바이 메리어트': 28,
-                 '포 포인츠 바이 쉐라톤': 19, 'JW 메리어트': 12, '럭셔리 컬렉션': 12, '웨스틴': 18,
+                 '포 포인츠 바이 쉐라톤': 19, 'JW 메리어트': 13, '럭셔리 컬렉션': 12, '웨스틴': 18,
                  '오토그래프 컬렉션': 14, '페어필드 바이 메리어트': 35, '메리어트': 29, 'AC 호텔': 5,
                  '알로프트': 9, '목시': 10, '쉐라톤': 32, '에디션': 3,
-                 '메리어트 이그제큐티브 아파트먼트': 3, '르메르디앙': 5, '트리뷰트 포트폴리오': 7,
-                 '디자인 호텔스': 13, '포인트 플렉스 바이 쉐라톤': 16, '엘리먼트': 1,
-                 '메리어트 베케이션 클럽': 1, '시티 익스프레스': 2, '르네상스': 3}
+                 '메리어트 이그제큐티브 아파트먼트': 3, '르메르디앙': 6, '트리뷰트 포트폴리오': 7,
+                 '디자인 호텔스': 14, '포인트 플렉스 바이 쉐라톤': 16, '엘리먼트': 1,
+                 '메리어트 베케이션 클럽': 1, '시티 익스프레스': 2, '르네상스': 4}
 # 한·일 원본 CSV 기대치(2026-11-17 수집) — 유실·중복 방지용 고정값. 2026-11-23에 한국 30곳을
 #   더하면서 k11~k40 이 이 목록에 섞이지 않도록 원본 22곳 id 만 골라 검사한다. 신규 30곳은 아래
 #   EXPECT_KR30 으로 따로 고정한다.
@@ -835,6 +839,21 @@ VN6_IDS = {'m%d' % i for i in range(329, 333)}
 #   alsoIn·MAR_CROSS 추가 0쌍.
 EXPECT_VN7 = {'hotels': 4, 'cash': 1287, 'points': 1064}
 VN7_IDS = {'m%d' % i for i in range(333, 337)}
+# 2026-11-26 베트남 8차 4곳(m337~m340) — 현금 1,366칸 · 아워드 포인트 629칸 / 4×365=1,460칸
+#   SGNJT(JW 메리어트 호텔 앤 스위트 사이공, 더 아파트먼트) 347/0 · SGNBS(디자인 호텔스 호찌민 바흐 스위트)
+#   328/290 · SGNBR(르네상스 리버사이드 호텔 사이공) 344/339 · SGNMD(르메르디앙 사이공) 347/0.
+#   SGNJT·SGNMD 는 아워드 포인트 캘린더가 365일 전부 미게시(0칸)다 — 0칸을 결측이 아니라 실측 결과로
+#   싣고 NO_POINT_CODES 에 등록한다(재실측 대상). SGNBS 는 현금·포인트가 2027-11-02 에, 나머지 세 곳은
+#   2027-11-12 에 끊긴다. null 은 보간하지 않는다.
+#   SGNJT 는 7차 SGNJS(JW 메리어트 호텔 앤 스위트 사이공)와 같은 복합 시설의 아파트먼트를 marriott.com 이
+#   별도 숙소 코드로 파는 것이라 같은 호텔 중복이 아니다(공식 SGNJS ko 페이지 「305개의 객실과 스위트,
+#   그리고 260개의 아파트먼트」) — 별도 카드로 싣는다.
+#   원자료 국문명(`JW 메리어트 호찌민 Saigon`·`디자인 호텔스 호찌민 Bach Saigon`·`르네상스 호찌민
+#   Riverside Saigon`·`르메르디앙 호찌민 Saigon`)은 marriott.com/ko 공식 표기로 바로잡았다
+#   (SGNBS 는 ko 한국어 페이지가 없어 기존 디자인 호텔스 카드 관례 `디자인 호텔스 + 도시 + 고유명`).
+#   ① 호텔럭스 161곳과 전수 대조 — 겹침 0곳(① 탭에 호찌민 호텔이 없다)이라 alsoIn·MAR_CROSS 추가 0쌍.
+EXPECT_VN8 = {'hotels': 4, 'cash': 1366, 'points': 629}
+VN8_IDS = {'m%d' % i for i in range(337, 341)}
 # 아워드 포인트 캘린더가 전 기간 미게시인 호텔(코드) — 「포인트 칸 없음」 검사에서 뺀다.
 #   k09 여의도 파크 센터 MEA · NANSI 12월 31일만 판매 · OOLAC 12/18 개관 · POMEA
 NO_POINT_CODES = {'NANSI', 'OOLAC', 'POMEA',
@@ -854,7 +873,10 @@ NO_POINT_CODES = {'NANSI', 'OOLAC', 'POMEA',
                   'PQCOX',
                   # 베트남 5차 — 페어필드 바이 메리어트 푸꾸옥 혼톰 은 2027년 1분기 개관 예정,
                   #   박닌 메리어트 호텔 은 marriott.com 페이지 404(미등록·미판매)라 둘 다 365일 미게시(0칸)
-                  'PQCFI', 'HANBN'}
+                  'PQCFI', 'HANBN',
+                  # 베트남 8차 — JW 메리어트 호텔 앤 스위트 사이공, 더 아파트먼트 와 르메르디앙 사이공 은
+                  #   아워드 포인트 캘린더가 365일 전부 미게시(현금은 실측됨) — 재실측 대상
+                  'SGNJT', 'SGNMD'}
 # ① HoteLux 탭과 호텔이 겹치는 ⑤ 항목(요금 출처가 달라 둘 다 수록) — alsoIn 으로 교차 표시
 EXPECT_OVERLAP = ({'k01', 'k02', 'k04', 'k05', 'k20', 'k26', 'j01', 'j04', 'j10', 'j11', 'j12'}
                   | SG8_IDS
@@ -5417,8 +5439,17 @@ def check_tabs(db):
             or vn7p != EXPECT_VN7['points']:
         problems.append('베트남 7차 4곳 수치 %s (기대 %s)' % (
             {'hotels': len(vn7), 'cash': vn7c, 'points': vn7p}, EXPECT_VN7))
+    # 2026-11-26 — 베트남 8차 4곳(m337~m340)도 칸 수를 고정해 둔다(유실·보간 방지)
+    vn8 = [h for h in db['hotels'] if h.get('group') == 'marriott' and h['id'] in VN8_IDS]
+    vn8c = sum(1 for h in vn8 for v in (h.get('rates') or {}).values()
+               if isinstance(v, (int, float)))
+    vn8p = sum(1 for h in vn8 for v in (h.get('points') or {}).values() if isinstance(v, int))
+    if len(vn8) != EXPECT_VN8['hotels'] or vn8c != EXPECT_VN8['cash'] \
+            or vn8p != EXPECT_VN8['points']:
+        problems.append('베트남 8차 4곳 수치 %s (기대 %s)' % (
+            {'hotels': len(vn8), 'cash': vn8c, 'points': vn8p}, EXPECT_VN8))
     for h in kj + kr30 + sg8 + sg7 + sg7l + oc + jp30 + jp30b + oc2 + jp34 + jp34b + oc10 + tw4 + tw2 \
-            + tw3 + tw4c4 + tw5 + tw6 + tw7 + tw8 + vn1 + vn2 + vn3 + vn4 + vn5 + vn6 + vn7:
+            + tw3 + tw4c4 + tw5 + tw6 + tw7 + tw8 + vn1 + vn2 + vn3 + vn4 + vn5 + vn6 + vn7 + vn8:
         if h['id'] == 'k09' or h.get('code') in NO_POINT_CODES:
             continue
         if not h.get('points'):

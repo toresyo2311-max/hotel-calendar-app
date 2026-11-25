@@ -122,6 +122,12 @@ EXPECT_HOTELS = sum(EXPECT_TABS.values())
 #   유럽 7차(포르투갈 2차) 마데이라 · 알부페이라 · 빌라모우라 3곳 → 347곳 · 126,655칸 · 값 111,370칸 —
 #   3곳(1,095칸 · 값 1,063칸)을 더한 수 · 포르투갈 6 완결 · 유럽 4개국 20곳 완결).
 EXPECT_HYATT = {'hotels': 347, 'cells': 126655, 'priced': 111370}
+# ⑤ IHG도 ①②③ 마스터 밖의 별도 정본(data/app/tab11_ihg.json)이다 — 병합할 때마다 곳수·칸수·값 있는
+#   칸이 줄지 않았는지, id·code 가 겹치지 않는지 확인한다.
+#   2026-11-26 유럽 P1 8곳(218→226곳 · 현금 2,628 + 포인트 2,559칸)에 이어
+#   2026-11-26 유럽 P1 1차 3곳(BUDKM · GVAHA · HELIN)을 더해 229곳 · 유럽 52 —
+#   1,095칸(현금 1,007 · 포인트 985)을 더한 수 · 229 × 365 = 83,585칸.
+EXPECT_IHG = {'hotels': 229, 'cells': 83585, 'cash': 73262, 'points': 70817}
 # ② 아코르 가운데 중올플 APC 카드 — 참여 287 + 기존 미참여·자격없음 2 = 289곳
 #   12월 관측 창(12/1~18) 가능 210곳 · APC 칸 4,715 · 권역 116/137/36
 #   현금 요금 보유 44곳(기존 40 + 통합하며 아코르 카드의 365일 요금이 붙은 4곳) · 미수집 245곳
@@ -5542,6 +5548,43 @@ def check_hyatt():
     return problems
 
 
+def check_ihg():
+    """⑤ IHG 정본(tab11_ihg.json) — 곳수·칸수·값 있는 칸·id/code 중복만 본다(내용 검사는 이 파일 범위 밖)."""
+    path = os.path.join(APP_DIR, 'tab11_ihg.json')
+    if not os.path.exists(path):
+        return ['⑤ tab11_ihg.json 가 없습니다']
+    try:
+        tab = json.loads(_read(path))
+    except Exception as exc:                      # noqa: BLE001
+        return ['⑤ tab11_ihg.json 를 읽지 못했습니다: %r' % (exc,)]
+    hs = tab.get('hotels') or []
+    problems = []
+    if len(hs) != EXPECT_IHG['hotels']:
+        problems.append('⑤ IHG %d곳 (기대 %d곳)' % (len(hs), EXPECT_IHG['hotels']))
+    cells = sum(len((h.get('rates') or {}).get('$v') or []) for h in hs)
+    cash = sum(1 for h in hs for v in ((h.get('rates') or {}).get('$v') or []) if v is not None)
+    pts = sum(1 for h in hs for v in ((h.get('points') or {}).get('$v') or []) if v is not None)
+    if cells != EXPECT_IHG['cells']:
+        problems.append('⑤ IHG 칸 %d (기대 %d)' % (cells, EXPECT_IHG['cells']))
+    if cash != EXPECT_IHG['cash'] or pts != EXPECT_IHG['points']:
+        problems.append('⑤ IHG 값 있는 칸 현금 %d · 포인트 %d (기대 %d · %d)'
+                        % (cash, pts, EXPECT_IHG['cash'], EXPECT_IHG['points']))
+    cnt = tab.get('counts') or {}
+    if (cnt.get('hotels'), cnt.get('cells'), cnt.get('cash'), cnt.get('points')) != \
+            (len(hs), cells, cash, pts):
+        problems.append('⑤ IHG counts 블록이 실제와 다름: %r' % (cnt,))
+    if len({h.get('id') for h in hs}) != len(hs):
+        problems.append('⑤ IHG id 중복')
+    if len({h.get('code') for h in hs}) != len(hs):
+        problems.append('⑤ IHG code 중복')
+    for h in hs:
+        for kind in ('rates', 'points'):
+            if len((h.get(kind) or {}).get('$v') or []) != 365:
+                problems.append('⑤ IHG %s %s 칸이 365가 아님' % (h.get('id'), kind))
+                break
+    return problems
+
+
 def cmd_verify(args, quiet=False):
     master = json.loads(_read(MASTER))
     src, dbmeta, _ = read_db_literal()
@@ -5618,6 +5661,7 @@ def cmd_verify(args, quiet=False):
     problems.extend(check_sources(_read(part_path(PART_FLIGHTS))))
     problems.extend(check_sources(_read(part_path(PART_TTANG))))
     problems.extend(check_hyatt())
+    problems.extend(check_ihg())
     problems.extend(check_flights(flights))
     problems.extend(check_ttang(tt))
     if os.path.exists(os.path.join(APP_DIR, PART_MILEAGE)):

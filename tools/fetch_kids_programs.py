@@ -249,7 +249,9 @@ def busan_reserve(kind):
             break
         for a in nodes:
             oc = a.get('onclick') or ''
-            m = re.search(r"fn_viewProgrm\('(\d+)','(\d+)'\)", oc)
+            # onclick 은 사이트·게시판마다 쉼표 앞뒤 공백이 다르다
+            # (견학/체험은 'a','b' · 강좌/교육은 'a', 'b') — 2026-11-27 공백 허용으로 고침
+            m = re.search(r"fn_viewProgrm\('(\d+)'\s*,\s*'(\d+)'\)", oc)
             g, p = (m.group(1), m.group(2)) if m else ('', '')
             title = ''
             t = a.xpath('.//p[contains(@class,"tit")]')

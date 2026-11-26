@@ -316,8 +316,34 @@ def note4(code, kr, city, brand, cat, info):
     return ' '.join(head.split())
 
 
+NOTE_FIX = {
+    # 달력이 note 의 「개관 전」을 호텔 전체 '미오픈' 신호로 읽어, 값이 있는 날까지 미오픈으로 칠한다.
+    # 값이 있는 호텔은 그 문구를 빼고, 빈 구간을 날짜 범위 + 「판매 없음」으로 적어 그 구간만 표시되게 한다.
+    'dxbph': (
+        ('즉 이 호텔의 null 121칸은 1박 미개방이 아니라 **개관 전(휴관)**이다.',
+         '즉 이 호텔의 null 121칸은 1박 미개방이 아니라 **휴관**입니다(2026년 5월부터 장기 리노베이션, '
+         '공홈 예상 재개관 2027년 1분기). 2026-12-01~2027-03-31(121일)은 휴관으로 판매 없음입니다.'),
+    ),
+    'adbri': (
+        ('개관 전 호텔이 아니며', '신규 개관 호텔이 아니며'),
+    ),
+    'rsiob': (
+        ('개관 전이 아니라 운영 중이다', '미개관이 아니라 운영 중이다'),
+    ),
+    'tsact': (
+        ('**2026-11-26 현재 개관 전(예약 접수 시작) 호텔**이다.',
+         '**2026-11-26 현재 예약을 받기 시작한 신규 호텔**이다(2027-02-15부터 투숙).'),
+        ('null 156칸 = 2026-12-01~2027-02-28(개관 전, 90일)',
+         'null 156칸 = 2026-12-01~2027-02-28(투숙 개시 전, 90일)은 판매 없음이고'),
+    ),
+}
+
+
 def note_src(code, city, brand, cat, info, cash, provider):
     src = clean(info.get('note') or '')
+    for a, bb in NOTE_FIX.get(code, ()):
+        assert a in src, (code, a[:40])
+        src = src.replace(a, bb)
     bits = [src, EXTRA.get(code, '')]
     tail = '%s %s' % (cash, provider + '이 실측해 보낸 본입니다.')
     out = ' '.join(x for x in bits + [tail] if x)

@@ -11257,7 +11257,7 @@ function mlMonthGrid(mo,map,w,today){
               +'<span class="s">'+(isKE?'KE':mlStopsText(st.best.stops))+'</span>'
               +mlvCellWon(st.min,pk);
             aria+=' · 최저 '+KR(st.min)+'마일 · '+list.length+'건'+(isKE?' · 대한항공':'')
-              +' · 통상 '+mlvWonTxt(st.min,mlvProgCents(pk));
+              +' · '+(mlvMine(pk)!=null?('내 매입 '+mlWonTxtFrom(st.min*mlvMine(pk))):('통상 '+mlvWonTxt(st.min,mlvProgCents(pk))));
           }else{
             cls.push('has','cb-b','ke');
             inner+='<span class="m">승급</span><span class="s">마일차감 없음</span>';
@@ -12237,11 +12237,20 @@ function mlvMineRow(r){                       /* 내 매입가 입력 칸 — �
     +'<button type="button" class="mlv-mine-clr" data-mlv-mine-clr="'+esc(id)+'"'+(mine==null?' hidden':'')+'>초기화</button>'
     +'</div>';
 }
+function mlvAria(r){                          /* 카드 버튼의 읽을거리 — 내 매입가가 있으면 그 기준으로 */
+  var rawW=Math.round(mlvWonFromCents(1,r.c)*10)/10;
+  var mine=mlvMine(mlvMineId(r));
+  var ratio=mlvRatio(r);
+  var pricePart=mine!=null?'내 매입가 1마일 '+KR(mine)+'원, 구매비율 '+ratio+'%'
+    :(r.buy==null?'구매 미판매':('구매 1마일 '+Math.round(mlvWonFromCents(1,r.buy)*10)/10+'원, 구매비율 '+ratio+'%'));
+  return r.a+' '+r.p+' — 통상 1마일 '+rawW+'원, '+pricePart;
+}
 function mlvMineApply(item,id){               /* 입력 중에는 그 카드만 다시 고친다(전체 다시그리기는 커서를 잃는다) */
   var r=MLV_BY_ID[id];if(!r)return;
   var mine=mlvMine(id)!=null;
   if(item){
     var v=item.querySelector('.mlv-v');if(v)v.innerHTML=mlvVals(r);
+    var btn=item.querySelector('.mlv-row');if(btn)btn.setAttribute('aria-label',mlvAria(r));
     item.classList.toggle('mine',mine);
     var box=item.querySelector('.mlv-mine');if(box)box.classList.toggle('on',mine);
     var clr=item.querySelector('[data-mlv-mine-clr]');if(clr)clr.hidden=!mine;
@@ -12255,12 +12264,9 @@ function mlvRowHtml(r){
   var buy10=r.buy==null?'':mlvWonTxt(100000,r.buy);
   var mine10=mine==null?'':mlWonTxtFrom(100000*mine);
   var rawW=Math.round(mlvWonFromCents(1,r.c)*10)/10;
-  var ratio=mlvRatio(r);
-  var ratioAria=mine!=null?'내 매입가 1마일 '+KR(mine)+'원, 구매비율 '+ratio+'%'
-    :(r.buy==null?'구매 미판매':('구매 1마일 '+Math.round(mlvWonFromCents(1,r.buy)*10)/10+'원, 구매비율 '+ratio+'%'));
   return '<div class="mlv-item'+(open?' open':'')+(mine!=null?' mine':'')+'">'
     +'<button type="button" class="mlv-row" data-mlv-toggle="'+esc(r.key)+'" aria-expanded="'+(open?'true':'false')+'"'
-      +' aria-label="'+esc(r.a+' '+r.p+' — 통상 1마일 '+rawW+'원, '+ratioAria)+'">'
+      +' aria-label="'+esc(mlvAria(r))+'">'
     +'<span class="mlv-h"><b>'+esc(r.a)+'</b><span class="mlv-al '+r.al+'">'+esc(MLV_ALNAME[r.al])+'</span><span class="mlv-pg">'+esc(r.p)+'</span></span>'
     +'<span class="mlv-chev">'+(open?'▴':'▾')+'</span>'
     +'<span class="mlv-v">'+mlvVals(r)+'</span></button>'

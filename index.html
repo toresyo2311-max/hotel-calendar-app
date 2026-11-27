@@ -10744,29 +10744,81 @@ function mlDateLong(ds){
 function mlToday(){var d=new Date();return d.getFullYear()+'-'+mlP2(d.getMonth()+1)+'-'+mlP2(d.getDate())}
 
 /* ── 공식 링크 — 휴대폰에서는 앱으로, 없으면 공식 웹으로 ─────────────────
-   플라이 블루(에어프랑스·KLM)와 골 스마일즈(GOL)는 공식 앱 딥링크를 쓴다.
-   · 안드로이드: intent://…package=<구글 플레이의 공식 앱 패키지> + S.browser_fallback_url=<공식 웹>
-   · 아이폰·데스크톱: 공식 웹 주소 그대로(새 탭). */
+   플라이 블루(에어프랑스·KLM)와 골 스마일즈(GOL)는 공식 앱을 먼저 열어 본다.
+   · <a href> 는 언제나 공식 웹(https) 주소다. 홈 화면 앱(standalone)·인앱 WebView 는
+     <a href="intent://…"> 를 조용히 무시해 '눌러도 아무 반응 없음'이 되므로, 링크 자체는 늘 웹으로 살려 둔다.
+   · 안드로이드에서 누른 순간에만 아래 클릭 처리(mlAppOpen)가 intent:// 를 한 번 시도하고,
+     1,200ms 안에 화면이 넘어가지 않으면(앱이 없거나 intent 를 무시한 경우) 공식 웹으로 넘어간다.
+   · 아이폰·데스크톱: 공식 웹 주소 그대로(새 탭). 아이폰은 유니버설 링크가 있으면 사파리가 앱으로 넘긴다. */
 var ML_AF_APP='com.airfrance.android.dinamoprd';
 var ML_AF_WEB='https://wwws.airfrance.co.kr/';
 var ML_APP_PKG={flyingblue:'com.airfrance.android.dinamoprd',smiles:'com.br.smiles'};
+/* 앱이 없을 때 크롬·우리 타이머가 이어 갈 공식 웹 */
+var ML_APP_WEB={flyingblue:ML_AF_WEB,smiles:'https://www.smiles.com.br/'};
+/* 앱이 실제로 받는 주소(App Link 호스트) — 인텐트 안에서만 쓴다.
+   플라이 블루는 앱 호스트가 www.airfrance.com/home, 스마일즈는 www.smiles.com.br/
+   (https://www.smiles.com.br/.well-known/assetlinks.json 에 package com.br.smiles 등록). */
+var ML_APP_LINK={flyingblue:'www.airfrance.com/home',smiles:'www.smiles.com.br/'};
 function mlUA(ua){return String(ua==null?navigator.userAgent:ua)}
-function mlAppHref(p,ua){
-  var web=(p&&p.url)||'';
-  if(!p)return web;
-  var pkg=ML_APP_PKG[p.key];
-  if(!pkg)return web;
-  if(!/Android/i.test(mlUA(ua)))return web;
-  if(p.key==='flyingblue')web=ML_AF_WEB;            /* 플라이 블루는 기존대로 에어프랑스 한국 사이트 */
-  else if(p.key==='smiles')web=web||'https://www.smiles.com.br/';
-  return 'intent://'+web.replace(/^https?:\/\//,'')
-    +'#Intent;scheme=https;package='+pkg
-    +';S.browser_fallback_url='+encodeURIComponent(web)+';end';
+function mlAppIsP(p){return !!(p&&ML_APP_PKG[p.key])}
+function mlAppWeb(p){return (p&&(p.appWeb||ML_APP_WEB[p.key]))||(p&&p.url)||''}
+/* 링크(href)는 언제나 공식 웹(https) — 스크립트가 없거나 인앱 WebView 여도 눌리면 웹이 열린다. */
+function mlAppHref(p){return (p&&(p.url||mlAppWeb(p)))||''}
+/* 앱 링크는 새 탭으로. 안드로이드에서는 클릭 처리가 가로채 앱을 먼저 시도한다. */
+function mlAppTarget(){return '_blank'}
+/* 클릭 처리가 읽을 표시(패키지·웹 주소)를 링크에 붙인다. */
+function mlAppAttr(p){
+  if(!mlAppIsP(p))return '';
+  return ' data-ml-app="'+esc(p.key)+'" data-app-pkg="'+esc(ML_APP_PKG[p.key])+'"'
+    + ' data-app-web="' + esc(mlAppWeb(p)) + '"';
 }
-function mlAppTarget(p){return (p&&ML_APP_PKG[p.key]&&/Android/i.test(mlUA()))?'_self':'_blank'}
+/* 인텐트 — 패키지뿐 아니라 action(VIEW)·category(BROWSABLE)·App Link 호스트까지 넣어야
+   안드로이드가 앱 화면을 찾는다. 앱이 없으면 크롬이 이어 갈 주소(S.browser_fallback_url)도 넘긴다. */
+function mlAppIntent(p){
+  var pkg=p&&ML_APP_PKG[p.key];if(!pkg)return '';
+  var link=ML_APP_LINK[p.key]||String(p.url||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
+  var fb=mlAppWeb(p);
+  return 'intent://'+link+'#Intent;scheme=https'
+    +';action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE'
+    +';package='+pkg
+    +(fb?';S.browser_fallback_url='+encodeURIComponent(fb):'')
+    +';end';
+}
+/* 안드로이드 클릭 — 앱을 먼저 시도하고, 1,200ms 안에 화면이 넘어가지 않으면(=인앱 WebView·
+   홈 화면 앱이 intent:// 를 조용히 무시한 경우) 공식 웹으로 스스로 넘어간다. 그래서 절대 먹통이 되지 않는다. */
+function mlAppOpen(web,intent){
+  var left=false;
+  function mark(){left=true}
+  function done(){
+    document.removeEventListener('visibilitychange',mark);
+    window.removeEventListener('pagehide',mark);
+    window.removeEventListener('blur',mark);
+  }
+  document.addEventListener('visibilitychange',mark);
+  window.addEventListener('pagehide',mark);
+  window.addEventListener('blur',mark);
+  try{window.location.href=intent}catch(err){}
+  setTimeout(function(){
+    done();
+    if(left||document.hidden)return;               /* 앱이 열려 화면을 떠났다 → 웹으로 보내지 않는다 */
+    try{window.location.href=web}catch(err){}
+  },1200);
+}
+document.addEventListener('click',function(e){
+  var t=e.target;
+  var a=(t&&t.closest)?t.closest('a[data-ml-app]'):null;
+  if(!a)return;
+  if(!/Android/i.test(mlUA()))return;              /* 아이폰·데스크톱은 기본 링크(새 탭) 그대로 */
+  var p={key:a.getAttribute('data-ml-app'),url:a.getAttribute('href')||'',appWeb:a.getAttribute('data-app-web')||''};
+  var intent=mlAppIntent(p);
+  if(!intent)return;
+  e.preventDefault();
+  if(e.stopPropagation)e.stopPropagation();        /* 카드 '날짜 상세' 시트가 함께 열리지 않게 */
+  mlAppOpen(mlAppWeb(p),intent);
+},true);
 function mlAppsNote(){
   return /Android/i.test(mlUA())
-    ? '<p class="pm-ds-apphint">안드로이드에서는 <b>플라이 블루</b>·<b>골 스마일즈</b>를 누르면 해당 공식 앱이 설치된 경우 앱으로, 없으면 공식 웹으로 열립니다.</p>'
+    ? '<p class="pm-ds-apphint">안드로이드에서는 <b>플라이 블루</b>·<b>골 스마일즈</b>를 누르면 해당 공식 앱이 설치된 경우 앱으로 열리고, 앱이 없거나 앱이 열리지 않는 화면(인앱 브라우저 등)에서는 공식 웹으로 자동 이동합니다.</p>'
     : '';
 }
 
@@ -11159,7 +11211,7 @@ function mlCardHtml(x){
   var seen=ke?('원천 '+(MGD.observedLabel||'—')):('최근 확인 '+x.seen);
   var go=ke
     ? '<a class="go" href="'+KE_SEARCH+'" target="_blank" rel="noopener">대한항공 예약</a>'
-    : '<a class="go" href="'+esc(mlAppHref(x.p))+'" target="'+mlAppTarget(x.p)+'" rel="noopener">'+esc(x.p.urlLabel||'공식 예약')+'</a>';
+    : '<a class="go" href="'+esc(mlAppHref(x.p))+'" target="'+mlAppTarget(x.p)+'" rel="noopener"'+mlAppAttr(x.p)+'>'+esc(x.p.urlLabel||'공식 예약')+'</a>';
   return '<article class="pm-card'+(ke?' ml-ke':'')+'" data-ml-day="'+esc(x.date)+'" title="눌러서 이 날짜 상세 보기">'
     +'<div class="top"><b>'+esc(mlDestName(x.dest))+'</b><span class="dt">'+esc(mlDateKo(x.date))+'</span></div>'
     +'<div class="pg">'+(ke?'🇰🇷 대한항공':'')+esc(ke?'대한항공(스카이패스)':x.p.name)+'<span>'+(ke?'스카이패스 · 공제표 평수기 편도':esc(x.p.allianceName||''))+'</span></div>'
@@ -11341,7 +11393,7 @@ function mlPtRowHtml(x){
         return '<span class="cb '+c.k+'">'+esc(mlCabinShort(c))+' <b>'+KR(c.miles)+'</b> <i>'+esc(mlStopsText(c.stops))+'</i></span>';
       }).join('')+won+put+'</div>'
     +'<div class="pm-ds-meta"><span class="seen">최근 확인 '+esc(x.seen)+'</span>'
-    +'<a class="pm-ds-go" href="'+esc(mlAppHref(x.p))+'" target="'+mlAppTarget(x.p)+'" rel="noopener">'+esc(x.p.urlLabel||'공식 사이트')+' ↗</a></div>'
+    +'<a class="pm-ds-go" href="'+esc(mlAppHref(x.p))+'" target="'+mlAppTarget(x.p)+'" rel="noopener"'+mlAppAttr(x.p)+'>'+esc(x.p.urlLabel||'공식 사이트')+' ↗</a></div>'
     +'</div>';
 }
 
@@ -11390,7 +11442,7 @@ function mlProgramsBlock(){
   if(!ws.length)return '';
   return '<div class="pm-ds-gh">공식 사이트에서 직접 조회</div>'+mlAppsNote()
     +'<div class="pm-ds-sites">'+ws.map(function(p){
-        return '<a class="pm-ds-site" href="'+esc(mlAppHref(p))+'" target="'+mlAppTarget(p)+'" rel="noopener"'+(ML_APP_PKG[p.key]?' title="'+esc(p.name+' 공식 앱 또는 공식 웹으로 엽니다')+'"':'')+'>'
+        return '<a class="pm-ds-site" href="'+esc(mlAppHref(p))+'" target="'+mlAppTarget(p)+'" rel="noopener"'+mlAppAttr(p)+(ML_APP_PKG[p.key]?' title="'+esc(p.name+' 공식 앱 또는 공식 웹으로 엽니다')+'"':'')+'>'
           +'<b>'+esc(p.short||p.name)+'</b>'
           +'<span>'+esc(p.name)+' · '+esc(p.allianceName||'')+'</span>'
           +'<i>공식 발권 ↗</i></a>';

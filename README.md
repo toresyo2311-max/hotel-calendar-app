@@ -307,6 +307,35 @@ python3 tools/build_mileage_tab.py && python3 tools/build_partner_tab.py
 `index.html` 을 직접 손으로 고치지 마세요. 고쳤다면 `extract` 로 정본을 다시 뜬 뒤
 `git diff data/master_db.json` 으로 무엇이 바뀌었는지 확인하는 편이 안전합니다.
 
+### 2026-11-28 일일 갱신 — ⑦ 땡처리 전면 교체 · ⑥ 항공 227칸
+
+`data-sources/flights-ttang/2026-11-28/` 의 수집본(통합 목록 278 · 일본/남태평양 1,888 · 노랑풍선 40 ·
+동남아·중국·자체 공동구매 1,525 = 원본 3,731줄 → 변환 2,057 + 1,525 → 병합)으로 ⑦ 탭을 **전면 교체**했습니다.
+같은 항공편을 가장 싼 값으로 합쳐 **3,452건 · 42개 노선**(직전 3,433건 → 신규 307 · 빠짐 288 · 값 변경 937).
+최저는 구마모토 12/16~12/19 217,000원(이스타항공), 20만 원 이하 0건 · 25만 원 이하 12건입니다.
+출발일 2026-11-29 ~ 2027-03-31. 노선은 43개에서 42개가 됐고(칭다오 소멸), 그 이력 파일은
+`data/history/_archive/ttang/TAO.json` 으로 옮겨 보관했습니다. 요금 포함 범위를 확인하지 못한 상품 52건은
+비고에 그 사실을 적었습니다.
+
+```bash
+cd repos/hotel-calendar-app
+python3 tools/convert_pus_deals.py --out data-sources/flights-ttang/normalized-2026-11-28.json \
+  --tt-json data-sources/flights-ttang/2026-11-28/tt_pus_2026-11-28.json \
+  --ybtour data-sources/flights-ttang/2026-11-28/ybtour_pus_discount_flights_2026-11-28.csv \
+  --ybtour-deals data-sources/flights-ttang/2026-11-28/ybtour_pus_discount_flights_2026-11-28.csv \
+  --modetour-csv data-sources/flights-ttang/2026-11-28/modetour_pus_jpn_oceania_2026-11-28.csv \
+  --day 2026-11-28 --observed "2026-11-28 04:30~04:56 KST"
+python3 tools/merge_pus_deals.py data-sources/flights-ttang/normalized-2026-11-28.json \
+  data-sources/flights-ttang/2026-11-28/modetour-hanatour-pus-deals_2026-11-28.json --write
+```
+
+어댑터 수정 없이 그대로 변환됐습니다(링크 없음 0). 루트 최신본은 `tt_pus_2026-11-28.json` ·
+`ybtour_pus_discount_flights_2026-11-28.csv` · `modetour_pus_jpn_oceania_2026-11-28.csv` ·
+`modetour-hanatour-pus-deals_2026-11-28.json` 으로 교체했습니다.
+같은 날 ⑥ 항공특가에는 ⑤ 갱신본 242칸 가운데 창 안 227칸을 병합했습니다(새 칸 13 — 타이베이 12/07~17 8칸 ·
+방콕 12/13~17 5칸, 값 교체 102[오름 59 · 내림 43] · 같음 112, 11월 28~30일 출발 15칸은 앱의 12월~11월 창 밖).
+⑥ 총 **11,120건**(직전 11,107 → +13) · 당일치기 339 그대로 · 2026-12 1,225→1,238건입니다.
+
 ### 2026-11-24 일일 갱신 — ⑦ 땡처리 전면 교체 · ⑥ 항공 119칸
 
 `data-sources/flights-ttang/2026-11-24/` 의 수집본(통합 목록 314 · 일본/남태평양 1,794 · 노랑풍선 34 ·

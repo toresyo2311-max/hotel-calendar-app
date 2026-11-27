@@ -718,8 +718,15 @@ _TT_URL_RE = re.compile(r'^https://(?:www\.)?([^/]+)/', re.I)
 _LINK_RE = re.compile(r'https?://([^\s"\'<>()\\]+)', re.I)
 
 
+# ⑥⑦⑧ 앱 딥링크 표(FL_APP_PKG · FL_APP_DEEP)의 키는 화면 글자가 아니라 링크 주소를 찾는 코드값이다.
+# (예: 'modetour.com' → 패키지) — href 와 같은 이유로 출처 문구 검사에서 뺀다.
+_APP_MAP_RE = re.compile(r"var FL_APP_(?:PKG|DEEP)=\{.*?\n\};", re.S)
+
+
 def strip_booking_links(text_blob):
     """예약 링크 주소만 지운다(출처 검사 대상 = 화면에 보이는 글자)."""
+    text_blob = _APP_MAP_RE.sub(' ', text_blob)
+
     def repl(m):
         host = m.group(1).split('/')[0].split(':')[0].lower()
         for h in LINK_HOSTS:

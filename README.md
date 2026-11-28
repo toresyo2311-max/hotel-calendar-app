@@ -307,6 +307,36 @@ python3 tools/build_mileage_tab.py && python3 tools/build_partner_tab.py
 `index.html` 을 직접 손으로 고치지 마세요. 고쳤다면 `extract` 로 정본을 다시 뜬 뒤
 `git diff data/master_db.json` 으로 무엇이 바뀌었는지 확인하는 편이 안전합니다.
 
+### 2026-11-29 일일 갱신 — ⑦ 땡처리 전면 교체 · ⑥ 항공 121칸 새로 + 135칸 교체
+
+`data-sources/flights-ttang/2026-11-29/` 의 수집본(통합 목록 274 · 일본/남태평양 1,888 · 노랑풍선 43 ·
+동남아·중국·자체 공동구매 1,522 = 원본 3,727줄 → 변환 2,048 + 1,522 → 병합)으로 ⑦ 탭을 **전면 교체**했습니다.
+같은 항공편을 가장 싼 값으로 합쳐 **3,444건 · 42개 노선**(직전 3,452건 → 신규 11 · 빠짐 19 · 값 변경 14[내림 4 · 오름 10]).
+최저는 후쿠오카 12/15~12/17 198,200원(트리니티항공) — 20만 원 이하가 1건 나왔고 25만 원 이하 9건입니다.
+출발일 2026-11-30 ~ 2027-03-31. 노선 변화는 없습니다(이력 이관 0건). 요금 포함 범위를 확인하지 못한 상품 47건은
+비고에 그 사실을 적었습니다.
+
+```bash
+cd repos/hotel-calendar-app
+python3 tools/convert_pus_deals.py --out data-sources/flights-ttang/normalized-2026-11-29.json \
+  --tt-json data-sources/flights-ttang/2026-11-29/tt_pus_2026-11-29.json \
+  --ybtour data-sources/flights-ttang/2026-11-29/ybtour_pus_discount_flights_2026-11-29.csv \
+  --ybtour-deals data-sources/flights-ttang/2026-11-29/ybtour_pus_discount_flights_2026-11-29.csv \
+  --modetour-csv data-sources/flights-ttang/2026-11-29/modetour_pus_jpn_oceania_2026-11-29.csv \
+  --day 2026-11-29 --observed "2026-11-29 04:34~04:50 KST"
+python3 tools/merge_pus_deals.py data-sources/flights-ttang/normalized-2026-11-29.json \
+  data-sources/flights-ttang/2026-11-29/modetour-hanatour-pus-deals_2026-11-29.json --write
+```
+
+어댑터 수정 없이 그대로 변환됐습니다(링크 없음 0). 루트 최신본은 `tt_pus_2026-11-29.json` ·
+`ybtour_pus_discount_flights_2026-11-29.csv` · `modetour_pus_jpn_oceania_2026-11-29.csv` ·
+`modetour-hanatour-pus-deals_2026-11-29.json` 으로 교체했습니다.
+같은 날 ⑥ 항공특가에는 ⑤ 갱신본 443칸 가운데 앱 창 안 **새 칸 121**(2026-12 55 · 2027-03 66, 평일 2박과 3월 순환)과
+**값 교체 135**(내림 58 · 오름 77)를 병합했습니다(같음 171 · 11월 29~30일 출발 16칸은 앱의 12월~11월 창 밖).
+5번 코드 `NRT` 는 앱의 도쿄(`TYO`) 노선으로 옮겨 넣었고, 병합 도구는 새로 만든
+`tools/merge_tab5_update_20261129.py` 입니다(창 밖 제외 · 패턴 박수와 귀국일 검사 · 새 칸/값 교체 집계).
+⑥ 총 **11,241건**(직전 11,120 → +121) · 당일치기 339 그대로 · 2026-12 1,238→1,293 · 2027-03 926→992건입니다.
+
 ### 2026-11-28 일일 갱신 — ⑦ 땡처리 전면 교체 · ⑥ 항공 227칸
 
 `data-sources/flights-ttang/2026-11-28/` 의 수집본(통합 목록 278 · 일본/남태평양 1,888 · 노랑풍선 40 ·
